@@ -10,6 +10,5 @@ class DatabaseProperties(properties: Properties) {
 
     fun getConnectionUrl (): String {
         return String.format("jdbc:postgresql://%s/%s?user=%s&password=%s", host, database, username, password)
-            .replace("\"", "")
     }
 }
