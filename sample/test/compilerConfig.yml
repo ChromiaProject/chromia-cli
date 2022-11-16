@@ -1,0 +1,10 @@
+CompilerOptions:
+  gtv: false
+  deprecatedError: true
+  ide: false
+  blockCheck: false
+  testLib: true
+  hiddenLib: false
+  allowDbModificationsInObjectExprs: false
+  rellVersion: 0.10.10
+  symbolInfoFile: null

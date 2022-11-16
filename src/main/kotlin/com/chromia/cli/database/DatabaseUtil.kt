@@ -1,4 +1,4 @@
-package com.example.rell
+package com.chromia.cli.compile
 
 import net.postchain.rell.runtime.utils.Rt_SqlManager
 import net.postchain.rell.sql.ConnectionSqlManager

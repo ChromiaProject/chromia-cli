@@ -1,4 +1,4 @@
-package com.example.rell
+package com.chromia.cli.compile
 
 import java.util.*
 
