@@ -8,3 +8,4 @@ class Rell: NoOpCliktCommand(help = "Rell commands")
 
 fun rellCommands() = Rell()
     .subcommands(RunTest())
+    //TODO create command to create configfile templates
