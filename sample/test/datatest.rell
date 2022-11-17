@@ -1,0 +1,12 @@
+@test module;
+import data;
+
+function test_add_user() {
+    assert_equals(data.user@*{}(.name), list<text>());
+
+    val tx = rell.test.tx(data.add_user('Bob'));
+    assert_equals(data.user@*{}(.name), list<text>());
+
+    tx.run();
+    assert_equals(data.user@*{}(.name), ['Bob']);
+}
