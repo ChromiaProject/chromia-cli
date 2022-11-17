@@ -1,5 +1,8 @@
-package com.chromia.cli.compile
+package com.chromia.cli
 
+import com.chromia.cli.database.DatabaseUtil
+import com.chromia.cli.parser.YamlParser
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
@@ -11,47 +14,17 @@ import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import net.postchain.rell.lib.test.Rt_DynamicBlockRunnerStrategy
 import net.postchain.rell.lib.test.UnitTestBlockRunner
-import net.postchain.rell.model.*
+import net.postchain.rell.model.R_App
+import net.postchain.rell.model.R_FunctionDefinition
+import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.runtime.*
 import net.postchain.rell.runtime.utils.Rt_SqlManager
-import net.postchain.rell.sql.*
+import net.postchain.rell.sql.NoConnSqlManager
 import net.postchain.rell.utils.*
-import java.io.File
-import java.util.*
 import kotlin.system.exitProcess
 
-private fun  CliktCommand.sourceDirOption() =
-        option(help = "Rell source directory") // Name is implicit from variable name
-            .file(mustExist = true, canBeFile = false, canBeDir = true)
-            .default(File(System.getProperty("user.dir")))
 
-private fun CliktCommand.modulesFiles() =
-        option("-tm","--test-modules", help = "Comma separated list of file names under the module, ex: testFile1,testFile2,...")
-        .convert { R_ModuleName.of(it) }.split(",")
-private fun CliktCommand.brid() =
-        option("-brid", "--blockchain-rid", help = "Blockchain RID")
-        .convert { BlockchainRid.buildFromHex(it) }
-        .default(BlockchainRid(ByteArray(32)))
-
-private fun CliktCommand.sql() =
-        option("-db", "--database", help = "If a database is used ").flag()
-
-private fun CliktCommand.databaseOption() =
-        option("-p", "--db-properties", help = "File path with database settings" )
-        .default("database.properties")
-
-private fun CliktCommand.settingsOption() =
-        option("-s", "--settings", help = "Alternate path for the settings file" )
-                .file(mustExist = true, canBeFile = true, canBeDir = false)
-                .default(File("compilerOptions.properties"))
-
-
-private fun CliktCommand.chainSQLMapper() =
-        option("-cid", "--chainid", help = "Chainid, defaults to 100" )
-        .long()
-        .convert { Rt_ChainSqlMapping(it) }
-        .default(Rt_ChainSqlMapping(100))
 
 class TestCommand: CliktCommand(help= "Run tests in working directory") {
     private val sourceFolder by sourceDirOption()
@@ -62,17 +35,7 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
     private val coProperties by settingsOption()
     private val sqlMapper by chainSQLMapper()
 
-    private var databaseProperties: DatabaseProperties? = null
-
     override fun run() {
-        val properties = Properties()
-        val stream = this::class.java.classLoader.getResourceAsStream(dbProperties)
-        if (stream == null) {
-            throw RellCliErr("Must specify a resource file for database properties")
-        } else {
-            properties.load(stream)
-            databaseProperties = DatabaseProperties(properties)
-        }
 
         if (testRootModules == null) {
             throw RellCliErr("Must specify test-modules argument")
@@ -100,18 +63,17 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
 
         if (sql) {
-            databaseProperties?.let {
-                DatabaseUtil().runWithSqlManager(true, it) { sqlManager ->
-                    val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)
-                    val cases = fns.map { TestRunnerCase(null, it) }
-                    TestRunner.runTests(testCtx, cases)
-                }
-            }
-        } else {
-                val sqlManager = Rt_SqlManager(NoConnSqlManager, logErrors = true )
+            val databaseProperties = YamlParser().databaseOptions(dbProperties)
+            DatabaseUtil().runWithSqlManager(true, databaseProperties) { sqlManager ->
                 val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)
                 val cases = fns.map { TestRunnerCase(null, it) }
                 TestRunner.runTests(testCtx, cases)
+            }
+        } else {
+            val sqlManager = Rt_SqlManager(NoConnSqlManager, logErrors = true )
+            val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)
+            val cases = fns.map { TestRunnerCase(null, it) }
+            TestRunner.runTests(testCtx, cases)
         }
 
     }
@@ -122,15 +84,11 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         val keyPair: BytesKeyPair
     )
     private fun createContext(app: R_App): Context {
-        val properties = Properties()
-        println(coProperties.absolutePath)
-        properties.load(coProperties.inputStream())
-        val compilerOptions = CompilerOptions(properties).getCompilerOptions()
+        val compilerOptions = YamlParser().compilerOptions(coProperties).getCompilerOptions()
         val globalCtx = Rt_GlobalContext(compilerOptions,Rt_OutPrinter,Rt_OutPrinter, RellPostchainModuleEnvironment.DEFAULT)
         val chainCtx = Rt_ChainContext(GtvNull, immMapOf(), blockchainRid)
         val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(app, sqlMapper)
         val keyPair = UnitTestBlockRunner.getTestKeyPair() //this is static in the test scope Bob and alice
         return Context(globalCtx, chainCtx, sqlCtx, keyPair)
-
     }
 }
