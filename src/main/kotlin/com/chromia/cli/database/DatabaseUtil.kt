@@ -1,4 +1,4 @@
-package com.chromia.cli.compile
+package com.chromia.cli.database
 
 import net.postchain.rell.runtime.utils.Rt_SqlManager
 import net.postchain.rell.sql.ConnectionSqlManager
@@ -8,10 +8,9 @@ import java.sql.DriverManager
 
 class DatabaseUtil {
 
-    fun runWithSqlManager(logSqlErrors: Boolean, databaseProperties: DatabaseProperties, code: (SqlManager) -> Unit) {
-        println(databaseProperties.getConnectionUrl())
-        val dbUrl = databaseProperties.getConnectionUrl()
-        val dbProperties = ""
+    fun runWithSqlManager(logSqlErrors: Boolean, databaseOptions: DatabaseOptions, code: (SqlManager) -> Unit) {
+        val dbUrl = databaseOptions.getConnectionUrl()
+        //val dbProperties = databaseOptions.dbProperties
         val sqlLogging = true
         val schema = SqlUtils.extractDatabaseSchema(dbUrl)
         DriverManager.getConnection(dbUrl).use { con ->
@@ -22,7 +21,7 @@ class DatabaseUtil {
 
     }
 
-    fun runWithSqlManager(
+    private fun runWithSqlManager(
         schema: String?,
         sqlMgr: SqlManager,
         logSqlErrors: Boolean,

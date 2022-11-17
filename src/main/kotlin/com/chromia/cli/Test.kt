@@ -4,10 +4,6 @@ import com.chromia.cli.database.DatabaseUtil
 import com.chromia.cli.parser.YamlParser
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.*
-import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.clikt.parameters.types.long
-import net.postchain.common.BlockchainRid
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
@@ -58,7 +54,7 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
     }
 
     private fun runTests(app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        val context = createContext(app);
+        val context = createContext(app)
         val blockRunnerModules = app.modules.filter { !it.test && !it.abstract && !it.external }.map { it.name }
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
 

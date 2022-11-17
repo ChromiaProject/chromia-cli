@@ -1,4 +1,4 @@
-package com.chromia.cli.compile
+package com.chromia.cli
 
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands

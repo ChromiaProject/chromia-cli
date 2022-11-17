@@ -4,4 +4,4 @@ set -eu
 
 SCRIPT_DIR=$(dirname "$(dirname "${BASH_SOURCE[0]}")")
 
-${RELL_JAVA:-java} -cp "$SCRIPT_DIR/lib/*" com.example.MainKt "$@"
+${RELL_JAVA:-java} -cp "$SCRIPT_DIR/lib/*" com.chromia.MainKt "$@"
