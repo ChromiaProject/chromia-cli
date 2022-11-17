@@ -1,3 +1,5 @@
 /.idea/
 /logs/
 /target/
+/sample/test/logs/
+/sample/test2/logs/

@@ -1,14 +1,12 @@
-package com.chromia.cli.compile
+package com.chromia.cli.database
 
-import java.util.*
-
-class DatabaseProperties(properties: Properties) {
-    var host: String = properties["host"].toString()
-    var database: String = properties["database"].toString()
-    var username: String = properties["username"].toString()
-    var password: String = properties["password"].toString()
+class DatabaseOptions(var host: String,
+                         var database: String,
+                         var username: String,
+                         var password: String,
+                         var dbProperties: String) {
 
     fun getConnectionUrl (): String {
-        return String.format("jdbc:postgresql://%s/%s?user=%s&password=%s", host, database, username, password)
+        return "jdbc:postgresql://$host/$database?user=$username&password=$password"
     }
 }
