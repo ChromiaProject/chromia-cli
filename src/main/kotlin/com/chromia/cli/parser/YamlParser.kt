@@ -1,7 +1,7 @@
 package com.chromia.cli.parser
 
-import com.chromia.cli.compile.CompilerOptions
-import com.chromia.cli.database.DatabaseOptions
+import com.chromia.cli.config.CompilerConfig
+import com.chromia.cli.config.DatabaseConfig
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -15,11 +15,11 @@ class YamlParser {
                 .configure(DeserializationFeature.UNWRAP_ROOT_VALUE, true)
     }
 
-    fun compilerOptions(file: File): CompilerOptions {
-        return mapper().readValue(file, CompilerOptions::class.java)
+    fun compilerOptions(file: File): CompilerConfig {
+        return mapper().readValue(file, CompilerConfig::class.java)
     }
 
-    fun databaseOptions(file: File): DatabaseOptions {
-        return mapper().readValue(file, DatabaseOptions::class.java)
+    fun databaseOptions(file: File): DatabaseConfig {
+        return mapper().readValue(file, DatabaseConfig::class.java)
     }
 }

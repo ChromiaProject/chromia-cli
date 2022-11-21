@@ -1,0 +1,9 @@
+module;
+
+entity user {
+  key name: text;
+}
+
+operation add_user(name) {
+    create user(name);
+}

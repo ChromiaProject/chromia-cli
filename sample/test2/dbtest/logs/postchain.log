@@ -1,0 +1,64 @@
+INFO  2022-11-17 12:12:07.702 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 12:12:39.033 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 13:23:27.681 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 13:32:15.041 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 16:39:00.301 [main] SqlInit - Initializing database (chain_iid = 100)
+INFO  2022-11-17 16:39:00.443 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 16:39:00.516 [main] SqlInit - Database init plan: 8 step(s)
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create ROWID table and function
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create meta tables
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:39:00.516 [main] SqlInit -     Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:39:00.517 [main] SqlInit -     Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:39:00.517 [main] SqlInit -     Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:39:00.517 [main] SqlInit - Step: Create ROWID table and function
+INFO  2022-11-17 16:39:00.519 [main] SqlInit - Step: Create meta tables
+INFO  2022-11-17 16:39:00.525 [main] SqlInit - Step: Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:39:00.527 [main] SqlInit - Step: Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:39:00.528 [main] SqlInit - Step: Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:39:00.530 [main] SqlInit - Step: Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:39:00.531 [main] SqlInit - Step: Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:39:00.532 [main] SqlInit - Step: Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:39:00.536 [main] SqlInit - Database initialization done
+INFO  2022-11-17 16:40:57.407 [main] SqlInit - Initializing database (chain_iid = 100)
+INFO  2022-11-17 16:40:57.538 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 16:40:57.607 [main] SqlInit - Database init plan: 8 step(s)
+INFO  2022-11-17 16:40:57.607 [main] SqlInit -     Create ROWID table and function
+INFO  2022-11-17 16:40:57.607 [main] SqlInit -     Create meta tables
+INFO  2022-11-17 16:40:57.607 [main] SqlInit -     Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:40:57.607 [main] SqlInit -     Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:40:57.608 [main] SqlInit -     Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:40:57.608 [main] SqlInit -     Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:40:57.608 [main] SqlInit -     Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:40:57.608 [main] SqlInit -     Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:40:57.608 [main] SqlInit - Step: Create ROWID table and function
+INFO  2022-11-17 16:40:57.610 [main] SqlInit - Step: Create meta tables
+INFO  2022-11-17 16:40:57.617 [main] SqlInit - Step: Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:40:57.619 [main] SqlInit - Step: Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:40:57.620 [main] SqlInit - Step: Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:40:57.621 [main] SqlInit - Step: Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:40:57.622 [main] SqlInit - Step: Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:40:57.623 [main] SqlInit - Step: Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:40:57.630 [main] SqlInit - Database initialization done
+INFO  2022-11-17 16:42:41.173 [main] SqlInit - Initializing database (chain_iid = 100)
+INFO  2022-11-17 16:42:41.305 [main] SQLDatabaseAccess - Meta table does not exist. Assume database does not exist and create it (version: 2).
+INFO  2022-11-17 16:42:41.372 [main] SqlInit - Database init plan: 8 step(s)
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create ROWID table and function
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create meta tables
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:42:41.372 [main] SqlInit -     Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:42:41.372 [main] SqlInit - Step: Create ROWID table and function
+INFO  2022-11-17 16:42:41.374 [main] SqlInit - Step: Create meta tables
+INFO  2022-11-17 16:42:41.382 [main] SqlInit - Step: Create function: 'rell_bytea_substr1'
+INFO  2022-11-17 16:42:41.385 [main] SqlInit - Step: Create function: 'rell_bytea_substr2'
+INFO  2022-11-17 16:42:41.386 [main] SqlInit - Step: Create function: 'rell_text_substr1'
+INFO  2022-11-17 16:42:41.388 [main] SqlInit - Step: Create function: 'rell_text_substr2'
+INFO  2022-11-17 16:42:41.390 [main] SqlInit - Step: Create function: 'rell_text_getchar'
+INFO  2022-11-17 16:42:41.391 [main] SqlInit - Step: Create table and meta for 'data:user' (meta: user)
+INFO  2022-11-17 16:42:41.397 [main] SqlInit - Database initialization done

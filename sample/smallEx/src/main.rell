@@ -1,0 +1,19 @@
+module;
+
+entity user {
+  key pubkey;
+  index name;
+}
+
+entity address {
+  key pubkey;
+  street: text;
+}
+
+entity residence {
+  key user, address;
+}
+
+function get_addresses(user): list<address> = residence @* { user }.address;
+
+function addition(): integer = 1/0;

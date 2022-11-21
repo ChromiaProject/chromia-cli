@@ -7,3 +7,5 @@ function test_foo() {
 function test_bar() {
     assert_equals(2 + 2, 5);
 }
+
+chr.sh rell run -wipe-db -db -m src.main -e get_addresses -a 1

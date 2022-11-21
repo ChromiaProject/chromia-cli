@@ -1,0 +1,31 @@
+blockchain:
+  name: My_Rell_Project
+  module: main
+#  moduleArgs:
+#    config:
+#      - src: "node-config.properties"
+#      - add-signers: "true"
+#    test-config:
+#      - src: "node-config-test.properties"
+#    chain:
+#      - iid: 1
+#      - height: 0
+#    wipe-db: true
+
+compiler:
+  gtv: false
+  deprecatedError: true
+  ide: false
+  blockCheck: false
+  testLib: false
+  hiddenLib: false
+  allowDbModificationsInObjectExprs: false
+  rellVersion: 0.10.10
+  symbolInfoFile: null
+  quiet: false
+
+database:
+  password: postchain
+  username: postchain
+  database: postchain
+  host: localhost

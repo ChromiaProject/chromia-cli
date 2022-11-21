@@ -13,16 +13,25 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
+        <postchain.version>3.7.0-SNAPSHOT</postchain.version>
     </properties>
 
     <repositories>
         <repository>
-            <id>rell</id>
-            <name>Rell Registry</name>
+            <id>postchain-chromia</id>
+            <url>https://gitlab.com/api/v4/projects/33481005/packages/maven</url>
+        </repository>
+        <repository>
+            <id>postchain</id>
+            <name>Postchain GitLab Registry</name>
+            <url>https://gitlab.com/api/v4/projects/32294340/packages/maven</url>
+        </repository>
+        <repository>
+            <id>rellr</id>
+            <name>Rell Runtime Registry</name>
             <url>https://gitlab.com/api/v4/projects/32802097/packages/maven</url>
         </repository>
         <repository>
@@ -95,6 +104,31 @@
 
     <dependencies>
         <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell</artifactId>
+            <version>0.10.10</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-client</artifactId>
+            <version>3.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-base</artifactId>
+            <version>3.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>chromia-deployment-tool</artifactId>
+            <version>3.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-gtv-yaml</artifactId>
+            <version>3.7.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <version>2.13.4</version>
@@ -103,11 +137,6 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>2.14.0</version>
-        </dependency>
-        <dependency>
-            <groupId>net.postchain.rell</groupId>
-            <artifactId>rell</artifactId>
-            <version>0.10.10</version>
         </dependency>
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
@@ -132,5 +161,4 @@
             <version>1.6.20</version>
         </dependency>
     </dependencies>
-
 </project>

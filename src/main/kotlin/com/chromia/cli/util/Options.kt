@@ -1,10 +1,12 @@
 package com.chromia.cli.util
 
+import com.chromia.cli.config.ChromiaCliConfig
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.common.BlockchainRid
+import net.postchain.gtv.yaml.GtvYaml
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.runtime.Rt_ChainSqlMapping
 import java.io.File
@@ -18,12 +20,12 @@ import java.io.File
 //})
 
 fun CliktCommand.sourceDirOption() =
-        option(help = "Rell source directory")
+        option("-d", "--source-folder", help = "Rell source directory")
                 .file(mustExist = true, canBeFile = false, canBeDir = true)
                 .default(File(System.getProperty("user.dir")))
 
 fun CliktCommand.modulesFiles() =
-        option("-tm","--test-modules", help = "Comma separated list of file names under the module, ex: testFile1,testFile2,...")
+        option("-m","--modules", help = "Comma separated list of file names under the module, ex: testFile1,testFile2,... or add an '*' to get all files in the directory")
                 .convert { R_ModuleName.of(it) }.split(",")
 fun CliktCommand.brid() =
         option("-brid", "--blockchain-rid", help = "Blockchain RID")
@@ -33,18 +35,24 @@ fun CliktCommand.brid() =
 fun CliktCommand.sql() =
         option("-db", "--database", help = "If a database is used ").flag()
 
-fun CliktCommand.databaseOption() =
-        option("-p", "--db-properties", help = "File path with database settings" )
-                .file(mustExist = true, canBeFile = true, canBeDir = false)
-                .default(File("databaseConfig.yml"))
-
-fun CliktCommand.settingsOption() =
-        option("-s", "--settings", help = "Alternate path for the settings file" )
-                .file(mustExist = true, canBeFile = true, canBeDir = false)
-                .default(File("compilerConfig.yml"))
+fun CliktCommand.wipeSql() =
+        option("-wipe", "--database-wipe", help = "If a database should be wiped").flag()
 
 fun CliktCommand.chainSQLMapper() =
         option("-cid", "--chainid", help = "Chainid, defaults to 100" )
                 .long()
                 .convert { Rt_ChainSqlMapping(it) }
                 .default(Rt_ChainSqlMapping(100))
+
+fun CliktCommand.configFile() = option( ).file()
+        .convert { GtvYaml().load<ChromiaCliConfig>(it)}
+        .default(ChromiaCliConfig())
+
+fun CliktCommand.module() = option("-m","--module", help = "Name of module with rell method in")
+        .convert { R_ModuleName.of(it) }
+
+fun CliktCommand.entry() =  option("-e","--entry", help = "Name of method to run")
+
+fun CliktCommand.arguments() = option("-a","--args", help = "List of arguments, comma separated (arg1,arg2,...)")
+        .convert { it }.split(",")
+        .default(listOf())
