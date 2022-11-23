@@ -1,6 +1,0 @@
-DatabaseOptions:
-  password: postchain
-  username: postchain
-  database: postchain
-  host: localhost
-  dbProperties: ""

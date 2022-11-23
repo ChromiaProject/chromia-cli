@@ -16,4 +16,4 @@ entity residence {
 
 function get_addresses(user): list<address> = residence @* { user }.address;
 
-function addition(): integer = 1/0;
+function addition(): integer = 1/1;

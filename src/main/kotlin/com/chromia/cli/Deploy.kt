@@ -6,13 +6,8 @@ import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.default
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.path
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
@@ -20,29 +15,12 @@ import net.postchain.client.request.EndpointPool
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.d1.common.proposal.proposeBlockchainOperation
-import net.postchain.deployment.ChromiaDeploymentTool
-import net.postchain.deployment.DeploymentTool
 import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import net.postchain.rell.utils.RellCliErr
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
-
-
-private fun CliktCommand.deployXmlOption() =
-    argument(name = "deploy.xml", ).path(mustExist = true, canBeDir = false, canBeFile = true, mustBeReadable = true).default(Path.of("rell/config/deploy.xml"))
-
-private fun ParameterHolder.clientConfigOption() = option("--config", help = "Client configuration *.properties")
-    .path(mustExist = true, canBeDir = false, canBeFile = true, mustBeReadable = true)
 
 class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
-    private val clientConfig by clientConfigOption()
-
-    private val sourceDir by sourceDirOption()
     private val outputDir by outputDirOption()
-    private val deployXmlFile by deployXmlOption()
-
-    private val containerName by containerOption()
     private val showBrid by showBridOption()
     private val sourceFile by sourceDirOption()
     private val config by configFile()

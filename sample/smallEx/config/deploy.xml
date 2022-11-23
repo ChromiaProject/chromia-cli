@@ -1,5 +1,0 @@
-<deploy>
-    <chain name="city" container="test-container">
-        <app module="main"/>
-    </chain>
-</deploy>
