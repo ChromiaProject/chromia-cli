@@ -13,3 +13,7 @@ entity address {
 entity residence {
   key user, address;
 }
+
+function get_addresses(user): list<address> = residence @* { user }.address;
+
+function addition(): integer = 1/0;

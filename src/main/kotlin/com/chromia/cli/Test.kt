@@ -5,6 +5,7 @@ import com.chromia.cli.database.DatabaseUtil
 import com.chromia.cli.parser.findRellFilesInDir
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
+import net.postchain.common.BlockchainRid
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourceDir
@@ -55,12 +56,11 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        val context = ContextCreator().createTestContext(app, config.compilerOptions, blockchainRid, sqlMapper)
+        val context = ContextCreator().createTestContext(app, config.compilerOptions, blockchainRid ?: BlockchainRid(ByteArray(32)), sqlMapper)
         val blockRunnerModules = app.modules.filter { !it.test && !it.abstract && !it.external }.map { it.name }
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
         val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)
         val cases = fns.map { TestRunnerCase(null, it) }
         TestRunner.runTests(testCtx, cases)
     }
-
 }

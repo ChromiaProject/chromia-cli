@@ -14,5 +14,6 @@ chr.sh rell repl --config config.yml -d sample/smallEx -wipe -db -m src.main -e 
 
 ### Start
 ```
-chr.sh rell start -d sample/smallEx/src sample/smallEx/config/run.xml
+chr.sh start --config config.yml -d sample/smallEx/src -np sample/smallEx/config/node-config.properties
+chr.sh start --config config.yml -d sample/smallEx/src
 ```

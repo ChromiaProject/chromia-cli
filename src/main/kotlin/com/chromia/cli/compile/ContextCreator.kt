@@ -1,7 +1,5 @@
 package com.chromia.cli.compile
 
-import com.chromia.cli.config.CompilerConfig
-import com.chromia.cli.parser.YamlParser
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
@@ -11,7 +9,6 @@ import net.postchain.rell.module.RellPostchainModuleEnvironment
 import net.postchain.rell.runtime.*
 import net.postchain.rell.utils.BytesKeyPair
 import net.postchain.rell.utils.immMapOf
-import java.io.File
 
 class ContextCreator {
     data class Context(

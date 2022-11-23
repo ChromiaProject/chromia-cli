@@ -1,7 +1,5 @@
 package com.chromia.cli.database
 
-import com.chromia.cli.config.ChromiaCliConfig
-import com.chromia.cli.config.DatabaseConfig
 import net.postchain.rell.runtime.utils.Rt_SqlManager
 import net.postchain.rell.sql.ConnectionSqlManager
 import net.postchain.rell.sql.SqlManager
