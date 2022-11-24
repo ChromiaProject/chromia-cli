@@ -5,15 +5,27 @@ To develop locally recommend to install [direnv](https://direnv.net)  to keep th
 
 ### test
 ```
-chr.sh rell test --source-folder sample/test2 --config config.yml
+chr.sh test -d sample/test2 --settings config.yml
 ```
 ### Repl 
 ```
-chr.sh rell repl --config config.yml -d sample/smallEx -wipe -db -m src.main -e get_addresses -a 1
+chr.sh repl --settings config.yml -d sample/smallEx --wipe -db -m src.main2 -e get_addresses -a 1
+chr.sh repl --settings config.yml -d sample/smallEx -m src.main2 -e addition
 ```
 
 ### Start
 ```
-chr.sh start --config config.yml -d sample/smallEx/src -np sample/smallEx/config/node-config.properties
-chr.sh start --config config.yml -d sample/smallEx/src
+chr.sh start --settings config.yml -d sample/smallEx/src -np sample/smallEx/config/node-config.properties
+chr.sh start --settings config.yml -d sample/smallEx/src
+```
+
+### Compile
+```
+chr.sh compile --settings config.yml -d sample/smallEx/src
+chr.sh compile --settings config.yml -d sample/smallEx/src -o sample/smallEx/src/build
+```
+
+### Deploy
+```
+
 ```

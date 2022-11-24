@@ -14,9 +14,8 @@ object NodeConfig {
      }
 
      fun getDefaultNodeConfig(config: ChromiaCliModel): AppConfig {
-         val privKey = cryptoSystem.getRandomBytes(64)
+         val privKey = cryptoSystem.getRandomBytes(32)
          val pubKey = secp256k1_derivePubKey(privKey)
-         println(privKey.toHex())
 
          val inMemoryConfig = BaseConfiguration().apply {
              setProperty("api.port", 7740)
@@ -31,4 +30,3 @@ object NodeConfig {
          return AppConfig(inMemoryConfig, true)
      }
  }
-
