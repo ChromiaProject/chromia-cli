@@ -106,7 +106,7 @@
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell</artifactId>
-            <version>0.10.10</version>
+            <version>0.10.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>

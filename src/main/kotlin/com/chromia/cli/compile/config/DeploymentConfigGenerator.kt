@@ -25,7 +25,7 @@ object DeploymentConfigGenerator {
                 deploymentModel?.blockchainRid,
                 generatedBrid,
                 name,
-                deploymentModel?.containerName,
+                deploymentModel?.licence,
                 gtvConfig
         )
 
@@ -38,31 +38,5 @@ object DeploymentConfigGenerator {
         outputDir.resolve("${blockchainConfiguration.blockchainName}.gtv").writeBytes(bytes)
 
         return blockchainConfiguration
-    }
-
-    fun generatePostchainClientConfig(blockchainRid: BlockchainRid, endpointPool: EndpointPool): PostchainClientConfig {
-        val signers: List<KeyPair> = listOf()
-        val statusPollCount: Int = STATUS_POLL_COUNT
-        val statusPollInterval: Duration = STATUS_POLL_INTERVAL
-        val failOverConfig = FailOverConfig()
-        val cryptoSystem: CryptoSystem = Secp256K1CryptoSystem()
-        val queryByChainId: Long? = null
-        val maxResponseSize: Int = MAX_RESPONSE_SIZE
-        val connectTimeout: Duration = CONNECT_TIMEOUT
-        val responseTimeout: Duration = RESPONSE_TIMEOUT
-        return PostchainClientConfig(
-                blockchainRid,
-                endpointPool,
-                signers,
-                statusPollCount,
-                statusPollInterval,
-                failOverConfig,
-                cryptoSystem,
-                queryByChainId,
-                maxResponseSize,
-                connectTimeout,
-                responseTimeout
-        )
-
     }
 }

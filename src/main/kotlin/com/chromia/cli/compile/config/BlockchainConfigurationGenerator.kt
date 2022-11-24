@@ -47,8 +47,7 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
         b.update(srcGtv, "gtx", "rell")
 
         if (blockchainModel.moduleArgs.isNotEmpty()) {
-            println(blockchainModel.moduleArgs)
-            b.update(gtv(blockchainModel.moduleArgs.map { gtv(it.value) }), "gtx", "rell", "moduleArgs")
+            b.update(gtv(blockchainModel.moduleArgs.mapValues { gtv(it.value) }), "gtx", "rell", "moduleArgs")
         }
 
         return b.build()

@@ -1,12 +1,12 @@
 package com.chromia.cli.model
 
 import net.postchain.common.BlockchainRid
+import net.postchain.common.types.WrappedByteArray
 
 data class DeploymentModel(
-        private val brid: String,
+        private val brid: WrappedByteArray,
         var licence: String?,
         var apiUrl: String,
-        var containerName: String
 ) {
-    val blockchainRid: BlockchainRid = BlockchainRid.buildFromHex(brid)
+    val blockchainRid: BlockchainRid = BlockchainRid(brid)
 }

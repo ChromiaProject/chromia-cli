@@ -34,10 +34,10 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
         val globalCtx = ContextCreator().createGlobalContext(config.compilerOptions)
         val app = RellCliUtils.compileApp(sourceFolder.absolutePath, module, config.compilerQuiet, C_CompilerOptions.DEFAULT)
         val (entryModule, entryRoutine) = parseEntryPoint(module, entrypoint)
-        runApp(globalCtx, entryModule, entryRoutine, app)
+        //runApp(globalCtx, entryModule, entryRoutine, app)
     }
 
-    private fun runApp(
+    /*private fun runApp(
             globalCtx: Rt_GlobalContext,
             entryModule: R_ModuleName?,
             entryRoutine: R_QualifiedName?,
@@ -103,5 +103,5 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
                 res.toString()
             }
         }
-    }
+    }*/
 }

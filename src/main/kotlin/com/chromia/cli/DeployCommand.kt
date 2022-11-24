@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
@@ -20,7 +21,9 @@ import net.postchain.d1.common.proposal.proposeBlockchainOperation
 import net.postchain.d1.common.proposal.proposeConfigurationOperation
 import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
+import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
+import java.util.Properties
 
 class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     private val outputDir by outputDirOption()
@@ -29,6 +32,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
     private val blockchain by option(help = "Name of blockchain to deploy")
+    private val secret by option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
@@ -47,7 +51,17 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             require(settings.deployment[target] != null) { "deployment target with name $target not found" }
             val deployModel = settings.deployment[target]!!
 
-            val clientConfig = DeploymentConfigGenerator.generatePostchainClientConfig(namedBlockchainRid.blockchainRid, EndpointPool.singleUrl(deployModel.apiUrl))
+
+            val clientConfig = BaseConfiguration().apply {
+                setProperty("api.url", deployModel.apiUrl)
+                setProperty("brid", deployModel.blockchainRid?.toHex())
+                secret?.let { s ->
+                    Properties().apply { load(s.inputStream()) }.let { p ->
+                        p["pubkey"]?.let { setProperty("pubkey", it) }
+                        p["privkey"]?.let { setProperty("privkey", it) }
+                    }
+                }
+            }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, outputDir).apply {
                 deployBlockchain(
                         clientConfig,

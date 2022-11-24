@@ -14,6 +14,7 @@ import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
+import net.postchain.gtv.GtvDictionary
 import net.postchain.metrics.BLOCKCHAIN_RID_TAG
 import net.postchain.metrics.CHAIN_IID_TAG
 import net.postchain.metrics.NODE_PUBKEY_TAG
@@ -31,7 +32,7 @@ class StartCommand: CliktCommand(help= "Starts a node"){
     private fun startPostchainNode() {
         val sourceDir = C_SourceDir.diskDir(sourceDir)
         val chainsToStart = mutableListOf<Long>()
-        val node = PostchainNode(nodeConfig, true) // TODO: add wipe feature
+        val node = PostchainNode(nodeConfig, wipeDb = true, debug = true) // TODO: add wipe feature
         BlockchainConfigurationGenerator(settings, sourceDir, nodeConfig).generate().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
             val iid = index + 100L
             chainsToStart.add(iid)
