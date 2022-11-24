@@ -5,7 +5,7 @@ import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourcePath
 import net.postchain.rell.model.R_LangVersion
 
-data class CompilerModel(
+data class CompileModel(
         val rellVersion: String = "0.10.10",
         private val gtv: Boolean = false,
         private val deprecatedError: Boolean = false,

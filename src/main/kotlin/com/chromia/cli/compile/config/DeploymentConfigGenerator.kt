@@ -21,15 +21,11 @@ import kotlin.io.path.writeText
 object DeploymentConfigGenerator {
     fun generateConfig(gtvConfig: Gtv, deploymentModel: DeploymentModel?, name: String, generatedBrid: BlockchainRid, outputDir: Path): BlockchainConfiguration {
 
-        if (deploymentModel == null) {
-            throw RellCliErr("No deployment model found")
-        }
-
         val blockchainConfiguration = BlockchainConfiguration(
-                deploymentModel.bridBinary,
+                deploymentModel?.blockchainRid,
                 generatedBrid,
                 name,
-                deploymentModel.containerName,
+                deploymentModel?.containerName,
                 gtvConfig
         )
 

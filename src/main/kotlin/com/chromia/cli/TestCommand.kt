@@ -20,17 +20,17 @@ import net.postchain.rell.utils.*
 import kotlin.system.exitProcess
 
 class TestCommand: CliktCommand(help= "Run tests in working directory") {
-    private val sourceFolder by sourceDirOption()
+    private val sourceDir by sourceDirOption()
     private val modules by modulesFiles()
-    private val blockchainRid by brid()
-    private val sql by sql()
+    private val blockchainRid by bridOption()
+    private val sql by sqlOption()
     private val sqlMapper by chainSQLMapper()
-    private val config by configFile()
+    private val settings by settingsOption()
 
 
     override fun run() {
         if (modules == null) {
-            val tempModules = findRellFilesInDir(sourceFolder)
+            val tempModules = findRellFilesInDir(sourceDir)
             if (tempModules.isEmpty()) {
                 throw RellCliErr("No files found in directory")
             }
@@ -39,24 +39,24 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         exitProcess(0)
     }
     private fun runMultiModuleTest(modules: List<R_ModuleName>) {
-        val sourceDir = C_SourceDir.diskDir(sourceFolder)
+        val sourceDir = C_SourceDir.diskDir(sourceDir)
         val modSel = C_CompilerModuleSelection(modules)
-        val app = RellCliUtils.compileApp(sourceDir, modSel, config.compilerQuiet, C_CompilerOptions.DEFAULT)
+        val app = RellCliUtils.compileApp(sourceDir, modSel, settings.compilerQuiet, C_CompilerOptions.DEFAULT)
         val testFns = TestRunner.getTestFunctions(app, TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
     }
 
     private fun runTests(app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
         if (sql) {
-            DatabaseUtil().runWithSqlManager(config.databaseErrorLogging, config.databaseUrl) { sqlManager ->
+            DatabaseUtil().runWithSqlManager(settings.databaseErrorLogging, settings.databaseUrl) { sqlManager ->
                 runner(sqlManager, app, fns, sourceDir)
             }
         } else {
-            runner(Rt_SqlManager(NoConnSqlManager, config.databaseErrorLogging ), app, fns, sourceDir)
+            runner(Rt_SqlManager(NoConnSqlManager, settings.databaseErrorLogging ), app, fns, sourceDir)
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        val context = ContextCreator().createTestContext(app, config.compilerOptions, blockchainRid ?: BlockchainRid(ByteArray(32)), sqlMapper)
+        val context = ContextCreator().createTestContext(app, settings.compilerOptions, blockchainRid ?: BlockchainRid(ByteArray(32)), sqlMapper)
         val blockRunnerModules = app.modules.filter { !it.test && !it.abstract && !it.external }.map { it.name }
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
         val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)

@@ -22,6 +22,7 @@ object NodeConfig {
              setProperty("api.port", 7740)
              setProperty("messaging.privkey", privKey.toHex())
              setProperty("messaging.pubkey", pubKey.toHex())
+             setProperty("messaging.port", 9870)
              setProperty("database.driverclass", config.databaseDriver)
              setProperty("database.url", config.databaseUrl)
              setProperty("database.schema", config.databaseSchema)

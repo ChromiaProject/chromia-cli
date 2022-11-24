@@ -20,11 +20,11 @@ import net.postchain.rell.utils.RellCliErr
 import net.postchain.rell.utils.RellCliUtils
 
 class ReplCommand: CliktCommand(help= "Run rell command in file") {
-    private val config by configFile()
+    private val config by settingsOption()
     private val sqlMapper by chainSQLMapper()
-    private val wipeDB by wipeSql()
+    private val wipeDB by wipeDatabaseOption()
     private val sourceFolder by sourceDirOption()
-    private val sql by sql()
+    private val sql by sqlOption()
     private val entrypoint by entry()
     private val module by module()
     private val args by arguments()

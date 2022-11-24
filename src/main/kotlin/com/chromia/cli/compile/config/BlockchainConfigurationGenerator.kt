@@ -2,70 +2,73 @@ package com.chromia.cli.compile.config
 
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaCliModel
+import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.config.app.AppConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
+import net.postchain.gtx.GTXBlockchainConfigurationFactory
+import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.RellConfigGen
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.module.ConfigConstants
+import net.postchain.rell.module.RellPostchainModuleFactory
 import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
 import net.postchain.rell.utils.MainRellCliEnv
 import net.postchain.rell.utils.PostchainUtils
 
-class BlockchainConfigurationGenerator(private val config: ChromiaCliModel, private val sourceDir: C_SourceDir, private val nodeProperties: AppConfig) {
-    fun generateMaps(): Map<BlockchainRid, Gtv> {
-        return config.blockchains.toList()
-                .map { (k,v) -> generateGtv(v) }
-                .associateBy { BlockchainRid(PostchainUtils.calcBlockchainRid(it).toByteArray()) }
+class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, private val sourceDir: C_SourceDir, private val nodeProperties: AppConfig? = null) {
+    fun generate(): Map<NamedBlockchainRid, Gtv> {
+        return model.blockchains.toList().associate { generateConfiguration(it.first, it.second) }
     }
 
-    fun generateForOne(model: BlockchainModel): Pair<BlockchainRid, Gtv> {
+    fun generateConfiguration(name: String, model: BlockchainModel): Pair<NamedBlockchainRid, Gtv> {
         val gtvModel = generateGtv(model)
         return Pair(
-                BlockchainRid(PostchainUtils.calcBlockchainRid(gtvModel).toByteArray()),
+                NamedBlockchainRid(name, BlockchainRid(PostchainUtils.calcBlockchainRid(gtvModel).toByteArray())),
                 gtvModel
         )
     }
 
-    fun generateGtv(bcConfig: BlockchainModel): Gtv {
+    private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
         val b = RunConfigGtvBuilder()
-        addDefault(b, bcConfig)
+        addDefault(b, blockchainModel)
 
-        val configGen = RellConfigGen.create(MainRellCliEnv, sourceDir, listOf(R_ModuleName.of(bcConfig.module)))
+        val configGen = RellConfigGen.create(MainRellCliEnv, sourceDir, listOf(R_ModuleName.of(blockchainModel.module)))
         val sources = configGen.getModuleSources()
 
         val srcGtv = gtv(
-                "modules" to gtv(listOf(gtv(bcConfig.module))),
+                "modules" to gtv(listOf(gtv(blockchainModel.module))),
                 ConfigConstants.RELL_SOURCES_KEY to gtv(sources.files.mapValues { (_, v) -> gtv(v) }),
-                ConfigConstants.RELL_VERSION_KEY to gtv(config.rellVersion.str())
+                ConfigConstants.RELL_VERSION_KEY to gtv(model.rellVersion.str())
         )
         b.update(srcGtv, "gtx", "rell")
 
-        if (bcConfig.moduleArgs.isNotEmpty()) {
-            println(bcConfig.moduleArgs)
-            b.update(gtv(bcConfig.moduleArgs.map { gtv(it.value) }), "gtx", "rell", "moduleArgs")
+        if (blockchainModel.moduleArgs.isNotEmpty()) {
+            println(blockchainModel.moduleArgs)
+            b.update(gtv(blockchainModel.moduleArgs.map { gtv(it.value) }), "gtx", "rell", "moduleArgs")
         }
 
         return b.build()
     }
 
-    fun addDefault(b: RunConfigGtvBuilder, config: BlockchainModel) {
-        b.update(gtv("name" to gtv("net.postchain.base.BaseBlockBuildingStrategy")), "blockstrategy")
-        b.update(gtv("net.postchain.gtx.GTXBlockchainConfigurationFactory"), "configurationfactory")
+    private fun addDefault(b: RunConfigGtvBuilder, blockchainModel: BlockchainModel) {
+        // TODO: override these from config ([BlockchainModel.config])
+        b.update(gtv("name" to gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
+        b.update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
 
         val modulesGtv: MutableList<Gtv> = mutableListOf(
-                gtv("net.postchain.rell.module.RellPostchainModuleFactory"),
-                gtv("net.postchain.gtx.StandardOpsGTXModule")
+                gtv(RellPostchainModuleFactory::class.qualifiedName!!),
+                gtv(StandardOpsGTXModule::class.qualifiedName!!)
         )
-        if (config.additionalGtv != GtvNull) {
-            config.additionalGtv.get("gtx")?.get("modules")?.let {
+        if (blockchainModel.config != GtvNull) {
+            blockchainModel.config.get("gtx")?.get("modules")?.let {
                 modulesGtv.add(it)
             }
         }
         b.update(gtv(modulesGtv), "gtx", "modules")
-        b.update(gtv(listOf(gtv(this.nodeProperties.pubKeyByteArray))), "signers" )
+        nodeProperties?.let { b.update(gtv(listOf(gtv(it.pubKeyByteArray))), "signers") }
     }
 }
