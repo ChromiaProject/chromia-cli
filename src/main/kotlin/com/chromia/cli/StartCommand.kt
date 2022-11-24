@@ -34,7 +34,7 @@ class StartCommand: CliktCommand(help= "Starts a node"){
         val chainsToStart = mutableListOf<Long>()
         val node = PostchainNode(nodeConfig, wipeDb = true, debug = true) // TODO: add wipe feature
         BlockchainConfigurationGenerator(settings, sourceDir, nodeConfig).generate().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
-            val iid = index + 100L
+            val iid = index.toLong()
             chainsToStart.add(iid)
             withLoggingContext(
                     NODE_PUBKEY_TAG to nodeConfig.pubKey,
