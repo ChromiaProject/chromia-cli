@@ -13,7 +13,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.tx.TransactionStatus
@@ -23,7 +22,7 @@ import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
-import java.util.Properties
+import java.util.*
 
 class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     private val outputDir by outputDirOption()
@@ -54,7 +53,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
 
             val clientConfig = BaseConfiguration().apply {
                 setProperty("api.url", deployModel.apiUrl)
-                setProperty("brid", deployModel.blockchainRid?.toHex())
+                setProperty("brid", deployModel.blockchainRid.toHex())
                 secret?.let { s ->
                     Properties().apply { load(s.inputStream()) }.let { p ->
                         p["pubkey"]?.let { setProperty("pubkey", it) }
@@ -62,17 +61,28 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, outputDir).apply {
-                deployBlockchain(
-                        clientConfig,
-                        this.blockchainName,
-                        this.containerName ?: this.containerName ?: throw CliktError("No container specified"),
-                        GtvEncoder.encodeGtv(this.configuration),
-                        PostchainClientProviderImpl(),
-                        specifiedBlockchainRid
-                )
-                if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid)
-            }
+            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, outputDir, namedBlockchainRid.name)
+                    .apply {
+                        val brid = if (specifiedBlockchainRid == null) {
+                            println("BlockchainRid for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? true/false")
+                            val resp = Scanner(System.`in`).nextBoolean() // TODO: Use a less crappy scanner
+                            if (resp) {
+                                println("Add ${namedBlockchainRid.name}: 0x${generatedBlockchainRid.toHex()} to deployments:chains:")
+                                null
+                            } else {
+                                throw CliktError("Failed to deploy")
+                            }
+                        } else specifiedBlockchainRid
+                        deployBlockchain(
+                                clientConfig,
+                                blockchainName,
+                                deployModel.licence ?: throw CliktError("No container specified"),
+                                GtvEncoder.encodeGtv(this.configuration),
+                                PostchainClientProviderImpl(),
+                                brid
+                        )
+                        if (showBrid) echo(brid)
+                    }
         }
     }
 
@@ -106,7 +116,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                 .sign()
                 .postAwaitConfirmation()
         if (result.status != TransactionStatus.CONFIRMED) {
-            throw UserMistake("Deployment failed: ${result.rejectReason ?: "still waiting for confirmation"}")
+            throw CliktError("Deployment failed: ${result.rejectReason ?: "still waiting for confirmation"}")
         } else {
             echo("Deployment of blockchain $blockchainName was successful")
         }

@@ -20,8 +20,8 @@ class CompileCommand : CliktCommand(help = "Compile an application and create a 
     }
 
     override fun run() {
-        BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(sourceFile), null).generate().toList().forEach { (brid, gtv) ->
-            generateConfig(gtv, null, brid.name, brid.blockchainRid, outputDir).apply {
+        BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(sourceFile), null).generate().toList().forEach { (namedBlockchainRid, gtv) ->
+            generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, outputDir, namedBlockchainRid.name).apply {
                 if (showBrid) echo("$blockchainName $generatedBlockchainRid")
             }
         }
