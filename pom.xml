@@ -41,6 +41,12 @@
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/39844192/packages/maven</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
