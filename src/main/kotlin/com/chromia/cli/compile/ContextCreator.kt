@@ -1,6 +1,7 @@
 package com.chromia.cli.compile
 
 import net.postchain.common.BlockchainRid
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.lib.test.UnitTestBlockRunner
@@ -17,9 +18,10 @@ class ContextCreator {
             val sqlCtx: Rt_SqlContext,
             val keyPair: BytesKeyPair
     )
-    fun createTestContext(app: R_App,  coProperties: C_CompilerOptions, blockchainRid: BlockchainRid, sqlMapper: Rt_ChainSqlMapping): Context {
+    fun createTestContext(app: R_App,  coProperties: C_CompilerOptions, blockchainRid: BlockchainRid, sqlMapper: Rt_ChainSqlMapping, moduleArgs: Map<String, Map<String, Gtv>>): Context {
+
         val globalCtx = createGlobalContext(coProperties)
-        val chainCtx = Rt_ChainContext(GtvNull, immMapOf(), blockchainRid)
+        val chainCtx = Rt_ChainContext(GtvNull, immMapOf(), blockchainRid) //TODO make it so module args are added here
         val sqlCtx = Rt_RegularSqlContext.createNoExternalChains(app, sqlMapper)
         val keyPair = UnitTestBlockRunner.getTestKeyPair() //this is static in the test scope Bob and alice
         return Context(globalCtx, chainCtx, sqlCtx, keyPair)

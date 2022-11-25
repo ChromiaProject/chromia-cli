@@ -29,18 +29,11 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
 
 
     override fun run() {
-        if (modules == null) {
-            val tempModules = findRellFilesInDir(sourceDir)
-            if (tempModules.isEmpty()) {
-                throw RellCliErr("No files found in directory")
-            }
-            runMultiModuleTest(tempModules)
-        } else { runMultiModuleTest(modules!!) }
-        exitProcess(0)
+        runMultiModuleTest()
     }
-    private fun runMultiModuleTest(modules: List<R_ModuleName>) {
+    private fun runMultiModuleTest() {
         val sourceDir = C_SourceDir.diskDir(sourceDir)
-        val modSel = C_CompilerModuleSelection(modules)
+        val modSel = C_CompilerModuleSelection(settings.test.modules.map {  R_ModuleName.Companion.of(it) })
         val app = RellCliUtils.compileApp(sourceDir, modSel, settings.compilerQuiet, C_CompilerOptions.DEFAULT)
         val testFns = TestRunner.getTestFunctions(app, TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
@@ -56,7 +49,11 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        val context = ContextCreator().createTestContext(app, settings.compilerOptions, blockchainRid ?: BlockchainRid(ByteArray(32)), sqlMapper)
+        val context = ContextCreator().createTestContext(app,
+                settings.compilerOptions,
+                blockchainRid ?: BlockchainRid(ByteArray(32)),
+                sqlMapper,
+                settings.test.moduleArgs)
         val blockRunnerModules = app.modules.filter { !it.test && !it.abstract && !it.external }.map { it.name }
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
         val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)

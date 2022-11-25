@@ -1,5 +1,5 @@
 @test module;
-import data;
+import ^.data;
 
 function test_add_user() {
     assert_equals(data.user@*{}(.name), list<text>());
