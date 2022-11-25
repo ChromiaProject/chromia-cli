@@ -63,6 +63,9 @@ fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate
         .convert { GtvYaml().load<ChromiaCliModel>(it) }
         .defaultLazy("config.yml") { GtvYaml().load<ChromiaCliModel>(File("config.yml")) } // TODO: Make up a nice name
 
+fun CliktCommand.secretOption() =
+        option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
+
 fun CliktCommand.modulesFiles() =
         option("-m", "--modules", help = "Optional comma separated list of file names under the module, ex: testFile1,testFile2... Will default to all modules in pwd")
                 .convert { R_ModuleName.of(it) }.split(",")

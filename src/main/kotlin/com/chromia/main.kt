@@ -12,6 +12,7 @@ fun main(args: Array<String>) = NoOpCliktCommand()
                 DeployCommand(),
                 CompileCommand(),
                 QueryCommand(),
+                TxCommand(),
 
         )
         .main(args)
