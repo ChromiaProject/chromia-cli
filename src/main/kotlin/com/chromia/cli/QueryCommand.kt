@@ -1,8 +1,13 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.secretOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -19,44 +24,17 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
 import org.apache.commons.configuration2.BaseConfiguration
+import java.util.*
 
-
-sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(name, help) {
-    abstract val brid: BlockchainRid
-    abstract val url: String
-}
-
-class RemoteDeploymentOption(val settings: ChromiaCliModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
-    private val deployment by option().required()
-    private val blockchain by option().required()
-
-    init {
-        require(settings.deployment[deployment] != null) { "Deployment named $deployment not found in configuration" }
-        require(settings.deployment[deployment]!!.chains[blockchain] != null ) { "Blockchain named $blockchain not found in deployment configuration"}
-    }
-
-    override val brid: BlockchainRid
-        get() = settings.deployment[deployment]!!.chains[blockchain]!!
-
-    override val url: String
-        get() = settings.deployment[deployment]!!.apiUrl
-}
-
-class LocalDeploymentOption : DeploymentOption("Node", help = "Make query towards a test node") {
-    private val blockchainRid by option().required()
-    private val apiUrl by option().default("http://localhost:7740")
-
-    override val brid: BlockchainRid
-        get() = BlockchainRid.buildFromHex(blockchainRid)
-
-    override val url: String
-        get() = apiUrl
-}
 
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
+    init {
+        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
+    }
     private val settings by settingsOption()
-    private val target by option().groupSwitch(
-            "--deployment" to RemoteDeploymentOption(settings),
+    private val secret by secretOption()
+    private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
+            "--deployment" to RemoteDeploymentOption { settings },
             "--local" to LocalDeploymentOption()
     ).defaultByName("--local")
 
@@ -79,6 +57,12 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
         val clientConfig = BaseConfiguration().apply {
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
+            secret?.let { s ->
+                Properties().apply { load(s.inputStream()) }.let { p ->
+                    p["pubkey"]?.let { setProperty("pubkey", it) }
+                    p["privkey"]?.let { setProperty("privkey", it) }
+                }
+            }
         }
         val res = PostchainClientImpl(PostchainClientConfig.fromConfiguration(clientConfig))
                 .query(queryName, args)

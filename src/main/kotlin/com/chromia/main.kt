@@ -13,7 +13,6 @@ fun main(args: Array<String>) = NoOpCliktCommand()
                 CompileCommand(),
                 QueryCommand(),
                 TxCommand(),
-
         )
         .main(args)
 
