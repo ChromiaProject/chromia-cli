@@ -1,0 +1,15 @@
+module;
+
+entity user {
+  key pubkey;
+  index name;
+}
+
+entity address {
+  key pubkey;
+  street: text;
+}
+
+entity residence {
+  key user, address;
+}

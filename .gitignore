@@ -3,3 +3,6 @@
 /target/
 /sample/test/logs/
 /sample/test2/logs/
+/sample/smallEx/logs/postchain.log
+/sample/logs/
+.DS_Store

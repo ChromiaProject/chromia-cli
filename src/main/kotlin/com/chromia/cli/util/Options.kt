@@ -1,13 +1,18 @@
 package com.chromia.cli.util
 
+import com.chromia.cli.compile.NodeConfig.getNodeConfig
+import com.chromia.cli.model.ChromiaCliModel
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.long
+import com.github.ajalt.clikt.parameters.types.path
 import net.postchain.common.BlockchainRid
+import net.postchain.gtv.yaml.GtvYaml
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.runtime.Rt_ChainSqlMapping
 import java.io.File
+import java.nio.file.Path
 
 //TODO add auto completion
 //val name by option(completionCandidates = CompletionCandidates.Custom {
@@ -18,33 +23,55 @@ import java.io.File
 //})
 
 fun CliktCommand.sourceDirOption() =
-        option(help = "Rell source directory")
+        option("-d", "--source-dir", help = "Rell source directory")
                 .file(mustExist = true, canBeFile = false, canBeDir = true)
-                .default(File(System.getProperty("user.dir")))
+                .default(File(System.getProperty("user.dir")), System.getProperty("user.dir"))
 
-fun CliktCommand.modulesFiles() =
-        option("-tm","--test-modules", help = "Comma separated list of file names under the module, ex: testFile1,testFile2,...")
-                .convert { R_ModuleName.of(it) }.split(",")
-fun CliktCommand.brid() =
+fun CliktCommand.outputDirOption() =
+        option("-o", "--output-dir", help = "Generated configuration output dir")
+                .path(mustExist = false, canBeDir = true, canBeFile = false)
+                .default(Path.of("build"), "build")
+
+fun CliktCommand.nodePropertiesOption() =
+        option("-np", "--node-properties", help = "full path to override node properties file")
+                .file(mustExist = true, canBeDir = false, canBeFile = true)
+                .convert { getNodeConfig(it) }
+
+fun CliktCommand.bridOption() =
         option("-brid", "--blockchain-rid", help = "Blockchain RID")
                 .convert { BlockchainRid.buildFromHex(it) }
-                .default(BlockchainRid(ByteArray(32)))
+//.default(BlockchainRid(ByteArray(32)))
 
-fun CliktCommand.sql() =
-        option("-db", "--database", help = "If a database is used ").flag()
+fun CliktCommand.deployTargetOption() = option("--target", help = "If a specific target deploy model should be used")
 
-fun CliktCommand.databaseOption() =
-        option("-p", "--db-properties", help = "File path with database settings" )
-                .file(mustExist = true, canBeFile = true, canBeDir = false)
-                .default(File("databaseConfig.yml"))
+fun CliktCommand.sqlOption() =
+        option("-db", "--database", help = "If a database is used ").flag("--no-db", default = true)
 
-fun CliktCommand.settingsOption() =
-        option("-s", "--settings", help = "Alternate path for the settings file" )
-                .file(mustExist = true, canBeFile = true, canBeDir = false)
-                .default(File("compilerConfig.yml"))
+fun CliktCommand.wipeDatabaseOption() =
+        option("--wipe", help = "If a database should be wiped before startup").flag()
+
+fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
 fun CliktCommand.chainSQLMapper() =
-        option("-cid", "--chainid", help = "Chainid, defaults to 100" )
+        option("-cid", "--chainid", help = "Chainid, defaults to 100")
                 .long()
                 .convert { Rt_ChainSqlMapping(it) }
                 .default(Rt_ChainSqlMapping(100))
+
+fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the user settings file")
+        .file(mustExist = true, canBeDir = false, canBeFile = true)
+        .convert { GtvYaml().load<ChromiaCliModel>(it) }
+        .defaultLazy("config.yml") { GtvYaml().load<ChromiaCliModel>(File("config.yml")) } // TODO: Make up a nice name
+
+fun CliktCommand.modulesFiles() =
+        option("-m", "--modules", help = "Optional comma separated list of file names under the module, ex: testFile1,testFile2... Will default to all modules in pwd")
+                .convert { R_ModuleName.of(it) }.split(",")
+
+fun CliktCommand.module() = option("-m", "--module", help = "Name of module with rell method in")
+        .convert { R_ModuleName.of(it) }
+
+fun CliktCommand.entry() = option("-e", "--entry", help = "Name of method to run")
+
+fun CliktCommand.arguments() = option("-a", "--args", help = "List of arguments, comma separated (arg1,arg2,...)")
+        .convert { it }.split(",")
+        .default(listOf())
