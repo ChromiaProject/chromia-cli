@@ -27,6 +27,7 @@ object NodeConfig {
              setProperty("database.url", config.databaseUrl)
              setProperty("database.schema", config.databaseSchema)
              setProperty("configuration.provider.node", "manual")
+             setProperty("fastsync.exit_delay", 0)
          }
          return AppConfig(inMemoryConfig, true)
      }

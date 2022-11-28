@@ -3,8 +3,9 @@ blockchains:
     module: main
   My_Rell_Project2:
     module: main2
-    blockchainStrategy:
-      maxblocktime: 2000
+    config:
+      blockstrategy:
+        maxblocktime: 2000
 
 #TODO add anchoring for blockchainStrategy
 

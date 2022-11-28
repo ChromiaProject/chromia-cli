@@ -21,12 +21,12 @@ import net.postchain.rell.sql.SqlManager
 import net.postchain.rell.utils.*
 
 class TestCommand: CliktCommand(help= "Run tests in working directory") {
-    private val sourceDir by sourceDirOption()
     private val modules by modulesOption()
     private val blockchainRid by bridOption()
     private val sql by sqlOption()
     private val sqlMapper by chainSQLMapper()
     private val settings by settingsOption()
+    private val sourceDir by lazy { settings.compile.source }
 
 
     override fun run() {

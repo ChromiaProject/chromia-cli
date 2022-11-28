@@ -4,7 +4,7 @@ import net.postchain.rell.model.R_LangVersion
 
 data class ChromiaCliModel(
         private val database: DatabaseModel = DatabaseModel(),
-        private val compile: CompileModel = CompileModel(),
+        val compile: CompileModel = CompileModel(),
         val blockchains: Map<String, BlockchainModel> = mapOf(),
         val deployment: Map<String, DeploymentModel> = mapOf(),
         val test: TestModel = TestModel()

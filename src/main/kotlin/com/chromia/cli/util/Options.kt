@@ -15,16 +15,6 @@ import java.io.File
 import java.nio.file.Path
 
 
-fun CliktCommand.sourceDirOption() =
-        option("-d", "--source-dir", help = "Rell source directory")
-                .file(mustExist = true, canBeFile = false, canBeDir = true)
-                .default(File(System.getProperty("user.dir")), System.getProperty("user.dir"))
-
-fun CliktCommand.outputDirOption() =
-        option("-o", "--output-dir", help = "Generated configuration output dir")
-                .path(mustExist = false, canBeDir = true, canBeFile = false)
-                .default(Path.of("build"), "build")
-
 fun CliktCommand.nodePropertiesOption() =
         option("-np", "--node-properties", help = "full path to override node properties file")
                 .file(mustExist = true, canBeDir = false, canBeFile = true)

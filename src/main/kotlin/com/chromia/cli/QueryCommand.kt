@@ -32,7 +32,6 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
     private val settings by settingsOption()
-    private val secret by secretOption()
     private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
             "--deployment" to RemoteDeploymentOption { settings },
             "--local" to LocalDeploymentOption()
@@ -54,17 +53,12 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
 
     override fun run() {
-        val clientConfig = BaseConfiguration().apply {
+        val clientConfig = BaseConfiguration().run {
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
-            secret?.let { s ->
-                Properties().apply { load(s.inputStream()) }.let { p ->
-                    p["pubkey"]?.let { setProperty("pubkey", it) }
-                    p["privkey"]?.let { setProperty("privkey", it) }
-                }
-            }
+            PostchainClientConfig.fromConfiguration(this)
         }
-        val res = PostchainClientImpl(PostchainClientConfig.fromConfiguration(clientConfig))
+        val res = PostchainClientImpl(clientConfig)
                 .query(queryName, args)
         println(res)
     }

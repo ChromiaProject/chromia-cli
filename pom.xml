@@ -6,17 +6,19 @@
 
     <artifactId>chromia-cli</artifactId>
     <groupId>com.chromia.cli</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>jar</packaging>
 
     <name>chromia-cli</name>
 
     <properties>
+        <revision>dev</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
         <postchain.version>3.7.0-SNAPSHOT</postchain.version>
+        <rell.version>0.10.11-SNAPSHOT</rell.version>
     </properties>
 
     <repositories>
@@ -39,6 +41,12 @@
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/39844192/packages/maven</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
@@ -106,7 +114,7 @@
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell</artifactId>
-            <version>0.10.11-SNAPSHOT</version>
+            <version>${rell.version}</version>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
