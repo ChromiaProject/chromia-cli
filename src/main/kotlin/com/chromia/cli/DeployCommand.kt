@@ -23,9 +23,7 @@ import java.time.Instant.now
 import java.util.*
 
 class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
-    private val outputDir by outputDirOption()
     private val showBrid by showBridOption()
-    private val sourceDir by sourceDirOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
     private val blockchain by option(help = "Name of blockchain to deploy")
@@ -36,7 +34,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     }
 
     override fun run() {
-        val cSourceDir = C_SourceDir.diskDir(sourceDir)
+        val cSourceDir = C_SourceDir.diskDir(settings.compile.source)
 
         val generator = BlockchainConfigurationGenerator(settings, cSourceDir)
         val chainsToDeploy = blockchain?.let {
@@ -59,7 +57,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, outputDir, namedBlockchainRid.name)
+            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, settings.compile.target.toPath(), namedBlockchainRid.name)
                     .apply {
                         val brid = if (specifiedBlockchainRid == null) {
                             println("BlockchainRid for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? true/false")

@@ -10,8 +10,6 @@ import net.postchain.rell.compiler.base.utils.C_SourceDir
 
 
 class CompileCommand : CliktCommand(help = "Compile an application and create a blockchain configuration") {
-    private val sourceFile by sourceDirOption()
-    private val outputDir by outputDirOption()
     private val showBrid by showBridOption()
     private val settings by settingsOption()
 
@@ -20,8 +18,8 @@ class CompileCommand : CliktCommand(help = "Compile an application and create a 
     }
 
     override fun run() {
-        BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(sourceFile), null).generate().toList().forEach { (namedBlockchainRid, gtv) ->
-            generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, outputDir, namedBlockchainRid.name).apply {
+        BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(settings.compile.source), null).generate().toList().forEach { (namedBlockchainRid, gtv) ->
+            generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, settings.compile.target.toPath(), namedBlockchainRid.name).apply {
                 if (showBrid) echo("$blockchainName $generatedBlockchainRid")
             }
         }
