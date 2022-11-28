@@ -42,6 +42,5 @@ test:
     - test2.SimpleTests
     - test2.SimpleTestsArgs
   moduleArgs:
-    moduleName1:
-      args1: 1
-      args2: 1
+    test2.temp:
+      hej: ""

@@ -1,10 +1,12 @@
 package com.chromia
 
 import com.chromia.cli.*
+import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 
 fun main(args: Array<String>) = NoOpCliktCommand()
+        .completionOption()
         .subcommands(
                 TestCommand(),
                 ReplCommand(),
