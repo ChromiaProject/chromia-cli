@@ -8,6 +8,7 @@ data class ChromiaCliModel(
         val compile: CompileModel = CompileModel(),
         val blockchains: Map<String, BlockchainModel> = mapOf(),
         val deployment: Map<String, DeploymentModel> = mapOf(),
+        val test: TestModel = TestModel()
 ) {
     val compilerOptions get() = compile.getCompilerOptions()
     val compilerQuiet get() = compile.quiet

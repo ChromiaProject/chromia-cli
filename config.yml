@@ -13,12 +13,11 @@ deployment:
   test:
     brid: AB12332345677234234234234234234234333324234234234234232311133135
     apiUrl: http://localhost:7740
-    containerName: joar
+    licence: tsettset
   devnet:
     brid: CDEF332345677234234234234234234234333324234234234234232311133135
-    licence: lnaalnd4523-3= (container id)
+    licence: lnaalnd4523-3
     apiUrl: http://192.0.0.1:7740
-    containerName: calle
 
 compile:
   gtv: false
@@ -37,3 +36,12 @@ database:
   username: postchain
   database: postchain
   host: localhost
+
+test:
+  modules:
+    - test.datatest
+    - test2.SimpleTests
+    - test2.SimpleTestsArgs
+  moduleArgs:
+    test2.temp:
+      hej: ""

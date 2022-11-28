@@ -15,13 +15,6 @@ import net.postchain.rell.runtime.Rt_ChainSqlMapping
 import java.io.File
 import java.nio.file.Path
 
-//TODO add auto completion
-//val name by option(completionCandidates = CompletionCandidates.Custom {
-//    """
-//        WORDS=${'$'}(echo completion1 completion2)
-//        COMPREPLY=(${'$'}(compgen -W "${'$'}WORDS" -- "${'$'}{COMP_WORDS[${'$'}COMP_CWORD]}"))
-//        """.trimIndent()
-//})
 
 fun CliktCommand.nodePropertiesOption() =
         option("-np", "--node-properties", help = "full path to override node properties file")
@@ -57,7 +50,7 @@ fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
 
-fun CliktCommand.modulesFiles() =
+fun CliktCommand.modulesOption() =
         option("-m", "--modules", help = "Optional comma separated list of file names under the module, ex: testFile1,testFile2... Will default to all modules in pwd")
                 .convert { R_ModuleName.of(it) }.split(",")
 
