@@ -49,9 +49,8 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
         if (blockchainModel.moduleArgs.isNotEmpty()) {
             b.update(gtv(blockchainModel.moduleArgs.mapValues { gtv(it.value) }), "gtx", "rell", "moduleArgs")
         }
-        blockchainModel.config.filterKeys { it != "modules" }.forEach { (path, value) ->
-            b.update(value, "gtx", path)
-        }
+        blockchainModel.config.filterKeys { it != "modules" }
+                .forEach { (path, value) -> b.update(value, path) }
 
         return b.build()
     }
