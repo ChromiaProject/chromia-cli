@@ -49,6 +49,9 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
         if (blockchainModel.moduleArgs.isNotEmpty()) {
             b.update(gtv(blockchainModel.moduleArgs.mapValues { gtv(it.value) }), "gtx", "rell", "moduleArgs")
         }
+        blockchainModel.config.filterKeys { it != "modules" }.forEach { (path, value) ->
+            b.update(value, "gtx", path)
+        }
 
         return b.build()
     }
@@ -62,10 +65,8 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
                 gtv(RellPostchainModuleFactory::class.qualifiedName!!),
                 gtv(StandardOpsGTXModule::class.qualifiedName!!)
         )
-        if (blockchainModel.config != GtvNull) {
-            blockchainModel.config.get("gtx")?.get("modules")?.let {
-                modulesGtv.add(it)
-            }
+        blockchainModel.config["modules"]?.let {
+            modulesGtv.add(it)
         }
         b.update(gtv(modulesGtv), "gtx", "modules")
         nodeProperties?.let { b.update(gtv(listOf(gtv(it.pubKeyByteArray))), "signers") }
