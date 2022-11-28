@@ -23,7 +23,6 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
     private val config by settingsOption()
     private val sqlMapper by chainSQLMapper()
     private val wipeDB by wipeDatabaseOption()
-    private val sourceFolder by sourceDirOption()
     private val sql by sqlOption()
     private val entrypoint by entry()
     private val module by module()
@@ -32,7 +31,7 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
 
     override fun run() {
         val globalCtx = ContextCreator().createGlobalContext(config.compilerOptions)
-        val app = RellCliUtils.compileApp(sourceFolder.absolutePath, module, config.compilerQuiet, C_CompilerOptions.DEFAULT)
+        //val app = RellCliUtils.compileApp(.absolutePath, module, config.compilerQuiet, C_CompilerOptions.DEFAULT)
         val (entryModule, entryRoutine) = parseEntryPoint(module, entrypoint)
         //runApp(globalCtx, entryModule, entryRoutine, app)
     }

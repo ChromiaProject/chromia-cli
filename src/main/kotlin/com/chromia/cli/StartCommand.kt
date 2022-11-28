@@ -4,7 +4,6 @@ import com.chromia.cli.compile.NodeConfig.getDefaultNodeConfig
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.util.settingsOption
 import com.chromia.cli.util.nodePropertiesOption
-import com.chromia.cli.util.sourceDirOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import kotlinx.coroutines.launch
@@ -14,14 +13,12 @@ import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
-import net.postchain.gtv.GtvDictionary
 import net.postchain.metrics.BLOCKCHAIN_RID_TAG
 import net.postchain.metrics.CHAIN_IID_TAG
 import net.postchain.metrics.NODE_PUBKEY_TAG
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 
 class StartCommand: CliktCommand(help= "Starts a node"){
-    private val sourceDir by sourceDirOption()
     private val settings by settingsOption()
     private val nodeConfig by nodePropertiesOption().defaultLazy { getDefaultNodeConfig(settings) }
     //TODO: add wipe feature private val wipe by wipeDatabaseOption()
@@ -30,7 +27,7 @@ class StartCommand: CliktCommand(help= "Starts a node"){
         startPostchainNode()
     }
     private fun startPostchainNode() {
-        val sourceDir = C_SourceDir.diskDir(sourceDir)
+        val sourceDir = C_SourceDir.diskDir(settings.compile.source)
         val chainsToStart = mutableListOf<Long>()
         val node = PostchainNode(nodeConfig, wipeDb = true, debug = true) // TODO: add wipe feature
         BlockchainConfigurationGenerator(settings, sourceDir, nodeConfig).generate().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
