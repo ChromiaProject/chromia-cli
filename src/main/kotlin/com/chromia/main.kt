@@ -8,6 +8,7 @@ import com.github.ajalt.clikt.core.subcommands
 fun main(args: Array<String>) = NoOpCliktCommand()
         .completionOption()
         .subcommands(
+                InitCommand(),
                 TestCommand(),
                 ReplCommand(),
                 StartCommand(),
