@@ -3,6 +3,7 @@ package com.chromia.cli.model
 import net.postchain.rell.model.R_LangVersion
 
 data class ChromiaCliModel(
+        private val definitions: Any = Any(), // Placeholder for anchor objects
         private val database: DatabaseModel = DatabaseModel(),
         val compile: CompileModel = CompileModel(),
         val blockchains: Map<String, BlockchainModel> = mapOf(),

@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
@@ -50,8 +51,8 @@ fun CliktCommand.chainSQLMapper() =
 
 fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the user settings file")
         .file(mustExist = true, canBeDir = false, canBeFile = true)
-        .convert { GtvYaml().load<ChromiaCliModel>(it) }
-        .defaultLazy("config.yml") { GtvYaml().load<ChromiaCliModel>(File("config.yml")) } // TODO: Make up a nice name
+        .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
+        .defaultLazy("config.yml") { GtvYaml().loadAnchor(File("config.yml")) } // TODO: Make up a nice name
 
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
