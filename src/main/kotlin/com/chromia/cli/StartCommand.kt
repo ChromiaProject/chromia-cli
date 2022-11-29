@@ -39,7 +39,7 @@ class StartCommand : CliktCommand(help = "Starts a node") {
         val chainsToStart = mutableListOf<Long>()
         val node = PostchainNode(nodeConfig, wipeDb = true, debug = true) // TODO: add wipe feature
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
-            CompileCommand.compile(settings)
+            BuildCommand.compile(settings)
         } else {
             blockchainConfigs
                     .associate { it.nameWithoutExtension to GtvDecoder.decodeGtv(it.inputStream()) }

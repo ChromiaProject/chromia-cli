@@ -12,7 +12,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 
 
-class CompileCommand : CliktCommand(help = "Compile an application and create a blockchain configuration") {
+class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
 
