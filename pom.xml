@@ -115,16 +115,6 @@
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell</artifactId>
             <version>${rell.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>info.picocli</groupId>
-                    <artifactId>picocli</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jline</groupId>
-                    <artifactId>jline</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
