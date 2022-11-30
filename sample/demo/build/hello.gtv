@@ -1,0 +1,12 @@
+§Ç)0Ç%0Kblockstrategy§:0806name¢.,net.postchain.base.BaseBlockBuildingStrategy0Mconfigurationfactory¢53net.postchain.gtx.GTXBlockchainConfigurationFactory0ÇÖgtx§Ç|0Çx0omodules•d0b¢64net.postchain.rell.module.RellPostchainModuleFactory¢(&net.postchain.gtx.StandardOpsGTXModule0Çrell§Å˙0Å˜0modules•
+0¢main0Å«sources§Åª0Å∏0Åµ	main.rell¢ÅßÅ§module;
+
+object my_name {
+  mutable name= "World";
+ }
+ 
+operation set_name(name) {
+  my_name.name = name;
+}
+
+query hello_world() = "Hello %s!".format(my_name.name);0version¢	0.10.10

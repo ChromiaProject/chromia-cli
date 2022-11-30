@@ -5,5 +5,5 @@ function test_foo() {
 }
 
 function test_bar() {
-    assert_equals(2 + 2, 5);
+    assert_not_equals(2 + 2, 5);
 }
