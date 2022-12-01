@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
+import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -41,10 +42,10 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
         } ?: generator.generate().toList()
-        chainsToDeploy.forEach { (namedBlockchainRid, gtv) ->
+        chainsToDeploy.forEach { (generatedBlockchainRid, gtv) ->
 
-            require(settings.deployment[target] != null) { "deployment target with name $target not found" }
-            val deployModel = settings.deployment[target]!!
+            val deployModel = settings.deployments[target]
+            require(deployModel != null) { "deployment target with name $target not found" }
 
 
             val clientConfig = BaseConfiguration().apply {
@@ -57,28 +58,38 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${namedBlockchainRid.name}_${now()}", namedBlockchainRid.blockchainRid, settings.compile.target.toPath(), namedBlockchainRid.name)
+            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.compile.target.toPath(), generatedBlockchainRid.name)
                     .apply {
-                        val brid = if (specifiedBlockchainRid == null) {
-                            println("BlockchainRid for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? true/false")
-                            val resp = Scanner(System.`in`).nextBoolean() // TODO: Use a less crappy scanner
-                            if (resp) {
-                                println("Add ${namedBlockchainRid.name}: 0x${generatedBlockchainRid.toHex()} to deployments:chains:")
-                                null
-                            } else {
-                                throw CliktError("Failed to deploy")
-                            }
-                        } else specifiedBlockchainRid
+                        if (specifiedBlockchainRid == null) {
+                            verifyNewDeployment(generatedBlockchainRid)
+                        }
                         deployBlockchain(
                                 clientConfig,
                                 blockchainName,
                                 deployModel.licence ?: throw CliktError("No container specified"),
                                 GtvEncoder.encodeGtv(this.configuration),
                                 PostchainClientProviderImpl(),
-                                brid
+                                specifiedBlockchainRid
                         )
-                        if (showBrid) echo(brid)
+                        if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
                     }
+        }
+    }
+
+    private fun verifyNewDeployment(namedBlockchainRid: NamedBlockchainRid): Unit? {
+        println("BlockchainRid for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? Y / N")
+        val resp = Scanner(System.`in`).nextLine().equals("Y", true)
+        if (resp) {
+            println("Add the following to your project settings file")
+            println("""
+                                    deployments:
+                                      $target:
+                                        chains:
+                                          ${namedBlockchainRid.name}: x"${namedBlockchainRid.blockchainRid.toHex()}"
+                                """.trimIndent())
+            return null
+        } else {
+            throw CliktError("Failed to deploy")
         }
     }
 

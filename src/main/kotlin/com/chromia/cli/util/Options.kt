@@ -17,32 +17,18 @@ import java.nio.file.Path
 
 
 fun CliktCommand.nodePropertiesOption() =
-        option("-np", "--node-properties", help = "full path to override node properties file")
+        option("-np", "--node-properties", help = "Full path to override node properties file", metavar = "PATH")
                 .file(mustExist = true, canBeDir = false, canBeFile = true)
                 .convert { getNodeConfig(it) }
 
-fun CliktCommand.bridOption() =
-        option("-brid", "--blockchain-rid", help = "Blockchain RID")
-                .convert { BlockchainRid.buildFromHex(it) }
-//.default(BlockchainRid(ByteArray(32)))
-
 fun CliktCommand.deployTargetOption() = option("--target", help = "If a specific target deploy model should be used")
-
-fun CliktCommand.sqlOption() =
-        option("-db", "--database", help = "If a database is used ").flag("--no-db", default = true)
 
 fun CliktCommand.wipeDatabaseOption() =
         option("--wipe", help = "If a database should be wiped before startup").flag()
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-fun CliktCommand.chainSQLMapper() =
-        option("-cid", "--chainid", help = "Chainid, defaults to 100")
-                .long()
-                .convert { Rt_ChainSqlMapping(it) }
-                .default(Rt_ChainSqlMapping(100))
-
-fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the user settings file")
+fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
         .file(mustExist = true, canBeDir = false, canBeFile = true)
         .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
         .defaultLazy("config.yml") { GtvYaml().loadAnchor(File("config.yml")) } // TODO: Make up a nice name
@@ -51,14 +37,14 @@ fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
 
 fun CliktCommand.modulesOption() =
-        option("-m", "--modules", help = "Optional comma separated list of file names under the module, ex: testFile1,testFile2... Will default to all modules in pwd")
-                .convert { R_ModuleName.of(it) }.split(",")
+        option("-m", "--modules", help = "Select which modules to test, will default to tests in settings file (Comma separated)", metavar = "MODULES")
+                .convert { R_ModuleName.of(it) }
+                .split(",")
 
-fun CliktCommand.module() = option("-m", "--module", help = "Name of module with rell method in")
+fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
 
-fun CliktCommand.entry() = option("-e", "--entry", help = "Name of method to run")
+fun CliktCommand.entry() = option("-e", "--entry", help = "Name of method", metavar = "METHOD")
 
-fun CliktCommand.arguments() = option("-a", "--args", help = "List of arguments, comma separated (arg1,arg2,...)")
-        .convert { it }.split(",")
-        .default(listOf())
+fun CliktCommand.arguments() = option("-a", "--args", help = "Single or multiple arguments, (-a foo -a bar)", metavar = "GTV ARGUMENTS")
+        .multiple(listOf())

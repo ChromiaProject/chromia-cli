@@ -1,9 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.secretOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
@@ -12,26 +10,24 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.arguments.validate
-import com.github.ajalt.clikt.parameters.groups.*
-import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.groups.defaultByName
+import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import net.postchain.client.cli.encodeArg
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientImpl
-import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
 import org.apache.commons.configuration2.BaseConfiguration
-import java.util.*
 
 
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
-    private val settings by settingsOption()
+
+    private val settings by settingsOption() //TODO remove if possible
     private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
             "--deployment" to RemoteDeploymentOption { settings },
             "--local" to LocalDeploymentOption()

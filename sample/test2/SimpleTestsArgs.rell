@@ -1,6 +1,0 @@
-@test module;
-import ^.temp;
-
-function test_foo() {
-    assert_equals(2 + 2, 4);
-}

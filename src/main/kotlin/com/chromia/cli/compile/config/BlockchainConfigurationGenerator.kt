@@ -4,10 +4,8 @@ import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaCliModel
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
-import net.postchain.config.app.AppConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.RellConfigGen
@@ -19,7 +17,7 @@ import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
 import net.postchain.rell.utils.MainRellCliEnv
 import net.postchain.rell.utils.PostchainUtils
 
-class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, private val sourceDir: C_SourceDir, private val nodeProperties: AppConfig? = null) {
+class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, private val sourceDir: C_SourceDir) {
     fun generate(): Map<NamedBlockchainRid, Gtv> {
         return model.blockchains.toList().associate { generateConfiguration(it.first, it.second) }
     }
@@ -68,6 +66,5 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
             modulesGtv.add(it)
         }
         b.update(gtv(modulesGtv), "gtx", "modules")
-        nodeProperties?.let { b.update(gtv(listOf(gtv(it.pubKeyByteArray))), "signers") }
     }
 }
