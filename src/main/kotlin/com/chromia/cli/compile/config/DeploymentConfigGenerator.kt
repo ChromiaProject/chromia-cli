@@ -12,7 +12,14 @@ import kotlin.io.path.writeBytes
 import kotlin.io.path.writeText
 
 object DeploymentConfigGenerator {
-    fun generateConfig(gtvConfig: Gtv, deploymentModel: DeploymentModel?, outputName: String, generatedBrid: BlockchainRid, outputDir: Path, blockchainName: String): BlockchainConfiguration {
+    fun generateConfig(
+        gtvConfig: Gtv,
+        deploymentModel: DeploymentModel?,
+        outputName: String,
+        generatedBrid: BlockchainRid,
+        outputDir: Path,
+        blockchainName: String
+    ): BlockchainConfiguration {
 
         val blockchainConfiguration = BlockchainConfiguration(
                 deploymentModel?.chains?.get(blockchainName),

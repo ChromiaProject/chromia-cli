@@ -28,7 +28,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
 
     companion object {
         fun compile(settings: ChromiaCliModel): Map<NamedBlockchainRid, Gtv> {
-            return BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(settings.compile.source), null)
+            return BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(settings.compile.source))
                     .generate()
                     .onEach { (namedBlockchainRid, gtv) ->
                         generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, settings.compile.target.toPath(), namedBlockchainRid.name)

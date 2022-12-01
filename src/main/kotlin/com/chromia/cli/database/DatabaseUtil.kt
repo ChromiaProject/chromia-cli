@@ -6,9 +6,9 @@ import net.postchain.rell.sql.SqlManager
 import net.postchain.rell.sql.SqlUtils
 import java.sql.DriverManager
 
-class DatabaseUtil {
+object DatabaseUtil {
     fun resetDatabase( dbUrl: String) {
-        DatabaseUtil().runWithSqlManager(true, dbUrl) { sqlMgr ->
+        runWithSqlManager(true, dbUrl) { sqlMgr ->
             sqlMgr.transaction { sqlExec ->
                 SqlUtils.dropAll(sqlExec, true)
             }
@@ -17,7 +17,7 @@ class DatabaseUtil {
     }
 
     fun runWithSqlManager(logSqlErrors: Boolean, dbUrl: String, code: (SqlManager) -> Unit) {
-        val sqlLogging = true
+        val sqlLogging = false
         val schema = SqlUtils.extractDatabaseSchema(dbUrl)
         DriverManager.getConnection(dbUrl).use { con ->
             con.autoCommit = true

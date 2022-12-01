@@ -18,7 +18,7 @@ data class CompileModel(
         private val hiddenLib: Boolean = false,
         private val allowDbModificationsInObjectExprs: Boolean = false,
         private val symbolInfoFile: List<String>? = null,
-        val quiet: Boolean = false
+        val quiet: Boolean = true
 ) {
     fun getCompilerOptions (): C_CompilerOptions {
         return C_CompilerOptions(

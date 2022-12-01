@@ -18,7 +18,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
 
     override val brid: BlockchainRid
         get() {
-            val deploymentModel = settings().deployment[name]
+            val deploymentModel = settings().deployments[name]
             require(deploymentModel != null) { "Deployment named $name not found in configuration" }
             val blockchainRid = deploymentModel.chains[blockchain]
             require(blockchainRid != null ) { "Blockchain named $blockchain not found in deployment configuration"}
@@ -27,7 +27,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
 
     override val url: String
         get() {
-            val deploymentModel = settings().deployment[name]
+            val deploymentModel = settings().deployments[name]
             require(deploymentModel != null) { "Deployment named $name not found in configuration" }
             return deploymentModel.apiUrl
         }

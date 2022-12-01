@@ -24,6 +24,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
+
     private val settings by settingsOption()
     private val secret by secretOption()
     private val target by option(help = "Make tx towards this target (default: --local)").groupSwitch(
