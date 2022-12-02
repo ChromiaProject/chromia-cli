@@ -3,6 +3,16 @@
 ### Dependencies
 To develop locally on the cli it is recommended to install [direnv](https://direnv.net)  to keep the packaging as close as possible to real.
 
+### Auto completion
+To enable auto-completion you need to run the following commands, these needs to run each time a new version of the cli is installed. 
+```shell
+chr --generate-completion=bash > ~/chr-completion.sh
+```
+then
+``` shell
+source ~/chr-completion.sh
+```
+
 ### Introduction
 The Chromia-cli is a tool intended to make the development cycle and deployment of rell dapps simpler where all the needed 
 functionality needed can be found in one cli.
