@@ -48,7 +48,7 @@ class InitCommand : CliktCommand(help = "Generates a template project") {
         File(testDir, "data_test.rell").writeText(
                 """
                 @test module;
-                import main.{my_name, set_name};
+                import ^^.main.{my_name, set_name};
                 
                 function test_add_name() {
                     assert_equals(my_name.name, "World");
