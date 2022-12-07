@@ -138,8 +138,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>net.postchain</groupId>
-            <artifactId>chromia-deployment-tool</artifactId>
+            <groupId>net.postchain.chain0</groupId>
+            <artifactId>directory1</artifactId>
             <version>${postchain.version}</version>
         </dependency>
         <dependency>

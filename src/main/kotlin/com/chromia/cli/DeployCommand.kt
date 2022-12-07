@@ -15,8 +15,8 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.d1.common.proposal.proposeBlockchainOperation
-import net.postchain.d1.common.proposal.proposeConfigurationOperation
+import net.postchain.chain0.common.proposal.proposeBlockchainOperation
+import net.postchain.chain0.common.proposal.proposeConfigurationOperation
 import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
