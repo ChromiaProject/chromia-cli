@@ -14,9 +14,9 @@ import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.cli.encodeArg
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientImpl
+import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
 import java.util.*
 
@@ -41,11 +41,11 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
             "string" to "foo, \"bar\"",
             "bytearray" to "will be encoded using the rell notation x\"<myByteArray>\" and will initially be interpreted as a hex-string.",
             "array" to "[foo,123]",
-            "dict" to "{key1->value1,key2->value2}"
+            "dict" to "{key1=value1,key2=value2}"
     ))
             .multiple()
             .transformAll { args ->
-                args.map { encodeArg(it) }
+                args.map { GtvParser.parse(it) }
             }
 
     override fun run() {

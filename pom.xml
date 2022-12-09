@@ -123,11 +123,6 @@
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
-            <artifactId>postchain-client-cli</artifactId>
-            <version>${postchain.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.postchain</groupId>
             <artifactId>postchain-base</artifactId>
             <version>${postchain.version}</version>
             <exclusions>

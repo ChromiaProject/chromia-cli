@@ -13,12 +13,12 @@ import com.github.ajalt.clikt.parameters.arguments.validate
 import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.cli.encodeArg
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
 
 
@@ -42,8 +42,8 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
     private fun createDict(args: List<String>): Gtv {
         return when {
             args.isEmpty() -> GtvFactory.gtv(mapOf())
-            args.size == 1 && args[0].startsWith("{") && args[0].endsWith("}") -> encodeArg(args[0])
-            else -> encodeArg("{${args.joinToString(",")}}")
+            args.size == 1 && args[0].startsWith("{") && args[0].endsWith("}") -> GtvParser.parse(args[0])
+            else -> GtvParser.parse("{${args.joinToString(",")}}")
         }
     }
 
