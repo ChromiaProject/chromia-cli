@@ -24,7 +24,7 @@ object DeploymentConfigGenerator {
                 deploymentModel?.chains?.get(blockchainName),
                 generatedBrid,
                 blockchainName,
-                deploymentModel?.licence,
+                deploymentModel?.container,
                 gtvConfig
         )
 
