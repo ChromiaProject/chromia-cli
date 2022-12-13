@@ -59,6 +59,11 @@ variables:
   DOCKER_HOST: tcp://docker:2375
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
+services:
+  - name: docker:20-dind
+    alias: docker
+    # explicitly disable tls to avoid docker startup interruption
+    command: [ "--tls=false" , "--experimental"]
 cache:
   paths:
     - .m2/repository
