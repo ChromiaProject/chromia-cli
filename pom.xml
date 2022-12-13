@@ -19,6 +19,9 @@
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
         <postchain.version>3.7.0-SNAPSHOT</postchain.version>
         <rell.version>0.10.11-SNAPSHOT</rell.version>
+        <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
+        <image.name>chr</image.name>
+
     </properties>
 
     <repositories>
@@ -180,4 +183,62 @@
             <version>1.6.20</version>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>gitlab-registry</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- We are using custom maven executions instead of i.e. fabric8 docker-maven-plugin since v0.38.1 does NOT support building to multiple architectures. When they do, feel free to replace this plugin again -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>docker-login</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>login</argument>
+                                        <argument>registry.gitlab.com</argument>
+                                        <argument>-u</argument>
+                                        <argument>${env.CI_REGISTRY_USER}</argument>
+                                        <argument>-p</argument>
+                                        <argument>${env.CI_REGISTRY_PASSWORD}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>buildx</argument>
+                                        <argument>build</argument>
+                                        <argument>--platform</argument>
+                                        <argument>linux/amd64,linux/arm64,linux/arm/v8</argument>
+                                        <argument>--tag</argument>
+                                        <argument>${gitlab.registry}/${image.name}:${project.version}</argument>
+                                        <argument>--tag</argument>
+                                        <argument>${gitlab.registry}/${image.name}:latest</argument>
+                                        <argument>${project.basedir}/.</argument>
+                                        <argument>--push</argument>
+                                        <argument>--build-arg</argument>
+                                        <argument>CLI_JAR=${project.name}-${project.version}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

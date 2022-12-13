@@ -4,6 +4,7 @@ import com.chromia.cli.*
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import net.postchain.cli.CommandKeygen
 
 fun main(args: Array<String>) = NoOpCliktCommand(name = "chr")
         .completionOption()
@@ -16,7 +17,6 @@ fun main(args: Array<String>) = NoOpCliktCommand(name = "chr")
                 BuildCommand(),
                 QueryCommand(),
                 TxCommand(),
+                CommandKeygen(),
         )
         .main(args)
-
-//TODO create command to create configfile templates

@@ -2,6 +2,20 @@
 
 set -eu
 
-SCRIPT_DIR=$(dirname "$(dirname "${BASH_SOURCE[0]}")")
+app_path=$0
 
-${RELL_JAVA:-java} -cp "$SCRIPT_DIR/lib/*" com.chromia.MainKt "$@"
+while
+    APP_HOME=${app_path%"${app_path##*/}"}  # leaves a trailing /; empty if no leading path
+    [ -h "$app_path" ]
+do
+    ls=$( ls -ld "$app_path" )
+    link=${ls#*' -> '}
+    case $link in             #(
+      /*)   app_path=$link ;; #(
+      *)    app_path=$APP_HOME$link ;;
+    esac
+done
+
+APP_HOME=$( cd "${APP_HOME:-./}.." && pwd -P ) || exit
+
+${RELL_JAVA:-java} -cp "$APP_HOME/lib/*" com.chromia.MainKt "$@"
