@@ -104,6 +104,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
         val client = clientProvider.createClient(clientConfig)
         val result = client
                 .transactionBuilder()
+                .addNop()
                 .apply {
                     if (optionalBrid == null) {
                         proposeBlockchainOperation(
