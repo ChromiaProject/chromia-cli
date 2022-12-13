@@ -31,7 +31,14 @@ fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
         .file(mustExist = true, canBeDir = false, canBeFile = true)
         .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
-        .defaultLazy("config.yml") { GtvYaml().loadAnchor(File("config.yml")) } // TODO: Make up a nice name
+
+        .defaultLazy("config.yml") {
+            try {
+                GtvYaml().loadAnchor(File("config.yml"))
+            } catch (e: Exception) {
+                ChromiaCliModel()
+            }
+        }
 
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
