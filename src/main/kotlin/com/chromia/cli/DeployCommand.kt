@@ -66,7 +66,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                         deployBlockchain(
                                 clientConfig,
                                 blockchainName,
-                                deployModel.licence ?: throw CliktError("No container specified"),
+                                deployModel.container ?: throw CliktError("No container specified"),
                                 GtvEncoder.encodeGtv(this.configuration),
                                 PostchainClientProviderImpl(),
                                 specifiedBlockchainRid
