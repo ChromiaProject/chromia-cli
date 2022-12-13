@@ -7,6 +7,14 @@ image: maven:3.8.4-jdk-11
       - "**/*.log"
     expire_in: 1 week
 
+.docker_setup: &docker_setup
+  - apt-get -q update && apt-get -q install -y docker.io
+  - mkdir -p $HOME/.docker/cli-plugins/
+  - wget --no-verbose -O $HOME/.docker/cli-plugins/docker-buildx $BUILDX_URL
+  - chmod a+x $HOME/.docker/cli-plugins/docker-buildx
+  - mkdir -p $TEST_MOUNT_DIRECTORY
+  - docker buildx create --use --name chromia-cli --platform linux/amd64,linux/arm64,linux/arm/v8
+
 .git_template: &git_setup |
   git remote set-url --push origin "https://oauth2:${BUILD_USER_GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
   git config user.name "build-user core-dev"
@@ -28,12 +36,13 @@ build:
     - mvn $MAVEN_CLI_OPTS verify
 
 deploy:
+  before_script: *docker_setup
   extends: .setup
   stage: deploy
   rules:
     - if: $CI_COMMIT_TAG
   script:
-    - mvn $MAVEN_CLI_OPTS deploy -Drevision=$CI_COMMIT_TAG
+    - mvn $MAVEN_CLI_OPTS deploy -Drevision=$CI_COMMIT_TAG -Pgitlab-registry
 
 
 variables:
@@ -45,7 +54,9 @@ variables:
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true -s .gitlab-settings.xml"
   # Configure postgres service (https://hub.docker.com/_/postgres/)
-
+  BUILDX_URL: https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
+  TEST_MOUNT_DIRECTORY: /builds/$CI_PROJECT_PATH/mnt
+  DOCKER_HOST: tcp://docker:2375
 # Cache downloaded dependencies and plugins between builds.
 # To keep cache across branches add 'key: "$CI_JOB_NAME"'
 cache:
