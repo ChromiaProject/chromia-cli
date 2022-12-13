@@ -204,6 +204,7 @@
                         <!-- We are using custom maven executions instead of i.e. fabric8 docker-maven-plugin since v0.38.1 does NOT support building to multiple architectures. When they do, feel free to replace this plugin again -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
+                        <version>3.0.0</version>
                         <executions>
                             <execution>
                                 <id>docker-login</id>
