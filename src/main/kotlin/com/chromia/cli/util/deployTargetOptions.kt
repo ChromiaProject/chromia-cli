@@ -29,7 +29,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
         get() {
             val deploymentModel = settings().deployments[name]
             require(deploymentModel != null) { "Deployment named $name not found in configuration" }
-            return deploymentModel.apiUrl
+            return deploymentModel.apiUrl.joinToString(",")
         }
 }
 

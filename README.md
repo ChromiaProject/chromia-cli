@@ -55,7 +55,8 @@ blockchains:
 deployments:
   devnet1: #Deployment Target name
     brid: x"1212121212121212121212121212121212121212121212121212121212121212" # Target Brid
-    apiUrl: http://localhost:7740 #Target URL
+    apiUrl: 
+      - http://localhost:7740 #Target URL
     container: foo # Container Id
     chains: # All of your deployed chains on this target, important that it is denoted with its genesis brid (Brid that is used on first deployment)
       <deployed blockchain name>: <Genesis Brid>
