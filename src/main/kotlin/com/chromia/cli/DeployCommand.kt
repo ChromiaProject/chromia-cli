@@ -60,9 +60,6 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.compile.target.toPath(), generatedBlockchainRid.name)
                     .apply {
-                        if (specifiedBlockchainRid == null) {
-                            verifyNewDeployment(generatedBlockchainRid)
-                        }
                         deployBlockchain(
                                 clientConfig,
                                 blockchainName,
@@ -72,6 +69,9 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                                 specifiedBlockchainRid
                         )
                         if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
+                        if (specifiedBlockchainRid == null) {
+                            verifyNewDeployment(generatedBlockchainRid)
+                        }
                     }
         }
     }

@@ -1,8 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.LocalDeploymentOption
-import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.settingsOption
+import com.chromia.cli.parser.loadAnchor
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
@@ -27,9 +26,9 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
 
-    private val settings by settingsOption() //TODO remove if possible
+    private val settings by settingsOptionNotRequired()
     private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings },
+            "--deployment" to RemoteDeploymentOption { settings ?: settingsOptionDefault() },
             "--local" to LocalDeploymentOption()
     ).defaultByName("--local")
 

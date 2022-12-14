@@ -1,9 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.LocalDeploymentOption
-import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.secretOption
-import com.chromia.cli.util.settingsOption
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
@@ -25,10 +22,10 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
 
-    private val settings by settingsOption()
+    private val settings by settingsOptionNotRequired()
     private val secret by secretOption()
     private val target by option(help = "Make tx towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings },
+            "--deployment" to RemoteDeploymentOption { settings ?: settingsOptionDefault() },
             "--local" to LocalDeploymentOption()
     ).defaultByName("--local")
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()

@@ -6,14 +6,9 @@ import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.clikt.parameters.types.long
-import com.github.ajalt.clikt.parameters.types.path
-import net.postchain.common.BlockchainRid
 import net.postchain.gtv.yaml.GtvYaml
 import net.postchain.rell.model.R_ModuleName
-import net.postchain.rell.runtime.Rt_ChainSqlMapping
 import java.io.File
-import java.nio.file.Path
 
 
 fun CliktCommand.nodePropertiesOption() =
@@ -28,10 +23,15 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-fun CliktCommand.settingsOption() = option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
-        .file(mustExist = true, canBeDir = false, canBeFile = true)
-        .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
-        .defaultLazy("config.yml") { GtvYaml().loadAnchor(File("config.yml")) } // TODO: Make up a nice name
+fun CliktCommand.settingsOption() = settingsOptionNotRequired()
+        .defaultLazy("config.yml") { settingsOptionDefault() }
+
+fun CliktCommand.settingsOptionNotRequired() =
+        option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
+                .file(mustExist = false, canBeDir = false, canBeFile = true)
+                .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
+
+fun settingsOptionDefault() = GtvYaml().loadAnchor<ChromiaCliModel>(File("config.yml"))
 
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
