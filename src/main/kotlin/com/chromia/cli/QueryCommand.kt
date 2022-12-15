@@ -1,6 +1,5 @@
 package com.chromia.cli
 
-import com.chromia.cli.parser.loadAnchor
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
@@ -13,7 +12,6 @@ import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
@@ -53,7 +51,8 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
             setProperty("api.url", target.url)
             PostchainClientConfig.fromConfiguration(this)
         }
-        val res = PostchainClientImpl(clientConfig)
+        val res = target
+                .createClient(clientConfig)
                 .query(queryName, args)
         println(res)
     }

@@ -6,7 +6,7 @@ import net.postchain.common.types.WrappedByteArray
 data class DeploymentModel(
         private val brid: WrappedByteArray,
         val container: String?, // Container id
-        val apiUrl: String,
+        val apiUrl: List<String>,
         val chains: Map<String, BlockchainRid> = mapOf()
 ) {
     val blockchainRid: BlockchainRid = BlockchainRid(brid)

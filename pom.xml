@@ -154,6 +154,11 @@
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
+            <artifactId>chromia-client</artifactId>
+            <version>${postchain.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
             <artifactId>postchain-gtv-yaml</artifactId>
             <version>${postchain.version}</version>
         </dependency>
