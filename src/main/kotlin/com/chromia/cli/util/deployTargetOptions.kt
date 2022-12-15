@@ -5,10 +5,15 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.int
+import net.postchain.common.BlockchainRid
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.impl.PostchainClientImpl
-import net.postchain.common.BlockchainRid
 import net.postchain.d1.client.ChromiaClientProvider
 
 sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(name, help) {
@@ -43,14 +48,25 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
 }
 
 class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx towards a test node") {
-    private val blockchainRid by option(help = "Target Blockchain Rid").required()
+    private val blockchainRid by option(help = "Target Blockchain Rid")
+    private val cid by option(help = "Target Blockchain IID").int().default(0)
     private val apiUrl by option(help = "Target api url").default("http://localhost:7740")
-
-    override val brid: BlockchainRid
-        get() = BlockchainRid.buildFromHex(blockchainRid)
 
     override val url: String
         get() = apiUrl
+
+    override val brid: BlockchainRid
+        get() = blockchainRid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
+
+    private fun blockchainRidFromIid(): BlockchainRid {
+        val client = HttpClient.newBuilder().build()
+        val request = HttpRequest.newBuilder()
+                .uri(URI.create("${url}/brid/iid_${cid}"))
+                .build()
+
+        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        return BlockchainRid.buildFromHex(response.body())
+    }
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
 }
