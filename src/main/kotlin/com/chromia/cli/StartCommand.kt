@@ -35,7 +35,7 @@ class StartCommand : CliktCommand(help = "Starts a node") {
             .file(mustExist = true, canBeDir = false)
             .multiple()
 
-    private val blockchains by option(help = "Only start specified blockchains")
+    private val name by option(help = "Only start specified blockchains (multiple)", metavar = "NAME")
             .multiple()
 
     private val nodeConfig by nodePropertiesOption().defaultLazy { getDefaultNodeConfig(settings) }
@@ -64,7 +64,7 @@ class StartCommand : CliktCommand(help = "Starts a node") {
                     .mapKeys { NamedBlockchainRid(it.key, BlockchainRid(PostchainUtils.calcBlockchainRid(it.value).toByteArray())) }
         }
 
-        val configsToStart = if (blockchains.isEmpty()) configsToAdd else configsToAdd.filter { blockchains.contains(it.key.name)  }
+        val configsToStart = if (name.isEmpty()) configsToAdd else configsToAdd.filter { name.contains(it.key.name)  }
 
         configsToStart.toList().forEachIndexed { index, (namedBlockchain, gtv) ->
             val gtvConfig = if (gtv["signers"] == null) {
