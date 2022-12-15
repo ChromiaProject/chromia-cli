@@ -190,7 +190,7 @@ You can set a path for it or specify a different Project Settings file.
 ```shell
 chr build --settings config.yml
 ```
-If you want to see the BlockchainRid that is generated, you can use the flag `--show-brid`
+If you want to see the Blockchain RID that is generated, you can use the flag `--show-brid`
 
 ### Start
 Start command is used to start a node with you applications running on it. It will start all the blockchains under the 
@@ -218,7 +218,7 @@ Project Settings file.
 On the first deployment towards a target, the cli will prompt you with the chains config that you need to add to the 
 Project Settings file. will look something like this;
 
-`BlockchainRid for chain hello on deployment devnet2 not set. Would you like to create a new deployment? Y / N`
+`Blockchain RID for chain hello on deployment devnet2 not set. Would you like to create a new deployment? Y / N`
 ```yaml
 Add the following to your project settings file
 deployments:
@@ -249,7 +249,7 @@ Query command is used to test and interact with a chain that is either local (No
 You can set a path for it or specify a different Project Settings file with the use of `--settings` 
 and change between local and deployed chain target with the `--deployment, --local` flags, will default to `--local`
 #### Node
-The blockchainRid of the local node is printed in the sout, an example would look like; 
+The blockchain RID of the local node is printed in the sout, an example would look like; 
 `Blockchain RID: FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC`
 If you are running the node on a different url then the default ` http://localhost:7740` you can use the `--api-url` to specify it.
 ```shell

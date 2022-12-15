@@ -77,7 +77,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     }
 
     private fun verifyNewDeployment(namedBlockchainRid: NamedBlockchainRid): Unit? {
-        println("BlockchainRid for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? Y / N")
+        println("Blockchain RID for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? Y / N")
         val resp = Scanner(System.`in`).nextLine().equals("Y", true)
         if (resp) {
             println("Add the following to your project settings file")

@@ -48,7 +48,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
 }
 
 class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx towards a test node") {
-    private val blockchainRid by option(help = "Target Blockchain Rid")
+    private val blockchainRid by option(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int().default(0)
     private val apiUrl by option(help = "Target api url").default("http://localhost:7740")
 
