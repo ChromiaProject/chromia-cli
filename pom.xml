@@ -17,8 +17,8 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-        <postchain.version>3.7.0-SNAPSHOT</postchain.version>
-        <rell.version>0.10.11-SNAPSHOT</rell.version>
+        <postchain.version>3.7.0</postchain.version>
+        <rell.version>0.11.0</rell.version>
         <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
         <image.name>chr</image.name>
 
