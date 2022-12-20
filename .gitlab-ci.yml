@@ -57,13 +57,18 @@ variables:
   BUILDX_URL: https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
   TEST_MOUNT_DIRECTORY: /builds/$CI_PROJECT_PATH/mnt
   DOCKER_HOST: tcp://docker:2375
-# Cache downloaded dependencies and plugins between builds.
-# To keep cache across branches add 'key: "$CI_JOB_NAME"'
+  POSTGRES_DB: postchain
+  POSTGRES_USER: postchain
+  POSTGRES_PASSWORD: postchain
+
 services:
+  - postgres
   - name: docker:20-dind
     alias: docker
     # explicitly disable tls to avoid docker startup interruption
     command: [ "--tls=false" , "--experimental"]
+# Cache downloaded dependencies and plugins between builds.
+# To keep cache across branches add 'key: "$CI_JOB_NAME"'
 cache:
   paths:
     - .m2/repository

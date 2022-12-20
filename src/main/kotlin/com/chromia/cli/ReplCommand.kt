@@ -22,7 +22,7 @@ import net.postchain.rell.utils.RellCliUtils
 
 class ReplCommand: CliktCommand(help= "Run rell command in file") {
     private val settings by settingsOption()
-    private val sourceDir by lazy { settings.compile.source }
+    private val sourceDir by lazy { settings.source }
     private val wipeDB by wipeDatabaseOption()
     private val entrypoint by entry()
     private val module by module().required()
@@ -35,9 +35,9 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
     override fun run() {
         val modSel = C_CompilerModuleSelection(listOf(module))
         val sourceDir = C_SourceDir.diskDir(sourceDir)
-        val app = RellCliUtils.compileApp(sourceDir, modSel, settings.compilerQuiet, C_CompilerOptions.DEFAULT)
+        val app = RellCliUtils.compileApp(sourceDir, modSel, settings.model.compilerQuiet, C_CompilerOptions.DEFAULT)
         val context = ContextCreator.createTestContext(app,
-                settings.compilerOptions,
+                settings.model.compilerOptions,
                 BlockchainRid(ByteArray(32)),
                 Rt_ChainSqlMapping(100),
                 mapOf()
@@ -47,7 +47,7 @@ class ReplCommand: CliktCommand(help= "Run rell command in file") {
 
     private fun runApp(context: ContextCreator.Context, app: R_App) {
         val appCtx = createRegularAppContext(context.globalCtx, app)
-        DatabaseUtil.runWithSqlManager(settings.databaseErrorLogging, settings.databaseUrl) { sqlManager ->
+        DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
             initDatabase(appCtx,context.sqlCtx, sqlManager, wipeDB, false )
             entryPoint(app)?.let { launch(appCtx, sqlManager, context.sqlCtx, entryPoint = it) }
         }

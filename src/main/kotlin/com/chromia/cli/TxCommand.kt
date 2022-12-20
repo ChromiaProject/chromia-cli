@@ -24,7 +24,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
     private val settings by settingsOptionNotRequired()
     private val secret by secretOption()
     private val target by option(help = "Make tx towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings ?: settingsOptionDefault() },
+            "--deployment" to RemoteDeploymentOption { settings?.model ?: settingsOptionDefault() },
             "--local" to LocalDeploymentOption()
     ).defaultByName("--local")
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()

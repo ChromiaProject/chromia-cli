@@ -23,7 +23,7 @@ import net.postchain.rell.utils.*
 class TestCommand: CliktCommand(help= "Run tests in working directory") {
     private val modules by modulesOption()
     private val settings by settingsOption()
-    private val sourceDir by lazy { settings.compile.source }
+    private val sourceDir by lazy { settings.source }
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
@@ -36,19 +36,19 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         val testModules = modules ?: settings.test.modules.map {  R_ModuleName.Companion.of(it) }
         val sourceDir = C_SourceDir.diskDir(sourceDir)
         val modSel = C_CompilerModuleSelection(testModules)
-        val app = RellCliUtils.compileApp(sourceDir, modSel, settings.compilerQuiet, C_CompilerOptions.DEFAULT)
+        val app = RellCliUtils.compileApp(sourceDir, modSel, settings.model.compilerQuiet, C_CompilerOptions.DEFAULT)
         val testFns = TestRunner.getTestFunctions(app, TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
     }
 
     private fun runTests(app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        DatabaseUtil.runWithSqlManager(settings.databaseErrorLogging, settings.databaseUrl) { sqlManager ->
+        DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
             runner(sqlManager, app, fns, sourceDir)
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
         val context = ContextCreator.createTestContext(app,
-                settings.compilerOptions,
+                settings.model.compilerOptions,
                 BlockchainRid(ByteArray(32)),
                 Rt_ChainSqlMapping(100),
                 getModuleArgsValues(app, settings.test.moduleArgs))

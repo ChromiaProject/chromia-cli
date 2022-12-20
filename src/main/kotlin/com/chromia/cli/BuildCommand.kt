@@ -3,7 +3,6 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator.generateConfig
 import com.chromia.cli.compile.config.NamedBlockchainRid
-import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
@@ -27,11 +26,11 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     companion object {
-        fun compile(settings: ChromiaCliModel): Map<NamedBlockchainRid, Gtv> {
-            return BlockchainConfigurationGenerator(settings, C_SourceDir.diskDir(settings.compile.source))
+        fun compile(settings: Settings): Map<NamedBlockchainRid, Gtv> {
+            return BlockchainConfigurationGenerator(settings.model, C_SourceDir.diskDir(settings.source))
                     .generate()
                     .onEach { (namedBlockchainRid, gtv) ->
-                        generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, settings.compile.target.toPath(), namedBlockchainRid.name)
+                        generateConfig(gtv, null, namedBlockchainRid.name, namedBlockchainRid.blockchainRid, settings.target.toPath(), namedBlockchainRid.name)
                     }
         }
     }
