@@ -49,7 +49,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
 
 
             val clientConfig = BaseConfiguration().apply {
-                setProperty("api.url", deployModel.apiUrl.joinToString(","))
+                setProperty("api.url", deployModel.urls.joinToString(","))
                 setProperty("brid", deployModel.blockchainRid.toHex())
                 secret?.let { s ->
                     Properties().apply { load(s.inputStream()) }.let { p ->
