@@ -22,10 +22,11 @@ class InitCommand : CliktCommand(help = "Generates a template project") {
 
         if (!baseDir.exists()) baseDir.mkdirs()
         if (File(baseDir, "config.yml").exists()) {
-            println("A config.yml file exists in the working directory. Would you like to write over it? (All file content will be lost) Y / N")
-            val resp = Scanner(System.`in`).nextLine().equals("Y", true)
+            println("A config.yml file exists in the working directory. Would you like to write over it? (All file content will be lost) Type DELETE to proceed with the deletion")
+            val resp = Scanner(System.`in`).nextLine().equals("DELETE", false)
             if (resp) {
-                baseDir.deleteRecursively()
+                File(baseDir, "config.yml").delete()
+                File(baseDir, "src").deleteRecursively()
             } else {
                 return
             }
