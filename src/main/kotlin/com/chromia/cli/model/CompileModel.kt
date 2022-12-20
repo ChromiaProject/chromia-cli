@@ -6,7 +6,7 @@ import net.postchain.rell.compiler.base.utils.C_SourcePath
 import net.postchain.rell.model.R_LangVersion
 
 data class CompileModel(
-        val rellVersion: String = "0.10.10",
+        val rellVersion: String = "0.11.0",
         val source: String = "src",
         val target: String = "build",
         private val gtv: Boolean = false,
