@@ -4,12 +4,11 @@ import net.postchain.rell.compiler.base.core.C_AtAttrShadowing
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
 import net.postchain.rell.compiler.base.utils.C_SourcePath
 import net.postchain.rell.model.R_LangVersion
-import java.io.File
 
 data class CompileModel(
         val rellVersion: String = "0.10.10",
-        val source: File = File("src"),
-        val target: File = File("build"),
+        val source: String = "src",
+        val target: String = "build",
         private val gtv: Boolean = false,
         private val deprecatedError: Boolean = false,
         private val ide: Boolean = false,

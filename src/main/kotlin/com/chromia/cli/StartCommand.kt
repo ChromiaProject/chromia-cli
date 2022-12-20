@@ -38,7 +38,7 @@ class StartCommand : CliktCommand(help = "Starts a node") {
     private val name by option(help = "Only start specified blockchains (multiple)", metavar = "NAME")
             .multiple()
 
-    private val nodeConfig by nodePropertiesOption().defaultLazy { getDefaultNodeConfig(settings) }
+    private val nodeConfig by nodePropertiesOption().defaultLazy { getDefaultNodeConfig(settings.model) }
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }

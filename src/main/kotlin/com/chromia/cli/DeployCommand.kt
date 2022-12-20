@@ -35,9 +35,9 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     }
 
     override fun run() {
-        val cSourceDir = C_SourceDir.diskDir(settings.compile.source)
+        val cSourceDir = C_SourceDir.diskDir(settings.source)
 
-        val generator = BlockchainConfigurationGenerator(settings, cSourceDir)
+        val generator = BlockchainConfigurationGenerator(settings.model, cSourceDir)
         val chainsToDeploy = blockchain?.let {
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
@@ -58,7 +58,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.compile.target.toPath(), generatedBlockchainRid.name)
+            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
                         deployBlockchain(
                                 clientConfig,

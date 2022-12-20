@@ -23,13 +23,21 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
+data class Settings(val file: File, val model: ChromiaCliModel) {
+    val source get() = File(file.parentFile, model.compile.source)
+    val target get() = File(file.parentFile, model.compile.target)
+    val compile get() = model.compile
+    val deployments get() = model.deployments
+    val blockchains get() = model.blockchains
+    val test get() = model.test
+}
 fun CliktCommand.settingsOption() = settingsOptionNotRequired()
-        .defaultLazy("config.yml") { settingsOptionDefault() }
+        .defaultLazy("config.yml") { Settings(File("config.yml"), settingsOptionDefault()) }
 
 fun CliktCommand.settingsOptionNotRequired() =
         option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
-                .convert { GtvYaml().loadAnchor<ChromiaCliModel>(it) }
+                .convert { Settings(it, GtvYaml().loadAnchor(it)) }
 
 fun settingsOptionDefault() = GtvYaml().loadAnchor<ChromiaCliModel>(File("config.yml"))
 
