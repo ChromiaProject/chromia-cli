@@ -26,7 +26,6 @@ class InitCommand : CliktCommand(help = "Generates a template project") {
             val resp = Scanner(System.`in`).nextLine().equals("DELETE", false)
             if (resp) {
                 File(baseDir, "config.yml").delete()
-                File(baseDir, "src").deleteRecursively()
             } else {
                 return
             }
