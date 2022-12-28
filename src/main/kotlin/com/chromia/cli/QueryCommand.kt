@@ -4,7 +4,6 @@ import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.settingsOptionDefault
 import com.chromia.cli.util.settingsOptionNotRequired
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
@@ -19,9 +18,7 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.gtvToJSON
 import net.postchain.gtv.parse.GtvParser
-import net.postchain.rell.utils.PostchainUtils.gtvToJsonPretty
 import org.apache.commons.configuration2.BaseConfiguration
 
 
@@ -61,11 +58,6 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
                 .createClient(clientConfig)
                 .query(queryName, args)
 
-//        val mapper = ObjectMapper()
-//        val json: Any = mapper.readValue(gtvToJsonPretty(res), Any::class.java)
-//        val indented = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json)
-//        echo(gtvToJsonPretty(res))
-//        echo(indented)
         echo(res)
     }
 }

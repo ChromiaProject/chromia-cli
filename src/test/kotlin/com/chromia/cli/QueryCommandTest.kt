@@ -2,7 +2,6 @@ package com.chromia.cli
 
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.MissingArgument
-import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -12,21 +11,21 @@ import kotlin.test.assertFailsWith
 
 
 class QueryCommandTest {
+    //TODO add integration tests for querying the db
+//    @Test
+//    fun testOutput() {
+//        QueryCommand().context {
+//            console = object : TestConsole() {
+//                override fun print(text: String, error: Boolean) {
+//                    assertEquals(text, "\"Hello World!\"\n")
+//                }
+//            }
+//        }.parse(listOf("hello_world"))
+//    }
+
 
     @Test
-    fun testOutput() {
-        QueryCommand().context {
-            console = object : TestConsole() {
-                override fun print(text: String, error: Boolean) {
-                    assertEquals(text, "\"Hello World!\"\n")
-                }
-            }
-        }.parse(listOf("hello_world"))
-    }
-
-
-    @Test
-    fun missingQueryNameTest() {
+    fun testMissingQueryName() {
         val exception = assertFailsWith<MissingArgument> {
             QueryCommand().parse(listOf())
         }
@@ -34,7 +33,7 @@ class QueryCommandTest {
     }
 
     @Test
-    fun canNotFindSettingsTest() {
+    fun testCanNotFindSettings() {
         val exception = assertFailsWith<BadParameterValue> {
             QueryCommand().parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
@@ -51,7 +50,7 @@ class QueryCommandTest {
         @BeforeAll
         fun setup() {
             InitCommand().parse(listOf("-d", dir!!.absolutePath))
-            StartCommand().parse(listOf("-s", dir!!.absolutePath.plus("/config.yml"), "--wipe"))
+            //StartCommand().parse(listOf("-s", dir!!.absolutePath.plus("/config.yml"), "--wipe"))
         }
     }
 }
