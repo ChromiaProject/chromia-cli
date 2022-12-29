@@ -51,8 +51,3 @@ fun CliktCommand.modulesOption() =
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
-
-fun CliktCommand.entry() = option("-e", "--entry", help = "Name of method", metavar = "METHOD")
-
-fun CliktCommand.arguments() = option("-a", "--args", help = "Single or multiple arguments, (-a foo -a bar)", metavar = "GTV ARGUMENTS")
-        .multiple(listOf())
