@@ -36,7 +36,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a singe dict element.")
             .multiple()
-            .transformAll { createDict(it) }
+            .transformAll { try { createDict(it) } catch (e: Exception){ echo(e.message)} }
             .validate { require(it is GtvDictionary) { "query must be done with named parameters in a dict" } }
 
     private fun createDict(args: List<String>): Gtv {
@@ -54,10 +54,13 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
             setProperty("api.url", target.url)
             PostchainClientConfig.fromConfiguration(this)
         }
-        val res = target
-                .createClient(clientConfig)
-                .query(queryName, args)
-
-        echo(res)
+        try {
+            val res = target
+                    .createClient(clientConfig)
+                    .query(queryName, args as Gtv)
+            echo(res)
+        } catch (e: Exception) {
+            echo(e.message)
+        }
     }
 }

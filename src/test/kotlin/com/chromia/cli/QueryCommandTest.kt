@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.MissingArgument
+import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -23,6 +24,17 @@ class QueryCommandTest {
 //        }.parse(listOf("hello_world"))
 //    }
 
+//    @Test
+//    fun testBadRequest() {
+//        QueryCommand().context {
+//            console = object : TestConsole() {
+//                override fun print(text: String, error: Boolean) {
+//                    assertEquals(text, "Can not make a query: 400 Bad Request Query 'hello_world' failed: Wrong arguments: [arg1] instead of []\n")
+//                }
+//            }
+//        }.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1=1"))
+//    }
+
 
     @Test
     fun testMissingQueryName() {
@@ -38,6 +50,14 @@ class QueryCommandTest {
             QueryCommand().parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
         assertEquals("Invalid value for \"--settings\": missingFile.yml (No such file or directory)", exception.message)
+    }
+
+    @Test
+    fun testCanNotParseArgs() {
+        val exception = assertFailsWith<BadParameterValue> {
+            QueryCommand().parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1 -> 1"))
+        }
+        assertEquals("Invalid value for \"ARGS\": query must be done with named parameters in a dict", exception.message)
     }
 
 
