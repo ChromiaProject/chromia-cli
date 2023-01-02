@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.FileNotFoundException
@@ -15,6 +16,9 @@ internal class BuildCommandTest {
     @TempDir
     @JvmField
     var dir: File? = null
+
+    @ExtendWith
+    val testConsole = TestConsole()
 
     @BeforeEach
     fun setup() {
@@ -32,12 +36,9 @@ internal class BuildCommandTest {
     @Test
     fun testBridOutput() {
         BuildCommand().context {
-            console = object : TestConsole() {
-                override fun print(text: String, error: Boolean) {
-                    assertEquals(text, "hello 189C96B9373BCB777D8F63745956B8D59734B689F7DAB04D6E09CB32D0C53C57\n")
-                }
-            }
+            console = testConsole
         }.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "--show-brid"))
+        testConsole.assertContains("hello 189C96B9373BCB777D8F63745956B8D59734B689F7DAB04D6E09CB32D0C53C57\n")
     }
 
     @Test

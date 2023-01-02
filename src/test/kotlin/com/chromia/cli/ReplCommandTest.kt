@@ -5,6 +5,7 @@ import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.io.FileNotFoundException
@@ -15,6 +16,9 @@ class ReplCommandTest {
     @TempDir
     @JvmField
     var dir: File? = null
+
+    @ExtendWith
+    var testConsole = TestConsole()
 
     @BeforeEach
     fun setup() {
@@ -40,11 +44,8 @@ class ReplCommandTest {
     @Test
     fun testCanNotConnectToDb() {
         ReplCommand().context {
-            console = object : TestConsole() {
-                override fun print(text: String, error: Boolean) {
-                    assertEquals(text, "Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\n")
-                }
-            }
+            console = testConsole
         }.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"),"--module=main",  "--use-sql"))
+        testConsole.assertContains("Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\\n")
     }
 }
