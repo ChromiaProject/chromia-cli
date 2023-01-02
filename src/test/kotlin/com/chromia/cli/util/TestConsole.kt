@@ -1,13 +1,11 @@
-package com.chromia.cli
+package com.chromia.cli.util
 
 import com.github.ajalt.clikt.output.CliktConsole
 import java.io.IOException
 import assertk.assertThat
 import assertk.assertions.contains
-import org.junit.jupiter.api.extension.AfterEachCallback
-import org.junit.jupiter.api.extension.ExtensionContext
 
-open class TestConsole() : CliktConsole, AfterEachCallback {
+open class TestConsole() : CliktConsole {
     val out = mutableListOf<Pair<String, Boolean>>()
 
     override fun promptForLine(prompt: String, hideInput: Boolean) = try {
@@ -25,7 +23,4 @@ open class TestConsole() : CliktConsole, AfterEachCallback {
 
     fun assertContains(text: String) = assertThat(out.map { it.first }).contains(text)
 
-    override fun afterEach(p0: ExtensionContext?) {
-        out.clear()
-    }
 }

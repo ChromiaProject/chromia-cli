@@ -36,10 +36,12 @@ class QueryCommandTest {
 //    }
 
 
+    private val command = QueryCommand()
+
     @Test
     fun testMissingQueryName() {
         val exception = assertFailsWith<MissingArgument> {
-            QueryCommand().parse(listOf())
+            command.parse(listOf())
         }
         assertEquals("Missing argument \"QUERYNAME\"", exception.message)
     }
@@ -47,7 +49,7 @@ class QueryCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val exception = assertFailsWith<BadParameterValue> {
-            QueryCommand().parse(listOf("--settings=missingFile.yml", "hello_world"))
+            command.parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
         assertEquals("Invalid value for \"--settings\": missingFile.yml (No such file or directory)", exception.message)
     }
@@ -55,7 +57,7 @@ class QueryCommandTest {
     @Test
     fun testCanNotParseArgs() {
         val exception = assertFailsWith<BadParameterValue> {
-            QueryCommand().parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1 -> 1"))
+            command.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1 -> 1"))
         }
         assertEquals("Invalid value for \"ARGS\": query must be done with named parameters in a dict", exception.message)
     }

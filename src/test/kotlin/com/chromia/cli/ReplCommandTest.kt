@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.MissingOption
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions.*
@@ -17,8 +18,8 @@ class ReplCommandTest {
     @JvmField
     var dir: File? = null
 
-    @ExtendWith
-    var testConsole = TestConsole()
+    val testConsole = TestConsole()
+    private val command = ReplCommand().context { console = testConsole }
 
     @BeforeEach
     fun setup() {
@@ -28,7 +29,7 @@ class ReplCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val exception = assertFailsWith<FileNotFoundException> {
-            ReplCommand().parse(listOf())
+            command.parse(listOf())
         }
         assertEquals("config.yml (No such file or directory)", exception.message)
     }
@@ -36,16 +37,14 @@ class ReplCommandTest {
     @Test
     fun testCanNotFindModule() {
         val exception = assertFailsWith<MissingOption> {
-            ReplCommand().parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml")))
+            command.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml")))
         }
         assertEquals("Missing option \"--module\"", exception.message)
     }
 
     @Test
     fun testCanNotConnectToDb() {
-        ReplCommand().context {
-            console = testConsole
-        }.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"),"--module=main",  "--use-sql"))
+        command.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"),"--module=main",  "--use-sql"))
         testConsole.assertContains("Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\\n")
     }
 }
