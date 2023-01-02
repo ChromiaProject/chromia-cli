@@ -2,7 +2,6 @@ package com.chromia.cli
 
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.MissingArgument
-import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
