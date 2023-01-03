@@ -215,6 +215,11 @@
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>1.6.20</version>
         </dependency>
+        <dependency>
+            <groupId>com.willowtreeapps.assertk</groupId>
+            <artifactId>assertk-jvm</artifactId>
+            <version>0.25</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>

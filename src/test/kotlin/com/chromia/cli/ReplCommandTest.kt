@@ -1,25 +1,24 @@
 package com.chromia.cli
 
+import com.chromia.cli.QueryCommandTest.Companion.dir
+import com.chromia.cli.util.CommandExtension
+import com.chromia.cli.util.InitExtension
+import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.MissingOption
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.io.File
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.io.FileNotFoundException
 import kotlin.test.assertFailsWith
 
 class ReplCommandTest {
 
-    @TempDir
-    @JvmField
-    var dir: File? = null
+    val testConsole = TestConsole()
 
-    @BeforeEach
-    fun setup() {
-        InitCommand().parse(listOf("-d", dir!!.absolutePath))
-    }
+    @RegisterExtension
+    private val command = CommandExtension(ReplCommand().context { console = testConsole })
+    val dir get() = command.dir
 
     @Test
     fun testCanNotFindSettings() {
@@ -32,19 +31,14 @@ class ReplCommandTest {
     @Test
     fun testCanNotFindModule() {
         val exception = assertFailsWith<MissingOption> {
-            ReplCommand().parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml")))
+            command.parse()
         }
         assertEquals("Missing option \"--module\"", exception.message)
     }
 
     @Test
     fun testCanNotConnectToDb() {
-        ReplCommand().context {
-            console = object : TestConsole() {
-                override fun print(text: String, error: Boolean) {
-                    assertEquals(text, "Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\n")
-                }
-            }
-        }.parse(listOf("--settings", dir!!.absolutePath.plus("/config.yml"),"--module=main",  "--use-sql"))
+        command.parse(listOf("--module=main", "--use-sql"))
+        testConsole.assertContains("Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\n")
     }
 }
