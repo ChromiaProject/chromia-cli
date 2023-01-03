@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import java.io.File
 import java.io.FileNotFoundException
 import kotlin.test.assertFailsWith
 
@@ -38,7 +39,11 @@ class ReplCommandTest {
 
     @Test
     fun testCanNotConnectToDb() {
+        File(command.dir, "config.yml").appendText("""
+            database:
+              host: invalidhost
+        """.trimIndent())
         command.parse(listOf("--module=main", "--use-sql"))
-        testConsole.assertContains("Connection to localhost:5432 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.\n")
+        testConsole.assertContains("The connection attempt failed.\n")
     }
 }
