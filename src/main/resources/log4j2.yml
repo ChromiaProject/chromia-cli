@@ -1,0 +1,23 @@
+Properties:
+  Property:
+  - name: logpattern
+    value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+
+Appenders:
+ Console:
+   name: ConsoleAppender
+   target: SYSTEM_OUT
+   PatternLayout:
+     pattern: ${logpattern}
+
+Loggers:
+  Root:
+    level: warn
+    AppenderRef:
+      - ref: ConsoleAppender
+  Logger:
+    - name: net.postchain
+      level: info
+      additivity: false
+      AppenderRef:
+        - ref: ConsoleAppender

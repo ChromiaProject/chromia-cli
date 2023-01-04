@@ -1,17 +1,11 @@
 package com.chromia.cli
 
-import com.chromia.cli.QueryCommandTest.Companion.dir
 import com.chromia.cli.util.CommandExtension
-import com.chromia.cli.util.InitExtension
 import com.chromia.cli.util.TestConsole
-import com.github.ajalt.clikt.core.MissingOption
 import com.github.ajalt.clikt.core.context
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.io.File
-import java.io.FileNotFoundException
-import kotlin.test.assertFailsWith
 
 class ReplCommandTest {
 
@@ -22,28 +16,23 @@ class ReplCommandTest {
     val dir get() = command.dir
 
     @Test
-    fun testCanNotFindSettings() {
-        val exception = assertFailsWith<FileNotFoundException> {
-            ReplCommand().parse(listOf())
-        }
-        assertEquals("config.yml (No such file or directory)", exception.message)
-    }
-
-    @Test
-    fun testCanNotFindModule() {
-        val exception = assertFailsWith<MissingOption> {
-            command.parse()
-        }
-        assertEquals("Missing option \"--module\"", exception.message)
-    }
-
-    @Test
     fun testCanNotConnectToDb() {
         File(command.dir, "config.yml").appendText("""
             database:
               host: invalidhost
         """.trimIndent())
-        command.parse(listOf("--module=main", "--use-sql"))
+        command.parse(listOf("--module=main", "--use-db"))
         testConsole.assertContains("The connection attempt failed.\n")
+    }
+    @Test
+    fun testCanNotFindModuleWithoutSettings() {
+        command.emptyParse(listOf("--module=main"))
+        testConsole.assertContains("To find the module \"main\", specifying the settings file is required\n")
+    }
+
+    @Test
+    fun testCanNotConnectToDbWithoutSettings() {
+        command.emptyParse(listOf("--use-db"))
+        testConsole.assertContains("To correctly connect to the database, specifying the settings file is required\n")
     }
 }
