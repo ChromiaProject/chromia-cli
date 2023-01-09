@@ -34,7 +34,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
     ).defaultByName("--local")
 
     private val queryName by argument(help = "name of the query to make.")
-    private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a singe dict element.")
+    private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a single dict element.")
             .multiple()
             .transformAll { try { createDict(it) } catch (e: Exception){ echo(e.message)} }
             .validate { require(it is GtvDictionary) { "query must be done with named parameters in a dict" } }
