@@ -2,10 +2,14 @@ package com.chromia.cli
 
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
+import com.github.ajalt.clikt.core.BadParameterValue
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ReplCommandTest {
 
@@ -32,7 +36,9 @@ class ReplCommandTest {
 
     @Test
     fun testCanNotConnectToDbWithoutSettings() {
-        command.emptyParse(listOf("--use-db"))
-        testConsole.assertContains("To correctly connect to the database, specifying the settings file is required\n")
+        val exception = assertFailsWith<CliktError> {
+            command.emptyParse(listOf("--use-db"))
+        }
+        assertEquals("To correctly connect to the database, specifying the settings file is required", exception.message)
     }
 }

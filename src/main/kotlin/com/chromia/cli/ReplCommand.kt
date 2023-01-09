@@ -6,6 +6,7 @@ import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.util.module
 import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.flag
@@ -35,8 +36,7 @@ class ReplCommand: CliktCommand(help= "Run rell commands in shell") {
         }
 
         if(useDB && settings == null) {
-            echo("To correctly connect to the database, specifying the settings file is required")
-            return
+            throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
 
         val localModel = settings?.model ?: ChromiaCliModel()
