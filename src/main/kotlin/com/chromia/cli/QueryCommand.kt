@@ -5,6 +5,7 @@ import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.settingsOptionDefault
 import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument

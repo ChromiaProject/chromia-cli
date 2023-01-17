@@ -8,6 +8,8 @@ import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
 import net.postchain.rell.compiler.base.core.C_CompilerOptions
@@ -17,13 +19,18 @@ import net.postchain.rell.model.R_App
 import net.postchain.rell.model.R_FunctionDefinition
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.runtime.Rt_ChainSqlMapping
+import net.postchain.rell.runtime.Rt_Exception
+import net.postchain.rell.runtime.utils.Rt_Utils
+import net.postchain.rell.sql.NoConnSqlManager
 import net.postchain.rell.sql.SqlManager
 import net.postchain.rell.utils.*
 
 class TestCommand: CliktCommand(help= "Run tests in working directory") {
     private val modules by modulesOption()
     private val settings by settingsOption()
+    private val tests by option(help = "test method pattern")
     private val sourceDir by lazy { settings.source }
+    private val useDB by option(help = "If a session towards the configured database should be established").flag()
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
@@ -37,13 +44,17 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         val sourceDir = C_SourceDir.diskDir(sourceDir)
         val modSel = C_CompilerModuleSelection(testModules)
         val app = RellCliUtils.compileApp(sourceDir, modSel, settings.model.compilerQuiet, C_CompilerOptions.DEFAULT)
-        val testFns = TestRunner.getTestFunctions(app, TestMatcher.ANY)
+        val testFns = TestRunner.getTestFunctions(app, tests?.let { TestMatcher.make(it) } ?: TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
     }
 
     private fun runTests(app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
-            runner(sqlManager, app, fns, sourceDir)
+        if (useDB) {
+            DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
+                runner(sqlManager, app, fns, sourceDir)
+            }
+        } else {
+            runner(NoConnSqlManager, app, fns, sourceDir)
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
@@ -56,6 +67,61 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
         val blockRunnerStrategy = Rt_DynamicBlockRunnerStrategy(sourceDir, blockRunnerModules, context.keyPair)
         val testCtx = TestRunnerContext(context.sqlCtx, sqlManager, context.globalCtx, context.chainCtx, blockRunnerStrategy, app)
         val cases = fns.map { TestRunnerCase(null, it) }
-        TestRunner.runTests(testCtx, cases)
+        val results = TestRunnerResults()
+        TestRunner.runTests(testCtx, cases, results)
+        printResults(results)
+    }
+
+    private val PRINT_SEPARATOR = "-".repeat(72)
+    private fun printResults(results: TestRunnerResults) {
+        val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
+
+        if (failedTests.isNotEmpty()) {
+            echo()
+            echo(PRINT_SEPARATOR)
+            echo("FAILED TESTS:")
+            for (r in failedTests) {
+                echo()
+                echo(r.case.name)
+                printException(r.res.error!!)
+            }
+        }
+
+        echo()
+        echo(PRINT_SEPARATOR)
+        echo("TEST RESULTS:")
+
+        printResults(okTests)
+        printResults(failedTests)
+
+        val nTests = results.getResults().size
+        val nOk = okTests.size
+        val nFailed = failedTests.size
+
+        echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
+
+        val allOk = nFailed == 0
+        echo("\n***** ${if (allOk) "OK" else "FAILED"} *****")
+    }
+
+    private fun printResults(list: List<TestCaseResult>) {
+        if (list.isNotEmpty()) {
+            echo()
+            for (r in list) {
+                echo("${r.res} ${r.case}")
+            }
+        }
+    }
+
+    private fun printException(e: Throwable) {
+        when (e) {
+            is Rt_Exception -> {
+                val msg = Rt_Utils.appendStackTrace("Error: ${e.message}", e.info.stack)
+                echo(msg)
+            }
+            else -> {
+                echo(e.stackTraceToString())
+            }
+        }
     }
 }
