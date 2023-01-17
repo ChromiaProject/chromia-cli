@@ -8,6 +8,7 @@ import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.compiler.base.core.C_CompilerModuleSelection
@@ -20,6 +21,7 @@ import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.runtime.Rt_ChainSqlMapping
 import net.postchain.rell.runtime.Rt_Exception
 import net.postchain.rell.runtime.utils.Rt_Utils
+import net.postchain.rell.sql.NoConnSqlManager
 import net.postchain.rell.sql.SqlManager
 import net.postchain.rell.utils.*
 
@@ -28,6 +30,7 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
     private val settings by settingsOption()
     private val tests by option(help = "test method pattern")
     private val sourceDir by lazy { settings.source }
+    private val useDB by option(help = "If a session towards the configured database should be established").flag()
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
@@ -46,8 +49,12 @@ class TestCommand: CliktCommand(help= "Run tests in working directory") {
     }
 
     private fun runTests(app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
-        DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
-            runner(sqlManager, app, fns, sourceDir)
+        if (useDB) {
+            DatabaseUtil.runWithSqlManager(settings.model.databaseErrorLogging, settings.model.databaseUrl) { sqlManager ->
+                runner(sqlManager, app, fns, sourceDir)
+            }
+        } else {
+            runner(NoConnSqlManager, app, fns, sourceDir)
         }
     }
     private fun runner(sqlManager: SqlManager, app: R_App, fns: List<R_FunctionDefinition>, sourceDir: C_SourceDir) {
