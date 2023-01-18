@@ -35,7 +35,7 @@ fun CliktCommand.settingsOption() = settingsOptionNotRequired()
         .defaultLazy("config.yml") { Settings(File("config.yml"), settingsOptionDefault()) }
 
 fun CliktCommand.settingsOptionNotRequired() =
-        option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS")
+        option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
                 .convert { Settings(it, GtvYaml().loadAnchor(it)) }
 
