@@ -6,7 +6,6 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
 import net.postchain.PostchainNode
 import net.postchain.rell.module.RellVersions
-import net.postchain.cli.CommandKeygen
 
 fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
     init {
@@ -26,6 +25,6 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
                 BuildCommand(),
                 QueryCommand(),
                 TxCommand(),
-                CommandKeygen(),
+                KeygenCommand(),
         )
         .main(args)
