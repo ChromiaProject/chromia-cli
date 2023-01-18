@@ -23,4 +23,6 @@ open class TestConsole() : CliktConsole {
 
     fun assertContains(text: String) = assertThat(out.map { it.first }).contains(text)
 
+    fun reset() = out.clear()
+
 }

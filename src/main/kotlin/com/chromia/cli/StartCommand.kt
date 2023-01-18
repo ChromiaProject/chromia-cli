@@ -12,6 +12,8 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import mu.withLoggingContext
@@ -88,10 +90,8 @@ class StartCommand : CliktCommand(help = "Starts a node") {
                 }
             }
         }
-        runBlocking {
-            chainsToStart.forEach {
-                launch { node.startBlockchain(it) }
-            }
+        chainsToStart.forEach {
+            node.startBlockchain(it)
         }
     }
 }
