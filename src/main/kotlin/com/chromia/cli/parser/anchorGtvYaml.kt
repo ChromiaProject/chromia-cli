@@ -21,8 +21,15 @@ class ConstructorIncludeSupport: Constructor() {
         val yaml = Yaml()
         override fun construct(p0: Node): Any {
             p0 as ScalarNode
-            val file = File(p0.value)
-            return yaml.load(file.inputStream())
+            return if (p0.value.contains("#")) {
+                val (f, sub) = p0.value.split("#")
+                val result = yaml.load<Map<String, Any>>(File(f).inputStream())
+                require(result.containsKey(sub)) { "File $f does not contain $sub" }
+                result[sub]!!
+            } else {
+                val file = File(p0.value)
+                yaml.load(file.inputStream())
+            }
         }
 
         override fun construct2ndStep(p0: Node?, p1: Any?) = Unit
