@@ -17,7 +17,7 @@ import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvFactory
 import net.postchain.rell.utils.PostchainUtils
 
-class NodeCommand : NoOpCliktCommand(help = "Node command")
+class NodeCommand : NoOpCliktCommand(help = "Interract with a test node")
 
 
 fun nodeCommands() = NodeCommand().subcommands(
