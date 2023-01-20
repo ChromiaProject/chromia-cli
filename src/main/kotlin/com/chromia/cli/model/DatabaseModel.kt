@@ -1,13 +1,13 @@
 package com.chromia.cli.model
 
 data class DatabaseModel(
-        val host: String = "localhost",
-        val database: String = "postchain",
-        val username: String = "postchain",
-        private val password: String = "postchain",
+        val host: String = System.getenv("CHR_DB_HOST") ?: "localhost",
+        val database: String = System.getenv("CHR_DB_NAME") ?: "postchain",
+        val username: String = System.getenv("CHR_DB_USER") ?: "postchain",
+        private val password: String = System.getenv("CHR_DB_PASSWORD") ?: "postchain",
+        val schema: String = System.getenv("CHR_DB_SCHEMA") ?: "rell_app",
+        val driver: String = "org.postgresql.Driver",
         val logSqlErrors: Boolean = true,
-        val schema: String = "rell_app",
-        val driver: String = "org.postgresql.Driver"
 ) {
     val url get() = "jdbc:postgresql://$host/$database?user=$username&password=$password"
 }
