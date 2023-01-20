@@ -208,6 +208,12 @@
             <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-devtools</artifactId>
+            <version>${postchain.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.bitcoinj</groupId>
