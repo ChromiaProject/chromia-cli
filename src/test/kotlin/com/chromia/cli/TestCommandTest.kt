@@ -34,4 +34,42 @@ internal class TestCommandTest {
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
         testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
     }
+
+    @Test
+    fun testWithDb(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                
+                entity foo { name; }
+                
+                operation add_foo(name) { create foo(name); }
+                query get_foo(name) = foo @? { name };
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                import ^.main.*;
+                
+                function test_get_foo() {
+                  rell.test.tx().op(add_foo("bar")).run();
+                  assert_not_null(get_foo("bar"));
+                }
+            """.trimIndent())
+        }
+
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                test:
+                  modules: 
+                    - test
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--use-db"))
+        testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
+    }
 }

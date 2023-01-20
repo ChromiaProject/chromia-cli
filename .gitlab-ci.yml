@@ -60,6 +60,7 @@ variables:
   POSTGRES_DB: postchain
   POSTGRES_USER: postchain
   POSTGRES_PASSWORD: postchain
+  CHR_DB_HOST: postgres
 
 services:
   - postgres
