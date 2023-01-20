@@ -26,6 +26,8 @@ object NodeConfig {
              setProperty("database.driverclass", config.databaseDriver)
              setProperty("database.url", config.databaseUrl)
              setProperty("database.schema", config.databaseSchema)
+             setProperty("database.username", config.database.username)
+             setProperty("database.password", config.database.password)
              setProperty("configuration.provider.node", "manual")
              setProperty("fastsync.exit_delay", 0)
          }
