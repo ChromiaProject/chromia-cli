@@ -13,8 +13,10 @@ data class ChromiaCliModel(
     val compilerOptions get() = compile.getCompilerOptions()
     val compilerQuiet get() = compile.quiet
     val rellVersion get() = R_LangVersion.of(compile.rellVersion)
-    val databaseUrl get() = database.url
-    val databaseErrorLogging get() = database.logSqlErrors
-    val databaseSchema get() = database.schema
     val databaseDriver get() = database.driver
+    val databaseErrorLogging get() = database.logSqlErrors
+    val databasePassword get() = database.dbPassword
+    val databaseSchema get() = database.dbSchema
+    val databaseUrl get() = database.url
+    val databaseUser get() = database.dbUser
 }

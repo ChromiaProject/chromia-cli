@@ -214,6 +214,12 @@
             <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>uk.org.webcompere</groupId>
+            <artifactId>system-stubs-jupiter</artifactId>
+            <version>2.0.1</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.bitcoinj</groupId>
