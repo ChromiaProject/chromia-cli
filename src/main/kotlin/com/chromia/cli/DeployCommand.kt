@@ -4,12 +4,14 @@ import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.*
+import com.chromia.directory1.common.proposal.proposeConfigurationAtOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
@@ -28,6 +30,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
     private val blockchain by option(help = "Name of blockchain to deploy")
+    private val height by option(help = "Deploy configuration at a specific height").long()
     private val secret by secretOption()
 
     init {
@@ -114,11 +117,21 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                                 containerName
                         )
                     } else {
-                        proposeConfigurationOperation(
-                                clientConfig.signers.first().pubKey.data,
-                                optionalBrid,
-                                configData
-                        )
+                        if (height != null) {
+                            proposeConfigurationAtOperation(
+                                    clientConfig.signers.first().pubKey.data,
+                                    optionalBrid,
+                                    configData,
+                                    height!!,
+                                    true
+                            )
+                        } else {
+                            proposeConfigurationOperation(
+                                    clientConfig.signers.first().pubKey.data,
+                                    optionalBrid,
+                                    configData
+                            )
+                        }
                     }
                 }
                 .sign()
