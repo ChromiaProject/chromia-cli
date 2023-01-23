@@ -15,12 +15,16 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
         """.trimIndent())
     }
+
+    override fun aliases(): Map<String, List<String>> {
+        return mapOf("start" to listOf("node", "start"))
+    }
 }
         .subcommands(
                 InitCommand(),
                 TestCommand(),
                 ReplCommand(),
-                StartCommand(),
+                nodeCommands(),
                 DeployCommand(),
                 BuildCommand(),
                 QueryCommand(),
