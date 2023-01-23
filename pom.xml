@@ -44,6 +44,12 @@
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>rell-maven</id>
+            <url>https://gitlab.com/api/v4/projects/37668820/packages/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>
@@ -66,6 +72,41 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <artifact>net.postchain.chain0:directory1:${postchain.version}:tar.gz:sources</artifact>
+                        </configuration>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-maven-plugin</artifactId>
+                <version>0.7.1</version>
+                <configuration>
+                    <source>${project.build.directory}/dependency/directory1/rell/src</source>
+                    <packageName>com.chromia.directory1</packageName>
+                    <mainModule>common.proposal</mainModule>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>rell-client-gen</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>rell-generate-client</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -170,6 +211,8 @@
             <groupId>net.postchain.chain0</groupId>
             <artifactId>directory1</artifactId>
             <version>${postchain.version}</version>
+            <classifier>sources</classifier>
+            <type>tar.gz</type>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
