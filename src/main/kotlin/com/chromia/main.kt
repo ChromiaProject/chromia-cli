@@ -26,7 +26,7 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
                 ReplCommand(),
                 nodeCommands(),
                 DeployCommand(),
-                BuildCommand(),
+                BuildCommand().apply { subcommands(BuildInfoCommand()) },
                 QueryCommand(),
                 TxCommand(),
                 KeygenCommand(),
