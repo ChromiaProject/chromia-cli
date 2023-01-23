@@ -11,7 +11,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 
 
-class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration") {
+class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
 
@@ -20,6 +20,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     override fun run() {
+        if (currentContext.invokedSubcommand != null) return
         compile(settings).apply {
             if (showBrid) this.forEach { (t, u) -> echo("${t.name} ${t.blockchainRid}") }
         }
