@@ -2,12 +2,11 @@ package com.chromia.cli
 
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
-import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -21,13 +20,12 @@ class ReplCommandTest {
 
     @Test
     fun testCanNotConnectToDb() {
-        File(command.dir, "config.yml").appendText("""
-            database:
-              host: invalidhost
-        """.trimIndent())
-        command.parse(listOf("--module=main", "--use-db"))
-        testConsole.assertContains("The connection attempt failed.\n")
+        EnvironmentVariables("CHR_DB_URL", "jdbc:postgresql://invalidhost/postgres").execute {
+            command.parse(listOf("--module=main", "--use-db"))
+            testConsole.assertContains("The connection attempt failed.\n")
+        }
     }
+
     @Test
     fun testCanNotFindModuleWithoutSettings() {
         command.emptyParse(listOf("--module=main"))
@@ -36,9 +34,12 @@ class ReplCommandTest {
 
     @Test
     fun testCanNotConnectToDbWithoutSettings() {
-        val exception = assertFailsWith<CliktError> {
-            command.emptyParse(listOf("--use-db"))
+        EnvironmentVariables("CHR_DB_URL", "").execute {
+            val exception = assertFailsWith<CliktError> {
+                command.emptyParse(listOf("--use-db"))
+            }
+            assertEquals("To correctly connect to the database, specifying the settings file is required", exception.message)
         }
-        assertEquals("To correctly connect to the database, specifying the settings file is required", exception.message)
     }
+
 }
