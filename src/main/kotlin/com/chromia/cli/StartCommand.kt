@@ -15,8 +15,8 @@ import net.postchain.metrics.NODE_PUBKEY_TAG
 class StartCommand : AbstractNodeCommand(help = """
     Starts a test node
     
-    If a blockchain has already been started on the configured database schema, the configuration will be added to the next height such that the node will be started with the enw config. 
-    Use --wipe to wipe the database schema upon startup and thus enforce starting the chain from h=0.
+    If a blockchain has already been started on the configured database schema, the configuration will be added to the next height such that the node will be started with the new config. 
+    Use --wipe to wipe the database schema upon startup and thus enforce starting the chain from height=0.
 """.trimIndent()) {
     private val wipe by wipeDatabaseOption()
 
