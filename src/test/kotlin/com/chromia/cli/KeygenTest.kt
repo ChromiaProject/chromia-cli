@@ -1,10 +1,17 @@
 package com.chromia.cli
 
+import assertk.assert
+import assertk.assertions.exists
+import com.github.ajalt.clikt.core.context
 import net.postchain.common.PropertiesFileLoader
 import org.bitcoinj.crypto.MnemonicException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.io.TempDir
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.io.File
+import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class KeygenTest {
@@ -24,5 +31,13 @@ class KeygenTest {
             KeygenCommand().parse(arrayOf("-m", "invalid mnemonic"))
         }
         assertEquals("Word list size must be multiple of three words.", exception.message)
+    }
+
+    @Test
+    fun keygenTest(@TempDir dir: Path) {
+        EnvironmentVariables("user.dir", dir.absolutePathString()).execute {
+            KeygenCommand().parse(listOf("--save", ".secret"))
+            assert(File(dir.toFile(), ".secret")).exists()
+        }
     }
 }
