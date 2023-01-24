@@ -2,19 +2,15 @@ package com.chromia.cli
 
 import assertk.assert
 import assertk.assertions.exists
-import com.github.ajalt.clikt.core.context
 import net.postchain.common.PropertiesFileLoader
 import org.bitcoinj.crypto.MnemonicException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.io.TempDir
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
-import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
-class KeygenTest {
+class KeygenCommandTest {
 
     @Test
     fun keygen() {
@@ -34,7 +30,7 @@ class KeygenTest {
     }
 
     @Test
-    fun keygenTest(@TempDir dir: Path) {
+    fun keygenTest() {
         KeygenCommand().parse(listOf("--save", ".secret"))
         val file = File(".secret")
         assert(file).exists()
