@@ -36,7 +36,7 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
 
         file?.let {
-            saveSecp256k1KeyPair(keyPair, it)
+            saveSecp256k1KeyPair(keyPair, it.absoluteFile)
         }
         println(
                 """
@@ -68,7 +68,7 @@ private fun generateSecp256k1KeyPairWithMnemonic(wordList: String): Pair<KeyPair
 }
 
 private fun saveSecp256k1KeyPair(keyPair: KeyPair, file: File) {
-    if (!file.absoluteFile.parentFile.exists()) file.absoluteFile.parentFile.mkdirs()
+    if (!file.parentFile.exists()) file.parentFile.mkdirs()
     val properties = Properties()
     properties["privkey"] = keyPair.privKey.data.toHex()
     properties["pubkey"] = keyPair.pubKey.data.toHex()

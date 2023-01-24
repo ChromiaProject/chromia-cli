@@ -35,9 +35,9 @@ class KeygenTest {
 
     @Test
     fun keygenTest(@TempDir dir: Path) {
-        EnvironmentVariables("user.dir", dir.absolutePathString()).execute {
-            KeygenCommand().parse(listOf("--save", ".secret"))
-            assert(File(dir.toFile(), ".secret")).exists()
-        }
+        KeygenCommand().parse(listOf("--save", ".secret"))
+        val file = File(".secret")
+        assert(file).exists()
+        file.delete()
     }
 }
