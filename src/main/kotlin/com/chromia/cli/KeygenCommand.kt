@@ -36,7 +36,7 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
 
         file?.let {
-            saveSecp256k1KeyPair(keyPair, it)
+            saveSecp256k1KeyPair(keyPair, it.absoluteFile)
         }
         println(
                 """

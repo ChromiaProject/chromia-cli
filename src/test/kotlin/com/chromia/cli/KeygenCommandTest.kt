@@ -1,13 +1,16 @@
 package com.chromia.cli
 
+import assertk.assert
+import assertk.assertions.exists
 import net.postchain.common.PropertiesFileLoader
 import org.bitcoinj.crypto.MnemonicException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.Assertions.*
+import java.io.File
 import kotlin.io.path.absolutePathString
 
-class KeygenTest {
+class KeygenCommandTest {
 
     @Test
     fun keygen() {
@@ -24,5 +27,13 @@ class KeygenTest {
             KeygenCommand().parse(arrayOf("-m", "invalid mnemonic"))
         }
         assertEquals("Word list size must be multiple of three words.", exception.message)
+    }
+
+    @Test
+    fun keygenTest() {
+        KeygenCommand().parse(listOf("--save", ".secret"))
+        val file = File(".secret")
+        assert(file).exists()
+        file.delete()
     }
 }
