@@ -63,6 +63,9 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
+                        val extraMessage = if (specifiedBlockchainRid == null) {
+                            verifyNewDeployment(generatedBlockchainRid)
+                        } else null
                         deployBlockchain(
                                 clientConfig,
                                 blockchainName,
@@ -72,28 +75,22 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                                 specifiedBlockchainRid
                         )
                         if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
-                        if (specifiedBlockchainRid == null) {
-                            verifyNewDeployment(generatedBlockchainRid)
-                        }
+                        extraMessage?.let { echo(it) }
                     }
         }
     }
 
-    private fun verifyNewDeployment(namedBlockchainRid: NamedBlockchainRid): Unit? {
-        println("Blockchain RID for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment? Y / N")
-        val resp = Scanner(System.`in`).nextLine().equals("Y", true)
-        if (resp) {
-            println("Add the following to your project settings file")
-            println("""
-                                    deployments:
-                                      $target:
-                                        chains:
-                                          ${namedBlockchainRid.name}: x"${namedBlockchainRid.blockchainRid.toHex()}"
-                                """.trimIndent())
-            return null
-        } else {
-            throw CliktError("Failed to deploy")
-        }
+    private fun verifyNewDeployment(namedBlockchainRid: NamedBlockchainRid): String {
+        confirm(
+                "Blockchain RID for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment?",
+                default = false, abort = true)
+        return """
+            Add the following to your project settings file:
+            deployments:
+              $target:
+                chains:
+                  ${namedBlockchainRid.name}: x"${namedBlockchainRid.blockchainRid.toHex()}"
+            """.trimIndent()
     }
 
     private fun deployBlockchain(
