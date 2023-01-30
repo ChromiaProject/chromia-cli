@@ -2,7 +2,6 @@ package com.chromia.cli
 
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -42,6 +41,7 @@ internal class TestCommandTest {
             writeText("""
                 module;
                 
+                struct module_args { name; } // Makes sure module args are propagated from config when making a rell.test.tx()
                 entity foo { name; }
                 
                 operation add_foo(name) { create foo(name); }
@@ -66,6 +66,11 @@ internal class TestCommandTest {
                 test:
                   modules: 
                     - test
+                  moduleArgs:
+                    main:
+                      name: foo
+                    non_existent: # Makes sure it is ok to specify "too many" nodes in the test context
+                      foo: bar
             """.trimIndent())
         }
         val testConsole = TestConsole()

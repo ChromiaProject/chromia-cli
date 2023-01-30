@@ -10,14 +10,16 @@ import net.postchain.rell.utils.toImmMap
 
 object ModuleArgs {
     fun getModuleArgsValues(app: R_App, moduleArgs: Map<String, Map<String, Gtv>>): Map<R_ModuleName, Rt_Value> {
-        return moduleArgs.map {
-            val modName = R_ModuleName.of(it.key)
-            val module = app.moduleMap.getValue(modName)
-            val struct = module.moduleArgs ?: throw IllegalArgumentException("$module does not have any arguments")
-            val gtv = GtvDictionary.build(it.value)
-            val value = struct.type.gtvToRt(GtvToRtContext.make(pretty = true), gtv)
-            modName to value
-        }.toMap().toImmMap()
+        return moduleArgs
+                .mapKeys { R_ModuleName.of(it.key) }
+                .filterKeys { app.moduleMap.containsKey(it) }
+                .mapValues {
+                    val module = app.moduleMap.getValue(it.key)
+                    val struct = module.moduleArgs
+                            ?: throw IllegalArgumentException("$module does not have any arguments")
+                    val gtv = GtvDictionary.build(it.value)
+                    val value = struct.type.gtvToRt(GtvToRtContext.make(pretty = true), gtv)
+                    value
+                }
     }
-
 }
