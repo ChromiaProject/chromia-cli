@@ -1,9 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.LocalDeploymentOption
-import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.settingsOptionDefault
-import com.chromia.cli.util.settingsOptionNotRequired
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -12,8 +9,7 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.arguments.validate
-import com.github.ajalt.clikt.parameters.groups.defaultByName
-import com.github.ajalt.clikt.parameters.groups.groupSwitch
+import com.github.ajalt.clikt.parameters.groups.*
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.Gtv
@@ -29,10 +25,8 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
     }
 
     private val settings by settingsOptionNotRequired()
-    private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings?.model ?: settingsOptionDefault() },
-            "--local" to LocalDeploymentOption()
-    ).defaultByName("--local")
+    private val explicitTarget by LocalDeploymentOption()
+    private val deploymentTarget by RemoteDeploymentOption { settings?.model ?: settingsOptionDefault() }.cooccurring()
 
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a single dict element.")
@@ -50,6 +44,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
 
     override fun run() {
+        val target = deploymentTarget ?: explicitTarget!!
         val clientConfig = BaseConfiguration().run {
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
