@@ -30,7 +30,7 @@ class StartCommand : AbstractNodeCommand(help = """
 
     private fun startPostchainNode() {
         val chainsToStart = mutableListOf<Long>()
-        val node = PostchainNode(nodeConfig, wipeDb = wipe, debug = true)
+        val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
         extractConfigs().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
             val gtvWithSigners = addSigners(gtv)
