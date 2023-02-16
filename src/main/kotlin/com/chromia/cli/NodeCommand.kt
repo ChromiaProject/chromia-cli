@@ -7,9 +7,7 @@ import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.parameters.options.defaultLazy
-import com.github.ajalt.clikt.parameters.options.multiple
-import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv
@@ -37,7 +35,8 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected val name by option(help = "Only start specified blockchains (multiple)", metavar = "NAME")
         .multiple()
 
-    protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model) }
+    private val overrides by option("-p", help = "Override any property value").associate()
+    protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
 
     protected fun extractConfigs(): Map<NamedBlockchainRid, Gtv> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
