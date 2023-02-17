@@ -4,7 +4,7 @@ import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.yaml.GtvYaml
@@ -37,7 +37,7 @@ internal val DEFAULT_CONFIG_FILE = File("config.yml")
 
 internal fun requireDefaultConfig() {
     if (!DEFAULT_CONFIG_FILE.exists()) {
-        throw CliktError("Invalid value for \"SETTINGS\": File \"$DEFAULT_CONFIG_FILE\" does not exist.")
+        throw FileNotFound(DEFAULT_CONFIG_FILE.name)
     }
 }
 
