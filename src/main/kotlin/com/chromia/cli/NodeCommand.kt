@@ -35,7 +35,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected val name by option(help = "Only start specified blockchains (multiple)", metavar = "NAME")
         .multiple()
 
-    private val overrides by option("-p", help = "Override any property value").associate()
+    private val overrides by option("-p", help = "Override any property value (usage: -p key=value)").associate()
     protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
 
     protected fun extractConfigs(): Map<NamedBlockchainRid, Gtv> {
