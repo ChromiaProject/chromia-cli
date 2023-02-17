@@ -4,6 +4,7 @@ import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.yaml.GtvYaml
@@ -31,15 +32,30 @@ data class Settings(val file: File, val model: ChromiaCliModel) {
     val blockchains get() = model.blockchains
     val test get() = model.test
 }
+
+internal val DEFAULT_CONFIG_FILE = File("config.yml")
+
+internal fun requireDefaultConfig() {
+    if (!DEFAULT_CONFIG_FILE.exists()) {
+        throw FileNotFound(DEFAULT_CONFIG_FILE.name)
+    }
+}
+
 fun CliktCommand.settingsOption() = settingsOptionNotRequired()
-        .defaultLazy("config.yml") { Settings(File("config.yml"), settingsOptionDefault()) }
+        .defaultLazy(DEFAULT_CONFIG_FILE.name) {
+            requireDefaultConfig()
+            Settings(DEFAULT_CONFIG_FILE, settingsOptionDefault())
+        }
 
 fun CliktCommand.settingsOptionNotRequired() =
         option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
                 .convert { Settings(it, GtvYaml().loadAnchor(it)) }
 
-fun settingsOptionDefault() = GtvYaml().loadAnchor<ChromiaCliModel>(File("config.yml"))
+fun settingsOptionDefault(): ChromiaCliModel {
+    requireDefaultConfig()
+    return GtvYaml().loadAnchor(DEFAULT_CONFIG_FILE)
+}
 
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
