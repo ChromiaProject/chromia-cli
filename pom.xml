@@ -17,7 +17,8 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-        <postchain.version>3.7.1</postchain.version>
+        <postchain.version>3.8.0</postchain.version>
+        <directory1.version>3.7.1</directory1.version>
         <rell.version>0.11.0</rell.version>
         <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
         <image.name>chr</image.name>
@@ -80,7 +81,7 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <artifact>net.postchain.chain0:directory1:${postchain.version}:tar.gz:sources</artifact>
+                            <artifact>net.postchain.chain0:directory1:${directory1.version}:tar.gz:sources</artifact>
                         </configuration>
                         <phase>generate-sources</phase>
                         <goals>
@@ -211,7 +212,7 @@
         <dependency>
             <groupId>net.postchain.chain0</groupId>
             <artifactId>directory1</artifactId>
-            <version>${postchain.version}</version>
+            <version>${directory1.version}</version>
             <classifier>sources</classifier>
             <type>tar.gz</type>
         </dependency>
