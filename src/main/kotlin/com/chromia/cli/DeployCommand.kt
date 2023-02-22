@@ -4,7 +4,9 @@ import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.*
+import com.chromia.directory1.common.proposal.proposeBlockchainOperation
 import com.chromia.directory1.common.proposal.proposeConfigurationAtOperation
+import com.chromia.directory1.common.proposal.proposeConfigurationOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -16,16 +18,19 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
+import net.postchain.common.exception.UserMistake
+import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
-import com.chromia.directory1.common.proposal.proposeBlockchainOperation
-import com.chromia.directory1.common.proposal.proposeConfigurationOperation
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
+class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
@@ -63,6 +68,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
+                        validateGtvConfiguration(configuration, specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
                         val extraMessage = if (specifiedBlockchainRid == null) {
                             verifyNewDeployment(generatedBlockchainRid)
                         } else null
@@ -71,7 +77,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                                 blockchainName,
                                 deployModel.container ?: throw CliktError("No container specified"),
                                 GtvEncoder.encodeGtv(this.configuration),
-                                PostchainClientProviderImpl(),
+                                clientProvider,
                                 specifiedBlockchainRid
                         )
                         if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
@@ -139,4 +145,13 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             echo("Deployment of blockchain $blockchainName was successful")
         }
     }
+
+    private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
+        try {
+            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(configuration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
+        } catch (e: UserMistake) {
+            throw CliktError(e.message)
+        }
+    }
+
 }

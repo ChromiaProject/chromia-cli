@@ -12,7 +12,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDecoder
-import net.postchain.gtv.GtvFactory
 import net.postchain.rell.utils.PostchainUtils
 
 class NodeCommand : NoOpCliktCommand(help = "Interract with a test node")
@@ -60,15 +59,4 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
         return if (name.isEmpty()) configsToAdd else configsToAdd.filter { name.contains(it.key.name) }
     }
-
-    protected fun addSigners(gtvConfig: Gtv) =
-        if (gtvConfig["signers"] != null) {
-            gtvConfig
-        } else {
-            GtvFactory.gtv(
-                *gtvConfig.asDict().toList().toTypedArray(),
-                "signers" to GtvFactory.gtv(listOf(GtvFactory.gtv(nodeConfig.pubKeyByteArray)))
-            )
-        }
-
 }
