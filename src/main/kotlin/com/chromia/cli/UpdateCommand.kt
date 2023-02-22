@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.util.withSigner
 import net.postchain.StorageBuilder
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadWriteConnection
@@ -15,7 +16,7 @@ class UpdateCommand : AbstractNodeCommand(help = """
         val storage = StorageBuilder.buildStorage(nodeConfig, false)
 
         extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
-            val gtvWithSigners = addSigners(gtv)
+            val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
                 require(lastHeight >= 0) { "Blockchain must be initialized before you can update it, $lastHeight" }
