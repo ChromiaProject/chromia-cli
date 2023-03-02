@@ -57,6 +57,8 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
         // TODO: override these from config ([BlockchainModel.config])
         b.update(gtv("name" to gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
         b.update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
+        b.update(gtv("HEADER_HASH"), "config_consensus_strategy")
+        b.update(gtv(1000), "revolt", "fast_revolt_status_timeout")
 
         val modulesGtv: MutableList<Gtv> = mutableListOf(
                 gtv(RellPostchainModuleFactory::class.qualifiedName!!),
