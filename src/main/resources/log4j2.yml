@@ -12,12 +12,12 @@ Appenders:
 
 Loggers:
   Root:
-    level: warn
+    level: ${sys:CHR_LOG_LEVEL:-warn}
     AppenderRef:
       - ref: ConsoleAppender
   Logger:
     - name: net.postchain
-      level: info
+      level: ${sys:CHR_LOG_LEVEL:-info}
       additivity: false
       AppenderRef:
         - ref: ConsoleAppender
