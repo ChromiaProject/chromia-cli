@@ -117,7 +117,7 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                                 clientConfig.signers.first().pubKey.data,
                                 configData,
                                 blockchainName,
-                                containerName
+                                containerName, ""
                         )
                     } else {
                         if (height != null) {
@@ -126,13 +126,13 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                                     optionalBrid,
                                     configData,
                                     height!!,
-                                    true
+                                    true, ""
                             )
                         } else {
                             proposeConfigurationOperation(
                                     clientConfig.signers.first().pubKey.data,
                                     optionalBrid,
-                                    configData
+                                    configData, ""
                             )
                         }
                     }
