@@ -3,6 +3,7 @@ package com.chromia.cli
 import assertk.assert
 import assertk.assertions.isNotNull
 import com.chromia.cli.util.TestConsole
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadConnection
@@ -16,6 +17,7 @@ import net.postchain.devtools.buildBlocksUpTo
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
 import net.postchain.gtv.gtvml.GtvMLParser
+import org.junit.jupiter.api.assertThrows
 
 internal class UpdateCommandTest : IntegrationTestSetup() {
 
@@ -64,11 +66,12 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         nodes.forEach { it.buildBlocksUpTo(0, 0) }
         val testConsole = TestConsole()
         UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
-        testConsole.assertContains("Configuration added at height 5\n")
+        testConsole.assertContains("Configuration added at height 2\n")
         nodes.forEach {
             withReadConnection(it.postchainContext.storage, 0) { ctx ->
-                assert(BlockchainApi.getConfiguration(ctx, 5)).isNotNull()
+                assert(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
             }
         }
+        assertThrows<CliktError> { UpdateCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml", "-n", "1")) }
     }
 }
