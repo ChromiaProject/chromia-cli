@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.compatibility.CompatibilityFinder
+import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
@@ -110,16 +110,16 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                 .transactionBuilder()
                 .addNop()
                 .apply {
-                    val compatibilityFinder = CompatibilityFinder(client.directory1Version, this)
+                    val blockchainOperations = BlockchainOperations(client.directory1Version, this)
                     if (optionalBrid == null) {
-                        compatibilityFinder.newBlockchainOperation(
+                        blockchainOperations.newBlockchainOperation(
                                 clientConfig.signers.first().pubKey.data,
                                 configData,
                                 blockchainName,
                                 containerName
                         )
                     } else {
-                        compatibilityFinder.proposeConfiguration(
+                        blockchainOperations.proposeConfiguration(
                                 clientConfig.signers.first().pubKey.data,
                                 optionalBrid,
                                 configData,

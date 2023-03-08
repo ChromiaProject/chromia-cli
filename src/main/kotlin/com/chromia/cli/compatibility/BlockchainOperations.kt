@@ -10,7 +10,7 @@ import com.chromia.directory1.common.proposal.proposeConfigurationOperation
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
 
-class CompatibilityFinder(private val version: Version, private val builder: TransactionBuilder) {
+class BlockchainOperations(private val version: Version, private val builder: TransactionBuilder) {
 
     fun newBlockchainOperation(myPubkey: ByteArray,
                                configData: ByteArray,
