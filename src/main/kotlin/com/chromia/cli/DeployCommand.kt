@@ -1,12 +1,10 @@
 package com.chromia.cli
 
+import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.*
-import com.chromia.directory1.common.proposal.proposeBlockchainOperation
-import com.chromia.directory1.common.proposal.proposeConfigurationAtOperation
-import com.chromia.directory1.common.proposal.proposeConfigurationOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -23,7 +21,6 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
-import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
@@ -68,7 +65,8 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
-                        validateGtvConfiguration(configuration, specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
+                        validateGtvConfiguration(configuration, specifiedBlockchainRid
+                                ?: generatedBlockchainRid.blockchainRid)
                         val extraMessage = if (specifiedBlockchainRid == null) {
                             verifyNewDeployment(generatedBlockchainRid)
                         } else null
@@ -112,29 +110,22 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                 .transactionBuilder()
                 .addNop()
                 .apply {
+                    val blockchainOperations = BlockchainOperations(client.directory1Version, this)
                     if (optionalBrid == null) {
-                        proposeBlockchainOperation(
+                        blockchainOperations.newBlockchainOperation(
                                 clientConfig.signers.first().pubKey.data,
                                 configData,
                                 blockchainName,
                                 containerName
                         )
                     } else {
-                        if (height != null) {
-                            proposeConfigurationAtOperation(
-                                    clientConfig.signers.first().pubKey.data,
-                                    optionalBrid,
-                                    configData,
-                                    height!!,
-                                    true
-                            )
-                        } else {
-                            proposeConfigurationOperation(
-                                    clientConfig.signers.first().pubKey.data,
-                                    optionalBrid,
-                                    configData
-                            )
-                        }
+                        blockchainOperations.proposeConfiguration(
+                                clientConfig.signers.first().pubKey.data,
+                                optionalBrid,
+                                configData,
+                                height!!,
+                                true
+                        )
                     }
                 }
                 .sign()
