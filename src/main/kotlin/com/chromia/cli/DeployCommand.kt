@@ -65,8 +65,6 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
-                        validateGtvConfiguration(configuration, specifiedBlockchainRid
-                                ?: generatedBlockchainRid.blockchainRid)
                         val extraMessage = if (specifiedBlockchainRid == null) {
                             verifyNewDeployment(generatedBlockchainRid)
                         } else null
@@ -136,13 +134,4 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
             echo("Deployment of blockchain $blockchainName was successful")
         }
     }
-
-    private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
-        try {
-            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(configuration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
-        } catch (e: UserMistake) {
-            throw CliktError(e.message)
-        }
-    }
-
 }

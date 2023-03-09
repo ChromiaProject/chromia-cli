@@ -2,8 +2,12 @@ package com.chromia.cli.compile.config
 
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.util.withSigner
+import com.github.ajalt.clikt.core.CliktError
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
+import net.postchain.common.exception.UserMistake
+import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
@@ -24,10 +28,17 @@ class BlockchainConfigurationGenerator(private val model: ChromiaCliModel, priva
 
     fun generateConfiguration(name: String, model: BlockchainModel): Pair<NamedBlockchainRid, Gtv> {
         val gtvModel = generateGtv(model)
-        return Pair(
-                NamedBlockchainRid(name, BlockchainRid(PostchainUtils.calcBlockchainRid(gtvModel).toByteArray())),
-                gtvModel
-        )
+        val brid = BlockchainRid(PostchainUtils.calcBlockchainRid(gtvModel).toByteArray())
+        validateGtvConfiguration(gtvModel, brid)
+        return NamedBlockchainRid(name, brid) to gtvModel
+    }
+
+    private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
+        try {
+            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(configuration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
+        } catch (e: UserMistake) {
+            throw CliktError(e.message)
+        }
     }
 
     private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
