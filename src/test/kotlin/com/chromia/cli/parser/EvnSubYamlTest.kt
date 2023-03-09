@@ -30,7 +30,15 @@ class EvnSubYamlTest {
             }
             val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "a.yml"))
             assert(res["a"] as String).isEqualTo("1")
-            assert(res["a"])
         }
+    }
+
+    @Test
+    fun `Dollar sign can be escaped and not interpreted as env var`(@TempDir dir: Path) {
+            with(File(dir.toFile(), "a.yml")) {
+                writeText("a: \"\$escaped\$\"")
+            }
+            val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
+            assert(res["a"]).isEqualTo("\$escaped\$")
     }
 }
