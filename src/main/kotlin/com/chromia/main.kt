@@ -19,7 +19,10 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
     }
 
     override fun aliases(): Map<String, List<String>> {
-        return mapOf("start" to listOf("node", "start"))
+        return mapOf(
+                "start" to listOf("node", "start"),
+                "deploy" to listOf("deployment", "create") // Temporary backward compatibility
+        )
     }
 }
         .subcommands(
@@ -27,7 +30,7 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
                 TestCommand(),
                 ReplCommand(),
                 nodeCommands(),
-                DeployCommand(),
+                DeployCreateCommand(),
                 BuildCommand().apply { subcommands(BuildInfoCommand()) },
                 QueryCommand(),
                 TxCommand(),

@@ -27,7 +27,7 @@ import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(help = "Deploy blockchain into container") {
+class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
