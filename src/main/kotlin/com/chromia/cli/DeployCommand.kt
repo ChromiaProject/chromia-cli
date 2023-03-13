@@ -123,7 +123,7 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                                 clientConfig.signers.first().pubKey.data,
                                 optionalBrid,
                                 configData,
-                                height!!,
+                                height,
                                 true
                         )
                     }
