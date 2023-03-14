@@ -3,6 +3,8 @@ package com.chromia.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -10,6 +12,7 @@ import java.io.File
 import java.util.*
 
 class InitCommand : CliktCommand(help = "Generates a template project") {
+    private val name by argument(help = "Dapp name").default("hello")
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
@@ -31,7 +34,7 @@ class InitCommand : CliktCommand(help = "Generates a template project") {
             }
         }
         File(baseDir, "config.yml").writeText(
-                this::class.java.getResource("init/config.yml")!!.readText()
+                this::class.java.getResource("init/config.yml")!!.readText().replace("hello", name)
         )
         val sourceDir = File(baseDir, "src")
         sourceDir.mkdir()
