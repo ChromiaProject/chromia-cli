@@ -30,7 +30,7 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
                 TestCommand(),
                 ReplCommand(),
                 nodeCommands(),
-                DeployCreateCommand(),
+                deployCommands(),
                 BuildCommand().apply { subcommands(BuildInfoCommand()) },
                 QueryCommand(),
                 TxCommand(),

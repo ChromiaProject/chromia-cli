@@ -6,6 +6,8 @@ import com.chromia.directory1.common.directoryVersion
 import net.postchain.client.core.PostchainClient
 
 
+
+
 val PostchainClient.directory1Version get(): Version {
     return try {
         directoryVersion()
