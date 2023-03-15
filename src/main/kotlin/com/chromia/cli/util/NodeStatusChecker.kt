@@ -11,12 +11,12 @@ import org.http4k.core.Request
 import org.http4k.format.Jackson.auto
 import org.http4k.lens.asResult
 
-class NodeStatusChecker(private val blockchainRid: BlockchainRid, private val client: HttpHandler) {
+class NodeStatusChecker(private val blockchainRid: BlockchainRid, private val httpHandler: HttpHandler) {
 
     fun checkStatus(url: String): NodeStatus {
         val request = Request(Method.GET, "$url/node/${blockchainRid.toHex()}/my_status")
         return try {
-            val result = client(request)
+            val result = httpHandler(request)
             statusLens(result).mapFailure { errorLens(result) }.get()
         } catch (e: Exception) {
             NodeStatus.Error("Node Unreachable")

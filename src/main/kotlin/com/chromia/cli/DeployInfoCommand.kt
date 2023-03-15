@@ -1,7 +1,10 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.DeploymentModel
+import com.chromia.cli.util.ClusterManagementFactory
+import com.chromia.cli.util.HttpHandlerFactory
 import com.chromia.cli.util.NodeStatusChecker
+import com.chromia.cli.util.defaultHttpHandler
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -17,12 +20,8 @@ import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
-import net.postchain.d1.client.ChromiaClientProvider
-import net.postchain.d1.cluster.ClusterManagement
-import org.http4k.client.ApacheClient
-import org.http4k.core.HttpHandler
 
-class DeployInfoCommand(private val client: HttpHandler? = null, private val clusterManagement: ClusterManagement? = null): CliktCommand(
+class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companion, private val clusterManagementFactory: ClusterManagementFactory = Companion): CliktCommand(
         name = "info",
         help = "Information about deployed blockchain"
 ) {
@@ -40,7 +39,10 @@ class DeployInfoCommand(private val client: HttpHandler? = null, private val clu
 
     override fun run() {
         val config = PostchainClientConfig(network.blockchainRid, endpointPool = EndpointPool.default(network.urls))
-        val clientProvider = fromClientConfig(config, client, clusterManagement)
+        val httpHandler = clientFactory.buildHttpHandler(config)
+        val postchainClient = PostchainClientImpl(config, httpHandler)
+
+        val clusterManagement = clusterManagementFactory.buildClusterManagement(postchainClient)
 
         try {
             table {
@@ -49,20 +51,20 @@ class DeployInfoCommand(private val client: HttpHandler? = null, private val clu
                     borderStyle = Table.BorderStyle.SINGLE_LINE
                 }
                 header("Blockchain", "Rid", "Cluster")
-                row(blockchain, brid.toShortHex(), clientProvider.clusterManagement.getClusterOfBlockchain(brid))
+                row(blockchain, brid.toShortHex(), clusterManagement.getClusterOfBlockchain(brid))
             }.render().also { echo(it) }
-            val clusterUrls = clientProvider.clusterManagement.getBlockchainApiUrls(brid)
-            val statusChecker = NodeStatusChecker(brid, client ?: ApacheClient())
+            val clusterUrls = clusterManagement.getBlockchainApiUrls(brid)
+            val statusChecker = NodeStatusChecker(brid, httpHandler)
             table {
                 hints {
                     defaultAlignment = Table.Hints.Alignment.LEFT
                     borderStyle = Table.BorderStyle.SINGLE_LINE
                 }
-                header("Node url", "Status")
+                header("Node url", "Height", "Status")
                 clusterUrls.forEach { url ->
                     when (val result = statusChecker.checkStatus(url)) {
-                        is NodeStatusChecker.NodeStatus.Status -> row(url, "Height: ${result.height}")
-                        is NodeStatusChecker.NodeStatus.Error -> row(url, result.error)
+                        is NodeStatusChecker.NodeStatus.Status -> row(url, result.height.toString(), "OK")
+                        is NodeStatusChecker.NodeStatus.Error -> row(url, "", result.error)
                     }
                 }
             }.render().also { echo(it) }
@@ -71,14 +73,8 @@ class DeployInfoCommand(private val client: HttpHandler? = null, private val clu
         }
     }
 
-    companion object {
-        /**
-         * Builds an instance of [ChromiaClientProvider] that uses a http client to query chain0
-         */
-        fun fromClientConfig(config: PostchainClientConfig, httpHandler: HttpHandler?, clusterManagement: ClusterManagement?): ChromiaClientProvider {
-            val chain0Client: PostchainClient = httpHandler?.let { PostchainClientImpl(config, it) } ?: PostchainClientImpl(config)
-            val clusterManagement = clusterManagement ?: ClusterManagementImpl(chain0Client)
-            return ChromiaClientProvider(config.failOverConfig, clusterManagement)
-        }
+    companion object: HttpHandlerFactory, ClusterManagementFactory {
+        override fun buildHttpHandler(config: PostchainClientConfig) = defaultHttpHandler(config)
+        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }

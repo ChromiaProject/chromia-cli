@@ -20,7 +20,7 @@ class DeployInfoCommandTest {
     @Test
     fun failedVerification(@TempDir dir: Path) {
         val testConsole = TestConsole()
-        val command = DeployInfoCommand(testClient(), TestClusterManagement()).context { console = testConsole }
+        val command = DeployInfoCommand({ testClient() }, { TestClusterManagement() }).context { console = testConsole }
 
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -37,21 +37,20 @@ class DeployInfoCommandTest {
             """.trimIndent())
         }
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "ok", "--target", "test"))
-        println(testConsole.out)
         assert(testConsole.out[0].first).contains("ok         | 00:002 | my_cluster")
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | Height: 569889")
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_found", "--target", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | Can't find blockchain")
+        assert(testConsole.out[1].first).contains("http://myhost:7740 |        | Can't find blockchain")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_deployed", "--target", "test"))
         testConsole.assertContains("Cluster not found for blockchain rid 00:004\n")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "has_errors", "--target", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | Module initialization error")
+        assert(testConsole.out[1].first).contains("http://myhost:7740 |        | Module initialization error")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--target", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | Height: 570320")
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
     }
 
     private fun testClient(): (Request) -> Response = {
