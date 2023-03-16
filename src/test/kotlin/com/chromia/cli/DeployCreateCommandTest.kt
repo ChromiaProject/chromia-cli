@@ -13,7 +13,7 @@ import java.io.File
 import java.nio.file.Path
 
 
-class DeployCommandTest {
+class DeployCreateCommandTest {
 
     @Test
     fun cannotDeployFaultyConfig(@TempDir dir: Path) {
@@ -40,7 +40,7 @@ class DeployCommandTest {
         }
         val testConsole = TestConsole()
         val throwable = assertThrows<CliktError> {
-            DeployCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--target", "test"))
+            DeployCreateCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--target", "test"))
         }
         assert(throwable.message!!).contains("Module initialization failed: Decoding type 'text': expected STRING, actual DICT")
     }
