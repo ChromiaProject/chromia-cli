@@ -42,7 +42,7 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
     override fun run() {
         val cSourceDir = C_SourceDir.diskDir(settings.source)
 
-        val generator = BlockchainConfigurationGenerator(settings.model, cSourceDir)
+        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, cSourceDir)
         val chainsToDeploy = blockchain?.let {
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
