@@ -41,14 +41,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     override fun run() {
-        runMultiModuleTest()
-    }
-
-    private fun runMultiModuleTest() {
-
         val testModules = modules ?: settings.test.modules.map { R_ModuleName.Companion.of(it) }
         val sourceDir = C_SourceDir.diskDir(sourceDir)
-        val modSel = C_CompilerModuleSelection(testModules)
+        val modSel = C_CompilerModuleSelection(listOf(), testModules)
         val app = RellCliUtils.compileApp(sourceDir, modSel, settings.model.compilerQuiet, C_CompilerOptions.DEFAULT)
         val testFns = TestRunner.getTestFunctions(app, tests?.let { TestMatcher.make(it) } ?: TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
