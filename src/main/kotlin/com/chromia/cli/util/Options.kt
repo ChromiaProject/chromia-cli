@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.parseModel
 import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.FileNotFound
@@ -42,19 +43,16 @@ internal fun requireDefaultConfig() {
 }
 
 fun CliktCommand.settingsOption() = settingsOptionNotRequired()
-        .defaultLazy(DEFAULT_CONFIG_FILE.name) {
-            requireDefaultConfig()
-            Settings(DEFAULT_CONFIG_FILE, settingsOptionDefault())
-        }
+        .defaultLazy(DEFAULT_CONFIG_FILE.name) { settingsOptionDefault() }
 
 fun CliktCommand.settingsOptionNotRequired() =
         option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
-                .convert { Settings(it, GtvYaml().loadAnchor(it)) }
+                .convert { Settings(it, parseModel(it)) }
 
-fun settingsOptionDefault(): ChromiaCliModel {
+fun settingsOptionDefault(): Settings {
     requireDefaultConfig()
-    return GtvYaml().loadAnchor(DEFAULT_CONFIG_FILE)
+    return Settings(DEFAULT_CONFIG_FILE, parseModel(DEFAULT_CONFIG_FILE))
 }
 
 fun CliktCommand.secretOption() =

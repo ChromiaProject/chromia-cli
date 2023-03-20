@@ -19,9 +19,10 @@ data class CompileModel(
         private val symbolInfoFile: List<String>? = null,
         val quiet: Boolean = true
 ) {
+    val langVersion get() = R_LangVersion.of(rellVersion)
     fun getCompilerOptions (): C_CompilerOptions {
         return C_CompilerOptions(
-                R_LangVersion.of(rellVersion),
+                langVersion,
                 gtv = gtv,
                 deprecatedError = deprecatedError,
                 ide = ide,
