@@ -37,13 +37,23 @@ internal class TestCommandTest {
     @Test
     fun testSubModuleSelectiveTest(@TempDir dir: Path) {
 
-        with(File(dir.toFile(), "src/testDir/test.rell")) {
+        with(File(dir.toFile(), "src/testDir/test.rell"), ) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
                 
                 function test_a() {}
                 function test_b() {}
+            """.trimIndent())
+        }
+
+        with(File(dir.toFile(), "src/testDir/bar.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_c() {}
+                function test_d() {}
             """.trimIndent())
         }
 
@@ -62,13 +72,23 @@ internal class TestCommandTest {
     @Test
     fun testSubModuleAllTests(@TempDir dir: Path) {
 
-        with(File(dir.toFile(), "src/testDir/test.rell")) {
+        with(File(dir.toFile(), "src/testDir/foo.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
                 
                 function test_a() {}
                 function test_b() {}
+            """.trimIndent())
+        }
+
+        with(File(dir.toFile(), "src/testDir/bar.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_c() {}
+                function test_d() {}
             """.trimIndent())
         }
 
@@ -81,7 +101,7 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
-        testConsole.assertContains("\nSUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL\n\n")
+        testConsole.assertContains("\nSUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL\n\n")
     }
 
     @Test
