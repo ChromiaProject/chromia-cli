@@ -35,6 +35,76 @@ internal class TestCommandTest {
     }
 
     @Test
+    fun testSubModuleSelectiveTest(@TempDir dir: Path) {
+
+        with(File(dir.toFile(), "src/testDir/test.rell"), ) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_a() {}
+                function test_b() {}
+            """.trimIndent())
+        }
+
+        with(File(dir.toFile(), "src/testDir/bar.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_c() {}
+                function test_d() {}
+            """.trimIndent())
+        }
+
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                test:
+                  modules: 
+                    - testDir
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
+        testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
+    }
+
+    @Test
+    fun testSubModuleAllTests(@TempDir dir: Path) {
+
+        with(File(dir.toFile(), "src/testDir/foo.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_a() {}
+                function test_b() {}
+            """.trimIndent())
+        }
+
+        with(File(dir.toFile(), "src/testDir/bar.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_c() {}
+                function test_d() {}
+            """.trimIndent())
+        }
+
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                test:
+                  modules: 
+                    - testDir
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
+        testConsole.assertContains("\nSUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL\n\n")
+    }
+
+    @Test
     fun testWithDb(@TempDir dir: Path) {
         with(File(dir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
