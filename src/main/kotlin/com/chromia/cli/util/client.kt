@@ -12,7 +12,7 @@ import org.http4k.client.ApacheClient
 import org.http4k.core.HttpHandler
 
 
-val PostchainClient.directory1Version get(): Long {
+val PostchainClient.apiVersion get(): Long {
     return try {
         apiVersion()
     } catch (e: Exception) {

@@ -114,7 +114,7 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
                 .addNop()
                 .apply {
                     val heightChecker by lazy { HeightChecker(httpHandlerFactory.buildHttpHandler(clientConfig), clusterManagement) }
-                    val blockchainOperations = BlockchainOperations(client.directory1Version, this, heightChecker)
+                    val blockchainOperations = BlockchainOperations(client.apiVersion, this, heightChecker)
                     if (optionalBrid == null) {
                         blockchainOperations.newBlockchainOperation(
                                 clientConfig.signers.first().pubKey.data,
