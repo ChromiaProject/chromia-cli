@@ -1,8 +1,6 @@
 package com.chromia.cli.util
 
-import com.chromia.directory1.common.Codename
-import com.chromia.directory1.common.Version
-import com.chromia.directory1.common.directoryVersion
+import com.chromia.directory1.version.apiVersion
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.d1.cluster.ClusterManagement
@@ -14,11 +12,11 @@ import org.http4k.client.ApacheClient
 import org.http4k.core.HttpHandler
 
 
-val PostchainClient.directory1Version get(): Version {
+val PostchainClient.directory1Version get(): Long {
     return try {
-        directoryVersion()
+        apiVersion()
     } catch (e: Exception) {
-        Version(Codename.Delta, "0.1.0")
+        1
     }
 }
 

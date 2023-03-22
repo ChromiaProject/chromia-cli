@@ -6,6 +6,7 @@ import com.chromia.cli.util.NodeStatusChecker
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
 import net.postchain.client.exception.ClientError
+import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Request
@@ -64,12 +65,14 @@ class DeployInfoCommandTest {
 
     class TestClusterManagement: ClusterManagement {
 
-        override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("4")) "my_cluster" else throw ClientError("")
+        override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("4")) "my_cluster" else throw ClientError("", Status(404, null), "", Endpoint(""))
         override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = listOf("http://myhost:7740")
         override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
         override fun getBlockchainPeers(blockchainRid: BlockchainRid, height: Long) = TODO("Not yet implemented")
         override fun getClusterInfo(clusterName: String) = TODO("Not yet implemented")
         override fun getClusterNames() = TODO("Not yet implemented")
+        override fun getClusterAnchoringChains() = TODO("Not yet implemented")
+        override fun getSystemAnchoringChain() = TODO("Not yet implemented")
     }
 }
 
