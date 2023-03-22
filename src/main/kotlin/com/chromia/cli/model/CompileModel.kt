@@ -20,7 +20,7 @@ data class CompileModel(
         val quiet: Boolean = true
 ) {
     val langVersion get() = R_LangVersion.of(rellVersion)
-    fun getCompilerOptions (): C_CompilerOptions {
+    fun getCompilerOptions(): C_CompilerOptions {
         return C_CompilerOptions(
                 langVersion,
                 gtv = gtv,
@@ -31,7 +31,9 @@ data class CompileModel(
                 testLib = testLib,
                 hiddenLib = hiddenLib,
                 allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
-                symbolInfoFile = if(symbolInfoFile == null) null else ( C_SourcePath.of(symbolInfoFile))
+                symbolInfoFile = if (symbolInfoFile == null) null else (C_SourcePath.of(symbolInfoFile)),
+                complexWhatEnabled = true,
+                ideDefIdConflictError = false
         )
     }
 }
