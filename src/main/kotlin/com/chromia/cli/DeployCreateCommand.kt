@@ -67,8 +67,6 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
             }.let { PostchainClientConfig.fromConfiguration(it) }
             DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
                     .apply {
-                        validateGtvConfiguration(configuration, specifiedBlockchainRid
-                                ?: generatedBlockchainRid.blockchainRid)
                         val extraMessage = if (specifiedBlockchainRid == null) {
                             verifyNewDeployment(generatedBlockchainRid)
                         } else null
@@ -142,17 +140,8 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
         }
     }
 
-    private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
-        try {
-            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(configuration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
-        } catch (e: UserMistake) {
-            throw CliktError(e.message)
-        }
-    }
-
     companion object : HttpHandlerFactory, ClusterManagementFactory {
         override fun buildHttpHandler(config: PostchainClientConfig) = defaultHttpHandler(config)
         override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
-
 }

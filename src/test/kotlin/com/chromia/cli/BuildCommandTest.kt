@@ -1,7 +1,9 @@
 package com.chromia.cli
 
+import assertk.assert
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -51,5 +53,23 @@ internal class BuildCommandTest {
         assertEquals(File(dir, "build").list()?.size ?: 0, 2)
         assertTrue(File(dir, "build/hello.xml").exists())
         assertTrue(File(dir, "build/hello.gtv").exists())
+    }
+
+    @Test
+    fun failsValidation() {
+        File(dir, "config.yml").writeText("""
+            blockchains:
+              hello:
+                module: main
+                moduleArgs: 
+                  main:
+                    my_args: "wrong_type"
+        """.trimIndent())
+        File(dir, "src/main.rell").writeText("""
+            module;
+            struct module_args { my_args: integer; }
+        """.trimIndent())
+        val e = assertFailsWith<CliktError> { command.parse() }
+        assertTrue(e.message!!.contains("Module initialization failed: Decoding type 'integer': expected INTEGER, actual STRING"))
     }
 }
