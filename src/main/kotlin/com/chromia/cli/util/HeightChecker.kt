@@ -1,5 +1,9 @@
 package com.chromia.cli.util
 
+import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.exception.ClientError
+import net.postchain.client.impl.PostchainClientImpl
+import net.postchain.client.request.SingleEndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Body
@@ -9,7 +13,7 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.format.Jackson.auto
 
-class HeightChecker(private val httpHandler: HttpHandler, private val clusterManagement: ClusterManagement) {
+class HeightChecker(private val httpHandler: HttpHandler, private val clusterManagement: ClusterManagement, private val templateConfig: PostchainClientConfig) {
 
     fun findSafeHeight(blockchainRid: BlockchainRid, safety: Long = 10): Long {
         val apiUrls = clusterManagement.getBlockchainApiUrls(blockchainRid)
@@ -19,16 +23,11 @@ class HeightChecker(private val httpHandler: HttpHandler, private val clusterMan
     private fun findBestHeight(apiUrls: Collection<String>, blockchainRid: BlockchainRid) =
             apiUrls.map {
                 try {
-                    val res = httpHandler(Request(Method.GET, "$it/blockchain/${blockchainRid.toHex()}/height")
-                            .header("Accept", ContentType.APPLICATION_JSON.value)
-                    )
-                    Body.auto<Height>().toLens()(res).blockHeight
-                } catch (e: Exception) {
+                    PostchainClientImpl(templateConfig.copy(blockchainRid, SingleEndpointPool(it)), httpHandler).currentBlockHeight()
+                } catch (e: ClientError) {
                     -1
                 }
             }.max().also {
                 if (it <= 0) throw IllegalArgumentException("Deployment failed, no nodes are building blocks for chain $blockchainRid")
             }
-
-    internal class Height(val blockHeight: Long)
 }

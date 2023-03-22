@@ -4,6 +4,8 @@ import assertk.assert
 import assertk.assertions.contains
 import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
+import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.request.SingleEndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Request
@@ -14,17 +16,18 @@ import org.junit.jupiter.api.assertThrows
 
 class HeightCheckerTest {
     val testBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000001")
+    val testConfigTemplate = PostchainClientConfig(BlockchainRid.ZERO_RID, SingleEndpointPool(""))
 
     @Test
     fun tenHigherThatnHighest() {
-        val hc = HeightChecker(testClient(), TestClusterManagement("http://host1", "http://host2", "http://host3"))
+        val hc = HeightChecker(testClient(), TestClusterManagement("http://host1", "http://host2", "http://host3"), testConfigTemplate)
         assert(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
     }
 
     @Test
     fun noAvailableNodes() {
         assertThrows<IllegalArgumentException> {
-            val hc = HeightChecker(testClient(), TestClusterManagement("http://host2", "http://wronghost"))
+            val hc = HeightChecker(testClient(), TestClusterManagement("http://host2", "http://wronghost"), testConfigTemplate)
             hc.findSafeHeight(testBrid)
         }
     }
