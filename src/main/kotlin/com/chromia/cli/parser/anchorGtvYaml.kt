@@ -5,14 +5,16 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import net.postchain.gtv.yaml.GtvYaml
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.Construct
-import org.yaml.snakeyaml.constructor.Constructor
+import org.yaml.snakeyaml.env.EnvScalarConstructor
+import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_FORMAT
+import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_TAG
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import java.io.File
 
 
-class ConstructorIncludeSupport: Constructor() {
+class ConstructorIncludeSupport: EnvScalarConstructor() {
     init {
         yamlConstructors[Tag("!include")] = IncludeConstructor()
     }
@@ -38,6 +40,7 @@ class ConstructorIncludeSupport: Constructor() {
 
 inline fun <reified T> GtvYaml.loadAnchor(src: File): T {
     val yaml = Yaml(ConstructorIncludeSupport())
+    yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
     return ObjectMapper()
             .registerKotlinModule()
             .writerWithDefaultPrettyPrinter()

@@ -30,7 +30,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
     private val settings by settingsOptionNotRequired()
     private val target by option(help = "Make query towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings?.model ?: settingsOptionDefault() },
+            "--deployment" to RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model },
             "--local" to LocalDeploymentOption()
     ).defaultByName("--local")
 

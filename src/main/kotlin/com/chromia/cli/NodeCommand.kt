@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.compile.config.NamedBlockchainRid
+import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -39,7 +40,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
     protected fun extractConfigs(): Map<NamedBlockchainRid, Gtv> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
-            BuildCommand.compile(settings)
+            BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains)
         } else {
             blockchainConfigs
                 .associate {

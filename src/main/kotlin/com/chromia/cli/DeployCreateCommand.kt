@@ -27,7 +27,7 @@ import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(help = "Deploy blockchain into container") {
+class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
@@ -42,7 +42,7 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
     override fun run() {
         val cSourceDir = C_SourceDir.diskDir(settings.source)
 
-        val generator = BlockchainConfigurationGenerator(settings.model, cSourceDir)
+        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, cSourceDir)
         val chainsToDeploy = blockchain?.let {
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
@@ -121,7 +121,7 @@ class DeployCommand(val clientProvider: PostchainClientProviderImpl = PostchainC
                                 clientConfig.signers.first().pubKey.data,
                                 optionalBrid,
                                 configData,
-                                height!!,
+                                height,
                                 true
                         )
                     }

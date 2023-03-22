@@ -19,9 +19,10 @@ data class CompileModel(
         private val symbolInfoFile: List<String>? = null,
         val quiet: Boolean = true
 ) {
-    fun getCompilerOptions (): C_CompilerOptions {
+    val langVersion get() = R_LangVersion.of(rellVersion)
+    fun getCompilerOptions(): C_CompilerOptions {
         return C_CompilerOptions(
-                R_LangVersion.of(rellVersion),
+                langVersion,
                 gtv = gtv,
                 deprecatedError = deprecatedError,
                 ide = ide,
@@ -30,7 +31,9 @@ data class CompileModel(
                 testLib = testLib,
                 hiddenLib = hiddenLib,
                 allowDbModificationsInObjectExprs = allowDbModificationsInObjectExprs,
-                symbolInfoFile = if(symbolInfoFile == null) null else ( C_SourcePath.of(symbolInfoFile))
+                symbolInfoFile = if (symbolInfoFile == null) null else (C_SourcePath.of(symbolInfoFile)),
+                complexWhatEnabled = true,
+                ideDefIdConflictError = false
         )
     }
 }
