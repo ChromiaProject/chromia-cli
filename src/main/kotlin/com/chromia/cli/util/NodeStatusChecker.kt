@@ -5,6 +5,7 @@ import dev.forkhandles.result4k.mapFailure
 import net.postchain.common.BlockchainRid
 import net.postchain.ebft.NodeState
 import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Request
@@ -15,6 +16,7 @@ class NodeStatusChecker(private val blockchainRid: BlockchainRid, private val ht
 
     fun checkStatus(url: String): NodeStatus {
         val request = Request(Method.GET, "$url/node/${blockchainRid.toHex()}/my_status")
+                .header("Accept", ContentType.APPLICATION_JSON.value)
         return try {
             val result = httpHandler(request)
             statusLens(result).mapFailure { errorLens(result) }.get()

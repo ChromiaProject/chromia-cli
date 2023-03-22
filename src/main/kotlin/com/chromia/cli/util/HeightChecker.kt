@@ -3,6 +3,7 @@ package com.chromia.cli.util
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Body
+import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Request
@@ -18,8 +19,10 @@ class HeightChecker(private val httpHandler: HttpHandler, private val clusterMan
     private fun findBestHeight(apiUrls: Collection<String>, blockchainRid: BlockchainRid) =
             apiUrls.map {
                 try {
-                    val res = httpHandler(Request(Method.GET, "$it/blockchain/${blockchainRid.toHex()}/height"))
-                    Body.auto<Height>().toLens()(res).height
+                    val res = httpHandler(Request(Method.GET, "$it/blockchain/${blockchainRid.toHex()}/height")
+                            .header("Accept", ContentType.APPLICATION_JSON.value)
+                    )
+                    Body.auto<Height>().toLens()(res).blockHeight
                 } catch (e: Exception) {
                     -1
                 }
@@ -27,5 +30,5 @@ class HeightChecker(private val httpHandler: HttpHandler, private val clusterMan
                 if (it <= 0) throw IllegalArgumentException("Deployment failed, no nodes are building blocks for chain $blockchainRid")
             }
 
-    internal class Height(val height: Long)
+    internal class Height(val blockHeight: Long)
 }

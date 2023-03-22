@@ -55,6 +55,7 @@ class DeployInfoCommandTest {
     }
 
     private fun testClient(): (Request) -> Response = {
+        assert(it.headers).contains("Accept" to "application/json")
         when (it.uri.path) {
             "/node/0000000000000000000000000000000000000000000000000000000000000002/my_status" -> Response(Status.OK).body("{\"state\":\"WaitBlock\",\"height\":569889,\"serial\":159157543161,\"round\":0,\"revolting\":false}")
             "/node/0000000000000000000000000000000000000000000000000000000000000005/my_status" -> Response(Status.INTERNAL_SERVER_ERROR).body("{\"error\":\"Module initialization error\"}")

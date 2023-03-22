@@ -1,6 +1,7 @@
 package com.chromia.cli.util
 
 import assertk.assert
+import assertk.assertions.contains
 import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
 import net.postchain.common.BlockchainRid
@@ -17,7 +18,7 @@ class HeightCheckerTest {
     @Test
     fun tenHigherThatnHighest() {
         val hc = HeightChecker(testClient(), TestClusterManagement("http://host1", "http://host2", "http://host3"))
-        assert(hc.findSafeHeight(testBrid)).isEqualTo(570320L + 10L)
+        assert(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
     }
 
     @Test
@@ -30,10 +31,11 @@ class HeightCheckerTest {
 
     private fun testClient(): (Request) -> Response = {
         assert(it.uri.path).endsWith("/blockchain/${testBrid.toHex()}/height")
+        assert(it.headers).contains("Accept" to "application/json")
         when (it.uri.host) {
-            "host1" -> Response(Status.OK).body("{\"state\":\"WaitBlock\",\"height\":569889,\"serial\":159157543161,\"round\":0,\"revolting\":false}")
+            "host1" -> Response(Status.OK).body("{\"blockHeight\":7}")
             "host2" -> Response(Status.INTERNAL_SERVER_ERROR).body("{\"error\":\"Module initialization error\"}")
-            "host3" -> Response(Status.OK).body("{\"state\":\"HaveBlock\",\"height\":570320,\"serial\":158306890607,\"round\":1,\"blockRid\":\"13F8AE0B71917DFCBB612600BEBA8F3AE1BB788AA23357AE8C62DF9D3FE9EAC0\",\"revolting\":false}")
+            "host3" -> Response(Status.OK).body("{\"blockHeight\":5}")
             else -> Response(Status.NOT_FOUND).body("{\"error\":\"Can't find blockchain\"}")
         }
     }

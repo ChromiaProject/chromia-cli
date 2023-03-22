@@ -4,7 +4,6 @@ import com.chromia.cli.model.DeploymentModel
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HttpHandlerFactory
 import com.chromia.cli.util.NodeStatusChecker
-import com.chromia.cli.util.defaultHttpHandler
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -15,6 +14,7 @@ import de.m3y.kformat.Table
 import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
+import net.postchain.client.defaultHttpHandler
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.request.EndpointPool
