@@ -13,21 +13,22 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
-import net.postchain.common.exception.UserMistake
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
-import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl()) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
+class DeployCreateCommand(
+        private val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
+        private val clusterManagementFactory: ClusterManagementFactory = Companion
+) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
@@ -104,11 +105,13 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
             optionalBrid: BlockchainRid?
     ) {
         val client = clientProvider.createClient(clientConfig)
+        val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
         val result = client
                 .transactionBuilder()
                 .addNop()
                 .apply {
-                    val blockchainOperations = BlockchainOperations(client.directory1Version, this)
+                    val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
+                    val blockchainOperations = BlockchainOperations(client.apiVersion, this, heightChecker)
                     if (optionalBrid == null) {
                         blockchainOperations.newBlockchainOperation(
                                 clientConfig.signers.first().pubKey.data,
@@ -121,6 +124,7 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
                                 clientConfig.signers.first().pubKey.data,
                                 optionalBrid,
                                 configData,
+                                clusterManagement.getClusterOfBlockchain(optionalBrid),
                                 height,
                                 true
                         )
@@ -133,5 +137,9 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
         } else {
             echo("Deployment of blockchain $blockchainName was successful")
         }
+    }
+
+    companion object : ClusterManagementFactory {
+        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }
