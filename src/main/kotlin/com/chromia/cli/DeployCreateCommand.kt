@@ -18,18 +18,17 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
-import net.postchain.common.exception.UserMistake
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
-import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(), val httpHandlerFactory: HttpHandlerFactory = Companion, val clusterManagementFactory: ClusterManagementFactory = Companion) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
+class DeployCreateCommand(
+        private val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
+        private val clusterManagementFactory: ClusterManagementFactory = Companion
+) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
@@ -111,7 +110,7 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
                 .transactionBuilder()
                 .addNop()
                 .apply {
-                    val heightChecker by lazy { HeightChecker(httpHandlerFactory.buildHttpHandler(clientConfig), clusterManagement, clientConfig) }
+                    val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
                     val blockchainOperations = BlockchainOperations(client.apiVersion, this, heightChecker)
                     if (optionalBrid == null) {
                         blockchainOperations.newBlockchainOperation(
@@ -140,8 +139,7 @@ class DeployCreateCommand(val clientProvider: PostchainClientProviderImpl = Post
         }
     }
 
-    companion object : HttpHandlerFactory, ClusterManagementFactory {
-        override fun buildHttpHandler(config: PostchainClientConfig) = defaultHttpHandler(config)
+    companion object : ClusterManagementFactory {
         override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }

@@ -3,14 +3,14 @@ package com.chromia.cli.compatibility
 import com.chromia.cli.compatibility.Compat_3_7_1.proposeBlockchainOperation
 import com.chromia.cli.compatibility.Compat_3_7_1.proposeConfigurationAtOperation
 import com.chromia.cli.compatibility.Compat_3_7_1.proposeConfigurationOperation
-import com.chromia.cli.util.HeightChecker
+import com.chromia.cli.util.HeightFinder
 import com.chromia.directory1.proposal.proposeBlockchainOperation
 import com.chromia.directory1.proposal.proposeConfigurationAtOperation
 import com.chromia.directory1.proposal.proposeConfigurationOperation
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
 
-class BlockchainOperations(private val apiVersion: Long, private val builder: TransactionBuilder, private val heightChecker: HeightChecker) {
+class BlockchainOperations(private val apiVersion: Long, private val builder: TransactionBuilder, private val heightChecker: HeightFinder) {
 
     fun newBlockchainOperation(myPubkey: ByteArray,
                                configData: ByteArray,

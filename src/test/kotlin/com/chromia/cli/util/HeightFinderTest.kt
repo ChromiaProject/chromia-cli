@@ -5,6 +5,9 @@ import assertk.assertions.contains
 import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
+import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.exception.ClientError
 import net.postchain.client.request.SingleEndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
@@ -13,22 +16,39 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.mock
 
-class HeightCheckerTest {
+class HeightFinderTest {
     val testBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000001")
     val testConfigTemplate = PostchainClientConfig(BlockchainRid.ZERO_RID, SingleEndpointPool(""))
 
     @Test
     fun tenHigherThatnHighest() {
-        val hc = HeightChecker(testClient(), TestClusterManagement("http://host1", "http://host2", "http://host3"), testConfigTemplate)
+        val hc = HeightFinder(testClientProvider(), testConfigTemplate, TestClusterManagement("http://host1", "http://host2", "http://host3"))
         assert(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
     }
 
     @Test
     fun noAvailableNodes() {
         assertThrows<IllegalArgumentException> {
-            val hc = HeightChecker(testClient(), TestClusterManagement("http://host2", "http://wronghost"), testConfigTemplate)
+            val hc = HeightFinder(testClientProvider(), testConfigTemplate, TestClusterManagement("http://host2", "http://wronghost"))
             hc.findSafeHeight(testBrid)
+        }
+    }
+
+
+    private fun testClientProvider(): PostchainClientProvider {
+        return PostchainClientProvider {
+            assert(it.endpointPool.size).isEqualTo(1)
+            val endpoint = it.endpointPool.first()
+            return@PostchainClientProvider when (endpoint.url) {
+                "http://host1" -> mock { on { currentBlockHeight() } doReturn 7L }
+                "http://host2" -> mock { on { currentBlockHeight() } doThrow ClientError("", Status.INTERNAL_SERVER_ERROR, "Module initialization error", endpoint) }
+                "http://host3" -> mock { on { currentBlockHeight() } doReturn 5L }
+                else -> mock { on { currentBlockHeight() } doThrow ClientError("", Status.NOT_FOUND, "Can't find blockchain", endpoint) }
+            }
         }
     }
 

@@ -2,8 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.model.DeploymentModel
 import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.util.HttpHandlerFactory
-import com.chromia.cli.util.NodeStatusChecker
+import com.chromia.cli.util.HeightFinder
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -14,14 +13,18 @@ import de.m3y.kformat.Table
 import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
-import net.postchain.client.defaultHttpHandler
+import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
-import net.postchain.client.impl.PostchainClientImpl
+import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.client.request.Endpoint
 import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
 
-class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companion, private val clusterManagementFactory: ClusterManagementFactory = Companion): CliktCommand(
+class DeployInfoCommand(
+        private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
+        private val clusterManagementFactory: ClusterManagementFactory = Companion
+): CliktCommand(
         name = "info",
         help = "Information about deployed blockchain"
 ) {
@@ -39,8 +42,7 @@ class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companio
 
     override fun run() {
         val config = PostchainClientConfig(network.blockchainRid, endpointPool = EndpointPool.default(network.urls))
-        val httpHandler = clientFactory.buildHttpHandler(config)
-        val postchainClient = PostchainClientImpl(config, httpHandler)
+        val postchainClient = clientProvider.createClient(config)
 
         val clusterManagement = clusterManagementFactory.buildClusterManagement(postchainClient)
 
@@ -54,7 +56,7 @@ class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companio
                 row(blockchain, brid.toShortHex(), clusterManagement.getClusterOfBlockchain(brid))
             }.render().also { echo(it) }
             val clusterUrls = clusterManagement.getBlockchainApiUrls(brid)
-            val statusChecker = NodeStatusChecker(brid, httpHandler)
+            val heightFinder = HeightFinder(clientProvider, config, clusterManagement)
             table {
                 hints {
                     defaultAlignment = Table.Hints.Alignment.LEFT
@@ -62,10 +64,8 @@ class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companio
                 }
                 header("Node url", "Height", "Status")
                 clusterUrls.forEach { url ->
-                    when (val result = statusChecker.checkStatus(url)) {
-                        is NodeStatusChecker.NodeStatus.Status -> row(url, result.height.toString(), "OK")
-                        is NodeStatusChecker.NodeStatus.Error -> row(url, "", result.error)
-                    }
+                    val height = heightFinder.findHeight(Endpoint(url), brid)
+                    row(url, height.height.toString(), height.status)
                 }
             }.render().also { echo(it) }
         } catch (e: ClientError) {
@@ -73,8 +73,7 @@ class DeployInfoCommand(private val clientFactory: HttpHandlerFactory = Companio
         }
     }
 
-    companion object: HttpHandlerFactory, ClusterManagementFactory {
-        override fun buildHttpHandler(config: PostchainClientConfig) = defaultHttpHandler(config)
+    companion object: ClusterManagementFactory {
         override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }
