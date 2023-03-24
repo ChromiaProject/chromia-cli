@@ -3,6 +3,7 @@ package com.chromia.cli
 import com.chromia.cli.model.DeploymentModel
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HeightFinder
+import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -74,6 +75,6 @@ class DeployInfoCommand(
     }
 
     companion object: ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
+        override fun buildClusterManagement(client: PostchainClient) = CliktClusterManagement(ClusterManagementImpl(client))
     }
 }
