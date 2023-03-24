@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import assertk.assert
 import assertk.assertions.contains
+import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
@@ -10,6 +11,8 @@ import net.postchain.client.exception.ClientError
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
+import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -23,7 +26,7 @@ class DeployInfoCommandTest {
     @Test
     fun failedVerification(@TempDir dir: Path) {
         val testConsole = TestConsole()
-        val command = DeployInfoCommand(testClientProvider()) { TestClusterManagement() }.context { console = testConsole }
+        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { console = testConsole }
 
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -54,6 +57,9 @@ class DeployInfoCommandTest {
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--target", "test"))
         assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
+        testConsole.reset()
+        command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--target", "test", "--verbose"))
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
     private fun testClientProvider(): PostchainClientProvider {
@@ -69,6 +75,14 @@ class DeployInfoCommandTest {
         }
     }
 
+    private fun testClient(): (Request) -> Response = {
+        assert(it.uri.host).isEqualTo("myhost")
+        assert(it.headers).contains("Accept" to "application/json")
+        when  {
+            it.uri.path.contains("06") -> Response(Status.OK).body("{\"state\":\"HaveBlock\",\"height\":119329,\"serial\":159158134941,\"round\":2,\"blockRid\":\"328B9498981B459226B2E2B97B5E0AB4C0F4580D98E7C2F14DBA384FFFD90F80\",\"revolting\":true}")
+            else -> Response(Status.NOT_FOUND).body("{\"error\":\"Can't find blockchain\"}")
+        }
+    }
 
         class TestClusterManagement: ClusterManagement {
 

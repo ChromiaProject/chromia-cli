@@ -52,16 +52,7 @@ class HeightFinderTest {
         }
     }
 
-    private fun testClient(): (Request) -> Response = {
-        assert(it.uri.path).endsWith("/blockchain/${testBrid.toHex()}/height")
-        assert(it.headers).contains("Accept" to "application/json")
-        when (it.uri.host) {
-            "host1" -> Response(Status.OK).body("{\"blockHeight\":7}")
-            "host2" -> Response(Status.INTERNAL_SERVER_ERROR).body("{\"error\":\"Module initialization error\"}")
-            "host3" -> Response(Status.OK).body("{\"blockHeight\":5}")
-            else -> Response(Status.NOT_FOUND).body("{\"error\":\"Can't find blockchain\"}")
-        }
-    }
+
 
     class TestClusterManagement(vararg val apiUrls: String): ClusterManagement {
 
