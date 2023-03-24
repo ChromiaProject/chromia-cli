@@ -17,6 +17,7 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
+        <codegen.version>0.9.0</codegen.version>
         <postchain.version>3.9.0</postchain.version>
         <directory1.version>3.9.0</directory1.version>
         <rell.version>0.12.0</rell.version>
@@ -39,6 +40,11 @@
             <id>rellr</id>
             <name>Rell Runtime Registry</name>
             <url>https://gitlab.com/api/v4/projects/32802097/packages/maven</url>
+        </repository>
+        <repository>
+            <id>rell-codegen</id>
+            <name>Rell Codegen Registry</name>
+            <url>https://gitlab.com/api/v4/projects/37660703/packages/maven</url>
         </repository>
         <repository>
             <id>mavenCentral</id>
@@ -228,6 +234,27 @@
             <artifactId>postchain-gtv-yaml</artifactId>
             <version>${postchain.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-kotlin</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-typescript</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-javascript</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core-jvm</artifactId>

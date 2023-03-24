@@ -21,13 +21,16 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
     override fun aliases(): Map<String, List<String>> {
         return mapOf(
                 "start" to listOf("node", "start"),
-                "deploy" to listOf("deployment", "create") // Temporary backward compatibility
+                "deploy" to listOf("deployment", "create"), // Temporary backward compatibility
+                "create" to listOf("create-rell-dapp"),
+                "generate" to listOf("generate-client-stubs")
         )
     }
 }
         .subcommands(
-                InitCommand(),
+                CreateRellDappCommand(),
                 TestCommand(),
+                GenerateClientStubsCommand(),
                 ReplCommand(),
                 nodeCommands(),
                 deployCommands(),

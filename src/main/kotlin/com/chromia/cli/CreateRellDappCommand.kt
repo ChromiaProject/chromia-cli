@@ -11,7 +11,7 @@ import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import java.util.*
 
-class InitCommand : CliktCommand(help = "Generates a template project") {
+class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Generates a template project") {
     private val name by argument(help = "Dapp name").default("hello")
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
