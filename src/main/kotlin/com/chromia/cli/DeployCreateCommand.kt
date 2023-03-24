@@ -32,7 +32,7 @@ class DeployCreateCommand(
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
-    private val blockchain by option(help = "Name of blockchain to deploy")
+    private val blockchain by blockchainOption(help = "Name of blockchain to deploy")
     private val height by option(help = "Deploy configuration at a specific height").long()
     private val secret by secretOption()
 

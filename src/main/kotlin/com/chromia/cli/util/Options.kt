@@ -6,6 +6,7 @@ import com.chromia.cli.model.parseModel
 import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.FileNotFound
+import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.yaml.GtvYaml
@@ -18,7 +19,8 @@ fun CliktCommand.nodePropertiesOption() =
                 .file(mustExist = true, canBeDir = false, canBeFile = true)
                 .convert { getNodeConfig(it) }
 
-fun CliktCommand.deployTargetOption() = option("--target", help = "If a specific target deploy model should be used")
+fun CliktCommand.deployTargetOption() = option("--network", "-d", help = "If a specific target deploy model should be used")
+fun ParameterHolder.blockchainOption(help: String) = option("--blockchain", "-bc", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
         option("--wipe", help = "If a database should be wiped before startup").flag()
