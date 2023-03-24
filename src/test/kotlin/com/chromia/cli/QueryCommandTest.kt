@@ -70,7 +70,7 @@ class QueryCommandTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
-            InitCommand().parse(listOf("-d", dir!!.absolutePath))
+            CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath))
             //StartCommand().parse(listOf("-s", dir!!.absolutePath.plus("/config.yml"), "--wipe"))
         }
     }
