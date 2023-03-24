@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.wipeDatabaseOption
+import com.chromia.cli.util.withSigner
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import mu.withLoggingContext
@@ -30,10 +31,10 @@ class StartCommand : AbstractNodeCommand(help = """
 
     private fun startPostchainNode() {
         val chainsToStart = mutableListOf<Long>()
-        val node = PostchainNode(nodeConfig, wipeDb = wipe, debug = true)
+        val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
         extractConfigs().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
-            val gtvWithSigners = addSigners(gtv)
+            val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             val iid = index.toLong()
             chainsToStart.add(iid)
             withLoggingContext(

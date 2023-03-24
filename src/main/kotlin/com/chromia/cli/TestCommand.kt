@@ -5,6 +5,7 @@ import com.chromia.cli.database.DatabaseUtil
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.flag
@@ -40,14 +41,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     override fun run() {
-        runMultiModuleTest()
-    }
-
-    private fun runMultiModuleTest() {
-
         val testModules = modules ?: settings.test.modules.map { R_ModuleName.Companion.of(it) }
         val sourceDir = C_SourceDir.diskDir(sourceDir)
-        val modSel = C_CompilerModuleSelection(testModules)
+        val modSel = C_CompilerModuleSelection(listOf(), testModules)
         val app = RellCliUtils.compileApp(sourceDir, modSel, settings.model.compilerQuiet, C_CompilerOptions.DEFAULT)
         val testFns = TestRunner.getTestFunctions(app, tests?.let { TestMatcher.make(it) } ?: TestMatcher.ANY)
         runTests(app, testFns, sourceDir)
@@ -106,8 +102,11 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
         echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
 
-        val allOk = nFailed == 0
-        echo("\n***** ${if (allOk) "OK" else "FAILED"} *****")
+        if (nFailed == 0) {
+            echo("\n***** OK *****")
+        } else {
+            throw CliktError("\n***** FAILED *****")
+        }
     }
 
     private fun printResults(list: List<TestCaseResult>) {

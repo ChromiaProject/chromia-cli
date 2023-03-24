@@ -17,8 +17,10 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-        <postchain.version>3.7.0</postchain.version>
-        <rell.version>0.11.0</rell.version>
+        <codegen.version>0.9.0</codegen.version>
+        <postchain.version>3.9.0</postchain.version>
+        <directory1.version>3.9.0</directory1.version>
+        <rell.version>0.12.0</rell.version>
         <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
         <image.name>chr</image.name>
 
@@ -38,6 +40,11 @@
             <id>rellr</id>
             <name>Rell Runtime Registry</name>
             <url>https://gitlab.com/api/v4/projects/32802097/packages/maven</url>
+        </repository>
+        <repository>
+            <id>rell-codegen</id>
+            <name>Rell Codegen Registry</name>
+            <url>https://gitlab.com/api/v4/projects/37660703/packages/maven</url>
         </repository>
         <repository>
             <id>mavenCentral</id>
@@ -80,7 +87,7 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <artifact>net.postchain.chain0:directory1:${postchain.version}:tar.gz:sources</artifact>
+                            <artifact>net.postchain.chain0:directory1:${directory1.version}:tar.gz:sources</artifact>
                         </configuration>
                         <phase>generate-sources</phase>
                         <goals>
@@ -95,8 +102,6 @@
                 <version>0.7.1</version>
                 <configuration>
                     <source>${project.build.directory}/dependency/directory1/rell/src</source>
-                    <packageName>com.chromia.directory1</packageName>
-                    <mainModule>common.proposal</mainModule>
                 </configuration>
                 <executions>
                     <execution>
@@ -105,6 +110,10 @@
                         <goals>
                             <goal>rell-generate-client</goal>
                         </goals>
+                        <configuration>
+                            <packageName>com.chromia.directory1</packageName>
+                            <mainModule>version,proposal</mainModule>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -129,7 +138,7 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>1.6.20</version>
+                <version>1.8.0</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -211,7 +220,7 @@
         <dependency>
             <groupId>net.postchain.chain0</groupId>
             <artifactId>directory1</artifactId>
-            <version>${postchain.version}</version>
+            <version>${directory1.version}</version>
             <classifier>sources</classifier>
             <type>tar.gz</type>
         </dependency>
@@ -226,6 +235,27 @@
             <version>${postchain.version}</version>
         </dependency>
         <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-kotlin</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-typescript</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-javascript</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen</artifactId>
+            <version>${codegen.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
             <artifactId>kotlinx-coroutines-core-jvm</artifactId>
             <version>1.6.4</version>
@@ -233,12 +263,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.13.4</version>
+            <version>2.14.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>2.14.0</version>
+            <version>2.14.2</version>
         </dependency>
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
@@ -250,6 +280,26 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.19.0</version>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.http4k</groupId>
+            <artifactId>http4k-core</artifactId>
+            <version>4.34.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.forkhandles</groupId>
+            <artifactId>result4k</artifactId>
+            <version>2.4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.http4k</groupId>
+            <artifactId>http4k-format-jackson</artifactId>
+            <version>4.34.0.4</version>
+        </dependency>
+        <dependency>
+            <groupId>de.m3y.kformat</groupId>
+            <artifactId>kformat</artifactId>
+            <version>0.9</version>
         </dependency>
 
         <dependency>

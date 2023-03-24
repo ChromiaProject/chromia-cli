@@ -1,10 +1,10 @@
 package com.chromia.cli
 
+import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.*
-import com.chromia.directory1.common.proposal.proposeConfigurationAtOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -13,19 +13,22 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
-import com.chromia.directory1.common.proposal.proposeBlockchainOperation
-import com.chromia.directory1.common.proposal.proposeConfigurationOperation
 import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
 import java.util.*
 
-class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
+class DeployCreateCommand(
+        private val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
+        private val clusterManagementFactory: ClusterManagementFactory = Companion
+) : CliktCommand(name = "create", help = "Deploy blockchain into container") {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
@@ -40,7 +43,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
     override fun run() {
         val cSourceDir = C_SourceDir.diskDir(settings.source)
 
-        val generator = BlockchainConfigurationGenerator(settings.model, cSourceDir)
+        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, cSourceDir)
         val chainsToDeploy = blockchain?.let {
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
@@ -71,7 +74,7 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
                                 blockchainName,
                                 deployModel.container ?: throw CliktError("No container specified"),
                                 GtvEncoder.encodeGtv(this.configuration),
-                                PostchainClientProviderImpl(),
+                                clientProvider,
                                 specifiedBlockchainRid
                         )
                         if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
@@ -102,33 +105,29 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
             optionalBrid: BlockchainRid?
     ) {
         val client = clientProvider.createClient(clientConfig)
+        val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
         val result = client
                 .transactionBuilder()
                 .addNop()
                 .apply {
+                    val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
+                    val blockchainOperations = BlockchainOperations(client.apiVersion, this, heightChecker)
                     if (optionalBrid == null) {
-                        proposeBlockchainOperation(
+                        blockchainOperations.newBlockchainOperation(
                                 clientConfig.signers.first().pubKey.data,
                                 configData,
                                 blockchainName,
                                 containerName
                         )
                     } else {
-                        if (height != null) {
-                            proposeConfigurationAtOperation(
-                                    clientConfig.signers.first().pubKey.data,
-                                    optionalBrid,
-                                    configData,
-                                    height!!,
-                                    true
-                            )
-                        } else {
-                            proposeConfigurationOperation(
-                                    clientConfig.signers.first().pubKey.data,
-                                    optionalBrid,
-                                    configData
-                            )
-                        }
+                        blockchainOperations.proposeConfiguration(
+                                clientConfig.signers.first().pubKey.data,
+                                optionalBrid,
+                                configData,
+                                clusterManagement.getClusterOfBlockchain(optionalBrid),
+                                height,
+                                true
+                        )
                     }
                 }
                 .sign()
@@ -138,5 +137,9 @@ class DeployCommand : CliktCommand(help = "Deploy blockchain into container") {
         } else {
             echo("Deployment of blockchain $blockchainName was successful")
         }
+    }
+
+    companion object : ClusterManagementFactory {
+        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }

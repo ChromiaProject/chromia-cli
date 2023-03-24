@@ -14,7 +14,7 @@ object NodeConfig {
          return AppConfig.fromPropertiesFile(nodeConfigFile.absolutePath)
      }
 
-     fun getDefaultNodeConfig(config: ChromiaCliModel): AppConfig {
+     fun getDefaultNodeConfig(config: ChromiaCliModel, overrides: Map<String, Any> = mapOf()): AppConfig {
          val privKey = "42".repeat(32).hexStringToByteArray()
          val pubKey = secp256k1_derivePubKey(privKey)
 
@@ -30,6 +30,7 @@ object NodeConfig {
              setProperty("database.password", config.databasePassword)
              setProperty("configuration.provider.node", "manual")
              setProperty("fastsync.exit_delay", 0)
+             overrides.forEach { setProperty(it.key, it.value) }
          }
          return AppConfig(inMemoryConfig, true)
      }
