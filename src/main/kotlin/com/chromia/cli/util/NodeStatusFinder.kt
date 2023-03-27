@@ -25,7 +25,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
 
     private val heightFinder = HeightFinder(clientProvider, templateConfig, clusterManagement)
 
-    fun headers() = if (verbose) verboseHeaders else headers
+    fun tableHeaders() = if (verbose) verboseTableHeaders else tableHeaders
 
     fun findStatus(endpoint: Endpoint, blockchainRid: BlockchainRid): StatusResult {
         if (!verbose) {
@@ -47,8 +47,8 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
         val statusLens = Body.auto<NodeStatus.Status>().toLens().asResult()
         val errorLens = Body.auto<NodeStatus.Error>().toLens()
 
-        private val headers = listOf("Node url", "Height", "Status")
-        private val verboseHeaders = listOf("Node Url", "Height", "State", "Round", "Revolting", "Status")
+        private val tableHeaders = listOf("Node url", "Height", "Status")
+        private val verboseTableHeaders = listOf("Node Url", "Height", "State", "Round", "Revolting", "Status")
     }
 
     sealed class NodeStatus {

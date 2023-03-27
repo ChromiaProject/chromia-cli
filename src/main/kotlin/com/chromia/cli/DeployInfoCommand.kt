@@ -61,7 +61,7 @@ class DeployInfoCommand(
                     defaultAlignment = Table.Hints.Alignment.LEFT
                     borderStyle = Table.BorderStyle.SINGLE_LINE
                 }
-                header(nodeStatusFinder.headers())
+                header(nodeStatusFinder.tableHeaders())
                 clusterUrls.forEach { url ->
                     val result = nodeStatusFinder.findStatus(Endpoint(url), option.brid)
                     row(*result.values())
