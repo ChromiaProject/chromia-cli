@@ -24,7 +24,7 @@ class HeightFinder(private val clientProvider: PostchainClientProvider, private 
 
     fun findHeight(endpoint: Endpoint, blockchainRid: BlockchainRid) =
             try {
-                clientProvider.createClient(templateConfig.copy(blockchainRid, SingleEndpointPool(endpoint.url)))
+                clientProvider.createClient(templateConfig.copy(blockchainRid, EndpointPool.singleUrl(endpoint.url)))
                         .currentBlockHeight()
                         .let { HeightResult.OkResult(it) }
             } catch (e: ClientError) {

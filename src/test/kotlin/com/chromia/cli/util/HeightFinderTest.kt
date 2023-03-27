@@ -1,18 +1,13 @@
 package com.chromia.cli.util
 
 import assertk.assert
-import assertk.assertions.contains
-import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
-import net.postchain.client.request.SingleEndpointPool
+import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
-import org.http4k.core.Request
-import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -22,7 +17,7 @@ import org.mockito.kotlin.mock
 
 class HeightFinderTest {
     val testBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000001")
-    val testConfigTemplate = PostchainClientConfig(BlockchainRid.ZERO_RID, SingleEndpointPool(""))
+    val testConfigTemplate = PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(""))
 
     @Test
     fun tenHigherThatnHighest() {
