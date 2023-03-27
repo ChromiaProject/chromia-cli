@@ -9,6 +9,7 @@ import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HeightFinder
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.apiVersion
+import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
 import com.chromia.cli.util.settingsOption
