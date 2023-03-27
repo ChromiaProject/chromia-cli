@@ -19,7 +19,7 @@ fun CliktCommand.nodePropertiesOption() =
                 .file(mustExist = true, canBeDir = false, canBeFile = true)
                 .convert { getNodeConfig(it) }
 
-fun CliktCommand.deployTargetOption() = option("--network", "-d", help = "If a specific target deploy model should be used")
+fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Specify which deployment target to use")
 fun ParameterHolder.blockchainOption(help: String) = option("--blockchain", "-bc", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
