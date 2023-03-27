@@ -32,7 +32,8 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
             return StatusResult.Ok(endpoint.url, heightFinder.findHeight(endpoint, blockchainRid))
         }
 
-        val request = Request(Method.GET, "${endpoint.url}/node/${blockchainRid.toHex()}/my_status")
+        //TODO remove trailing slash fix when it is no longer possible to register with it.
+        val request = Request(Method.GET, "${endpoint.url.trimEnd().replace(Regex("/$"), "")}/node/${blockchainRid.toHex()}/my_status")
                 .header("Accept", ContentType.APPLICATION_JSON.value)
         return try {
             val result = httpHandler(request)

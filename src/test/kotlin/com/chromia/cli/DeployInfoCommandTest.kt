@@ -2,7 +2,6 @@ package com.chromia.cli
 
 import assertk.assert
 import assertk.assertions.contains
-import assertk.assertions.endsWith
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
@@ -61,6 +60,32 @@ class DeployInfoCommandTest {
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--target", "test", "--verbose"))
         assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
+
+    @Test
+    fun failedVerificationManualChain(@TempDir dir: Path) {
+        val testConsole = TestConsole()
+        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { console = testConsole }
+
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000002", "--url", "http://myhost:7740"))
+        assert(testConsole.out[0].first).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
+        testConsole.reset()
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000003", "--url", "http://myhost:7740"))
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found Can't find blockchain from http://myhost:7740")
+        testConsole.reset()
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000004", "--url", "http://myhost:7740"))
+        testConsole.assertContains("Cluster not found for blockchain rid 00:004\n")
+        testConsole.reset()
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000005", "--url", "http://myhost:7740"))
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error Module initialization error from http://myhost:7740")
+        testConsole.reset()
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006","--url", "http://myhost:7740"))
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
+        testConsole.reset()
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006","--url", "http://myhost:7740", "--verbose"))
+        assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+    }
+
 
     private fun testClientProvider(): PostchainClientProvider {
         return PostchainClientProvider {
