@@ -23,13 +23,13 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 }
 
 class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
-    private val name by option(help = "Name of deployment target").required()
-    private val blockchain by option(help = "Name of blockchain in deployment configuration").required()
+    private val network by deployTargetOption()
+    private val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
 
     override val brid: BlockchainRid
         get() {
-            val deploymentModel = settings().deployments[name]
-            require(deploymentModel != null) { "Deployment named $name not found in configuration" }
+            val deploymentModel = settings().deployments[network]
+            require(deploymentModel != null) { "Deployment named $network not found in configuration" }
             val blockchainRid = deploymentModel.chains[blockchain]
             require(blockchainRid != null) { "Blockchain named $blockchain not found in deployment configuration" }
             return blockchainRid
@@ -37,18 +37,18 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
 
     override val url: String
         get() {
-            val deploymentModel = settings().deployments[name]
-            require(deploymentModel != null) { "Deployment named $name not found in configuration" }
+            val deploymentModel = settings().deployments[network]
+            require(deploymentModel != null) { "Deployment named $network not found in configuration" }
             return deploymentModel.urls.joinToString(",")
         }
 
     override fun createClient(config: PostchainClientConfig) = ChromiaClientProvider.fromClientConfig(
-            config.copy(blockchainRid = settings().deployments[name]!!.blockchainRid)
+            config.copy(blockchainRid = settings().deployments[network]!!.blockchainRid)
     ).blockchain(config.blockchainRid)
 }
 
 class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx towards a test node") {
-    private val blockchainRid by option(help = "Target Blockchain RID")
+    private val blockchainRid by option("--blockchain-rid", "-brid", help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int().default(0)
     private val apiUrl by option(help = "Target api url").default("http://localhost:7740")
 

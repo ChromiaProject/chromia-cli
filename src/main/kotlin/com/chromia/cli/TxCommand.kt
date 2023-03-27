@@ -7,8 +7,10 @@ import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
+import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.defaultByName
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
@@ -23,10 +25,8 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     private val settings by settingsOptionNotRequired()
     private val secret by secretOption()
-    private val target by option(help = "Make tx towards this target (default: --local)").groupSwitch(
-            "--deployment" to RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model },
-            "--local" to LocalDeploymentOption()
-    ).defaultByName("--local")
+    private val explicitTarget by LocalDeploymentOption()
+    private val deploymentTarget by RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
 
@@ -45,6 +45,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
             }
 
     override fun run() {
+        val target = deploymentTarget ?: explicitTarget!!
         val clientConfig = BaseConfiguration().run {
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
