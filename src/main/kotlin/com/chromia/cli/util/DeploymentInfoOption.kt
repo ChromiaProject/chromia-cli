@@ -16,11 +16,11 @@ sealed class DeploymentInfoOption(name: String, help: String? = null) : OptionGr
 }
 
 class ConfiguredDeploymentInfoOption(private val settings: () -> ChromiaCliModel) : DeploymentInfoOption("Configured", help = "Information about a deployed blockchain") {
-    private val target by option("--network", help = "If a specific target deploy model should be used").required().validate {
+    private val target by deployTargetOption().required().validate {
         val deployment = settings().deployments[it]
         require(deployment != null) { "Deployment $it not found" }
     }
-    private val blockchain by option(help = "Name of blockchain to deploy").required()
+    private val blockchain by blockchainOption(help = "Name of blockchain to deploy").required()
             .validate {
                 require(settings().deployments[target]!!.chains[it] != null) { "Blockchain $it not found" }
             }
@@ -32,7 +32,7 @@ class ConfiguredDeploymentInfoOption(private val settings: () -> ChromiaCliModel
 }
 
 class ManualDeploymentInfoOption : DeploymentInfoOption("Manual", help = "Information about a deployed blockchain that is not in the settings file") {
-    private val blockchainRid by option("-brid", "--blockchain-rid", help = "Target Blockchain RID").required()
+    private val blockchainRid by blockchainRidOption("Target Blockchain RID").required()
     private val url by option(help = "Target url").multiple()
 
     override val urls: List<String> get() = url

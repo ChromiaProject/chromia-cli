@@ -79,17 +79,17 @@ class DeployInfoCommandTest {
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000005", "--url", "http://myhost:7740"))
         assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error Module initialization error from http://myhost:7740")
         testConsole.reset()
-        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006","--url", "http://myhost:7740"))
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740"))
         assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
         testConsole.reset()
-        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006","--url", "http://myhost:7740", "--verbose"))
+        command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740", "--verbose"))
         assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
 
     private fun testClientProvider(): PostchainClientProvider {
         return PostchainClientProvider {
-            assert(it.endpointPool.size).isEqualTo(1)
+            assert(it.endpointPool.size).equals(1)
             val endpoint = it.endpointPool.first()
             return@PostchainClientProvider when (it.blockchainRid) {
                 BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002") -> mock { on { currentBlockHeight() } doReturn 569889L }
@@ -103,13 +103,13 @@ class DeployInfoCommandTest {
     private fun testClient(): (Request) -> Response = {
         assert(it.uri.host).isEqualTo("myhost")
         assert(it.headers).contains("Accept" to "application/json")
-        when  {
+        when {
             it.uri.path.contains("06") -> Response(Status.OK).body("{\"state\":\"HaveBlock\",\"height\":119329,\"serial\":159158134941,\"round\":2,\"blockRid\":\"328B9498981B459226B2E2B97B5E0AB4C0F4580D98E7C2F14DBA384FFFD90F80\",\"revolting\":true}")
             else -> Response(Status.NOT_FOUND).body("{\"error\":\"Can't find blockchain\"}")
         }
     }
 
-        class TestClusterManagement: ClusterManagement {
+    class TestClusterManagement : ClusterManagement {
 
         override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("4")) "my_cluster" else throw ClientError("", Status(404, null), "", Endpoint(""))
         override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = listOf("http://myhost:7740")
