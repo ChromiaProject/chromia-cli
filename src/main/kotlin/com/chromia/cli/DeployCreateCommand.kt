@@ -4,7 +4,16 @@ import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.DeploymentConfigGenerator
 import com.chromia.cli.compile.config.NamedBlockchainRid
-import com.chromia.cli.util.*
+import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.util.ClusterManagementFactory
+import com.chromia.cli.util.HeightFinder
+import com.chromia.cli.util.CliktClusterManagement
+import com.chromia.cli.util.apiVersion
+import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.deployTargetOption
+import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.settingsOption
+import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -23,7 +32,7 @@ import net.postchain.gtv.GtvEncoder
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.time.Instant.now
-import java.util.*
+import java.util.Properties
 
 class DeployCreateCommand(
         private val clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
@@ -32,7 +41,7 @@ class DeployCreateCommand(
     private val showBrid by showBridOption()
     private val settings by settingsOption()
     private val target by deployTargetOption().required()
-    private val blockchain by option(help = "Name of blockchain to deploy")
+    private val blockchain by blockchainOption(help = "Name of blockchain to deploy")
     private val height by option(help = "Deploy configuration at a specific height").long()
     private val secret by secretOption()
 
@@ -140,6 +149,6 @@ class DeployCreateCommand(
     }
 
     companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
+        override fun buildClusterManagement(client: PostchainClient) = CliktClusterManagement(ClusterManagementImpl(client))
     }
 }

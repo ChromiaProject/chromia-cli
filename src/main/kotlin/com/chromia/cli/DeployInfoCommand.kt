@@ -72,8 +72,6 @@ class DeployInfoCommand(
         }
     }
 
-
-
     companion object: ClusterManagementFactory {
         fun httpHandlerFactory(config: PostchainClientConfig) = defaultHttpHandler(config)
         override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
