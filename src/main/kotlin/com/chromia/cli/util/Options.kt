@@ -3,13 +3,15 @@ package com.chromia.cli.util
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.chromia.cli.model.ChromiaCliModel
 import com.chromia.cli.model.parseModel
-import com.chromia.cli.parser.loadAnchor
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.ParameterHolder
-import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.gtv.yaml.GtvYaml
 import net.postchain.rell.model.R_ModuleName
 import java.io.File
 
@@ -21,6 +23,7 @@ fun CliktCommand.nodePropertiesOption() =
 
 fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Specify which deployment target to use")
 fun ParameterHolder.blockchainOption(help: String) = option("--blockchain", "-bc", help = help)
+fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
         option("--wipe", help = "If a database should be wiped before startup").flag()

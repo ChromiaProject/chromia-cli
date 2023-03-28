@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.util.LanguageSupport
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
@@ -11,7 +12,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import net.postchain.rell.codegen.CodeGenerator
-import net.postchain.rell.codegen.app.util.LanguageSupport
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
