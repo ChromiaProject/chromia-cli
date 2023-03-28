@@ -1,6 +1,5 @@
 package com.chromia.cli
 
-
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption

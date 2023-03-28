@@ -20,10 +20,11 @@ class ConfiguredDeploymentInfoOption(private val settings: () -> ChromiaCliModel
         val deployment = settings().deployments[it]
         require(deployment != null) { "Deployment $it not found" }
     }
-    private val network: DeploymentModel get() = settings().deployments[target]!!
     private val blockchain by option(help = "Name of blockchain to deploy").required().validate {
         require(settings().deployments[target]!!.chains[it] != null) { "Blockchain $it not found" }
     }
+
+    private val network: DeploymentModel get() = settings().deployments[target]!!
 
     override val brid: BlockchainRid
         get() {
