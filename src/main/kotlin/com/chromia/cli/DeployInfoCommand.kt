@@ -1,11 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.util.ConfiguredDeploymentInfoOption
-import com.chromia.cli.util.ManualDeploymentInfoOption
-import com.chromia.cli.util.NodeStatusFinder
-import com.chromia.cli.util.settingsOptionDefault
-import com.chromia.cli.util.settingsOptionNotRequired
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.options.flag
@@ -26,14 +21,16 @@ import org.http4k.core.HttpHandler
 class DeployInfoCommand(
         private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion,
-        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler =  { Companion.httpHandlerFactory(it) }
-): CliktCommand(
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { Companion.httpHandlerFactory(it) }
+) : CliktCommand(
         name = "info",
         help = "Information about any deployed blockchain"
 ) {
 
     private val settings by settingsOptionNotRequired()
-    private val configuredOptions by ConfiguredDeploymentInfoOption{ settings?.model ?: settingsOptionDefault().model }.cooccurring()
+    private val configuredOptions by ConfiguredDeploymentInfoOption {
+        settings?.model ?: settingsOptionDefault().model
+    }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption().cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
 
@@ -71,7 +68,7 @@ class DeployInfoCommand(
         }
     }
 
-    companion object: ClusterManagementFactory {
+    companion object : ClusterManagementFactory {
         fun httpHandlerFactory(config: PostchainClientConfig) = defaultHttpHandler(config)
         override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
