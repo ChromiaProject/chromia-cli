@@ -63,8 +63,8 @@ fun settingsOptionDefault(): Settings {
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
 
-fun CliktCommand.modulesOption() =
-        option("-m", "--modules", help = "Select which modules to test, will default to tests in settings file (Comma separated)", metavar = "MODULES")
+fun CliktCommand.modulesOption(help: String = "Select which modules to test, will default to tests in settings file (Comma separated)") =
+        option("-m", "--modules", help = help, metavar = "MODULES")
                 .convert { R_ModuleName.of(it) }
                 .split(",")
 

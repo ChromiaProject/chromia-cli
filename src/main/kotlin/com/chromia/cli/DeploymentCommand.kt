@@ -8,4 +8,5 @@ class DeploymentCommand: NoOpCliktCommand(help = "Create and maintain deployment
 fun deployCommands() = DeploymentCommand().subcommands(
         DeployCreateCommand(),
         DeployInfoCommand(),
+        DeployInspectCommand(),
 )
