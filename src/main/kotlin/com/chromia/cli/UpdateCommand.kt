@@ -23,7 +23,7 @@ class UpdateCommand : AbstractNodeCommand(help = """
     override fun run() {
         val storage = StorageBuilder.buildStorage(nodeConfig, false)
 
-        extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
+        extractConfigs().toList().forEachIndexed { index, (_, _, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)

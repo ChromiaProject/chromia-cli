@@ -3,7 +3,6 @@ package com.chromia.cli
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter
-import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
@@ -57,7 +56,7 @@ class DeployCreateCommand(
             require(settings.blockchains[it] != null) { "Specified blockchain $it does not exist" }
             listOf(generator.generateConfiguration(it, settings.blockchains[it]!!))
         } ?: generator.generate().toList()
-        chainsToDeploy.forEach { (generatedBlockchainRid, gtv) ->
+        chainsToDeploy.forEach { (name, generatedBrid, gtv) ->
 
             val deployModel = settings.deployments[target]
             require(deployModel != null) { "deployment target with name $target not found" }
@@ -73,34 +72,34 @@ class DeployCreateCommand(
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            val optionalBrid = deployModel?.chains?.get(generatedBlockchainRid.name)
-            BlockchainConfigurationWriter.storeConfig(gtv, "${target}_${generatedBlockchainRid.name}_${now()}", settings.target.toPath())
+            val optionalBrid = deployModel?.chains?.get(name)
+            BlockchainConfigurationWriter.storeConfig(gtv, "${target}_${name}_${now()}", settings.target.toPath())
             val extraMessage = if (optionalBrid == null) {
-                verifyNewDeployment(generatedBlockchainRid)
+                verifyNewDeployment(name, generatedBrid)
             } else null
             deployBlockchain(
                     clientConfig,
-                    generatedBlockchainRid.name,
+                    name,
                     deployModel.container ?: throw CliktError("No container specified"),
                     GtvEncoder.encodeGtv(gtv),
                     clientProvider,
                     optionalBrid
             )
-            if (showBrid) echo(optionalBrid ?: generatedBlockchainRid.blockchainRid)
+            if (showBrid) echo(optionalBrid ?: generatedBrid)
             extraMessage?.let { echo(it) }
         }
     }
 
-    private fun verifyNewDeployment(namedBlockchainRid: NamedBlockchainRid): String {
+    private fun verifyNewDeployment(name: String, brid: BlockchainRid): String {
         confirm(
-                "Blockchain RID for chain ${namedBlockchainRid.name} on deployment $target not set. Would you like to create a new deployment?",
+                "Blockchain RID for chain $name on deployment $target not set. Would you like to create a new deployment?",
                 default = false, abort = true)
         return """
             Add the following to your project settings file:
             deployments:
               $target:
                 chains:
-                  ${namedBlockchainRid.name}: x"${namedBlockchainRid.blockchainRid.toHex()}"
+                  $name: x"${brid.toHex()}"
             """.trimIndent()
     }
 
