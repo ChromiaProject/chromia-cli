@@ -2,12 +2,12 @@ package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
-import com.chromia.cli.compile.config.DeploymentConfigGenerator
+import com.chromia.cli.compile.config.BlockchainConfigurationWriter
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HeightFinder
-import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
@@ -73,22 +73,21 @@ class DeployCreateCommand(
                     }
                 }
             }.let { PostchainClientConfig.fromConfiguration(it) }
-            DeploymentConfigGenerator.generateConfig(gtv, deployModel, "${target}_${generatedBlockchainRid.name}_${now()}", generatedBlockchainRid.blockchainRid, settings.target.toPath(), generatedBlockchainRid.name)
-                    .apply {
-                        val extraMessage = if (specifiedBlockchainRid == null) {
-                            verifyNewDeployment(generatedBlockchainRid)
-                        } else null
-                        deployBlockchain(
-                                clientConfig,
-                                blockchainName,
-                                deployModel.container ?: throw CliktError("No container specified"),
-                                GtvEncoder.encodeGtv(this.configuration),
-                                clientProvider,
-                                specifiedBlockchainRid
-                        )
-                        if (showBrid) echo(specifiedBlockchainRid ?: generatedBlockchainRid.blockchainRid)
-                        extraMessage?.let { echo(it) }
-                    }
+            val optionalBrid = deployModel?.chains?.get(generatedBlockchainRid.name)
+            BlockchainConfigurationWriter.storeConfig(gtv, "${target}_${generatedBlockchainRid.name}_${now()}", settings.target.toPath())
+            val extraMessage = if (optionalBrid == null) {
+                verifyNewDeployment(generatedBlockchainRid)
+            } else null
+            deployBlockchain(
+                    clientConfig,
+                    generatedBlockchainRid.name,
+                    deployModel.container ?: throw CliktError("No container specified"),
+                    GtvEncoder.encodeGtv(gtv),
+                    clientProvider,
+                    optionalBrid
+            )
+            if (showBrid) echo(optionalBrid ?: generatedBlockchainRid.blockchainRid)
+            extraMessage?.let { echo(it) }
         }
     }
 

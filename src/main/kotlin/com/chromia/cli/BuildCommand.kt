@@ -1,12 +1,11 @@
 package com.chromia.cli
 
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
-import com.chromia.cli.compile.config.DeploymentConfigGenerator.generateConfig
+import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
 import com.chromia.cli.compile.config.NamedBlockchainRid
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.util.CliktCliEnv
-import com.chromia.cli.util.Settings
 import com.chromia.cli.util.settingsOption
 import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -37,16 +36,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
         fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>): Map<NamedBlockchainRid, Gtv> {
             return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, C_SourceDir.diskDir(source))
                     .generate()
-                    .onEach { (namedBlockchainRid, gtv) ->
-                        generateConfig(
-                                gtv,
-                                null,
-                                namedBlockchainRid.name,
-                                namedBlockchainRid.blockchainRid,
-                                target.toPath(),
-                                namedBlockchainRid.name
-                        )
-                    }
+                    .onEach { (namedBlockchainRid, gtv) -> storeConfig(gtv, namedBlockchainRid.name, target.toPath()) }
         }
     }
 }
