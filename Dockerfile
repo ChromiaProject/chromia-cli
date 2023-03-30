@@ -6,4 +6,5 @@ RUN ln -s /usr/share/chr/bin/chr /usr/bin/chr
 
 EXPOSE 7740 9870
 WORKDIR /usr/app
+STOPSIGNAL SIGINT
 CMD ["chr"]
