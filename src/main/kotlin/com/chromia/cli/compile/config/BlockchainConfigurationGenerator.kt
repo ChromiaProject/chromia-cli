@@ -26,16 +26,15 @@ class BlockchainConfigurationGenerator(
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
         private val sourceDir: C_SourceDir) {
-    fun generate(): Map<NamedBlockchainRid, Gtv> {
-        return blockchainModels.toList().associate { generateConfiguration(it.first, it.second) }
+    fun generate(): Collection<BlockchainConfigHolder> {
+        return blockchainModels.toList().map { generateConfiguration(it.first, it.second) }
     }
 
-
-    fun generateConfiguration(name: String, model: BlockchainModel): Pair<NamedBlockchainRid, Gtv> {
+    fun generateConfiguration(name: String, model: BlockchainModel): BlockchainConfigHolder {
         val gtvModel = generateGtv(model)
-        val brid = BlockchainRid(PostchainUtils.calcBlockchainRid(gtvModel).toByteArray())
-        validateGtvConfiguration(gtvModel, brid)
-        return NamedBlockchainRid(name, brid) to gtvModel
+        val configholder = BlockchainConfigHolder.from(name, gtvModel)
+        validateGtvConfiguration(gtvModel, configholder.brid)
+        return configholder
     }
 
     private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {

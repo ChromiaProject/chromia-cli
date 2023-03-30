@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
-import com.chromia.cli.compile.config.NamedBlockchainRid
+import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
 import com.chromia.cli.util.settingsOption
@@ -10,8 +10,6 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.common.BlockchainRid
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDecoder
 import net.postchain.rell.utils.PostchainUtils
 
@@ -38,7 +36,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     private val overrides by option("-p", help = "Override any property value (usage: -p key=value)", metavar = "KEY=VALUE").associate()
     protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
 
-    protected fun extractConfigs(): Map<NamedBlockchainRid, Gtv> {
+    protected fun extractConfigs(): Collection<BlockchainConfigHolder> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains)
         } else {
@@ -50,14 +48,10 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                         it.nameWithoutExtension to PostchainUtils.xmlToGtv(it.readText())
                     }
                 }
-                .mapKeys {
-                    NamedBlockchainRid(
-                        it.key,
-                        BlockchainRid(PostchainUtils.calcBlockchainRid(it.value).toByteArray())
-                    )
-                }
-        }
+                .map { BlockchainConfigHolder.from(it.key, it.value) }
 
-        return if (name.isEmpty()) configsToAdd else configsToAdd.filter { name.contains(it.key.name) }
+        }.sortedBy { it.name }
+
+        return if (name.isEmpty()) configsToAdd else configsToAdd.filter { name.contains(it.name) }
     }
 }

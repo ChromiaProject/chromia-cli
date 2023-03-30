@@ -33,17 +33,17 @@ class StartCommand : AbstractNodeCommand(help = """
         val chainsToStart = mutableListOf<Long>()
         val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
-        extractConfigs().toList().forEachIndexed { index, (namedBlockchain, gtv) ->
+        extractConfigs().toList().forEachIndexed { index, (name, brid, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             val iid = index.toLong()
             chainsToStart.add(iid)
             withLoggingContext(
                     NODE_PUBKEY_TAG to nodeConfig.pubKey,
                     CHAIN_IID_TAG to iid.toString(),
-                    BLOCKCHAIN_RID_TAG to namedBlockchain.blockchainRid.toHex()
+                    BLOCKCHAIN_RID_TAG to brid.toHex()
             ) {
                 withReadWriteConnection(node.postchainContext.storage, iid) { eContext: EContext ->
-                    BlockchainApi.initializeBlockchain(eContext, namedBlockchain.blockchainRid, override = true, gtvWithSigners)
+                    BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
                     if (lastHeight >= 0) {
                         BlockchainApi.addConfiguration(eContext, lastHeight + 1 , override = true, gtvWithSigners)
