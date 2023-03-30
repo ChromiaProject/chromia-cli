@@ -12,6 +12,8 @@ val PostchainClient.apiVersion get(): Long {
     }
 }
 
+val PostchainClient.pubkey get() = config.signers.first().pubKey
+
 fun interface ClusterManagementFactory {
     fun buildClusterManagement(client: PostchainClient): ClusterManagement
 }

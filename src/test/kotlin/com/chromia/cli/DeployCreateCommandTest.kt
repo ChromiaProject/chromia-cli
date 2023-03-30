@@ -38,6 +38,12 @@ class DeployCreateCommandTest {
                     brid: x"0000000000000000000000000000000000000000000000000000000000000001"
             """.trimIndent())
         }
+        with(File(dir.toFile(), ".secret")) {
+            writeText("""
+                pubkey = 12312312414124124124121
+                privkey = 000000000000000000000000000000000000001
+            """.trimIndent())
+        }
         val testConsole = TestConsole()
         val throwable = assertThrows<CliktError> {
             DeployCreateCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
