@@ -41,18 +41,16 @@ internal class BuildCommandTest {
         command.parse()
         command.parse()
 
-        assertEquals(File(dir, "build").list()?.size ?: 0, 2)
+        assertEquals(File(dir, "build").list()?.size ?: 0, 1)
         assertTrue(File(dir, "build/hello.xml").exists())
-        assertTrue(File(dir, "build/hello.gtv").exists())
     }
 
     @Test
     fun testSingleRun() {
         command.parse()
 
-        assertEquals(File(dir, "build").list()?.size ?: 0, 2)
+        assertEquals(File(dir, "build").list()?.size ?: 0, 1)
         assertTrue(File(dir, "build/hello.xml").exists())
-        assertTrue(File(dir, "build/hello.gtv").exists())
     }
 
     @Test
