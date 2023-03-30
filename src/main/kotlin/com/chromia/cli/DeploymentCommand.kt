@@ -36,6 +36,7 @@ class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deploymen
 fun deployCommands() = DeploymentCommand().subcommands(
         DeployCreateCommand(),
         DeployInfoCommand(),
+        DeployInspectCommand(),
         DeployUpdateCommand(),
 )
 
@@ -48,7 +49,8 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
             .validate { require(settings.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
 
     protected val deployModel by lazy {
-        val deployModel = settings.deployments[target] ?: throw PrintMessage("deployment target with name $target not found")
+        val deployModel = settings.deployments[target]
+                ?: throw PrintMessage("deployment target with name $target not found")
         if (deployModel.container == null) throw PrintMessage("No container specified on network $target")
         deployModel
     }
