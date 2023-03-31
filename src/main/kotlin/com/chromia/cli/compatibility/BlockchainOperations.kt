@@ -10,7 +10,7 @@ import com.chromia.directory1.proposal.proposeConfigurationOperation
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
 
-class BlockchainOperations(private val apiVersion: Long, private val builder: TransactionBuilder, private val heightChecker: HeightFinder) {
+class BlockchainOperations(private val apiVersion: Long, private val builder: TransactionBuilder, private val heightChecker: HeightFinder? = null) {
 
     fun newBlockchainOperation(myPubkey: ByteArray,
                                configData: ByteArray,
@@ -31,7 +31,7 @@ class BlockchainOperations(private val apiVersion: Long, private val builder: Tr
         if (height == null) {
             when {
                 apiVersion < 2 -> builder.proposeConfigurationOperation(myPubkey, blockchainRid, configData)
-                clusterName != "system" -> builder.proposeConfigurationAtOperation(myPubkey, blockchainRid, configData, heightChecker.findSafeHeight(blockchainRid), false, "")
+                clusterName != "system" -> builder.proposeConfigurationAtOperation(myPubkey, blockchainRid, configData, heightChecker!!.findSafeHeight(blockchainRid), false, "")
                 else -> builder.proposeConfigurationOperation(myPubkey, blockchainRid, configData, "")
             }
         } else {
