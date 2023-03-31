@@ -7,7 +7,6 @@ import com.chromia.cli.util.HeightFinder
 import com.chromia.directory1.proposal.proposeBlockchainOperation
 import com.chromia.directory1.proposal.proposeConfigurationAtOperation
 import com.chromia.directory1.proposal.proposeConfigurationOperation
-import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
 

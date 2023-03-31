@@ -8,13 +8,14 @@ import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.client.core.PostchainClient
+import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
 
 class DeployCreateCommand(
-        clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
+        clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
     override fun beforeDeployment(name: String, brid: BlockchainRid) {

@@ -12,13 +12,14 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.client.core.PostchainClient
+import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
 
 class DeployUpdateCommand(
-        clientProvider: PostchainClientProviderImpl = PostchainClientProviderImpl(),
+        clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion
 ) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
