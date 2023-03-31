@@ -12,17 +12,18 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.common.BlockchainRid
 
 class DeployCreateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
-    override fun beforeDeployment(name: String, brid: BlockchainRid) {
-        if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
-        confirm(
-                "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
-                default = false, abort = true)
+    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+        deployedChains.forEach { (name, _, _) ->
+            if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
+            confirm(
+                    "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
+                    default = false, abort = true)
+        }
     }
 
     override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {

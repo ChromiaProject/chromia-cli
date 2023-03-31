@@ -16,7 +16,6 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.common.BlockchainRid
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -26,8 +25,10 @@ class DeployUpdateCommand(
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
     }
 
-    override fun beforeDeployment(name: String, brid: BlockchainRid) {
-        if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
+    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+        deployedChains.forEach { (name, _, _) ->
+            if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
+        }
     }
 
     override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {}
