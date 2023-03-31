@@ -23,7 +23,6 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.transaction.TransactionBuilder
-import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
@@ -79,29 +78,30 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
         val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, cSourceDir)
         val chainsToDeploy = chainsToDeploy(generator)
-        chainsToDeploy.forEach { configHolder ->
-            beforeDeployment(configHolder.name, configHolder.brid)
-            val client = createClient()
-            val result = client
-                    .transactionBuilder()
-                    .addNop()
-                    .apply { addDeploymentOperation(this, client, configHolder) }
-                    .sign()
-                    .postAwaitConfirmation()
-            if (result.status != TransactionStatus.CONFIRMED) {
-                throw CliktError("Deployment failed: ${result.rejectReason ?: "still waiting for confirmation"}")
-            } else {
-                echo("Deployment of blockchain ${configHolder.name} was successful")
-            }
+        beforeDeployment(chainsToDeploy)
+        val client = createClient()
+        val result = client
+                .transactionBuilder()
+                .addNop()
+                .apply { chainsToDeploy.forEach { addDeploymentOperation(this, client, it) } }
+                .sign()
+                .postAwaitConfirmation()
+        if (result.status != TransactionStatus.CONFIRMED) {
+            throw CliktError("Deployment failed: ${result.rejectReason ?: "still waiting for confirmation"}")
+        } else {
+            echo("Deployment of blockchain ${chainsToDeploy.joinToString(", ") { it.name }} was successful")
+        }
 
+        chainsToDeploy.forEach { configHolder ->
             BlockchainConfigurationWriter.storeConfig(configHolder.config, "${target}_${configHolder.name}_${Instant.now()}", settings.target.toPath())
         }
+
         afterDeployment(chainsToDeploy)
     }
 
     abstract fun addDeploymentOperation(transactionBuilder: TransactionBuilder, client: PostchainClient, configHolder: BlockchainConfigHolder)
 
-    abstract fun beforeDeployment(name: String, brid: BlockchainRid)
+    abstract fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>)
 
     abstract fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>)
 
