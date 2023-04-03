@@ -1,9 +1,9 @@
 package com.chromia.cli.compile.config
 
 import com.chromia.cli.model.BlockchainModel
+import com.chromia.cli.model.CompileModel
 import com.chromia.cli.util.withSigner
 import com.github.ajalt.clikt.core.CliktError
-import com.chromia.cli.model.CompileModel
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -17,8 +17,10 @@ import net.postchain.rell.compiler.base.utils.C_SourceDir
 import net.postchain.rell.model.R_ModuleName
 import net.postchain.rell.module.ConfigConstants
 import net.postchain.rell.module.RellPostchainModuleFactory
+import net.postchain.rell.tools.runcfg.Rcfg_Gtv
+import net.postchain.rell.tools.runcfg.Rcfg_Gtv_Array
+import net.postchain.rell.tools.runcfg.Rcfg_Gtv_ArrayMerge
 import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
-import net.postchain.rell.utils.PostchainUtils
 import net.postchain.rell.utils.RellCliEnv
 
 class BlockchainConfigurationGenerator(
@@ -26,6 +28,15 @@ class BlockchainConfigurationGenerator(
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
         private val sourceDir: C_SourceDir) {
+
+    private val whiteListedGtxModules = listOf(
+            "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
+            "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule",
+            "net.postchain.d1.icmf.IcmfSenderGTXModule",
+            "net.postchain.d1.icmf.IcmfReceiverGTXModule",
+            "net.postchain.d1.iccf.IccfGTXModule"
+    )
+
     fun generate(): Collection<BlockchainConfigHolder> {
         return blockchainModels.toList().map { generateConfiguration(it.first, it.second) }
     }
@@ -39,7 +50,16 @@ class BlockchainConfigurationGenerator(
 
     private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
         try {
-            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(configuration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
+            val gtvBuilder = RunConfigGtvBuilder()
+            gtvBuilder.update(configuration)
+            val gtxModules = configuration["gtx"]?.get("modules")!!.asArray() // Not null since default values are added
+                    .filter { it.asString() !in whiteListedGtxModules }
+                    .map { Rcfg_Gtv.decode(it) }
+                    .let { Rcfg_Gtv_Array(it, Rcfg_Gtv_ArrayMerge.REPLACE) }
+
+            gtvBuilder.update(gtxModules, "gtx", "modules")
+
+            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(gtvBuilder.build(), "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
         } catch (e: UserMistake) {
             throw CliktError(e.message)
         }
