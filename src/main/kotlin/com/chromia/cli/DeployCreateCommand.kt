@@ -32,7 +32,7 @@ class DeployCreateCommand(
             deployments:
               $target:
                 chains:
-                  ${deployedChains.joinToString("\n      ") { "${it.name}: ${it.brid}" }}
+                  ${deployedChains.joinToString("\n      ") { "${it.name}: x\"${it.brid}\"" }}
             """.trimIndent())
     }
 
