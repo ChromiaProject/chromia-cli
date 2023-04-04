@@ -29,7 +29,7 @@ class DeployInfoCommand(
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { Companion.httpHandlerFactory(it) }
 ) : CliktCommand(
         name = "info",
-        help = "Information about any deployed blockchain"
+        help = "Information about a deployed blockchain"
 ) {
 
     private val settings by settingsOptionNotRequired()

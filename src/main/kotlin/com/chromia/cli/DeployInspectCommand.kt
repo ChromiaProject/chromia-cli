@@ -22,7 +22,7 @@ class DeployInspectCommand(
         private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : CliktCommand(
         name = "inspect",
-        help = "Information about any deployed blockchain"
+        help = "Inspect the API of a deployed blockchain"
 ) {
 
     private val settings by settingsOptionNotRequired()
@@ -64,7 +64,7 @@ class DeployInspectCommand(
                 defaultAlignment = Table.Hints.Alignment.LEFT
                 borderStyle = Table.BorderStyle.SINGLE_LINE
             }
-            header("Query", "Return type", "parameters")
+            header("Query", "Return type", "Parameters")
             queries.forEach { (queryName, query) ->
                 row(queryName,
                         query.returnType?.toString() ?: "",
@@ -79,7 +79,7 @@ class DeployInspectCommand(
                 defaultAlignment = Table.Hints.Alignment.LEFT
                 borderStyle = Table.BorderStyle.SINGLE_LINE
             }
-            header("Operation", "parameters")
+            header("Operation", "Parameters")
             operations.forEach { (operationName, operation) ->
                 row(operationName, operation.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
             }
@@ -92,7 +92,7 @@ class DeployInspectCommand(
                 defaultAlignment = Table.Hints.Alignment.LEFT
                 borderStyle = Table.BorderStyle.SINGLE_LINE
             }
-            header("Object", "attribute", "type", "mutable")
+            header("Object", "Attribute", "Type", "Mutable")
             objects.forEach { (objectName, objectDef) ->
                 row(objectName)
                 objectDef.attributes.forEach { (attribute, attributeType) ->
