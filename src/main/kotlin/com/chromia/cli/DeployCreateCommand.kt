@@ -7,8 +7,10 @@ import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
+import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
@@ -32,16 +34,16 @@ class DeployCreateCommand(
             deployments:
               $target:
                 chains:
-                  ${deployedChains.joinToString("\n      ") { "${it.name}: ${it.brid}" }}
+                  ${deployedChains.joinToString("\n      ") { "${it.name}: x\"${it.brid}\"" }}
             """.trimIndent())
     }
 
-    override fun addDeploymentOperation(transactionBuilder: TransactionBuilder, client: PostchainClient, configHolder: BlockchainConfigHolder) {
-        BlockchainOperations(client.apiVersion, transactionBuilder)
-                .newBlockchainOperation(client.pubkey.data, configHolder.configByteArray, configHolder.name, deployModel.container!!)
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
+        BlockchainOperations(client.apiVersion, this)
+                .newBlockchainOperation(clientConfig.pubkey.data, configHolder.configByteArray, configHolder.name, deployModel.container!!)
     }
 
     companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainClient) = CliktClusterManagement(ClusterManagementImpl(client))
+        override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
     }
 }

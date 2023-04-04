@@ -13,8 +13,8 @@ import com.github.ajalt.clikt.parameters.options.option
 import de.m3y.kformat.Table
 import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.defaultHttpHandler
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
@@ -75,6 +75,6 @@ class DeployInfoCommand(
 
     companion object : ClusterManagementFactory {
         fun httpHandlerFactory(config: PostchainClientConfig) = defaultHttpHandler(config)
-        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
+        override fun buildClusterManagement(client: PostchainQuery) = ClusterManagementImpl(client)
     }
 }

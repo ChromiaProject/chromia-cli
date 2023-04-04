@@ -11,8 +11,9 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.long
-import net.postchain.client.core.PostchainClient
+import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
@@ -34,15 +35,15 @@ class DeployUpdateCommand(
     override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {}
 
 
-    override fun addDeploymentOperation(transactionBuilder: TransactionBuilder, client: PostchainClient, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
-        val heightChecker by lazy { HeightFinder(clientProvider, client.config, clusterManagement) }
+        val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
         val blockchainRid = deployModel.chains[configHolder.name]!!
-        BlockchainOperations(client.apiVersion, transactionBuilder, heightChecker)
-                .proposeConfiguration(client.pubkey.data, blockchainRid, configHolder.configByteArray, clusterManagement.getClusterOfBlockchain(blockchainRid), height, true)
+        BlockchainOperations(client.apiVersion, this, heightChecker)
+                .proposeConfiguration(clientConfig.pubkey.data, blockchainRid, configHolder.configByteArray, clusterManagement.getClusterOfBlockchain(blockchainRid), height, true)
     }
 
     companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainClient) = CliktClusterManagement(ClusterManagementImpl(client))
+        override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
     }
 }
