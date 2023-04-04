@@ -29,7 +29,7 @@ import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.io.File
 import java.time.Instant
-import java.util.Properties
+import java.util.*
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments")
 
@@ -38,6 +38,9 @@ fun deployCommands() = DeploymentCommand().subcommands(
         DeployInfoCommand(),
         DeployInspectCommand(),
         DeployUpdateCommand(),
+        DeployResumeCommand(),
+        DeployPauseCommand(),
+        DeployRemoveCommand()
 )
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
