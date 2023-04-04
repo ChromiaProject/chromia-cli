@@ -22,6 +22,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.rell.compiler.base.utils.C_SourceDir
@@ -83,7 +84,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val result = client
                 .transactionBuilder()
                 .addNop()
-                .apply { chainsToDeploy.forEach { addDeploymentOperation(this, client, it) } }
+                .apply { chainsToDeploy.forEach { addDeploymentOperation(client, client.config, it) } }
                 .sign()
                 .postAwaitConfirmation()
         if (result.status != TransactionStatus.CONFIRMED) {
@@ -99,7 +100,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         afterDeployment(chainsToDeploy)
     }
 
-    abstract fun addDeploymentOperation(transactionBuilder: TransactionBuilder, client: PostchainClient, configHolder: BlockchainConfigHolder)
+    abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder)
 
     abstract fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>)
 
