@@ -21,7 +21,7 @@ import net.postchain.cm.cm_api.ClusterManagementImpl
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion
-) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a blockchain", clientProvider) {
+) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
     }
