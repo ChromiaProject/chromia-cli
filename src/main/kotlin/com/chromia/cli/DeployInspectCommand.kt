@@ -1,7 +1,6 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.BlockchainAnalyzer
-import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.RellFunction
@@ -14,12 +13,10 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import de.m3y.kformat.Table
 import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
-import net.postchain.cm.cm_api.ClusterManagementImpl
 
 class DeployInspectCommand(
         private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -103,9 +100,5 @@ class DeployInspectCommand(
                 }
             }
         }.render().also { echo(it) }
-    }
-
-    companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainClient) = ClusterManagementImpl(client)
     }
 }

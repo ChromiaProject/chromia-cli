@@ -6,8 +6,9 @@ import com.chromia.directory1.model.BlockchainAction
 import com.chromia.directory1.proposal.proposeBlockchainActionOperation
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.core.PostchainClient
+import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 
@@ -20,16 +21,14 @@ open class DeployActionCommand(
 
     private val description by option(help = "Description on why the blockchain is being acted on")
 
-    override fun addDeploymentOperation(transactionBuilder: TransactionBuilder, client: PostchainClient, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
         blockchain?.map {
-            client.transactionBuilder()
-                    .proposeBlockchainActionOperation(
-                            client.pubkey.data,
-                            deployModel.chains[it]!!,
-                            action,
-                            description.toString()
-                    )
-                    .postAwaitConfirmation()
+            proposeBlockchainActionOperation(
+                    clientConfig.pubkey.data,
+                    deployModel.chains[it]!!,
+                    action,
+                    description.toString()
+            )
         }
     }
 
