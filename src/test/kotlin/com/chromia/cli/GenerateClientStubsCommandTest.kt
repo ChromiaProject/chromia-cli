@@ -47,7 +47,7 @@ internal class GenerateClientStubsCommandTest {
     }
 
     @Test
-    fun moduleDependencies() {
+    fun moduleDependenciesWithUniqueness() {
         with(File(dir, "src/a.rell")) {
             parentFile.mkdirs()
             writeText("""
@@ -63,6 +63,7 @@ internal class GenerateClientStubsCommandTest {
                 module;
                 import ^.a.*;
                 query q_a1() = a1("");
+                query q_a2() = a2("");
             """.trimIndent())
         }
 
@@ -71,6 +72,7 @@ internal class GenerateClientStubsCommandTest {
             writeText("""
                 module;
                 import ^.a.*;
+                query q_a1() = a1("");
                 query q_a2() = a2("");
             """.trimIndent())
         }
@@ -88,9 +90,8 @@ internal class GenerateClientStubsCommandTest {
         command.parse(listOf("-s", "${settings.absolutePath}", "--typescript"))
 
         assert(File(dir, "build/").listFiles()).hasSize(3)
-        assert(File(dir, "build/a/a.ts").readLines()).containsAll(
-                "export type A1 = {",
-                "export type A2 = {")
+        assert(File(dir, "build/a/a.ts").readLines().filter { it == "export type A1 = {" }).hasSize(1)
+        assert(File(dir, "build/a/a.ts").readLines().filter { it == "export type A2 = {" }).hasSize(1)
         testConsole.assertContains("Created files: [a/a.ts, e1/e1.ts, e2/e2.ts]\n")
     }
 }
