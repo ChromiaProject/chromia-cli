@@ -6,6 +6,7 @@ import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.settingsOption
 import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -19,6 +20,7 @@ import java.io.File
 class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
     private val showBrid by showBridOption()
     private val settings by settingsOption()
+    override fun aliases() = createAliases()
 
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
