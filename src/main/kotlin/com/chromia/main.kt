@@ -1,6 +1,7 @@
 package com.chromia
 
 import com.chromia.cli.*
+import com.chromia.cli.util.createAliases
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
@@ -18,14 +19,7 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
         """.trimIndent())
     }
 
-    override fun aliases(): Map<String, List<String>> {
-        return mapOf(
-                "start" to listOf("node", "start"),
-                "deploy" to listOf("deployment"),
-                "create" to listOf("create-rell-dapp"),
-                "generate" to listOf("generate-client-stubs")
-        )
-    }
+    override fun aliases() = createAliases()
 }
         .subcommands(
                 CreateRellDappCommand(),
