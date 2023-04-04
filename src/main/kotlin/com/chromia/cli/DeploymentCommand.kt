@@ -29,7 +29,7 @@ import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.io.File
 import java.time.Instant
-import java.util.*
+import java.util.Properties
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments")
 

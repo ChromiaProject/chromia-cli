@@ -5,6 +5,7 @@ import com.chromia.cli.util.pubkey
 import com.chromia.directory1.model.BlockchainAction
 import com.chromia.directory1.proposal.proposeBlockchainActionOperation
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
@@ -19,7 +20,7 @@ open class DeployActionCommand(
         clientProvider: PostchainClientProvider
 ) : AbstractDeploymentCommand(name = action.name, help = help, clientProvider) {
 
-    private val description by option(help = "Description on why the blockchain is being acted on")
+    private val description by option(help = "Description on why the blockchain is being acted on").default("")
 
     override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
         blockchain?.map {
@@ -27,7 +28,7 @@ open class DeployActionCommand(
                     clientConfig.pubkey.data,
                     deployModel.chains[it]!!,
                     action,
-                    description.toString()
+                    description
             )
         }
     }
@@ -37,8 +38,7 @@ open class DeployActionCommand(
             if (!deployModel.chains.containsKey(name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain $name cannot be done since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
         }
     }
-
-
+    
     override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {}
 }
 
