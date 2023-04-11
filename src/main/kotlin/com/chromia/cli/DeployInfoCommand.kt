@@ -7,6 +7,7 @@ import com.chromia.cli.util.NodeStatusFinder
 import com.chromia.cli.util.settingsOptionDefault
 import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -38,9 +39,9 @@ class DeployInfoCommand(
     }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption().cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
+    private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }
 
     override fun run() {
-        val option = configuredOptions ?: manualOptions!!
         val config = PostchainClientConfig(option.brid, endpointPool = EndpointPool.default(option.urls))
         val postchainClient = clientProvider.createClient(config)
 

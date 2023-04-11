@@ -1,6 +1,7 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaCliModel
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -11,6 +12,7 @@ import net.postchain.client.core.PostchainClient
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.client.ChromiaClientProvider
+import java.net.ConnectException
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -61,8 +63,12 @@ class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx tow
                 .uri(URI.create("${url}/brid/iid_${cid}"))
                 .build()
 
-        val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-        return BlockchainRid.buildFromHex(response.body())
+        try {
+            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+            return BlockchainRid.buildFromHex(response.body())
+        } catch (e: ConnectException) {
+            throw PrintMessage("Could not auto-detect brid from $url")
+        }
     }
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
