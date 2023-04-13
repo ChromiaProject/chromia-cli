@@ -118,6 +118,12 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
+        with(File(dir.toFile(), "src/test_ops.rell")) {
+            writeText("""
+                module;
+                operation add_foo(name, pubkey) {} // Conflict
+            """.trimIndent())
+        }
         with(File(dir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""

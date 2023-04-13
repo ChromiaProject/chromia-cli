@@ -81,9 +81,8 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-        val cSourceDir = C_SourceDir.diskDir(settings.source)
 
-        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, cSourceDir)
+        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, settings.source)
         val chainsToDeploy = chainsToDeploy(generator)
         beforeDeployment(chainsToDeploy)
         val client = createClient()

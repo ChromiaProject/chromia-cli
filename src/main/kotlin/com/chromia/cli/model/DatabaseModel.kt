@@ -7,7 +7,7 @@ data class DatabaseModel(
         private val password: String = "postchain",
         private val schema: String = "rell_app",
         val driver: String = "org.postgresql.Driver",
-        val logSqlErrors: Boolean = true,
+        val logSqlErrors: Boolean = false,
 ) {
     val dbUrl get() =
             System.getenv("CHR_DB_URL") ?: "jdbc:postgresql://$host/$database"

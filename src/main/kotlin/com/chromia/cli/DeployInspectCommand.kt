@@ -40,7 +40,7 @@ class DeployInspectCommand(
 
         try {
             BlockchainAnalyzer(postchainClient).getAppStructure()
-                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!!.map { it.str() } }
+                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
                     .filterValues { !it.isEmpty() }
                     .forEach { (name, module) ->
                         echo("Module: $name")
