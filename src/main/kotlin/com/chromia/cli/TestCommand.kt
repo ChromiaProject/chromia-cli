@@ -2,8 +2,13 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.ContextCreator
 import com.chromia.cli.database.DatabaseUtil
+import com.chromia.cli.util.Color
+import com.chromia.cli.util.green
+import com.chromia.cli.util.line
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.settingsOption
+import com.chromia.cli.util.space
+import com.chromia.cli.util.withPrinter
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -27,7 +32,15 @@ import net.postchain.rell.runtime.utils.Rt_Utils
 import net.postchain.rell.sql.NoConnSqlManager
 import net.postchain.rell.sql.SqlManager
 import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
-import net.postchain.rell.utils.*
+import net.postchain.rell.utils.RellCliEnv
+import net.postchain.rell.utils.RellCliUtils
+import net.postchain.rell.utils.TestCaseResult
+import net.postchain.rell.utils.TestMatcher
+import net.postchain.rell.utils.TestResult
+import net.postchain.rell.utils.TestRunner
+import net.postchain.rell.utils.TestRunnerCase
+import net.postchain.rell.utils.TestRunnerContext
+import net.postchain.rell.utils.TestRunnerResults
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val modules by modulesOption()
@@ -74,46 +87,50 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         printResults(results)
     }
 
-    private val PRINT_SEPARATOR = "-".repeat(72)
     private fun printResults(results: TestRunnerResults) {
-        val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
+        withPrinter(::echo) {
 
-        if (failedTests.isNotEmpty()) {
-            echo()
-            echo(PRINT_SEPARATOR)
-            echo("FAILED TESTS:")
-            for (r in failedTests) {
-                echo()
-                echo(r.case.name)
-                printException(r.res.error!!)
+            val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
+
+            if (failedTests.isNotEmpty()) {
+                space()
+                line()
+                print("FAILED TESTS:")
+                for (r in failedTests) {
+                    space()
+                    print(r.case.name)
+                    printException(r.res.error!!)
+                }
             }
-        }
 
-        echo()
-        echo(PRINT_SEPARATOR)
-        echo("TEST RESULTS:")
+            space()
+            line()
+            print("TEST RESULTS:")
 
-        printResults(okTests)
-        printResults(failedTests)
+            printResults(okTests, Color.Green)
+            printResults(failedTests, Color.Red)
 
-        val nTests = results.getResults().size
-        val nOk = okTests.size
-        val nFailed = failedTests.size
+            val nTests = results.getResults().size
+            val nOk = okTests.size
+            val nFailed = failedTests.size
 
-        echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
+            print("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
 
-        if (nFailed == 0) {
-            echo("\n***** OK *****")
-        } else {
-            throw CliktError("\n***** FAILED *****")
+            if (nFailed == 0) {
+                green("***** OK *****")
+            } else {
+                throw CliktError(Color.Red.format("***** FAILED *****"))
+            }
         }
     }
 
-    private fun printResults(list: List<TestCaseResult>) {
-        if (list.isNotEmpty()) {
-            echo()
-            for (r in list) {
-                echo("${r.res} ${r.case}")
+    private fun printResults(list: List<TestCaseResult>, color: Color) {
+        withPrinter(::echo) {
+            if (list.isNotEmpty()) {
+                space()
+                for (r in list) {
+                    print("${color.format(r.res)} ${r.case}")
+                }
             }
         }
     }
@@ -121,7 +138,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private fun printException(e: Throwable) {
         when (e) {
             is Rt_Exception -> {
-                val msg = Rt_Utils.appendStackTrace("Error: ${e.message}", e.info.stack)
+                val msg = Rt_Utils.appendStackTrace("${Color.Red.format("ERROR:")} ${e.message}", e.info.stack)
                 echo(msg)
             }
 
