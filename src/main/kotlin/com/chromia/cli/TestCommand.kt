@@ -52,7 +52,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     private val tests by option(help = "test method pattern")
     private val sourceDir by lazy { settings.source }
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
-    override val colorScheme by option("-B", "--batch-mode").flag()
+    override val colorScheme by option("--no-color", help = "Do not use ansi colors").flag()
             .convert { if (it) NoColorScheme(::echo) else AnsiColorScheme(::echo) }
 
     init {
@@ -124,7 +124,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         if (nFailed == 0) {
             green("***** OK *****")
         } else {
-            throw CliktError(AnsiColor.Red.format("***** FAILED *****"))
+            throw CliktError(colorScheme.red.format("***** FAILED *****"))
         }
     }
 

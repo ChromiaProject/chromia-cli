@@ -1,7 +1,5 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.util.AnsiColorFormat.Companion.ANSI_RESET
-
 interface ColorAware {
     val colorScheme: ColorScheme
 }
@@ -9,7 +7,7 @@ interface ColorAware {
 fun ColorAware.red(msg: String) = colorScheme.printer.print(colorScheme.red.format(msg))
 fun ColorAware.green(msg: String) = colorScheme.printer.print(colorScheme.green.format(msg))
 fun ColorAware.blue(msg: String) = colorScheme.printer.print(colorScheme.blue.format(msg))
-fun ColorAware.line() = colorScheme.printer.print(PRINT_SEPARATOR)
+fun ColorAware.line() = colorScheme.printer.print("-".repeat(72))
 fun ColorAware.space() = colorScheme.printer.print("")
 
 fun interface PrintFunction {
@@ -53,13 +51,11 @@ class NoColorScheme(override val printer: PrintFunction) : ColorScheme {
     override val blue = ColorFormat.noColorFormat
 }
 
-enum class AnsiColor(private val code: String) : ColorFormat {
+enum class AnsiColor(code: String) {
     Red("\u001B[31m"),
     Green("\u001B[32m"),
     Blue("\u001B[34m");
 
     val colorFormat = AnsiColorFormat(code)
-    override fun format(str: Any): String = "${code}$str${ANSI_RESET}"
 }
 
-private val PRINT_SEPARATOR = "-".repeat(72)
