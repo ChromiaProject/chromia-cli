@@ -25,6 +25,7 @@ fun nodeCommands() = NodeCommand().subcommands(
 )
 
 abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
+    //TODO add check that if there are libs, that they are installed
     protected val settings by settingsOption()
     protected val blockchainConfigs by option(
             "-bc", "--blockchain-config",

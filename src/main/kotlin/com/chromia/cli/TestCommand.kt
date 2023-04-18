@@ -41,6 +41,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     override fun run() {
+        //TODO add check that if there are libs, that they are installed
         val testModules = modules ?: settings.test.modules.map { R_ModuleName.Companion.of(it) }
         val sourceDir = C_SourceDir.diskDir(sourceDir)
         val modSel = C_CompilerModuleSelection(listOf(), testModules)

@@ -19,7 +19,7 @@ import org.postgresql.util.PSQLException
 import java.io.File
 
 
-class ReplCommand: CliktCommand(help= "Run rell commands in shell") {
+class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val settings by settingsOptionNotRequired()
     private val sourceDir by lazy { settings?.source ?: File(System.getProperty("user.dir")) }
     private val module by module()
@@ -28,14 +28,15 @@ class ReplCommand: CliktCommand(help= "Run rell commands in shell") {
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
-    override fun run() {
 
-        if(module != null && settings == null) {
+    override fun run() {
+//TODO add check that if there are libs, that they are installed
+        if (module != null && settings == null) {
             echo("To find the module \"$module\", specifying the settings file is required")
             return
         }
 
-        if(useDB && settings == null) {
+        if (useDB && settings == null) {
             throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
 

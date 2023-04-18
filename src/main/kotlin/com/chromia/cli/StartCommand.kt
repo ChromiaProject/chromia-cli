@@ -25,6 +25,7 @@ class StartCommand : AbstractNodeCommand(help = """
     init {
         context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
+
     override fun run() {
         startPostchainNode()
     }
@@ -46,7 +47,7 @@ class StartCommand : AbstractNodeCommand(help = """
                     BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
                     if (lastHeight >= 0) {
-                        BlockchainApi.addConfiguration(eContext, lastHeight + 1 , override = true, gtvWithSigners)
+                        BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
                 }
             }

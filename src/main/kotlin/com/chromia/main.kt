@@ -32,5 +32,6 @@ fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
                 QueryCommand(),
                 TxCommand(),
                 KeygenCommand(),
+                InstallCommand(),
         )
         .main(args)
