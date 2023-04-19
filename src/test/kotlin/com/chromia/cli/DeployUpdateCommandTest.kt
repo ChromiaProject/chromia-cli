@@ -26,7 +26,6 @@ class DeployUpdateCommandTest {
         @BeforeAll
         @JvmStatic
         fun setup(@TempDir dir: Path) {
-            println("hello")
             with(File(dir.toFile(), "src/main.rell")) {
                 parentFile.mkdirs()
                 writeText("""

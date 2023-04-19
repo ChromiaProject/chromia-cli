@@ -1,9 +1,15 @@
 package com.chromia.cli
 
+import com.chromia.cli.model.parseModel
+import com.chromia.cli.util.DependencyResolver
+import com.chromia.cli.util.RegisteredLib
+import com.chromia.cli.util.RepositoryCloner
+import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
+import net.postchain.common.types.WrappedByteArray
 import org.eclipse.jgit.api.errors.InvalidRemoteException
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -12,50 +18,7 @@ import java.nio.file.Path
 
 
 class InstallCommandTest {
-
-    companion object {
-        lateinit var settings: File
-
-        @BeforeAll
-        @JvmStatic
-        fun setup(@TempDir dir: Path) {
-            with(File(dir.toFile(), "src/main.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                module;
-            """.trimIndent())
-            }
-            settings = File(dir.toFile(), "config.yml").apply {
-                writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                    libs:
-                        foo:
-                          registry: http://foo.com
-                          lib: lib
-                          rid: x"987654"
-                        bar:
-                          registry: http://bar.com
-                          lib: lib/
-                          rid: x"58302025"
-                  bc2:
-                    module: main
-                    libs:
-                        wrong:
-                          registry: http://wrongAddress.com
-                          lib: client/lib/ft3/
-                          rid: x"123456"
-                        bar:
-                          registry: http://bar.com
-                          lib: lib/
-                          rid: x"58302025"
-  
-            """.trimIndent())
-            }
-        }
-    }
-
+    lateinit var settings: File
 
     lateinit var testConsole: TestConsole
 
@@ -65,19 +28,118 @@ class InstallCommandTest {
     }
 
     @Test
-    fun tes(@TempDir dir: Path) {
-        InstallCommand { TestRepositoryCloner() }.context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--target", "/Users/carljernbacker/Desktop/chromaway/chromia-cli/ex/build/"))
-        //TODO test that the correct number of files are created in temp dir
-        //TODO the flatmap works and duplicate libs are removed
-        //TODO make sure that errors are caught and displayed in a nice way
+    fun singleDependencyTest(@TempDir dir: Path) {
 
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                    libs:
+                        foo:
+                          registry: http://foo.com
+                          lib: lib
+                          rid: x"11"  
+            """.trimIndent())
+        }
+
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/main.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/nested/main.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "build/libs/testLib-foo.com/not/include/main.rell").exists())
+    }
+
+    @Test
+    fun multipleDependencyTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                    libs:
+                        foo:
+                          registry: http://foo.com
+                          lib: lib
+                          rid: x"11"
+                        bar:
+                          registry: http://bar.com
+                          lib: lib
+                          rid: x"12" 
+            """.trimIndent())
+        }
+
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/main.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/nested/main.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-bar.com/main.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "build/libs/testLib-foo.com/not/include/main.rell").exists())
+    }
+
+    @Test
+    fun duplicateDependencyTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                    libs:
+                        foo:
+                          registry: http://foo.com
+                          lib: lib
+                          rid: x"11"
+                  bc2:
+                    module: main
+                    libs:
+                        foo:
+                          registry: http://foo.com
+                          lib: lib
+                          rid: x"11"
+            """.trimIndent())
+        }
+        val resolver = TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex(""))
+        Assertions.assertEquals(resolver.getDependencies(Settings(settings, parseModel(settings))).size, 1)
+    }
+
+    @Test
+    fun wrongRegistryDependencyTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                    libs:
+                        foo:
+                          registry: http://wrongAddress.com
+                          lib: lib
+                          rid: x"13"
+            """.trimIndent())
+        }
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+
+        Assertions.assertEquals("Invalid remote host. Error: This is an error\n", testConsole.out[0].first)
     }
 
     class TestRepositoryCloner : RepositoryCloner {
         override fun clone(registry: String, dir: File) {
             when (registry) {
                 "http://bar.com" -> createFile(dir)
-                "http://foo.com" -> createFile(dir)
+                "http://foo.com" -> {
+                    createFile(dir)
+                    createNestedFile(dir)
+                    createFileToNotInclude(dir)
+                }
+
                 "http://wrongAddress.com" -> throw InvalidRemoteException("This is an error")
             }
         }
@@ -90,5 +152,34 @@ class InstallCommandTest {
                 """.trimIndent())
             }
         }
+
+        private fun createNestedFile(dir: File) {
+            with(File(dir, "lib/nested/main.rell")) {
+                parentFile.mkdirs()
+                writeText("""
+                    module; 
+                """.trimIndent())
+            }
+        }
+
+        private fun createFileToNotInclude(dir: File) {
+            with(File(dir, "not/include/main.rell")) {
+                parentFile.mkdirs()
+                writeText("""
+                    module; 
+                """.trimIndent())
+            }
+        }
+    }
+
+    class TestDependencyResolver(private val name: String, val rid: WrappedByteArray) : DependencyResolver {
+        override fun checkHash(rid: WrappedByteArray): Boolean {
+            TODO("Not yet implemented")
+        }
+
+        override fun getLib(registry: String): RegisteredLib {
+            return RegisteredLib("$name-${registry.replace(Regex("http(s)?://|www\\.|/.*"), "")}", rid)
+        }
+
     }
 }
