@@ -30,7 +30,6 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     }
 
     override fun run() {
-//TODO add check that if there are libs, that they are installed
         if (module != null && settings == null) {
             echo("To find the module \"$module\", specifying the settings file is required")
             return

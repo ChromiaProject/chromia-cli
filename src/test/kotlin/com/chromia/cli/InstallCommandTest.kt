@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DependencyResolver
 import com.chromia.cli.util.RegisteredLib
@@ -35,21 +36,21 @@ class InstallCommandTest {
                 blockchains:
                   bc1:
                     module: main
-                    libs:
-                        foo:
-                          registry: http://foo.com
-                          lib: lib
-                          rid: x"11"  
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"11"  
             """.trimIndent())
         }
 
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/main.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/nested/main.rell").exists())
-        Assertions.assertFalse(File(dir.toFile(), "build/libs/testLib-foo.com/not/include/main.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/nested/b.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "build/libs/foo/not/include/c.rell").exists())
     }
 
     @Test
@@ -60,26 +61,26 @@ class InstallCommandTest {
                 blockchains:
                   bc1:
                     module: main
-                    libs:
-                        foo:
-                          registry: http://foo.com
-                          lib: lib
-                          rid: x"11"
-                        bar:
-                          registry: http://bar.com
-                          lib: lib
-                          rid: x"12" 
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"11"
+                    bar:
+                      registry: http://bar.com
+                      lib: lib
+                      rid: x"12" 
             """.trimIndent())
         }
 
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/main.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-foo.com/nested/main.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/testLib-bar.com/main.rell").exists())
-        Assertions.assertFalse(File(dir.toFile(), "build/libs/testLib-foo.com/not/include/main.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/nested/b.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "build/libs/bar/d.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "build/libs/foo/not/include/c.rell").exists())
     }
 
     @Test
@@ -90,21 +91,20 @@ class InstallCommandTest {
                 blockchains:
                   bc1:
                     module: main
-                    libs:
-                        foo:
-                          registry: http://foo.com
-                          lib: lib
-                          rid: x"11"
                   bc2:
                     module: main
-                    libs:
-                        foo:
-                          registry: http://foo.com
-                          lib: lib
-                          rid: x"11"
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"11"
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"11"
             """.trimIndent())
         }
-        val resolver = TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex(""))
+        val resolver = TestDependencyResolver(rid = WrappedByteArray.fromHex(""))
         Assertions.assertEquals(resolver.getDependencies(Settings(settings, parseModel(settings))).size, 1)
     }
 
@@ -116,14 +116,14 @@ class InstallCommandTest {
                 blockchains:
                   bc1:
                     module: main
-                    libs:
-                        foo:
-                          registry: http://wrongAddress.com
-                          lib: lib
-                          rid: x"13"
+                libs:
+                    foo:
+                      registry: http://wrongAddress.com
+                      lib: lib
+                      rid: x"13"
             """.trimIndent())
         }
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver("testLib", rid = WrappedByteArray.fromHex("")) })
+        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
 
@@ -131,39 +131,21 @@ class InstallCommandTest {
     }
 
     class TestRepositoryCloner : RepositoryCloner {
-        override fun clone(registry: String, dir: File) {
+        override fun clone(registry: String, target: File) {
             when (registry) {
-                "http://bar.com" -> createFile(dir)
+                "http://bar.com" -> createFile(target, "lib/d")
                 "http://foo.com" -> {
-                    createFile(dir)
-                    createNestedFile(dir)
-                    createFileToNotInclude(dir)
+                    createFile(target, "lib/a")
+                    createFile(target, "lib/nested/b")
+                    createFile(target, "not/include/c")
                 }
 
                 "http://wrongAddress.com" -> throw InvalidRemoteException("This is an error")
             }
         }
 
-        private fun createFile(dir: File) {
-            with(File(dir, "lib/main.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                    module; 
-                """.trimIndent())
-            }
-        }
-
-        private fun createNestedFile(dir: File) {
-            with(File(dir, "lib/nested/main.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                    module; 
-                """.trimIndent())
-            }
-        }
-
-        private fun createFileToNotInclude(dir: File) {
-            with(File(dir, "not/include/main.rell")) {
+        private fun createFile(dir: File, name: String) {
+            with(File(dir, "$name.rell")) {
                 parentFile.mkdirs()
                 writeText("""
                     module; 
@@ -172,13 +154,13 @@ class InstallCommandTest {
         }
     }
 
-    class TestDependencyResolver(private val name: String, val rid: WrappedByteArray) : DependencyResolver {
-        override fun checkHash(rid: WrappedByteArray): Boolean {
+    class TestDependencyResolver(val rid: WrappedByteArray) : DependencyResolver {
+        override fun checkHash(rellLibrary: RellLibraryModel): Boolean {
             TODO("Not yet implemented")
         }
 
-        override fun getLib(registry: String): RegisteredLib {
-            return RegisteredLib("$name-${registry.replace(Regex("http(s)?://|www\\.|/.*"), "")}", rid)
+        override fun getLib(name: String, rellLibrary: RellLibraryModel): RegisteredLib {
+            return RegisteredLib(name, rid)
         }
 
     }

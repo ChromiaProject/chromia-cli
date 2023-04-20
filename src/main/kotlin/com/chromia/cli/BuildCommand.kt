@@ -35,6 +35,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     companion object {
+        //TODO add check that if there are libs, that they are installed
         fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>): Collection<BlockchainConfigHolder> {
             return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, C_SourceDir.diskDir(source))
                     .generate()
