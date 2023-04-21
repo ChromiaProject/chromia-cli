@@ -1,14 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.model.RellLibraryModel
-import com.chromia.cli.model.parseModel
-import com.chromia.cli.util.DependencyResolver
-import com.chromia.cli.util.RegisteredLib
 import com.chromia.cli.util.RepositoryCloner
-import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
-import net.postchain.common.types.WrappedByteArray
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -44,7 +38,7 @@ class InstallCommandTest {
             """.trimIndent())
         }
 
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
+        InstallCommand { TestRepositoryCloner() }
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
@@ -73,7 +67,7 @@ class InstallCommandTest {
             """.trimIndent())
         }
 
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
+        InstallCommand { TestRepositoryCloner() }
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
@@ -104,8 +98,7 @@ class InstallCommandTest {
                       rid: x"11"
             """.trimIndent())
         }
-        val resolver = TestDependencyResolver(rid = WrappedByteArray.fromHex(""))
-        Assertions.assertEquals(resolver.getDependencies(Settings(settings, parseModel(settings))).size, 1)
+
     }
 
     @Test
@@ -123,7 +116,7 @@ class InstallCommandTest {
                       rid: x"13"
             """.trimIndent())
         }
-        InstallCommand({ TestRepositoryCloner() }, { TestDependencyResolver(rid = WrappedByteArray.fromHex("")) })
+        InstallCommand { TestRepositoryCloner() }
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
 
@@ -152,16 +145,5 @@ class InstallCommandTest {
                 """.trimIndent())
             }
         }
-    }
-
-    class TestDependencyResolver(val rid: WrappedByteArray) : DependencyResolver {
-        override fun checkHash(rellLibrary: RellLibraryModel): Boolean {
-            TODO("Not yet implemented")
-        }
-
-        override fun getLib(name: String, rellLibrary: RellLibraryModel): RegisteredLib {
-            return RegisteredLib(name, rid)
-        }
-
     }
 }

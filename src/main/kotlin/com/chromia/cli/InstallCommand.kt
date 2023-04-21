@@ -1,7 +1,5 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.BaseDependencyResolver
-import com.chromia.cli.util.DependencyResolver
 import com.chromia.cli.util.GitRepositoryCloner
 import com.chromia.cli.util.RepositoryCloner
 import com.chromia.cli.util.settingsOption
@@ -19,7 +17,6 @@ import kotlin.io.path.createTempDirectory
 
 class InstallCommand(
         private val repositoryClonerFactory: () -> RepositoryCloner = { GitRepositoryCloner() },
-        private val dependencyResolver: () -> DependencyResolver = { BaseDependencyResolver() }
 ) : CliktCommand(help = "Install libs dependencies") {
     private val settings by settingsOption()
     private val target by option(help = "Explicitly set target directory")
@@ -30,14 +27,13 @@ class InstallCommand(
     }
 
     override fun run() {
-        dependencyResolver().getDependencies(settings).forEach { (name, rellLibrary) ->
+        settings.libs.forEach { (name, rellLibrary) ->
             try {
                 val dir = createTempDirectory()
-                val registeredLib = dependencyResolver().getLib(name, rellLibrary)
-
                 repositoryClonerFactory().clone(rellLibrary.registry, dir.toFile())
-                val targetPath = Path(target, registeredLib.name)
-                if (!Path(target, registeredLib.name).toFile().exists()) {
+                val targetPath = Path(target, name)
+                //TODO add tests if dir exists with files
+                if (!Path(target, name).toFile().exists()) {
                     targetPath.toFile().mkdirs()
                 }
 
