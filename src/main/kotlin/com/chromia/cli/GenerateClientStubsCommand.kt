@@ -40,7 +40,7 @@ class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", 
 
     private val target by option("--target", help = "Directory to generate template project in")
             .file(canBeFile = false)
-            .defaultLazy(defaultForHelp = "${settings.target}/stubs") { File(settings.target, "stubs") }
+            .defaultLazy(defaultForHelp = "<target>/stubs") { File(settings.target, "stubs") }
 
     override fun run() {
         val generator = CodeGenerator(languageOption.factory())
