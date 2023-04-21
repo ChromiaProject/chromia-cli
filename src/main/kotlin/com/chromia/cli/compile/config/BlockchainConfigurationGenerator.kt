@@ -12,29 +12,30 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
-import net.postchain.rell.RellConfigGen
-import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.model.R_ModuleName
-import net.postchain.rell.module.ConfigConstants
 import net.postchain.rell.module.RellPostchainModuleFactory
 import net.postchain.rell.tools.runcfg.Rcfg_Gtv
 import net.postchain.rell.tools.runcfg.Rcfg_Gtv_Array
 import net.postchain.rell.tools.runcfg.Rcfg_Gtv_ArrayMerge
 import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
-import net.postchain.rell.utils.RellCliEnv
+import net.postchain.rell.utils.cli.RellCliApi
+import net.postchain.rell.utils.cli.RellCliBasicException
+import net.postchain.rell.utils.cli.RellCliCompileConfig
+import net.postchain.rell.utils.cli.RellCliEnv
+import java.io.File
 
 class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
-        private val sourceDir: C_SourceDir) {
+        private val sourceDir: File) {
 
     private val whiteListedGtxModules = listOf(
             "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
             "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule",
             "net.postchain.d1.icmf.IcmfSenderGTXModule",
             "net.postchain.d1.icmf.IcmfReceiverGTXModule",
-            "net.postchain.d1.iccf.IccfGTXModule"
+            "net.postchain.d1.iccf.IccfGTXModule",
+            "net.postchain.eif.EifGTXModule",
     )
 
     fun generate(): Collection<BlockchainConfigHolder> {
@@ -69,19 +70,22 @@ class BlockchainConfigurationGenerator(
         val b = RunConfigGtvBuilder()
         addDefault(b, blockchainModel)
 
-        val configGen = RellConfigGen.create(cliEnv, sourceDir, listOf(R_ModuleName.of(blockchainModel.module)))
-        val sources = configGen.getModuleSources()
+        val config = RellCliCompileConfig.Builder()
+                .cliEnv(cliEnv)
+                .moduleArgs(blockchainModel.moduleArgs)
+                .mountConflictError(true)
+                .moduleArgsMissingError(true)
+                .version(compileModel.langVersion)
+                .quiet(compileModel.quiet)
+                .build()
 
-        val srcGtv = gtv(
-                "modules" to gtv(listOf(gtv(blockchainModel.module))),
-                ConfigConstants.RELL_SOURCES_KEY to gtv(sources.files.mapValues { (_, v) -> gtv(v) }),
-                ConfigConstants.RELL_VERSION_KEY to gtv(compileModel.langVersion.str())
-        )
-        b.update(srcGtv, "gtx", "rell")
-
-        if (blockchainModel.moduleArgs.isNotEmpty()) {
-            b.update(gtv(blockchainModel.moduleArgs.mapValues { gtv(it.value) }), "gtx", "rell", "moduleArgs")
+        try {
+            val rellBcConfig = RellCliApi.compileGtv(config, sourceDir, blockchainModel.module)
+            b.update(rellBcConfig, "gtx", "rell")
+        } catch (e: RellCliBasicException) {
+            throw CliktError(e.message, e)
         }
+
         blockchainModel.config.filterKeys { it != "modules" }
                 .forEach { (path, value) -> b.update(value, path) }
 

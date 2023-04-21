@@ -48,6 +48,6 @@ class DeployCreateCommandTest {
         val throwable = assertThrows<CliktError> {
             DeployCreateCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
-        assert(throwable.message!!).contains("Module initialization failed: Decoding type 'text': expected STRING, actual DICT")
+        assert(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
 }

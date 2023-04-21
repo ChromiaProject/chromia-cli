@@ -64,6 +64,11 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
         createTestNode("${dir.absolutePathString()}/build/dummy.xml")
         nodes.forEach { it.buildBlocksUpTo(0, 0) }
+        with(File(dir.toFile(), "src/main.rell")) {
+            appendText("""
+                query new_hello() = "Hi";
+            """.trimIndent())
+        }
         val testConsole = TestConsole()
         UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
         testConsole.assertContains("Configuration added at height 2\n")

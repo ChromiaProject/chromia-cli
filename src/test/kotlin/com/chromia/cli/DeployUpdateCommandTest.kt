@@ -89,7 +89,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
         val throwable = assertThrows<CliktError> {
             DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
-        assert(throwable.message!!).contains("Module initialization failed: Decoding type 'text': expected STRING, actual DICT")
+        assert(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
 
     @Test

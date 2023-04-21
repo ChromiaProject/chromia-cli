@@ -21,8 +21,9 @@ class ReplCommandTest {
     @Test
     fun testCanNotConnectToDb() {
         EnvironmentVariables("CHR_DB_URL", "jdbc:postgresql://invalidhost/postgres").execute {
-            command.parse(listOf("--module=main", "--use-db"))
-            testConsole.assertContains("The connection attempt failed.\n")
+            assertFailsWith<CliktError> {
+                command.parse(listOf("--module=main", "--use-db"))
+            }
         }
     }
 
