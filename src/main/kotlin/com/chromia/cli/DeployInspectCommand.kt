@@ -40,7 +40,7 @@ class DeployInspectCommand(
 
         try {
             BlockchainAnalyzer(postchainClient).getAppStructure()
-                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!!.map { it.str() } }
+                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
                     .filterValues { !it.isEmpty() }
                     .forEach { (name, module) ->
                         echo("Module: $name")
@@ -97,7 +97,7 @@ class DeployInspectCommand(
             objects.forEach { (objectName, objectDef) ->
                 row(objectName)
                 objectDef.attributes.forEach { (attribute, attributeType) ->
-                    row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else false })
+                    row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else "No" })
                 }
             }
         }.render().also { echo(it) }

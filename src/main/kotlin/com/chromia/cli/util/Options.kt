@@ -66,7 +66,6 @@ fun CliktCommand.secretOption() =
 
 fun CliktCommand.modulesOption(help: String = "Select which modules to test, will default to tests in settings file (Comma separated)") =
         option("-m", "--modules", help = help, metavar = "MODULES")
-                .convert { R_ModuleName.of(it) }
                 .split(",")
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")

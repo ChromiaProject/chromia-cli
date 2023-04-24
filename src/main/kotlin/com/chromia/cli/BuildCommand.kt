@@ -12,8 +12,7 @@ import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
-import net.postchain.rell.compiler.base.utils.C_SourceDir
-import net.postchain.rell.utils.RellCliEnv
+import net.postchain.rell.utils.cli.RellCliEnv
 import java.io.File
 
 
@@ -37,7 +36,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     companion object {
         //TODO add check that if there are libs, that they are installed
         fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>): Collection<BlockchainConfigHolder> {
-            return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, C_SourceDir.diskDir(source))
+            return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, source)
                     .generate()
                     .onEach { (name, _, gtv) -> storeConfig(gtv, name, target.toPath()) }
         }

@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import assertk.assert
+import assertk.assertions.contains
 import assertk.assertions.containsAll
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
@@ -70,7 +71,7 @@ internal class BuildCommandTest {
             struct module_args { my_args: integer; }
         """.trimIndent())
         val e = assertFailsWith<CliktError> { command.parse() }
-        assertTrue(e.message!!.contains("Module initialization failed: Decoding type 'integer': expected INTEGER, actual STRING"))
+        assert(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
     }
 
     @Test

@@ -9,10 +9,8 @@ data class ChromiaCliModel(
         val test: TestModel = TestModel(),
         val libs: Map<String, RellLibraryModel> = mapOf(),
 ) {
-    val compilerOptions get() = compile.getCompilerOptions()
-    val compilerQuiet get() = compile.quiet
+    val logSqlErrors get() = database.logSqlErrors
     val databaseDriver get() = database.driver
-    val databaseErrorLogging get() = database.logSqlErrors
     val databasePassword get() = database.dbPassword
     val databaseSchema get() = database.dbSchema
     val databaseUrl get() = database.url
