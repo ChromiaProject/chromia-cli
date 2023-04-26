@@ -2,7 +2,7 @@ blockchains:
   hello:
     module: main
 compile:
-  rellVersion: 0.11.0
+  rellVersion: RELL_VERSION
 test:
   modules:
     - test.arithmetic_test

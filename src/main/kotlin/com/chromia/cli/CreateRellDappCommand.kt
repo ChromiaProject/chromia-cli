@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.model.RellVersion
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
@@ -34,7 +35,7 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Ge
             }
         }
         File(baseDir, "config.yml").writeText(
-                this::class.java.getResource("init/config.yml")!!.readText().replace("hello", name)
+                this::class.java.getResource("init/config.yml")!!.readText().replace("hello", name).replace("RELL_VERSION", RellVersion)
         )
         val sourceDir = File(baseDir, "src")
         sourceDir.mkdir()
