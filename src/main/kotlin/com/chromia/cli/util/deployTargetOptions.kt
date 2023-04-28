@@ -57,19 +57,7 @@ class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx tow
     override val url get() = apiUrl
     override val brid get() = blockchainRid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
 
-    private fun blockchainRidFromIid(): BlockchainRid {
-        val client = HttpClient.newBuilder().build()
-        val request = HttpRequest.newBuilder()
-                .uri(URI.create("${url}/brid/iid_${cid}"))
-                .build()
-
-        try {
-            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-            return BlockchainRid.buildFromHex(response.body())
-        } catch (e: ConnectException) {
-            throw PrintMessage("Could not auto-detect brid from $url")
-        }
-    }
+    private fun blockchainRidFromIid() = BridFinder(url).findBlockchainRid(cid)
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
 }

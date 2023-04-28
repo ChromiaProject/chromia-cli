@@ -20,7 +20,6 @@ import net.postchain.client.defaultHttpHandler
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.Endpoint
-import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import org.http4k.core.HttpHandler
 
@@ -34,18 +33,18 @@ class DeployInfoCommand(
 ) {
 
     private val settings by settingsOptionNotRequired()
-    private val configuredOptions by ConfiguredDeploymentInfoOption {
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
         settings?.model ?: settingsOptionDefault().model
     }.cooccurring()
-    private val manualOptions by ManualDeploymentInfoOption().cooccurring()
+    private val manualOptions by ManualDeploymentInfoOption(clientProvider).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }
 
     override fun run() {
-        val config = PostchainClientConfig(option.brid, endpointPool = EndpointPool.default(option.urls))
-        val postchainClient = clientProvider.createClient(config)
+        val networkClient = option.networkClient()
+        val config = networkClient.config
 
-        val clusterManagement = clusterManagementFactory.buildClusterManagement(postchainClient)
+        val clusterManagement = clusterManagementFactory.buildClusterManagement(networkClient)
         val nodeStatusFinder = NodeStatusFinder(httpHandlerFactory(config), clientProvider, config, clusterManagement, verbose)
 
         try {
@@ -71,6 +70,7 @@ class DeployInfoCommand(
             }.render().also { echo(it) }
         } catch (e: ClientError) {
             echo("Cluster not found for blockchain rid ${option.brid.toShortHex()}")
+            echo(e.message)
         }
     }
 

@@ -13,33 +13,30 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import de.m3y.kformat.Table
 import de.m3y.kformat.table
-import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.client.request.EndpointPool
 
 class DeployInspectCommand(
-        private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
+        clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : CliktCommand(
         name = "inspect",
         help = "Inspect the API of a deployed blockchain"
 ) {
 
     private val settings by settingsOptionNotRequired()
-    private val configuredOptions by ConfiguredDeploymentInfoOption {
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
         settings?.model ?: settingsOptionDefault().model
     }.cooccurring()
-    private val manualOptions by ManualDeploymentInfoOption().cooccurring()
+    private val manualOptions by ManualDeploymentInfoOption(clientProvider).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")
-    private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }
+    private val option by lazy {
+        configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified")
+    }
 
     override fun run() {
-        val config = PostchainClientConfig(option.brid, endpointPool = EndpointPool.default(option.urls))
-        val postchainClient = clientProvider.createClient(config)
-
         try {
-            BlockchainAnalyzer(postchainClient).getAppStructure()
+            BlockchainAnalyzer(option.blockchainClient()).getAppStructure()
                     .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
                     .filterValues { !it.isEmpty() }
                     .forEach { (name, module) ->
