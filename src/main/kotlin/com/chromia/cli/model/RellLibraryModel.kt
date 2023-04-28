@@ -15,14 +15,16 @@ data class RellLibraryModel(
         val rid: WrappedByteArray?,
 ) {
     fun validateRid(libraryFiles: List<File>): Boolean {
+
+        if (!verifyRid) {
+            return true
+        }
+
         val calculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
         val srcGtv = gtv(
-                ConfigConstants.RELL_SOURCES_KEY to gtv(libraryFiles.map { gtv(it.readText()) })
+                ConfigConstants.RELL_SOURCES_KEY to gtv(libraryFiles.filter { !it.isDirectory }.map { gtv(it.readText()) })
         )
 
-        if (verifyRid) {
-            return WrappedByteArray(srcGtv.merkleHash(calculator)) == this.rid
-        }
-        return true
+        return WrappedByteArray(srcGtv.merkleHash(calculator)) == this.rid
     }
 }

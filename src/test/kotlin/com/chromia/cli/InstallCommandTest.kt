@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.util.RepositoryCloner
 import com.chromia.cli.util.TestConsole
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import org.junit.jupiter.api.Assertions
@@ -10,10 +11,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 
 class InstallCommandTest {
     lateinit var settings: File
+    val path = "build/libs"
 
     lateinit var testConsole: TestConsole
 
@@ -23,10 +27,10 @@ class InstallCommandTest {
     }
 
     @Test
-    fun singleDependencyTest(@TempDir dir: Path) {
-
-        settings = File(dir.toFile(), "config.yml").apply {
-            writeText("""
+    fun ridNotMatchingTest(@TempDir dir: Path) {
+        val exception = assertFailsWith<CliktError> {
+            settings = File(dir.toFile(), "config.yml").apply {
+                writeText("""
                 blockchains:
                   bc1:
                     module: main
@@ -36,19 +40,17 @@ class InstallCommandTest {
                       lib: lib
                       rid: x"11"  
             """.trimIndent())
-        }
+            }
 
-        InstallCommand { TestRepositoryCloner() }
-                .context { console = testConsole }
-                .parse(listOf("-s", settings.absolutePath))
-        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/a.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/nested/b.rell").exists())
-        Assertions.assertFalse(File(dir.toFile(), "build/libs/foo/not/include/c.rell").exists())
+            InstallCommand { TestRepositoryCloner() }
+                    .context { console = testConsole }
+                    .parse(listOf("-s", settings.absolutePath))
+        }
+        assertEquals("The rid 11 for library foo does not match the calculated rid from the downloaded library, can not verify it has not be tampered with", exception.message)
     }
 
     @Test
-    fun multipleDependencyTest(@TempDir dir: Path) {
+    fun selectiveTargetTest(@TempDir dir: Path) {
 
         settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -59,11 +61,87 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       lib: lib
-                      rid: x"11"
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath, "--target", dir.resolve("selectiveTarget").toFile().absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "selectiveTarget/libs/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "selectiveTarget/libs/foo/nested/b.rell").exists())
+    }
+
+    @Test
+    fun alreadyPopulatedTargetTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
+            """.trimIndent())
+        }
+
+        TestRepositoryCloner().createFile(dir.resolve("$path/foo/existingFileFoo.rell").toFile(), "existingFileFoo.rell")
+        TestRepositoryCloner().createFile(dir.resolve("$path/bar/existingFileBar.rell").toFile(), "existingFileFoo.rell")
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/existingFileBar.rell").exists())
+    }
+
+    @Test
+    fun singleLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/not/include/c.rell").exists())
+    }
+
+    @Test
+    fun multipleLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      lib: lib
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
                     bar:
                       registry: http://bar.com
                       lib: lib
-                      rid: x"12" 
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
             """.trimIndent())
         }
 
@@ -71,38 +149,14 @@ class InstallCommandTest {
                 .context { console = testConsole }
                 .parse(listOf("-s", settings.absolutePath))
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/a.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/foo/nested/b.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "build/libs/bar/d.rell").exists())
-        Assertions.assertFalse(File(dir.toFile(), "build/libs/foo/not/include/c.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/not/include/c.rell").exists())
     }
 
     @Test
-    fun duplicateDependencyTest(@TempDir dir: Path) {
-
-        settings = File(dir.toFile(), "config.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                  bc2:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      lib: lib
-                      rid: x"11"
-                    foo:
-                      registry: http://foo.com
-                      lib: lib
-                      rid: x"11"
-            """.trimIndent())
-        }
-
-    }
-
-    @Test
-    fun wrongRegistryDependencyTest(@TempDir dir: Path) {
+    fun wrongRegistryTest(@TempDir dir: Path) {
 
         settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -123,22 +177,54 @@ class InstallCommandTest {
         Assertions.assertEquals("Invalid remote host. Error: This is an error\n", testConsole.out[0].first)
     }
 
+    @Test
+    fun filtersNonRellFilesTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://filter.com
+                      lib: lib
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
+            """.trimIndent())
+        }
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/a.yml").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/nested/b.yml").exists())
+    }
+
     class TestRepositoryCloner : RepositoryCloner {
         override fun clone(registry: String, target: File) {
             when (registry) {
-                "http://bar.com" -> createFile(target, "lib/d")
+                "http://bar.com" -> createFile(target, "lib/d.rell")
                 "http://foo.com" -> {
-                    createFile(target, "lib/a")
-                    createFile(target, "lib/nested/b")
-                    createFile(target, "not/include/c")
+                    createFile(target, "lib/a.rell")
+                    createFile(target, "lib/nested/b.rell")
+                    createFile(target, "not/include/c.rell")
+                }
+
+                "http://filter.com" -> {
+                    createFile(target, "lib/a.rell")
+                    createFile(target, "lib/a.yml")
+                    createFile(target, "lib/nested/b.rell")
+                    createFile(target, "lib/nested/b.yml")
                 }
 
                 "http://wrongAddress.com" -> throw InvalidRemoteException("This is an error")
             }
         }
 
-        private fun createFile(dir: File, name: String) {
-            with(File(dir, "$name.rell")) {
+        fun createFile(dir: File, name: String) {
+            with(File(dir, name)) {
                 parentFile.mkdirs()
                 writeText("""
                     module; 

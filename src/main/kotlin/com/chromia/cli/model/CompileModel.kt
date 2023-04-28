@@ -1,8 +1,5 @@
 package com.chromia.cli.model
 
-import net.postchain.rell.compiler.base.core.C_AtAttrShadowing
-import net.postchain.rell.compiler.base.core.C_CompilerOptions
-import net.postchain.rell.compiler.base.utils.C_SourcePath
 import net.postchain.rell.model.R_LangVersion
 
 data class CompileModel(

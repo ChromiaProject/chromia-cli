@@ -50,6 +50,31 @@ class RellLibraryModelTest {
     }
 
     @Test
+    fun conflictingLibraryNameTest(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo1.com
+                      lib: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                    foo:
+                      registry: http://foo2.com
+                      lib: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
+            """.trimIndent())
+        }
+
+        val settings = Settings(settingsFile, parseModel(settingsFile))
+        Assertions.assertEquals(settings.libs.size, 1)
+        Assertions.assertEquals(settings.libs["foo"]!!.registry, "http://foo2.com")
+    }
+
+
+    @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
         val fileMap = mutableMapOf<String, List<File>>()
         settingsFile = File(dir.toFile(), "config.yml").apply {
