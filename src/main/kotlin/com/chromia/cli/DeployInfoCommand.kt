@@ -36,7 +36,7 @@ class DeployInfoCommand(
     private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
         settings?.model ?: settingsOptionDefault().model
     }.cooccurring()
-    private val manualOptions by ManualDeploymentInfoOption(clientProvider).cooccurring()
+    private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }
 

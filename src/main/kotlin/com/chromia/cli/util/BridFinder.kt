@@ -2,22 +2,21 @@ package com.chromia.cli.util
 
 import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.common.BlockchainRid
+import org.http4k.core.Body
+import org.http4k.core.ContentType
+import org.http4k.core.HttpHandler
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.format.Jackson.auto
 import java.net.ConnectException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
-class BridFinder(private val url: String) {
+class BridFinder(private val httpHandler: HttpHandler, private val url: String) {
     fun findBlockchainRid(id: Int): BlockchainRid {
-        val client = HttpClient.newBuilder().build()
-        val request = HttpRequest.newBuilder()
-                .uri(URI.create("${url}/brid/iid_${id}"))
-                .build()
+        val request = Request(Method.GET, "$url/brid/iid_$id").header("Accept", ContentType.TEXT_PLAIN.value)
 
         try {
-            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
-            return BlockchainRid.buildFromHex(response.body())
+            val response = httpHandler(request)
+            return BlockchainRid.buildFromHex(response.body.toString())
         } catch (e: ConnectException) {
             throw PrintMessage("Could not auto-detect brid from $url")
         }

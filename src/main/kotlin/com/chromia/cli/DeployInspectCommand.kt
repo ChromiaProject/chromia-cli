@@ -13,12 +13,16 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import de.m3y.kformat.Table
 import de.m3y.kformat.table
+import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.defaultHttpHandler
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
+import org.http4k.core.HttpHandler
 
 class DeployInspectCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
+        httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }
 ) : CliktCommand(
         name = "inspect",
         help = "Inspect the API of a deployed blockchain"
@@ -28,7 +32,7 @@ class DeployInspectCommand(
     private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
         settings?.model ?: settingsOptionDefault().model
     }.cooccurring()
-    private val manualOptions by ManualDeploymentInfoOption(clientProvider).cooccurring()
+    private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")
     private val option by lazy {
         configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified")

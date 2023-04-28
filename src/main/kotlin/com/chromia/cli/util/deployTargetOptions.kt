@@ -9,9 +9,12 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
+import net.postchain.client.defaultHttpHandler
 import net.postchain.client.impl.PostchainClientImpl
+import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.client.ChromiaClientProvider
+import org.http4k.core.HttpHandler
 import java.net.ConnectException
 import java.net.URI
 import java.net.http.HttpClient
@@ -49,7 +52,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : Depl
     ).blockchain(config.blockchainRid)
 }
 
-class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx towards a test node") {
+class LocalDeploymentOption(private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Make query/tx towards a test node") {
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int().default(0)
     private val apiUrl by option(help = "Target api url").default("http://localhost:7740")
@@ -57,7 +60,7 @@ class LocalDeploymentOption : DeploymentOption("Node", help = "Make query/tx tow
     override val url get() = apiUrl
     override val brid get() = blockchainRid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
 
-    private fun blockchainRidFromIid() = BridFinder(url).findBlockchainRid(cid)
+    private fun blockchainRidFromIid() = BridFinder(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).findBlockchainRid(cid)
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
 }

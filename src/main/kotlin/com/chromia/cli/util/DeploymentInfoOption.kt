@@ -14,6 +14,7 @@ import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.client.ChromiaClientProvider
+import org.http4k.core.HttpHandler
 
 sealed class DeploymentInfoOption(name: String, help: String? = null) : OptionGroup(name, help) {
     abstract val brid: BlockchainRid
@@ -44,20 +45,21 @@ class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClient
         return clientProvider.createClient(config)
     }
 
-    override fun blockchainClient(): PostchainClient {
-        val networkClient = networkClient()
-        return ChromiaClientProvider(networkClient.config.failOverConfig, ClusterManagementImpl(networkClient)).blockchain(brid)
-    }
+    override fun blockchainClient() =
+            ChromiaClientProvider(networkClient().config.failOverConfig, ClusterManagementImpl(networkClient()))
+                    .blockchain(brid)
 }
 
-class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProvider) : DeploymentInfoOption("Manual", help = "Information about a deployed blockchain that is not in the settings file") {
+class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) : DeploymentInfoOption("Manual", help = "Information about a deployed blockchain that is not in the settings file") {
     private val blockchainRid by blockchainRidOption("Target Blockchain RID").required()
     private val url by option(help = "Target url").multiple().validate { it.isNotEmpty() }
 
     override val urls: List<String> get() = url
     override val brid: BlockchainRid get() = blockchainRid.let { BlockchainRid.buildFromHex(it) }
     override val blockchainName: String get() = blockchainRid
-    override val networkBrid: BlockchainRid get() = BridFinder(url.first()).findBlockchainRid(0)
+    override val networkBrid: BlockchainRid
+        get() = BridFinder(httpHandlerFactory(PostchainClientConfig(brid, EndpointPool.default(urls))), url.first())
+                .findBlockchainRid(0)
 
     override fun networkClient(): PostchainClient {
         val config = PostchainClientConfig(networkBrid, EndpointPool.default(urls))
