@@ -3,9 +3,7 @@ package com.chromia.cli.util
 import com.github.ajalt.clikt.output.CliktConsole
 import java.io.IOException
 import assertk.assert
-import assertk.assertions.contains
 import assertk.assertions.isNotEmpty
-import assertk.assertions.matchesPredicate
 
 open class TestConsole() : CliktConsole {
     val out = mutableListOf<Pair<String, Boolean>>()
