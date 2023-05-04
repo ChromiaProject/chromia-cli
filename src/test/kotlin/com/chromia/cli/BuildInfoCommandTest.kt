@@ -19,6 +19,6 @@ internal class BuildInfoCommandTest {
         }
         val testConsole = TestConsole()
         BuildInfoCommand().context { console = testConsole }.parse(listOf("${dir.absolutePathString()}/bc-config.xml"))
-        testConsole.assertContains("A6D29C440E6AA5136829F0C151111B0855DEA3FA31BD25FA6097282BEC2DCA1A\n")
+        testConsole.assertContains("A6D29C440E6AA5136829F0C151111B0855DEA3FA31BD25FA6097282BEC2DCA1A")
     }
 }

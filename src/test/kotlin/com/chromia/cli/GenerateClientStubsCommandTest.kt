@@ -25,7 +25,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assert(File(dir, "build/stubs/main").list()).containsAll("main.kt")
         assert(File(dir, "build/stubs/main/main.kt").readLines()[2]).isEqualTo("package com.example.main")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]")
     }
 
     @Test
@@ -33,7 +33,7 @@ internal class GenerateClientStubsCommandTest {
         command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--typescript"))
         assert(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assert(File(dir, "build/stubs/main").list()).containsAll("main.ts")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]")
     }
 
     @Test
@@ -43,7 +43,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/main").list()).containsAll("main.js")
         assert(File(dir, "build/stubs/").listFiles()).hasSize(2)
         assert(File(dir, "build/stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]")
     }
 
     @Test
@@ -92,7 +92,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/").listFiles()).hasSize(3)
         assert(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A1 = {" }).hasSize(1)
         assert(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A2 = {" }).hasSize(1)
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]")
     }
 
     @Test
@@ -103,7 +103,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "stubs/main").list()).containsAll("main.js")
         assert(File(dir, "stubs/").listFiles()).hasSize(2)
         assert(File(dir, "stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
 
     }
 }

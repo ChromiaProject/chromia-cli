@@ -4,8 +4,10 @@ import com.github.ajalt.clikt.output.CliktConsole
 import java.io.IOException
 import assertk.assert
 import assertk.assertions.contains
+import assertk.assertions.isNotEmpty
+import assertk.assertions.matchesPredicate
 
-open class TestConsole(val lineSeparatorOverride:String = "\n") : CliktConsole {
+open class TestConsole() : CliktConsole {
     val out = mutableListOf<Pair<String, Boolean>>()
 
     override fun promptForLine(prompt: String, hideInput: Boolean) = try {
@@ -19,9 +21,9 @@ open class TestConsole(val lineSeparatorOverride:String = "\n") : CliktConsole {
         out.add(text to error)
     }
 
-    override val lineSeparator: String get() = lineSeparatorOverride
+    override val lineSeparator: String get() = System.lineSeparator()
 
-    fun assertContains(text: String) = assert(out.map { it.first }).contains(text)
+    fun assertContains(text: String) = assert(out.map { it.first }.filter { it.contains(text) }).isNotEmpty()
 
     fun reset() = out.clear()
 

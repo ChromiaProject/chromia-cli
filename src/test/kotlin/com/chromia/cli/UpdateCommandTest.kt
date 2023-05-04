@@ -71,7 +71,7 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         }
         val testConsole = TestConsole()
         UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
-        testConsole.assertContains("Configuration added at height 2\n")
+        testConsole.assertContains("Configuration added at height 2")
         nodes.forEach {
             withReadConnection(it.postchainContext.storage, 0) { ctx ->
                 assert(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
