@@ -6,7 +6,6 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
-import com.chromia.cli.util.separatorsToSystem
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -26,7 +25,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assert(File(dir, "build/stubs/main").list()).containsAll("main.kt")
         assert(File(dir, "build/stubs/main/main.kt").readLines()[2]).isEqualTo("package com.example.main")
-        testConsole.assertContains("Created files in ${dir.absolutePath}${"/build/stubs".separatorsToSystem()}: [main/main.kt]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]\n")
     }
 
     @Test
@@ -34,7 +33,7 @@ internal class GenerateClientStubsCommandTest {
         command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--typescript"))
         assert(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assert(File(dir, "build/stubs/main").list()).containsAll("main.ts")
-        testConsole.assertContains("Created files in ${dir.absolutePath}${"/build/stubs".separatorsToSystem()}: [main/main.ts]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]\n")
     }
 
     @Test
@@ -44,7 +43,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/main").list()).containsAll("main.js")
         assert(File(dir, "build/stubs/").listFiles()).hasSize(2)
         assert(File(dir, "build/stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${dir.absolutePath}${"/build/stubs".separatorsToSystem()}: [/root.js, main/main.js]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]\n")
     }
 
     @Test
@@ -93,7 +92,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "build/stubs/").listFiles()).hasSize(3)
         assert(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A1 = {" }).hasSize(1)
         assert(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A2 = {" }).hasSize(1)
-        testConsole.assertContains("Created files in ${dir.absolutePath}${"/build/stubs".separatorsToSystem()}: [a/a.ts, e1/e1.ts, e2/e2.ts]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]\n")
     }
 
     @Test
@@ -104,7 +103,7 @@ internal class GenerateClientStubsCommandTest {
         assert(File(dir, "stubs/main").list()).containsAll("main.js")
         assert(File(dir, "stubs/").listFiles()).hasSize(2)
         assert(File(dir, "stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${dir.absolutePath}${"/stubs".separatorsToSystem()}: [/root.js, main/main.js]\n")
+        testConsole.assertContains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]\n")
 
     }
 }
