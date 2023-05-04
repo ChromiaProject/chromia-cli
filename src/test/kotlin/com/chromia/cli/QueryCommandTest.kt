@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.util.isWindows
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.MissingArgument
 import org.junit.jupiter.api.BeforeAll
@@ -50,7 +51,8 @@ class QueryCommandTest {
         val exception = assertFailsWith<BadParameterValue> {
             command.parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
-        assertEquals("Invalid value for \"--settings\": missingFile.yml (No such file or directory)", exception.message)
+        val noFileOrDirectoryErrorMessage = if (isWindows) "The system cannot find the file specified" else "No such file or directory"
+        assertEquals("Invalid value for \"--settings\": missingFile.yml ($noFileOrDirectoryErrorMessage)", exception.message)
     }
 
     @Test

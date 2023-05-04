@@ -5,7 +5,7 @@ import java.io.IOException
 import assertk.assert
 import assertk.assertions.contains
 
-open class TestConsole() : CliktConsole {
+open class TestConsole(val lineSeparatorOverride:String = "\n") : CliktConsole {
     val out = mutableListOf<Pair<String, Boolean>>()
 
     override fun promptForLine(prompt: String, hideInput: Boolean) = try {
@@ -19,7 +19,7 @@ open class TestConsole() : CliktConsole {
         out.add(text to error)
     }
 
-    override val lineSeparator: String get() = System.lineSeparator()
+    override val lineSeparator: String get() = lineSeparatorOverride
 
     fun assertContains(text: String) = assert(out.map { it.first }).contains(text)
 

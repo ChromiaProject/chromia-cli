@@ -50,9 +50,11 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
             secret?.let { s ->
-                Properties().apply { load(s.inputStream()) }.let { p ->
-                    p["pubkey"]?.let { setProperty("pubkey", it) }
-                    p["privkey"]?.let { setProperty("privkey", it) }
+                s.inputStream().use {
+                    Properties().apply { load(it) }.let { p ->
+                        p["pubkey"]?.let { setProperty("pubkey", it) }
+                        p["privkey"]?.let { setProperty("privkey", it) }
+                    }
                 }
             }
             PostchainClientConfig.fromConfiguration(this)

@@ -25,12 +25,16 @@ class ConstructorIncludeSupport: EnvScalarConstructor() {
             p0 as ScalarNode
             return if (p0.value.contains("#")) {
                 val (f, sub) = p0.value.split("#")
-                val result = yaml.load<Map<String, Any>>(File(f).inputStream())
-                require(result.containsKey(sub)) { "File $f does not contain $sub" }
-                result[sub]!!
+                File(f).inputStream().use {
+                    val result = yaml.load<Map<String, Any>>(it)
+                    require(result.containsKey(sub)) { "File $f does not contain $sub" }
+                    result[sub]!!
+                }
             } else {
                 val file = File(p0.value)
-                yaml.load(file.inputStream())
+                file.inputStream().use {
+                    yaml.load(it)
+                }
             }
         }
 
@@ -41,9 +45,12 @@ class ConstructorIncludeSupport: EnvScalarConstructor() {
 inline fun <reified T> GtvYaml.loadAnchor(src: File): T {
     val yaml = Yaml(ConstructorIncludeSupport())
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
-    return ObjectMapper()
-            .registerKotlinModule()
-            .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(yaml.load(src.inputStream()))
-            .let { load<T>(it) }
+
+    return src.inputStream().use {
+        ObjectMapper()
+                .registerKotlinModule()
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(yaml.load(it))
+                .let { load<T>(it) }
+    }
 }

@@ -12,7 +12,9 @@ class BuildInfoCommand: CliktCommand(name = "info", help = "Calculate blockchain
 
     override fun run() {
         val gtv = if (bcConfig.extension == "gtv") {
-            GtvDecoder.decodeGtv(bcConfig.inputStream())
+            bcConfig.inputStream().use {
+                GtvDecoder.decodeGtv(it)
+            }
         } else {
             PostchainUtils.xmlToGtv(bcConfig.readText())
         }
