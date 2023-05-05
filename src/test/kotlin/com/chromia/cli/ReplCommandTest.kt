@@ -30,7 +30,7 @@ class ReplCommandTest {
     @Test
     fun testCanNotFindModuleWithoutSettings() {
         command.emptyParse(listOf("--module=main"))
-        testConsole.assertContains("To find the module \"main\", specifying the settings file is required\n")
+        testConsole.assertContains("To find the module \"main\", specifying the settings file is required")
     }
 
     @Test

@@ -48,7 +48,9 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
                         if (it.extension == "gtv") {
-                            it.nameWithoutExtension to GtvDecoder.decodeGtv(it.inputStream())
+                            it.inputStream().use { inputStream ->
+                                it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)
+                            }
                         } else {
                             it.nameWithoutExtension to PostchainUtils.xmlToGtv(it.readText())
                         }

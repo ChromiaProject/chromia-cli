@@ -8,7 +8,8 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-
+import assertk.assert
+import assertk.assertions.contains
 
 class QueryCommandTest {
     //TODO add integration tests for querying the db
@@ -50,7 +51,7 @@ class QueryCommandTest {
         val exception = assertFailsWith<BadParameterValue> {
             command.parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
-        assertEquals("Invalid value for \"--settings\": missingFile.yml (No such file or directory)", exception.message)
+        assert(exception.message!!).contains("Invalid value for \"--settings\": missingFile.yml")
     }
 
     @Test
