@@ -10,13 +10,13 @@ import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.builder.GtvArrayMerge
+import net.postchain.gtv.builder.GtvArrayNode
+import net.postchain.gtv.builder.GtvBuilder
+import net.postchain.gtv.builder.GtvNode
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.module.RellPostchainModuleFactory
-import net.postchain.rell.tools.runcfg.Rcfg_Gtv
-import net.postchain.rell.tools.runcfg.Rcfg_Gtv_Array
-import net.postchain.rell.tools.runcfg.Rcfg_Gtv_ArrayMerge
-import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
 import net.postchain.rell.utils.cli.RellCliApi
 import net.postchain.rell.utils.cli.RellCliBasicException
 import net.postchain.rell.utils.cli.RellCliCompileConfig
@@ -51,12 +51,12 @@ class BlockchainConfigurationGenerator(
 
     private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
         try {
-            val gtvBuilder = RunConfigGtvBuilder()
+            val gtvBuilder = GtvBuilder()
             gtvBuilder.update(configuration)
             val gtxModules = configuration["gtx"]?.get("modules")!!.asArray() // Not null since default values are added
                     .filter { it.asString() !in whiteListedGtxModules }
-                    .map { Rcfg_Gtv.decode(it) }
-                    .let { Rcfg_Gtv_Array(it, Rcfg_Gtv_ArrayMerge.REPLACE) }
+                    .map { GtvNode.decode(it) }
+                    .let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
 
             gtvBuilder.update(gtxModules, "gtx", "modules")
 
@@ -67,7 +67,7 @@ class BlockchainConfigurationGenerator(
     }
 
     private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
-        val b = RunConfigGtvBuilder()
+        val b = GtvBuilder()
         addDefault(b, blockchainModel)
 
         val config = RellCliCompileConfig.Builder()
@@ -92,7 +92,7 @@ class BlockchainConfigurationGenerator(
         return b.build()
     }
 
-    private fun addDefault(b: RunConfigGtvBuilder, blockchainModel: BlockchainModel) {
+    private fun addDefault(b: GtvBuilder, blockchainModel: BlockchainModel) {
         // TODO: override these from config ([BlockchainModel.config])
         b.update(gtv("name" to gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
         b.update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
