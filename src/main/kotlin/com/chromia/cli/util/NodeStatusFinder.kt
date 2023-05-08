@@ -8,7 +8,6 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
-import net.postchain.ebft.NodeState
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
@@ -52,7 +51,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
     }
 
     sealed class NodeStatus {
-        class Status(val state: NodeState, val height: Long, val serial: Long, val round: Long, val revolting: Boolean, val blockRid: String?) : NodeStatus()
+        class Status(val state: String, val height: Long, val serial: Long, val round: Long, val revolting: Boolean, val blockRid: String?) : NodeStatus()
         class Error(val error: String) : NodeStatus()
 
     }
@@ -66,7 +65,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
         }
 
         class VerboseOk(val url: String, val status: NodeStatus.Status) : StatusResult() {
-            override fun values() = arrayOf(url, status.height.toString(), status.state.name, status.round.toString(), status.revolting.toString(), "OK")
+            override fun values() = arrayOf(url, status.height.toString(), status.state, status.round.toString(), status.revolting.toString(), "OK")
         }
 
         class VerboseError(val url: String, val status: NodeStatus.Error) : StatusResult() {
