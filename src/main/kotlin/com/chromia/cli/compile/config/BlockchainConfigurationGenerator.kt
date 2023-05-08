@@ -10,10 +10,10 @@ import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.builder.GtvArrayMerge
-import net.postchain.gtv.builder.GtvArrayNode
 import net.postchain.gtv.builder.GtvBuilder
-import net.postchain.gtv.builder.GtvNode
+import net.postchain.gtv.builder.GtvBuilder.GtvArrayMerge
+import net.postchain.gtv.builder.GtvBuilder.GtvArrayNode
+import net.postchain.gtv.builder.GtvBuilder.GtvNode
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.module.RellPostchainModuleFactory
