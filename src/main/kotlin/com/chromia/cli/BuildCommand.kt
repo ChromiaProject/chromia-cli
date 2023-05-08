@@ -3,17 +3,20 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
-import com.chromia.cli.model.BlockchainModel
-import com.chromia.cli.model.CompileModel
+import com.chromia.cli.exception.LibraryTamperedException
 import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.util.Settings
 import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.settingsOption
 import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import net.postchain.rell.utils.cli.RellCliEnv
-import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.exists
+import kotlin.streams.toList
 
 
 class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
@@ -26,19 +29,35 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     override fun run() {
-        //TODO add check that if there are libs, that they are installed then do not download again
         if (currentContext.invokedSubcommand != null) return
-        compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains).apply {
+        compile(CliktCliEnv(this), settings).apply {
             if (showBrid) this.forEach { (name, brid, _) -> echo("$name $brid") }
         }
     }
 
     companion object {
-        //TODO add check that if there are libs, that they are installed
-        fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>): Collection<BlockchainConfigHolder> {
-            return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, source)
+        fun compile(cliEnv: RellCliEnv, settings: Settings): Collection<BlockchainConfigHolder> {
+
+            settings.libs.forEach { (name, rellLibrary) ->
+                run {
+                    val libraryLocation = settings.target.toPath().resolve("libs").resolve(name)
+                    if (libraryLocation.exists()) {
+                        val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
+                        if (!rellLibrary.validateRid(files)) {
+                            throw LibraryTamperedException(rellLibrary.rid.toString(), name)
+                        }
+                    } else {
+                        throw PrintMessage("Library $name is not installed, install before building")
+                    }
+                }
+            }
+
+
+            return BlockchainConfigurationGenerator(cliEnv, settings.compile, settings.blockchains, settings.source)
                     .generate()
-                    .onEach { (name, _, gtv) -> storeConfig(gtv, name, target.toPath()) }
+                    .onEach { (name, _, gtv) -> storeConfig(gtv, name, settings.target.toPath()) }
+
         }
     }
+
 }

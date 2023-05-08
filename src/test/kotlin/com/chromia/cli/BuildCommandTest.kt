@@ -3,8 +3,10 @@ package com.chromia.cli
 import assertk.assert
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import com.chromia.cli.exception.LibraryTamperedException
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
+import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
@@ -72,6 +74,55 @@ internal class BuildCommandTest {
         """.trimIndent())
         val e = assertFailsWith<CliktError> { command.parse() }
         assert(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
+    }
+
+    @Test
+    fun simpleLibraryExistTest() {
+        File(dir, "config.yml").writeText("""
+            blockchains:
+              hello:
+                module: main
+            libs:
+                bar:
+                  registry: http://bar.com
+                  lib: lib
+                  rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
+        """.trimIndent())
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
+        command.parse()
+    }
+
+    @Test
+    fun libraryMissingTest() {
+        File(dir, "config.yml").writeText("""
+            blockchains:
+              hello:
+                module: main
+            libs:
+                missing:
+                  registry: http://missing.com
+                  lib: lib
+                  rid: x"11" 
+        """.trimIndent())
+        val e = assertFailsWith<CliktError> { command.parse() }
+        assert(e.message!!).contains("Library missing is not installed, install before building")
+    }
+
+    @Test
+    fun libraryTamperedTest() {
+        File(dir, "config.yml").writeText("""
+            blockchains:
+              hello:
+                module: main
+            libs:
+                bar:
+                  registry: http://bar.com
+                  lib: lib
+                  rid: x"11" 
+        """.trimIndent())
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
+        val e = assertFailsWith<LibraryTamperedException> { command.parse() }
+        assert(e.message!!).contains("The rid 11 for library bar does not match the calculated rid from the downloaded library, can not verify it has not be tampered with")
     }
 
     @Test

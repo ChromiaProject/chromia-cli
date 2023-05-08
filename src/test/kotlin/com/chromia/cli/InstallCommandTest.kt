@@ -1,10 +1,9 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.RepositoryCloner
 import com.chromia.cli.util.TestConsole
+import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
-import org.eclipse.jgit.api.errors.InvalidRemoteException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,30 +46,6 @@ class InstallCommandTest {
                     .parse(listOf("-s", settings.absolutePath))
         }
         assertEquals("The rid 11 for library foo does not match the calculated rid from the downloaded library, can not verify it has not be tampered with", exception.message)
-    }
-
-    @Test
-    fun selectiveTargetTest(@TempDir dir: Path) {
-
-        settings = File(dir.toFile(), "config.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      lib: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
-            """.trimIndent())
-        }
-
-        InstallCommand { TestRepositoryCloner() }
-                .context { console = testConsole }
-                .parse(listOf("-s", settings.absolutePath, "--target", dir.resolve("selectiveTarget").toFile().absolutePath))
-        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
-        Assertions.assertTrue(File(dir.toFile(), "selectiveTarget/libs/foo/a.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "selectiveTarget/libs/foo/nested/b.rell").exists())
     }
 
     @Test
@@ -123,6 +98,30 @@ class InstallCommandTest {
         Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
         Assertions.assertFalse(File(dir.toFile(), "$path/foo/not/include/c.rell").exists())
+    }
+
+
+    @Test
+    fun simpleSingleLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    bar:
+                      registry: http://bar.com
+                      lib: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
     }
 
     @Test
@@ -202,34 +201,5 @@ class InstallCommandTest {
         Assertions.assertFalse(File(dir.toFile(), "$path/foo/nested/b.yml").exists())
     }
 
-    class TestRepositoryCloner : RepositoryCloner {
-        override fun clone(registry: String, target: File) {
-            when (registry) {
-                "http://bar.com" -> createFile(target, "lib/d.rell")
-                "http://foo.com" -> {
-                    createFile(target, "lib/a.rell")
-                    createFile(target, "lib/nested/b.rell")
-                    createFile(target, "not/include/c.rell")
-                }
 
-                "http://filter.com" -> {
-                    createFile(target, "lib/a.rell")
-                    createFile(target, "lib/a.yml")
-                    createFile(target, "lib/nested/b.rell")
-                    createFile(target, "lib/nested/b.yml")
-                }
-
-                "http://wrongAddress.com" -> throw InvalidRemoteException("This is an error")
-            }
-        }
-
-        fun createFile(dir: File, name: String) {
-            with(File(dir, name)) {
-                parentFile.mkdirs()
-                writeText("""
-                    module; 
-                """.trimIndent())
-            }
-        }
-    }
 }
