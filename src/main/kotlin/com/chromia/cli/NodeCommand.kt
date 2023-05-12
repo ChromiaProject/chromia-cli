@@ -41,9 +41,8 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
     protected fun extractConfigs(): Collection<BlockchainConfigHolder> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
-            BuildCommand.compile(CliktCliEnv(this), settings)
             val blockchainsToCompile = settings.blockchains.filter { name.isEmpty() || name.contains(it.key) }
-            BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, blockchainsToCompile)
+            BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, blockchainsToCompile, settings.libs)
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
