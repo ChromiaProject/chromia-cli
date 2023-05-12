@@ -70,9 +70,11 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
             setProperty("api.url", deployModel.urls.joinToString(","))
             setProperty("brid", deployModel.blockchainRid.toHex())
             secret.let { s ->
-                Properties().apply { load(s.inputStream()) }.let { p ->
-                    p["pubkey"]?.let { setProperty("pubkey", it) }
-                    p["privkey"]?.let { setProperty("privkey", it) }
+                s.inputStream().use {
+                    Properties().apply { load(it) }.let { p ->
+                        p["pubkey"]?.let { setProperty("pubkey", it) }
+                        p["privkey"]?.let { setProperty("privkey", it) }
+                    }
                 }
             }
         }
@@ -99,7 +101,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         }
 
         chainsToDeploy.forEach { configHolder ->
-            BlockchainConfigurationWriter.storeConfig(configHolder.config, "${target}_${configHolder.name}_${Instant.now()}", settings.target.toPath())
+            BlockchainConfigurationWriter.storeConfig(configHolder.config, "${target}_${configHolder.name}_${Instant.now().toEpochMilli()}", settings.target.toPath())
         }
 
         afterDeployment(chainsToDeploy)

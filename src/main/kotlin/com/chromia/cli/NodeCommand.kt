@@ -42,11 +42,16 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected fun extractConfigs(): Collection<BlockchainConfigHolder> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             BuildCommand.compile(CliktCliEnv(this), settings)
+            val blockchainsToCompile = settings.blockchains.filter { name.isEmpty() || name.contains(it.key) }
+            BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, blockchainsToCompile)
         } else {
             blockchainConfigs
+                    .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
                         if (it.extension == "gtv") {
-                            it.nameWithoutExtension to GtvDecoder.decodeGtv(it.inputStream())
+                            it.inputStream().use { inputStream ->
+                                it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)
+                            }
                         } else {
                             it.nameWithoutExtension to PostchainUtils.xmlToGtv(it.readText())
                         }
@@ -55,6 +60,6 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
         }.sortedBy { it.name }
 
-        return if (name.isEmpty()) configsToAdd else configsToAdd.filter { name.contains(it.name) }
+        return configsToAdd
     }
 }

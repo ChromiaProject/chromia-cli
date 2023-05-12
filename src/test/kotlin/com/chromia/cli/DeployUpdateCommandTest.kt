@@ -80,7 +80,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
     @Test
     fun successfulDeployment() {
         DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "okConfig", "--network", "test", "--secret", secret.absolutePath))
-        testConsole.assertContains("Deployment of blockchain okConfig was successful\n")
+        testConsole.assertContains("Deployment of blockchain okConfig was successful")
     }
 
     @Test

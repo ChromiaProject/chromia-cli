@@ -1,8 +1,10 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.TestConsole
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
@@ -31,7 +33,7 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
-        testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
+        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
@@ -66,7 +68,7 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
-        testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
+        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
@@ -101,7 +103,7 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
-        testConsole.assertContains("\nSUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL\n\n")
+        testConsole.assertContains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
     @Test
@@ -151,6 +153,32 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--use-db"))
-        testConsole.assertContains("\nSUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL\n\n")
+        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun failingTest(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_a() {}
+                function test_b() { assert_equals(1, 2); }
+            """.trimIndent())
+        }
+
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                test:
+                  modules: 
+                    - test
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        assertThrows<CliktError> {
+            TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
+        }
+        testConsole.assertContains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
     }
 }
