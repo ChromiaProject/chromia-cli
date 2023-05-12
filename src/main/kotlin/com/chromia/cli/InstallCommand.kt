@@ -13,8 +13,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.Path
-import kotlin.io.path.extension
-import kotlin.io.path.isDirectory
 
 class InstallCommand(
         private val repositoryClonerFactory: () -> RepositoryCloner = { GitRepositoryCloner() },
@@ -32,7 +30,7 @@ class InstallCommand(
                 val tempDir = Path(settings.target.absolutePath, System.currentTimeMillis().toString())
 
                 repositoryClonerFactory().clone(rellLibrary.registry, tempDir.toFile())
-                val files = filterFiles(tempDir.resolve(rellLibrary.lib))
+                val files = readFiles(tempDir.resolve(rellLibrary.lib))
                 if (!libraryTarget.toFile().exists()) {
                     libraryTarget.toFile().mkdirs()
                 } else {
@@ -53,12 +51,9 @@ class InstallCommand(
         }
     }
 
-    private fun filterFiles(src: Path): List<File> {
+    private fun readFiles(src: Path): List<File> {
         val returnList: MutableList<File> = mutableListOf()
         Files.walk(src).forEach {
-            if (!it.isDirectory() && it.extension != "rell") {
-                return@forEach
-            }
             returnList.add(it.toFile())
         }
         return returnList

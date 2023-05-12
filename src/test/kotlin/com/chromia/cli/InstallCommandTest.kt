@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.exception.LibraryNonSafeFiles
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.CliktError
@@ -177,7 +178,7 @@ class InstallCommandTest {
     }
 
     @Test
-    fun filtersNonRellFilesTest(@TempDir dir: Path) {
+    fun nonRellFilesTest(@TempDir dir: Path) {
 
         settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -191,14 +192,12 @@ class InstallCommandTest {
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
             """.trimIndent())
         }
-        InstallCommand { TestRepositoryCloner() }
-                .context { console = testConsole }
-                .parse(listOf("-s", settings.absolutePath))
-
-        Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
-        Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
-        Assertions.assertFalse(File(dir.toFile(), "$path/foo/a.yml").exists())
-        Assertions.assertFalse(File(dir.toFile(), "$path/foo/nested/b.yml").exists())
+        val exception = assertFailsWith<LibraryNonSafeFiles> {
+            InstallCommand { TestRepositoryCloner() }
+                    .context { console = testConsole }
+                    .parse(listOf("-s", settings.absolutePath))
+        }
+        assertEquals("The library lib contains files that has non rell type files. Can not verify it has not be tampered with", exception.message)
     }
 
 
