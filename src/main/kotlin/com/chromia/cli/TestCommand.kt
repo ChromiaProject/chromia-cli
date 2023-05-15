@@ -1,12 +1,12 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.AnsiColorScheme
+import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.ColorAware
 import com.chromia.cli.util.ColorFormat
 import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
 import com.chromia.cli.util.line
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.red
 import com.chromia.cli.util.settingsOption
@@ -26,8 +26,8 @@ import net.postchain.rell.utils.TestCase
 import net.postchain.rell.utils.TestCaseResult
 import net.postchain.rell.utils.TestRunnerResults
 import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliBasicException
 import net.postchain.rell.utils.cli.RellCliCompileConfig
+import net.postchain.rell.utils.cli.RellCliException
 import net.postchain.rell.utils.cli.RellCliRunTestsConfig
 
 
@@ -78,7 +78,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         try {
             val res = RellCliApi.runTests(testConf, sourceDir, listOf(), testModules)
             printResults(res)
-        } catch (e: RellCliBasicException) {
+        } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
     }

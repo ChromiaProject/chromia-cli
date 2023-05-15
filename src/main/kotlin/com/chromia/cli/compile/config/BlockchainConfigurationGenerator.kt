@@ -18,9 +18,9 @@ import net.postchain.rell.tools.runcfg.Rcfg_Gtv_Array
 import net.postchain.rell.tools.runcfg.Rcfg_Gtv_ArrayMerge
 import net.postchain.rell.tools.runcfg.RunConfigGtvBuilder
 import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliBasicException
 import net.postchain.rell.utils.cli.RellCliCompileConfig
 import net.postchain.rell.utils.cli.RellCliEnv
+import net.postchain.rell.utils.cli.RellCliException
 import java.io.File
 
 class BlockchainConfigurationGenerator(
@@ -82,7 +82,7 @@ class BlockchainConfigurationGenerator(
         try {
             val rellBcConfig = RellCliApi.compileGtv(config, sourceDir, blockchainModel.module)
             b.update(rellBcConfig, "gtx", "rell")
-        } catch (e: RellCliBasicException) {
+        } catch (e: RellCliException) {
             throw CliktError(e.message, e)
         }
 
