@@ -6,6 +6,7 @@ import com.chromia.cli.util.ColorAware
 import com.chromia.cli.util.ColorFormat
 import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
+import com.chromia.cli.util.heading
 import com.chromia.cli.util.line
 import com.chromia.cli.util.blockchainsOption
 import com.chromia.cli.util.modulesOption
