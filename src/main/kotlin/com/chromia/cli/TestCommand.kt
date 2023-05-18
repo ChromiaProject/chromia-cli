@@ -7,6 +7,8 @@ import com.chromia.cli.util.ColorFormat
 import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
 import com.chromia.cli.util.line
+import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.util.blockchainsOption
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.red
 import com.chromia.cli.util.settingsOption
@@ -19,6 +21,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import net.postchain.gtv.Gtv
 import net.postchain.rell.runtime.Rt_Exception
 import net.postchain.rell.runtime.Rt_Printer
 import net.postchain.rell.runtime.utils.Rt_Utils
@@ -33,6 +36,7 @@ import net.postchain.rell.utils.cli.RellCliRunTestsConfig
 
 class TestCommand : CliktCommand(help = "Run tests in working directory"), ColorAware {
 
+    private val blockchains by blockchainsOption()
     private val modules by modulesOption()
     private val settings by settingsOption()
     private val tests by option(help = "test method pattern").split(",")
@@ -47,13 +51,48 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
 
 
     override fun run() {
-        val testModules = modules ?: settings.test.modules
+        try {
+            if (blockchains.isNotEmpty()) {
+                blockchains.forEach { blockchain ->
+                    runTestsForChain(blockchain)
+                }
+            } else {
+                runUnitTests()
+            }
+        } catch (e: RellCliBasicException) {
+            throw CliktError(e.message)
+        }
+    }
 
+    private fun runUnitTests() {
+        val testModules = modules ?: settings.test.modules
+        val testModuleArgs = settings.test.moduleArgs
+        val testConf = createTestConfig(testModuleArgs)
+
+        val res = RellCliApi.runTests(testConf, sourceDir, listOf(), testModules)
+        printResults(res)
+    }
+
+    private fun runTestsForChain(blockchain: String) {
+        val chainConfig = settings.blockchains[blockchain]
+                ?: throw CliktError("Blockchain '$blockchain' not found")
+
+        val appModules = listOf(chainConfig.module)
+        val testModules = chainConfig.test.modules
+        val testModuleArgs = chainConfig.test.moduleArgs
+        val testConf = createTestConfig(testModuleArgs)
+
+        val res = RellCliApi.runTests(testConf, sourceDir, appModules, testModules)
+        printResults(res)
+    }
+
+    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>): RellCliRunTestsConfig {
         val printer = object : Rt_Printer {
             override fun print(str: String) = echo(str)
         }
+
         val compileConf = RellCliCompileConfig.Builder()
-                .moduleArgs(settings.test.moduleArgs)
+                .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
                 .appModuleInTestsError(false)
@@ -62,7 +101,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .version(settings.compile.langVersion)
                 .quiet(settings.compile.quiet)
                 .build()
-        val testConf = RellCliRunTestsConfig.Builder()
+        return RellCliRunTestsConfig.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) settings.model.databaseUrl else null)
@@ -74,15 +113,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
                 .build()
-
-        try {
-            val res = RellCliApi.runTests(testConf, sourceDir, listOf(), testModules)
-            printResults(res)
-        } catch (e: RellCliException) {
-            throw CliktError(e.message)
-        }
     }
-
 
     private fun TestCase.print() {
         echo("${colorScheme.blue.format("TEST")}: $name")
