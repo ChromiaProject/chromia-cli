@@ -81,6 +81,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testModuleArgs = chainConfig.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
+        heading("BLOCKCHAIN: $blockchain")
         val res = RellCliApi.runTests(testConf, sourceDir, appModules, testModules)
         printResults(res)
     }
