@@ -7,7 +7,6 @@ import com.chromia.cli.util.ColorFormat
 import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
 import com.chromia.cli.util.line
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainsOption
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.red
@@ -59,7 +58,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
             } else {
                 runUnitTests()
             }
-        } catch (e: RellCliBasicException) {
+        } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
     }
