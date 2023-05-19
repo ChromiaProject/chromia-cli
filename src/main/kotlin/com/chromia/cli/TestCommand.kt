@@ -52,16 +52,18 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
 
     override fun run() {
         try {
-            if (blockchains.isNotEmpty()) {
-                blockchains.forEach { blockchain ->
-                    runTestsForChain(blockchain)
-                }
-            } else {
-                runUnitTests()
-            }
+            runBlockchainTests()
+            runUnitTests()
         } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
+    }
+
+    private fun runBlockchainTests() {
+        settings.blockchains
+                .filter { it.value.test.modules.isNotEmpty() }
+                .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
+                .forEach { runTestsForChain(it.key) }
     }
 
     private fun runUnitTests() {
@@ -69,6 +71,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testModuleArgs = settings.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
+        heading("Running unit tests")
         val res = RellCliApi.runTests(testConf, sourceDir, listOf(), testModules)
         printResults(res)
     }
@@ -79,10 +82,10 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
 
         val appModules = listOf(chainConfig.module)
         val testModules = chainConfig.test.modules
-        val testModuleArgs = chainConfig.test.moduleArgs
+        val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
         val testConf = createTestConfig(testModuleArgs)
 
-        heading("BLOCKCHAIN: $blockchain")
+        heading("Running tests for chain: $blockchain")
         val res = RellCliApi.runTests(testConf, sourceDir, appModules, testModules)
         printResults(res)
     }
@@ -114,6 +117,15 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
                 .build()
+    }
+
+    private fun mergeModuleArgs(first: Map<String, Map<String,Gtv>>,
+                                second: Map<String, Map<String,Gtv>>): Map<String, Map<String,Gtv>> {
+        return (first.asSequence() + second.asSequence())
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, values) ->
+                    values.flatMap { map -> map.entries }.associate(Map.Entry<String, Gtv>::toPair)
+                }
     }
 
     private fun TestCase.print() {

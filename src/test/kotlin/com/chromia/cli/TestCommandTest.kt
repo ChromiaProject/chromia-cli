@@ -189,7 +189,7 @@ internal class TestCommandTest {
             writeText("""
                 module;
                 
-                struct module_args { name; }
+                struct module_args { name; age: integer;}
                 entity foo { name; }
                 
                 operation add_foo(name) { create foo(name); }
@@ -222,6 +222,9 @@ internal class TestCommandTest {
                 blockchains:
                   foo_chain_dev:
                     module: development
+                    moduleArgs:
+                      development:
+                        age: 100
                     test:
                       modules:
                         - moduleA.test
