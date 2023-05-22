@@ -17,7 +17,7 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-        <codegen.version>0.9.4</codegen.version>
+        <codegen.version>0.9.5</codegen.version>
         <postchain.version>3.9.0</postchain.version>
         <directory1.version>3.9.0</directory1.version>
         <rell.version>0.12.1</rell.version>
