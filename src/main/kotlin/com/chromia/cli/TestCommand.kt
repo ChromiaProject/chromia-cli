@@ -83,14 +83,15 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val appModules = listOf(chainConfig.module)
         val testModules = chainConfig.test.modules
         val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
-        val testConf = createTestConfig(testModuleArgs)
+        val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
 
         heading("Running tests for chain: $blockchain")
         val res = RellCliApi.runTests(testConf, sourceDir, appModules, testModules)
         printResults(res)
     }
 
-    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>): RellCliRunTestsConfig {
+    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>,
+                                 appModuleInTestsError: Boolean = false): RellCliRunTestsConfig {
         val printer = object : Rt_Printer {
             override fun print(str: String) = echo(str)
         }
@@ -99,7 +100,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
-                .appModuleInTestsError(false)
+                .appModuleInTestsError(appModuleInTestsError)
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
                 .version(settings.compile.langVersion)
