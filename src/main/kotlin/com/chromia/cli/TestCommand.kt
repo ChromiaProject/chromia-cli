@@ -41,7 +41,8 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     private val settings by settingsOption()
     private val tests by option(help = "test method pattern").split(",")
     private val sourceDir by lazy { settings.source }
-    private val useDB by option(help = "If a session towards the configured database should be established").flag()
+    private val useDB by option(help = "If a session towards the configured database should be established")
+            .flag("--no-db", default = true)
     override val colorScheme by option("--no-color", help = "Do not use ansi colors").flag()
             .convert { if (it) NoColorScheme(::echo) else AnsiColorScheme(::echo) }
 

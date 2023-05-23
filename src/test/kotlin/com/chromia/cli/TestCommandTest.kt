@@ -32,7 +32,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
         testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
@@ -67,7 +67,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a"))
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
         testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
@@ -102,7 +102,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
+        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--no-db"))
         testConsole.assertContains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
@@ -177,7 +177,7 @@ internal class TestCommandTest {
         }
         val testConsole = TestConsole()
         assertThrows<CliktError> {
-            TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath))
+            TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--no-db"))
         }
         testConsole.assertContains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
     }

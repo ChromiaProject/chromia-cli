@@ -27,7 +27,7 @@ class UpdateCommand : AbstractNodeCommand(help = """
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                require(lastHeight >= 0) { "Blockchain must be initialized before you can update it, $lastHeight" }
+                require(lastHeight >= 0) { "Blockchain must be initialized before you can update it, brid: ${BlockchainApi.findBlockchain(eContext)}, height: $lastHeight" }
                 BlockchainApi.addConfiguration(eContext, lastHeight + preemption, override = true, gtvWithSigners, allowUnknownSigners = true)
                 echo("Configuration added at height ${lastHeight + preemption}")
             }
