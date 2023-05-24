@@ -52,17 +52,18 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
 
     override fun run() {
         try {
-            runBlockchainTests()
-            runUnitTests()
+            if (shouldRunBlockchainTests()) {
+                runBlockchainTests()
+            }
+            if (shouldRunUnitTests()) {
+                runUnitTests()
+            }
         } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
     }
 
     private fun runBlockchainTests() {
-        if (modules != null && blockchains.isEmpty()) {
-            return
-        }
         settings.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
@@ -70,9 +71,6 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     }
 
     private fun runUnitTests() {
-        if (blockchains.isNotEmpty() && modules == null) {
-            return
-        }
         val testModules = modules ?: settings.test.modules
         val testModuleArgs = settings.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
@@ -81,6 +79,10 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         printResults(res)
     }
+
+    private fun shouldRunUnitTests() = blockchains.isEmpty() || modules != null
+
+    private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
 
     private fun runTestsForChain(blockchain: String) {
         val chainConfig = settings.blockchains[blockchain]
