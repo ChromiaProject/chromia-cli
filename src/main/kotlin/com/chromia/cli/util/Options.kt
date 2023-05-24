@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.model.R_ModuleName
+import net.postchain.rell.base.model.R_ModuleName
 import java.io.File
 
 

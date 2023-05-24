@@ -16,11 +16,10 @@ import net.postchain.gtv.builder.GtvBuilder.GtvArrayNode
 import net.postchain.gtv.builder.GtvBuilder.GtvNode
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
+import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.base.RellCliEnv
+import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.module.RellPostchainModuleFactory
-import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliCompileConfig
-import net.postchain.rell.utils.cli.RellCliEnv
-import net.postchain.rell.utils.cli.RellCliException
 import java.io.File
 
 class BlockchainConfigurationGenerator(
@@ -70,7 +69,7 @@ class BlockchainConfigurationGenerator(
         val b = GtvBuilder()
         addDefault(b, blockchainModel)
 
-        val config = RellCliCompileConfig.Builder()
+        val config = RellApiCompile.Config.Builder()
                 .cliEnv(cliEnv)
                 .moduleArgs(blockchainModel.moduleArgs)
                 .mountConflictError(true)
@@ -80,7 +79,7 @@ class BlockchainConfigurationGenerator(
                 .build()
 
         try {
-            val rellBcConfig = RellCliApi.compileGtv(config, sourceDir, blockchainModel.module)
+            val rellBcConfig = RellApiCompile.compileGtv(config, sourceDir, blockchainModel.module)
             b.update(rellBcConfig, "gtx", "rell")
         } catch (e: RellCliException) {
             throw CliktError(e.message, e)

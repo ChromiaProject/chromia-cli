@@ -12,7 +12,7 @@ import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
-import net.postchain.rell.utils.cli.RellCliEnv
+import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 
 

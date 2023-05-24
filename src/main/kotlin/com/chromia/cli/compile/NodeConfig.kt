@@ -5,7 +5,6 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.config.app.AppConfig
 import net.postchain.crypto.secp256k1_derivePubKey
-import net.postchain.rell.utils.PostchainUtils.cryptoSystem
 import org.apache.commons.configuration2.BaseConfiguration
 import java.io.File
 

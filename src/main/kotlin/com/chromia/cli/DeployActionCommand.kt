@@ -2,8 +2,8 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.util.pubkey
-import com.chromia.directory1.model.BlockchainAction
-import com.chromia.directory1.proposal.proposeBlockchainActionOperation
+import com.chromia.directory1.proposal_blockchain.BlockchainAction
+import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option

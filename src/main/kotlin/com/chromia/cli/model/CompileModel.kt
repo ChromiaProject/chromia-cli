@@ -1,6 +1,6 @@
 package com.chromia.cli.model
 
-import net.postchain.rell.model.R_LangVersion
+import net.postchain.rell.base.model.R_LangVersion
 
 data class CompileModel(
         val rellVersion: String = RellVersion,

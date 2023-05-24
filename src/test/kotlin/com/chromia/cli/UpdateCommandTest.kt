@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.isNotNull
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
@@ -74,7 +74,7 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         testConsole.assertContains("Configuration added at height 2")
         nodes.forEach {
             withReadConnection(it.postchainContext.storage, 0) { ctx ->
-                assert(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
+                assertThat(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
             }
         }
         assertThrows<CliktError> { UpdateCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml", "-n", "1")) }
