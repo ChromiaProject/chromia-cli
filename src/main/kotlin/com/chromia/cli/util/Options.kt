@@ -9,7 +9,6 @@ import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
@@ -23,7 +22,8 @@ fun CliktCommand.nodePropertiesOption() =
                 .convert { getNodeConfig(it) }
 
 fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Specify which deployment target to use")
-fun ParameterHolder.blockchainOption(help: String) = option("--blockchain", "-bc", help = help)
+fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
+        option("--blockchain", "-bc", help = help, metavar = metavar)
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
@@ -70,7 +70,3 @@ fun CliktCommand.modulesOption(help: String = "Select which modules to test, wil
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
-
-fun CliktCommand.blockchainsOption(help: String = "Select which blockchain to test") =
-        option("-bc", "--blockchain", help = help, metavar = "BLOCKCHAIN")
-                .multiple()

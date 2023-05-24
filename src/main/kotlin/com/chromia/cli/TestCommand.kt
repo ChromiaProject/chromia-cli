@@ -8,7 +8,7 @@ import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
 import com.chromia.cli.util.heading
 import com.chromia.cli.util.line
-import com.chromia.cli.util.blockchainsOption
+import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.red
 import com.chromia.cli.util.settingsOption
@@ -19,6 +19,7 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import net.postchain.gtv.Gtv
@@ -35,7 +36,8 @@ import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 class TestCommand : CliktCommand(help = "Run tests in working directory"), ColorAware {
 
-    private val blockchains by blockchainsOption()
+    private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
+            .multiple()
     private val modules by modulesOption()
     private val settings by settingsOption()
     private val tests by option(help = "test method pattern").split(",")
