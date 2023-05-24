@@ -21,6 +21,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.gtx.RellApiRunTests
@@ -77,7 +78,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testConf = createTestConfig(testModuleArgs)
 
         heading("Running unit tests")
-        val res = RellCliApi.runTests(testConf, sourceDir, listOf(), testModules)
+        val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         printResults(res)
     }
 
@@ -91,12 +92,12 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
 
         heading("Running tests for chain: $blockchain")
-        val res = RellCliApi.runTests(testConf, sourceDir, appModules, testModules)
+        val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         printResults(res)
     }
 
     private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>,
-                                 appModuleInTestsError: Boolean = false): RellCliRunTestsConfig {
+                                 appModuleInTestsError: Boolean = false): RellApiRunTests.Config {
         val printer = object : Rt_Printer {
             override fun print(str: String) = echo(str)
         }
