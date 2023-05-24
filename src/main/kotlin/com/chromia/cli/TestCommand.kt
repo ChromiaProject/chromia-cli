@@ -61,6 +61,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     }
 
     private fun runBlockchainTests() {
+        if (modules != null && blockchains.isEmpty()) {
+            return
+        }
         settings.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
@@ -68,6 +71,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     }
 
     private fun runUnitTests() {
+        if (blockchains.isNotEmpty() && modules == null) {
+            return
+        }
         val testModules = modules ?: settings.test.modules
         val testModuleArgs = settings.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
