@@ -8,7 +8,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 
 class QueryCommandTest {
@@ -51,7 +51,7 @@ class QueryCommandTest {
         val exception = assertFailsWith<BadParameterValue> {
             command.parse(listOf("--settings=missingFile.yml", "hello_world"))
         }
-        assert(exception.message!!).contains("Invalid value for \"--settings\": missingFile.yml")
+        assertThat(exception.message!!).contains("Invalid value for \"--settings\": missingFile.yml")
     }
 
     @Test

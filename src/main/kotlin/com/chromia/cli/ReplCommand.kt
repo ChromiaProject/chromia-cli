@@ -11,9 +11,8 @@ import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliCompileConfig
-import net.postchain.rell.utils.cli.RellCliRunShellConfig
+import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.shell.RellApiRunShell
 import java.io.File
 
 
@@ -40,13 +39,13 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
             throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
         val localModel = settings?.model ?: ChromiaCliModel()
-        val compileConfig = RellCliCompileConfig.Builder()
+        val compileConfig = RellApiCompile.Config.Builder()
                 .cliEnv(CliktCliEnv(this))
                 .mountConflictError(false)
                 .quiet(localModel.compile.quiet)
                 .build()
 
-        val shellConfig = RellCliRunShellConfig.Builder()
+        val shellConfig = RellApiRunShell.Config.Builder()
                 .compileConfig(compileConfig)
                 .databaseUrl(if (useDB) localModel.databaseUrl else null)
                 .historyFile(historyFile)
@@ -54,7 +53,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .sqlLog(sqlLog)
                 .build()
         try {
-            RellCliApi.runShell(shellConfig, sourceDir, module?.str())
+            RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
         } catch (e: Exception) {
             throw CliktError(e.message, e)
         }

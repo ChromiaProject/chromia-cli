@@ -1,6 +1,6 @@
 package com.chromia.cli.util
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.isEqualTo
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
@@ -22,7 +22,7 @@ class HeightFinderTest {
     @Test
     fun tenHigherThatnHighest() {
         val hc = HeightFinder(testClientProvider(), testConfigTemplate, TestClusterManagement("http://host1", "http://host2", "http://host3"))
-        assert(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
+        assertThat(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
     }
 
     @Test
@@ -36,7 +36,7 @@ class HeightFinderTest {
 
     private fun testClientProvider(): PostchainClientProvider {
         return PostchainClientProvider {
-            assert(it.endpointPool.size).isEqualTo(1)
+            assertThat(it.endpointPool.size).isEqualTo(1)
             val endpoint = it.endpointPool.first()
             return@PostchainClientProvider when (endpoint.url) {
                 "http://host1" -> mock { on { currentBlockHeight() } doReturn 7L }

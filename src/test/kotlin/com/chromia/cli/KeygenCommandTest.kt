@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.exists
 import net.postchain.common.PropertiesFileLoader
 import org.bitcoinj.crypto.MnemonicException
@@ -33,7 +33,7 @@ class KeygenCommandTest {
     fun keygenTest() {
         KeygenCommand().parse(listOf("--save", ".secret"))
         val file = File(".secret")
-        assert(file).exists()
+        assertThat(file).exists()
         file.delete()
     }
 }

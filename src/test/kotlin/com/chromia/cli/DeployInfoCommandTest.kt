@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.TestConsole
@@ -24,9 +24,6 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
@@ -52,23 +49,23 @@ class DeployInfoCommandTest {
             """.trimIndent())
         }
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "ok", "--network", "test"))
-        assert(testConsole.out[0].first).contains("ok         | 00:002 | my_cluster")
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
+        assertThat(testConsole.out[0].first).contains("ok         | 00:002 | my_cluster")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_found", "--network", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found Can't find blockchain from http://myhost:7740")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_deployed", "--network", "test"))
         testConsole.assertContains("Cluster not found for blockchain rid 00:004")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "has_errors", "--network", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error Module initialization error from http://myhost:7740")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
         testConsole.reset()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test", "--verbose"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
     @Test
@@ -77,29 +74,29 @@ class DeployInfoCommandTest {
         val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { console = testConsole }
 
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000002", "--url", "http://myhost:7740"))
-        assert(testConsole.out[0].first).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
+        assertThat(testConsole.out[0].first).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
         testConsole.reset()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000003", "--url", "http://myhost:7740"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found Can't find blockchain from http://myhost:7740")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
         testConsole.reset()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000004", "--url", "http://myhost:7740"))
         testConsole.assertContains("Cluster not found for blockchain rid 00:004")
         testConsole.reset()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000005", "--url", "http://myhost:7740"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error Module initialization error from http://myhost:7740")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
         testConsole.reset()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
         testConsole.reset()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740", "--verbose"))
-        assert(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
 
     private fun testClientProvider(): PostchainClientProvider {
         return PostchainClientProvider {
-            assert(it.endpointPool.size).equals(1)
+            assertThat(it.endpointPool.size).equals(1)
             val endpoint = it.endpointPool.first()
             return@PostchainClientProvider when (it.blockchainRid) {
                 BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002") -> TestPostchainClient(it) { 569889L }
@@ -111,7 +108,7 @@ class DeployInfoCommandTest {
     }
 
     private fun testClient(): (Request) -> Response = {
-        assert(it.uri.host).isEqualTo("myhost")
+        assertThat(it.uri.host).isEqualTo("myhost")
         //assert(it.headers).contains("Accept" to "application/json") Can be PLAIN for /brid/iid_0
         when {
             it.uri.path.contains("brid/iid_0") -> Response(Status.OK).body("0000000000000000000000000000000000000000000000000000000000000001")
@@ -133,9 +130,9 @@ class DeployInfoCommandTest {
         override fun checkTxStatus(txRid: TxRid): TransactionResult = TODO()
         override fun postTransactionAwaitConfirmation(tx: Gtx): TransactionResult = TODO()
         override fun awaitConfirmation(txRid: TxRid, retries: Int, pollInterval: Duration): TransactionResult = TODO()
-        override fun confirmationProof(txRid: TxRid): ByteArray? = TODO()
+        override fun confirmationProof(txRid: TxRid): ByteArray = TODO()
         override fun blockAtHeight(height: Long): BlockDetail? = TODO()
-        override fun getTransaction(txRid: TxRid): ByteArray? = TODO()
+        override fun getTransaction(txRid: TxRid): ByteArray = TODO()
     }
 
     class TestClusterManagement : ClusterManagement {

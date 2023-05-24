@@ -1,6 +1,6 @@
 package com.chromia.cli.parser
 
-import assertk.assert
+import assertk.assertThat
 import net.postchain.gtv.yaml.GtvYaml
 import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Test
@@ -24,8 +24,8 @@ internal class IncludeYamlTest {
             """.trimIndent())
         }
         val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
-        assert(res["b"] is Map<*, *>)
-        assert((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
+        assertThat(res["b"] is Map<*, *>)
+        assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
     }
 
     @Test
@@ -41,6 +41,6 @@ internal class IncludeYamlTest {
             """.trimIndent())
         }
         val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "b.yml"))
-        assert(res["b"]).isEqualTo(13)
+        assertThat(res["b"]).isEqualTo(13)
     }
 }

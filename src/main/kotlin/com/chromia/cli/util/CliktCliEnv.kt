@@ -1,7 +1,7 @@
 package com.chromia.cli.util
 
 import com.github.ajalt.clikt.core.CliktCommand
-import net.postchain.rell.utils.cli.RellCliEnv
+import net.postchain.rell.api.base.RellCliEnv
 
 
 class CliktCliEnv(val command: CliktCommand) : RellCliEnv() {

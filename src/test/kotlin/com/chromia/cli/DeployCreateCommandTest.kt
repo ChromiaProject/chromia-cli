@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
@@ -48,6 +48,6 @@ class DeployCreateCommandTest {
         val throwable = assertThrows<CliktError> {
             DeployCreateCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
-        assert(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
+        assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
 }
