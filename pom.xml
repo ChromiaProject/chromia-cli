@@ -219,6 +219,10 @@
                     <groupId>net.postchain</groupId>
                     <artifactId>postchain-admin-service</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>grpc-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
