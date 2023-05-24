@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
 import net.postchain.PostchainNode
-import net.postchain.rell.module.RellVersions
+import net.postchain.rell.base.utils.RellVersions
 
 fun main(args: Array<out String>) = object : NoOpCliktCommand(name = "chr") {
     init {

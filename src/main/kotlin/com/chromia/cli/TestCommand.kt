@@ -21,17 +21,15 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
-import net.postchain.gtv.Gtv
-import net.postchain.rell.runtime.Rt_Exception
-import net.postchain.rell.runtime.Rt_Printer
-import net.postchain.rell.runtime.utils.Rt_Utils
-import net.postchain.rell.utils.TestCase
-import net.postchain.rell.utils.TestCaseResult
-import net.postchain.rell.utils.TestRunnerResults
-import net.postchain.rell.utils.cli.RellCliApi
-import net.postchain.rell.utils.cli.RellCliCompileConfig
-import net.postchain.rell.utils.cli.RellCliException
-import net.postchain.rell.utils.cli.RellCliRunTestsConfig
+import net.postchain.rell.api.base.RellApiCompile
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.gtx.RellApiRunTests
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Printer
+import net.postchain.rell.base.runtime.utils.Rt_Utils
+import net.postchain.rell.base.utils.UnitTestCase
+import net.postchain.rell.base.utils.UnitTestCaseResult
+import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 
 class TestCommand : CliktCommand(help = "Run tests in working directory"), ColorAware {
@@ -102,8 +100,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val printer = object : Rt_Printer {
             override fun print(str: String) = echo(str)
         }
-
-        val compileConf = RellCliCompileConfig.Builder()
+        val compileConf = RellApiCompile.Config.Builder()
                 .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
@@ -113,7 +110,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .version(settings.compile.langVersion)
                 .quiet(settings.compile.quiet)
                 .build()
-        return RellCliRunTestsConfig.Builder()
+        return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) settings.model.databaseUrl else null)
@@ -136,11 +133,11 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 }
     }
 
-    private fun TestCase.print() {
+    private fun UnitTestCase.print() {
         echo("${colorScheme.blue.format("TEST")}: $name")
     }
 
-    private fun TestCaseResult.print() {
+    private fun UnitTestCaseResult.print() {
         if (res.isOk) {
             green("$res $case")
         } else {
@@ -148,7 +145,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         }
     }
 
-    private fun printResults(results: TestRunnerResults) {
+    private fun printResults(results: UnitTestRunnerResults) {
 
         val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
 
@@ -183,7 +180,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         }
     }
 
-    private fun printResults(list: List<TestCaseResult>, color: ColorFormat) {
+    private fun printResults(list: List<UnitTestCaseResult>, color: ColorFormat) {
         if (list.isNotEmpty()) {
             space()
             for (r in list) {
