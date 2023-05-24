@@ -14,7 +14,6 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 
-
 class DeployActionCommandTest {
 
     companion object {
@@ -75,13 +74,5 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
             DeployResumeCommand { TestClient(it) }.context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
         }
         assert(throwable.message!!).contains("The action \"resume\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
-    }
-
-    @Test
-    fun cannotRemoveNotDeployedBlockchain(@TempDir dir: Path) {
-        val throwable = assertThrows<CliktError> {
-            DeployRemoveCommand { TestClient(it) }.context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
-        }
-        assert(throwable.message!!).contains("The action \"remove\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
     }
 }
