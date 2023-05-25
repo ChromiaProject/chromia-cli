@@ -38,6 +38,7 @@ data class Settings(val file: File, val model: ChromiaCliModel) {
     val deployments get() = model.deployments
     val blockchains get() = model.blockchains
     val test get() = model.test
+    val libs get() = model.libs
 }
 
 internal val DEFAULT_CONFIG_FILE = File("config.yml")

@@ -7,7 +7,8 @@ data class ChromiaCliModel(
         val compile: CompileModel = CompileModel(),
         val blockchains: Map<String, BlockchainModel> = mapOf(),
         val deployments: Map<String, DeploymentModel> = mapOf(),
-        val test: TestModel = TestModel()
+        val test: TestModel = TestModel(),
+        val libs: Map<String, RellLibraryModel> = mapOf(),
 ) {
     val logSqlErrors get() = database.logSqlErrors
     val databaseDriver get() = database.driver
