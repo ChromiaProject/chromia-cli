@@ -181,4 +181,70 @@ internal class TestCommandTest {
         }
         testConsole.assertContains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
     }
+
+    @Test
+    fun testBlockchainTestScope(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/development.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                
+                struct module_args { name; age: integer;}
+                entity foo { name; }
+                
+                operation add_foo(name) { create foo(name); }
+                query get_foo(name) = foo @? { name };
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "src/moduleA/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                import ^^.development.*;
+                
+                function test_get_foo() {
+                  rell.test.tx().op(add_foo("bar")).run();
+                  assert_not_null(get_foo("bar"));
+                }
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "src/moduleB/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_a() {}
+                function test_b() {}
+            """.trimIndent())
+        }
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  foo_chain_dev:
+                    module: development
+                    moduleArgs:
+                      development:
+                        age: 100
+                    test:
+                      modules:
+                        - moduleA.test
+                        - moduleB.test
+                      moduleArgs:
+                        development:
+                          name: foo
+                        non_existent:
+                          foo: bar
+                  foo_chain:
+                    module: production
+                    test:
+                      modules:
+                        - non_existent_prod_tests
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        TestCommand().context { console = testConsole }.parse(
+                listOf("-s", settings.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
+        )
+        testConsole.assertContains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
+    }
 }

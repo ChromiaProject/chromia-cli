@@ -8,6 +8,7 @@ fun ColorAware.red(msg: String) = colorScheme.printer.print(colorScheme.red.form
 fun ColorAware.green(msg: String) = colorScheme.printer.print(colorScheme.green.format(msg))
 fun ColorAware.blue(msg: String) = colorScheme.printer.print(colorScheme.blue.format(msg))
 fun ColorAware.line() = colorScheme.printer.print("-".repeat(72))
+fun ColorAware.heading(msg: String) = colorScheme.printer.print("=".repeat(20) + " " + msg + " " + "=".repeat(20))
 fun ColorAware.space() = colorScheme.printer.print("")
 
 fun interface PrintFunction {

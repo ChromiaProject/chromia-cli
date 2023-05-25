@@ -6,7 +6,9 @@ import com.chromia.cli.util.ColorAware
 import com.chromia.cli.util.ColorFormat
 import com.chromia.cli.util.NoColorScheme
 import com.chromia.cli.util.green
+import com.chromia.cli.util.heading
 import com.chromia.cli.util.line
+import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.red
 import com.chromia.cli.util.settingsOption
@@ -17,8 +19,10 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.gtx.RellApiRunTests
@@ -32,6 +36,8 @@ import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 class TestCommand : CliktCommand(help = "Run tests in working directory"), ColorAware {
 
+    private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
+            .multiple()
     private val modules by modulesOption()
     private val settings by settingsOption()
     private val tests by option(help = "test method pattern").split(",")
@@ -47,22 +53,69 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
 
 
     override fun run() {
-        val testModules = modules ?: settings.test.modules
+        try {
+            if (shouldRunBlockchainTests()) {
+                runBlockchainTests()
+            }
+            if (shouldRunUnitTests()) {
+                runUnitTests()
+            }
+        } catch (e: RellCliException) {
+            throw CliktError(e.message)
+        }
+    }
 
+    private fun runBlockchainTests() {
+        settings.blockchains
+                .filter { it.value.test.modules.isNotEmpty() }
+                .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
+                .forEach { runTestsForChain(it.key) }
+    }
+
+    private fun runUnitTests() {
+        val testModules = modules ?: settings.test.modules
+        val testModuleArgs = settings.test.moduleArgs
+        val testConf = createTestConfig(testModuleArgs)
+
+        heading("Running unit tests")
+        val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
+        printResults(res)
+    }
+
+    private fun shouldRunUnitTests() = blockchains.isEmpty() || modules != null
+
+    private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
+
+    private fun runTestsForChain(blockchain: String) {
+        val chainConfig = settings.blockchains[blockchain]
+                ?: throw CliktError("Blockchain '$blockchain' not found")
+
+        val appModules = listOf(chainConfig.module)
+        val testModules = chainConfig.test.modules
+        val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
+        val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
+
+        heading("Running tests for chain: $blockchain")
+        val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
+        printResults(res)
+    }
+
+    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>,
+                                 appModuleInTestsError: Boolean = false): RellApiRunTests.Config {
         val printer = object : Rt_Printer {
             override fun print(str: String) = echo(str)
         }
         val compileConf = RellApiCompile.Config.Builder()
-                .moduleArgs(settings.test.moduleArgs)
+                .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
-                .appModuleInTestsError(false)
+                .appModuleInTestsError(appModuleInTestsError)
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
                 .version(settings.compile.langVersion)
                 .quiet(settings.compile.quiet)
                 .build()
-        val testConf = RellApiRunTests.Config.Builder()
+        return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) settings.model.databaseUrl else null)
@@ -74,15 +127,16 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
                 .build()
-
-        try {
-            val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
-            printResults(res)
-        } catch (e: RellCliException) {
-            throw CliktError(e.message)
-        }
     }
 
+    private fun mergeModuleArgs(first: Map<String, Map<String,Gtv>>,
+                                second: Map<String, Map<String,Gtv>>): Map<String, Map<String,Gtv>> {
+        return (first.asSequence() + second.asSequence())
+                .groupBy({ it.key }, { it.value })
+                .mapValues { (_, values) ->
+                    values.flatMap { map -> map.entries }.associate(Map.Entry<String, Gtv>::toPair)
+                }
+    }
 
     private fun UnitTestCase.print() {
         echo("${colorScheme.blue.format("TEST")}: $name")
