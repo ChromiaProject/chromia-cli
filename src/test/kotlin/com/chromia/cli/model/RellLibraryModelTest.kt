@@ -36,7 +36,7 @@ class RellLibraryModelTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
             """.trimIndent())
         }
@@ -45,12 +45,13 @@ class RellLibraryModelTest {
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.validateRid(fileMap[it.key]!!))
+            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
         }
     }
 
+    //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
     @Test
-    fun conflictingLibraryNameTest(@TempDir dir: Path) {
+    fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
         settingsFile = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 blockchains:
@@ -59,11 +60,11 @@ class RellLibraryModelTest {
                 libs:
                     foo:
                       registry: http://foo1.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
                     foo:
                       registry: http://foo2.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
             """.trimIndent())
         }
@@ -85,11 +86,11 @@ class RellLibraryModelTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
                     bar:
                       registry: http://bar.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
             """.trimIndent())
         }
@@ -99,7 +100,7 @@ class RellLibraryModelTest {
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.validateRid(fileMap[it.key]!!))
+            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
         }
     }
 
@@ -114,8 +115,8 @@ class RellLibraryModelTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
-                      verifyRid: false
+                      path: lib
+                      insecure: true
             """.trimIndent())
         }
 
@@ -123,7 +124,7 @@ class RellLibraryModelTest {
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.validateRid(fileMap[it.key]!!))
+            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
         }
     }
 }

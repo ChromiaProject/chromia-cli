@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.exception.LibraryTamperedException
+import com.chromia.cli.exception.LibraryMisMatchException
 import com.chromia.cli.util.GitRepositoryCloner
 import com.chromia.cli.util.RepositoryCloner
 import com.chromia.cli.util.settingsOption
@@ -24,13 +24,15 @@ class InstallCommand(
     }
 
     override fun run() {
+        //TODO create a file that is called lib installer for this logic
         settings.libs.forEach { (name, rellLibrary) ->
             try {
-                val libraryTarget = Path(settings.target.absolutePath, "libs").resolve(name)
-                val tempDir = Path(settings.target.absolutePath, System.currentTimeMillis().toString())
+                val libraryTarget = Path(settings.source.absolutePath, "lib").resolve(name)
+                val tempDir = Path(settings.target.absolutePath, ".lib").resolve(name)
 
+                //TODO make it so file name is persistent between clones
                 repositoryClonerFactory().clone(rellLibrary.registry, tempDir.toFile())
-                val files = readFiles(tempDir.resolve(rellLibrary.lib))
+                val files = readFiles(tempDir.resolve(rellLibrary.path))
                 if (!libraryTarget.toFile().exists()) {
                     libraryTarget.toFile().mkdirs()
                 } else {
@@ -38,11 +40,13 @@ class InstallCommand(
                     libraryTarget.toFile().deleteRecursively()
                 }
 
-                if (!rellLibrary.validateRid(files)) {
-                    throw LibraryTamperedException(rellLibrary.rid.toString(), name)
+                val (isValid, rid) = rellLibrary.isValid(files)
+
+                if (!isValid) {
+                    throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
                 }
 
-                copyDir(files, tempDir.resolve(rellLibrary.lib), libraryTarget)
+                copyDir(files, tempDir.resolve(rellLibrary.path), libraryTarget)
                 tempDir.toFile().deleteRecursively()
 
             } catch (e: InvalidRemoteException) {

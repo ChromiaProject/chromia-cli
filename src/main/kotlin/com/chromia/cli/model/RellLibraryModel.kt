@@ -11,18 +11,19 @@ import java.io.File
 
 data class RellLibraryModel(
         val registry: String,
-        val lib: String,
-        val verifyRid: Boolean = true,
+        val path: String,
+        val insecure: Boolean = false,
         val rid: WrappedByteArray?,
 ) {
-    fun validateRid(libraryFiles: List<File>): Boolean {
+    fun isValid(libraryFiles: List<File>): Pair<Boolean, WrappedByteArray?> {
 
-        if (!verifyRid) {
-            return true
+        if (insecure) {
+            return true to null
         }
 
-        if (libraryFiles.any { !(it.isDirectory || it.extension == "rell") }) {
-            throw LibraryNonSafeFiles(lib)
+        //TODO show which file might be malicious
+        if (libraryFiles.any { !it.isDirectory && it.extension != "rell" }) {
+            throw LibraryNonSafeFiles(path)
         }
 
         val calculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
@@ -30,6 +31,7 @@ data class RellLibraryModel(
                 ConfigConstants.RELL_SOURCES_KEY to gtv(libraryFiles.filter { it.extension == "rell" }.map { gtv(it.readText()) })
         )
 
-        return WrappedByteArray(srcGtv.merkleHash(calculator)) == this.rid
+        val calcRid = WrappedByteArray(srcGtv.merkleHash(calculator))
+        return (calcRid == this.rid) to calcRid
     }
 }

@@ -3,7 +3,7 @@ package com.chromia.cli
 import assertk.assert
 import assertk.assertions.contains
 import assertk.assertions.containsAll
-import com.chromia.cli.exception.LibraryTamperedException
+import com.chromia.cli.exception.LibraryMisMatchException
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
@@ -85,7 +85,7 @@ internal class BuildCommandTest {
             libs:
                 bar:
                   registry: http://bar.com
-                  lib: lib
+                  path: lib
                   rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
         """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
@@ -101,7 +101,7 @@ internal class BuildCommandTest {
             libs:
                 missing:
                   registry: http://missing.com
-                  lib: lib
+                  path: lib
                   rid: x"11" 
         """.trimIndent())
         val e = assertFailsWith<CliktError> { command.parse() }
@@ -117,12 +117,15 @@ internal class BuildCommandTest {
             libs:
                 bar:
                   registry: http://bar.com
-                  lib: lib
+                  path: lib
                   rid: x"11" 
         """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
-        val e = assertFailsWith<LibraryTamperedException> { command.parse() }
-        assert(e.message!!).contains("The rid 11 for library bar does not match the calculated rid from the downloaded library, can not verify it has not be tampered with")
+        val e = assertFailsWith<LibraryMisMatchException> { command.parse() }
+        assert(e.message!!).contains("The rid for library bar does not match the configured value.\n" +
+                "Should be: 11\n" +
+                "Was: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5\n" +
+                "Do not blindly copy the calculated rid as it might be tampered with.")
     }
 
     @Test

@@ -17,7 +17,7 @@ import kotlin.test.assertFailsWith
 
 class InstallCommandTest {
     lateinit var settings: File
-    val path = "build/libs"
+    val path = "src/lib"
 
     lateinit var testConsole: TestConsole
 
@@ -37,7 +37,7 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"11"  
             """.trimIndent())
             }
@@ -46,7 +46,10 @@ class InstallCommandTest {
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))
         }
-        assertEquals("The rid 11 for library foo does not match the calculated rid from the downloaded library, can not verify it has not be tampered with", exception.message)
+        assertEquals("The rid for library foo does not match the configured value.\n" +
+                "Should be: 11\n" +
+                "Was: 1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5\n" +
+                "Do not blindly copy the calculated rid as it might be tampered with.", exception.message)
     }
 
     @Test
@@ -60,7 +63,7 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
             """.trimIndent())
         }
@@ -87,7 +90,7 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
             """.trimIndent())
         }
@@ -113,7 +116,7 @@ class InstallCommandTest {
                 libs:
                     bar:
                       registry: http://bar.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
             """.trimIndent())
         }
@@ -136,11 +139,11 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://foo.com
-                      lib: lib
+                      path: lib
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
                     bar:
                       registry: http://bar.com
-                      lib: lib
+                      path: lib
                       rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
             """.trimIndent())
         }
@@ -166,7 +169,7 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://wrongAddress.com
-                      lib: lib
+                      path: lib
                       rid: x"13"
             """.trimIndent())
         }
@@ -188,7 +191,7 @@ class InstallCommandTest {
                 libs:
                     foo:
                       registry: http://filter.com
-                      lib: lib
+                      path: lib
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
             """.trimIndent())
         }
@@ -197,7 +200,7 @@ class InstallCommandTest {
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))
         }
-        assertEquals("The library lib contains files that has non rell type files. Can not verify it has not be tampered with", exception.message)
+        assertEquals("The library lib contains files that has non rell type files. Can not verify integrity", exception.message)
     }
 
 

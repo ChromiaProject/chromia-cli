@@ -3,7 +3,7 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
-import com.chromia.cli.exception.LibraryTamperedException
+import com.chromia.cli.exception.LibraryMisMatchException
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel
@@ -39,15 +39,18 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     companion object {
-        fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>, libs: Map<String, RellLibraryModel>): Collection<BlockchainConfigHolder> {
+        fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>, libs: Map<String, RellLibraryModel> = mapOf()): Collection<BlockchainConfigHolder> {
 
+            //TODO make it so you can specify a lib to install
+            //TODO create a file that is called lib installer, should be aligned with what is in installCommand
             libs.forEach { (name, rellLibrary) ->
                 run {
                     val libraryLocation = target.toPath().resolve("libs").resolve(name)
                     if (libraryLocation.exists()) {
                         val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
-                        if (!rellLibrary.validateRid(files)) {
-                            throw LibraryTamperedException(rellLibrary.rid.toString(), name)
+                        val (isValid, rid) = rellLibrary.isValid(files)
+                        if (!isValid) {
+                            throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
                         }
                     } else {
                         throw PrintMessage("Library $name is not installed, install before building")
