@@ -162,6 +162,10 @@ Runs a specific test module
 ```shell
 chr test --settings config.yml --modules test.data_test
 ```
+Runs all tests of specific blockchain(s)
+```shell
+chr test --settings config.yml --blockchain foo_chain --blockchain bar_chain
+```
 
 ### Repl 
 Repl is used to run specific methods in your rell code. can be good when troubleshooting

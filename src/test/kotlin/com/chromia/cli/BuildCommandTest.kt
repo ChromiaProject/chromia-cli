@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
 import com.chromia.cli.exception.LibraryMisMatchException
@@ -73,7 +73,7 @@ internal class BuildCommandTest {
             struct module_args { my_args: integer; }
         """.trimIndent())
         val e = assertFailsWith<CliktError> { command.parse() }
-        assert(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
+        assertThat(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
     }
 
     @Test
@@ -150,7 +150,7 @@ internal class BuildCommandTest {
         val outputFile = File(dir, "build/hello.xml")
         assertTrue(outputFile.exists())
         val outputGtv = PostchainUtils.xmlToGtv(outputFile.readText())
-        assert(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsAll(
+        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsAll(
                 "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
                 "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule",
                 "net.postchain.d1.icmf.IcmfSenderGTXModule",

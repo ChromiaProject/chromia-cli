@@ -1,6 +1,6 @@
 package com.chromia.cli.parser
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.isEqualTo
 import net.postchain.gtv.yaml.GtvYaml
 import org.junit.jupiter.api.Test
@@ -18,7 +18,7 @@ class EvnSubYamlTest {
                 writeText("a: \${MY_A}")
             }
             val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
-            assert(res["a"]).isEqualTo("foo")
+            assertThat(res["a"]).isEqualTo("foo")
         }
     }
 
@@ -29,7 +29,7 @@ class EvnSubYamlTest {
                 writeText("a: \${MY_A}")
             }
             val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "a.yml"))
-            assert(res["a"] as String).isEqualTo("1")
+            assertThat(res["a"] as String).isEqualTo("1")
         }
     }
 
@@ -39,6 +39,6 @@ class EvnSubYamlTest {
                 writeText("a: \"\$escaped\$\"")
             }
             val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
-            assert(res["a"]).isEqualTo("\$escaped\$")
+            assertThat(res["a"]).isEqualTo("\$escaped\$")
     }
 }

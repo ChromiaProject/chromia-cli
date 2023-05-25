@@ -17,10 +17,10 @@
         <kotlin.compiler.jvmTarget>11</kotlin.compiler.jvmTarget>
         <kotlin.code.style>obsolete</kotlin.code.style>
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-        <codegen.version>0.9.4</codegen.version>
-        <postchain.version>3.9.0</postchain.version>
-        <directory1.version>3.9.0</directory1.version>
-        <rell.version>0.12.1</rell.version>
+        <codegen.version>0.9.5</codegen.version>
+        <postchain.version>3.10.0</postchain.version>
+        <directory1.version>3.10.0</directory1.version>
+        <rell.version>0.13.0</rell.version>
         <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
         <image.name>chr</image.name>
 
@@ -112,7 +112,7 @@
                         </goals>
                         <configuration>
                             <packageName>com.chromia.directory1</packageName>
-                            <mainModule>version,proposal</mainModule>
+                            <mainModule>version,proposal_blockchain</mainModule>
                         </configuration>
                     </execution>
                 </executions>
@@ -192,14 +192,18 @@
     <dependencies>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>rell</artifactId>
+            <artifactId>rell-api-gtx</artifactId>
             <version>${rell.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>net.postchain</groupId>
-                    <artifactId>postchain-cli</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-api-shell</artifactId>
+            <version>${rell.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-api-base</artifactId>
+            <version>${rell.version}</version>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
@@ -215,6 +219,10 @@
                     <groupId>net.postchain</groupId>
                     <artifactId>postchain-admin-service</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>io.grpc</groupId>
+                    <artifactId>grpc-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -227,6 +235,11 @@
         <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>chromia-client</artifactId>
+            <version>${postchain.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-gtv</artifactId>
             <version>${postchain.version}</version>
         </dependency>
         <dependency>
@@ -267,12 +280,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <version>2.14.2</version>
+            <version>2.15.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>2.14.2</version>
+            <version>2.15.0</version>
         </dependency>
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
@@ -359,7 +372,7 @@
         <dependency>
             <groupId>com.willowtreeapps.assertk</groupId>
             <artifactId>assertk-jvm</artifactId>
-            <version>0.25</version>
+            <version>0.26</version>
         </dependency>
     </dependencies>
     <profiles>

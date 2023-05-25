@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
@@ -88,7 +88,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
         val throwable = assertThrows<CliktError> {
             DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
-        assert(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
+        assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
 
     @Test
@@ -96,6 +96,6 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
         val throwable = assertThrows<PrintMessage> {
             DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test", "--secret", secret.absolutePath))
         }
-        assert(throwable.message!!).contains("Blockchain notDeployed cannot be updated since it has not been deployed to network test")
+        assertThat(throwable.message!!).contains("Blockchain notDeployed cannot be updated since it has not been deployed to network test")
     }
 }

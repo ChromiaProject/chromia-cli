@@ -26,7 +26,6 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.rell.compiler.base.utils.C_SourceDir
 import org.apache.commons.configuration2.BaseConfiguration
 import java.io.File
 import java.time.Instant
@@ -42,8 +41,7 @@ fun deployCommands() = DeploymentCommand().subcommands(
         DeployInspectCommand(),
         DeployUpdateCommand(),
         DeployResumeCommand(),
-        DeployPauseCommand(),
-        DeployRemoveCommand()
+        DeployPauseCommand()
 )
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {

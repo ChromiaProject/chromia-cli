@@ -9,9 +9,9 @@ import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
-import net.postchain.metrics.BLOCKCHAIN_RID_TAG
-import net.postchain.metrics.CHAIN_IID_TAG
-import net.postchain.metrics.NODE_PUBKEY_TAG
+import net.postchain.logging.BLOCKCHAIN_RID_TAG
+import net.postchain.logging.CHAIN_IID_TAG
+import net.postchain.logging.NODE_PUBKEY_TAG
 
 class StartCommand : AbstractNodeCommand(help = """
     Starts a test node

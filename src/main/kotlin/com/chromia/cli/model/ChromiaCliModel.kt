@@ -1,5 +1,6 @@
 package com.chromia.cli.model
 
+
 data class ChromiaCliModel(
         private val definitions: Any = Any(), // Placeholder for anchor objects
         private val database: DatabaseModel = DatabaseModel(),

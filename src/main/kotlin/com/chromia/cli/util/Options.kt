@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.model.R_ModuleName
+import net.postchain.rell.base.model.R_ModuleName
 import java.io.File
 
 
@@ -22,7 +22,8 @@ fun CliktCommand.nodePropertiesOption() =
                 .convert { getNodeConfig(it) }
 
 fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Specify which deployment target to use")
-fun ParameterHolder.blockchainOption(help: String) = option("--blockchain", "-bc", help = help)
+fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
+        option("--blockchain", "-bc", help = help, metavar = metavar)
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =

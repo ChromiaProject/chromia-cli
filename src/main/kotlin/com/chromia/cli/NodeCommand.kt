@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.GtvDecoder
-import net.postchain.rell.utils.PostchainUtils
+import net.postchain.gtv.gtvml.GtvMLParser
 
 class NodeCommand : NoOpCliktCommand(help = "Interract with a test node") {
     override fun aliases() = createAliases()
@@ -52,7 +52,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                                 it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)
                             }
                         } else {
-                            it.nameWithoutExtension to PostchainUtils.xmlToGtv(it.readText())
+                            it.nameWithoutExtension to GtvMLParser.parseGtvML(it.readText())
                         }
                     }
                     .map { BlockchainConfigHolder.from(it.key, it.value) }

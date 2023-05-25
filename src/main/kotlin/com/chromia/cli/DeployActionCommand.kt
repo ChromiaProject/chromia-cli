@@ -2,8 +2,8 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.util.pubkey
-import com.chromia.directory1.model.BlockchainAction
-import com.chromia.directory1.proposal.proposeBlockchainActionOperation
+import com.chromia.directory1.proposal_blockchain.BlockchainAction
+import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -44,4 +44,3 @@ open class DeployActionCommand(
 
 class DeployResumeCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container", clientProvider)
 class DeployPauseCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.pause, "Pauses a blockchain in a container", clientProvider)
-class DeployRemoveCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.remove, "Removes a blockchain in a container (This action is permanent)", clientProvider)

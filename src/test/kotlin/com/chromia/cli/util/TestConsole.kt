@@ -2,7 +2,7 @@ package com.chromia.cli.util
 
 import com.github.ajalt.clikt.output.CliktConsole
 import java.io.IOException
-import assertk.assert
+import assertk.assertThat
 import assertk.assertions.isNotEmpty
 
 open class TestConsole() : CliktConsole {
@@ -21,7 +21,7 @@ open class TestConsole() : CliktConsole {
 
     override val lineSeparator: String get() = System.lineSeparator()
 
-    fun assertContains(text: String) = assert(out.map { it.first }.filter { it.contains(text) }).isNotEmpty()
+    fun assertContains(text: String) = assertThat(out.map { it.first }.filter { it.contains(text) }).isNotEmpty()
 
     fun reset() = out.clear()
 
