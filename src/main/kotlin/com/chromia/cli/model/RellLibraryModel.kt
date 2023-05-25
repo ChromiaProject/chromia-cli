@@ -6,7 +6,7 @@ import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtv.merkleHash
-import net.postchain.rell.module.ConfigConstants
+import net.postchain.rell.base.utils.RellGtxConfigConstants.RELL_SOURCES_KEY
 import java.io.File
 
 data class RellLibraryModel(
@@ -28,7 +28,7 @@ data class RellLibraryModel(
 
         val calculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
         val srcGtv = gtv(
-                ConfigConstants.RELL_SOURCES_KEY to gtv(libraryFiles.filter { it.extension == "rell" }.map { gtv(it.readText()) })
+                RELL_SOURCES_KEY to gtv(libraryFiles.filter { it.extension == "rell" }.map { gtv(it.readText()) })
         )
 
         val calcRid = WrappedByteArray(srcGtv.merkleHash(calculator))

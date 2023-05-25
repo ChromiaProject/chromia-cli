@@ -105,7 +105,7 @@ internal class BuildCommandTest {
                   rid: x"11" 
         """.trimIndent())
         val e = assertFailsWith<CliktError> { command.parse() }
-        assert(e.message!!).contains("Library missing is not installed, install before building")
+        assertThat(e.message!!).contains("Library missing is not installed, install before building")
     }
 
     @Test
@@ -122,7 +122,7 @@ internal class BuildCommandTest {
         """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
         val e = assertFailsWith<LibraryMisMatchException> { command.parse() }
-        assert(e.message!!).contains("The rid for library bar does not match the configured value.\n" +
+        assertThat(e.message!!).contains("The rid for library bar does not match the configured value.\n" +
                 "Should be: 11\n" +
                 "Was: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5\n" +
                 "Do not blindly copy the calculated rid as it might be tampered with.")
