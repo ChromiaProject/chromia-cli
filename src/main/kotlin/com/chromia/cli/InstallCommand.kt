@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 
 class InstallCommand(
         private val repositoryClonerFactory: () -> RepositoryCloner = { GitRepositoryCloner() },
-) : CliktCommand(help = "Install libs dependencies") {
+) : CliktCommand(help = "Install library dependencies") {
     private val settings by settingsOption()
 
     init {
@@ -37,22 +37,27 @@ class InstallCommand(
                     libraryTarget.toFile().mkdirs()
                 } else {
                     echo("Reinstalling ${libraryTarget.fileName}")
-                    libraryTarget.toFile().deleteRecursively()
+                    cleanUpFiles(libraryTarget)
                 }
 
                 val (isValid, rid) = rellLibrary.isValid(files)
 
                 if (!isValid) {
+                    cleanUpFiles(tempDir)
                     throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
                 }
 
                 copyDir(files, tempDir.resolve(rellLibrary.path), libraryTarget)
-                tempDir.toFile().deleteRecursively()
+                cleanUpFiles(tempDir)
 
             } catch (e: InvalidRemoteException) {
                 echo("Invalid remote host. Error: ${e.message}")
             }
         }
+    }
+
+    private fun cleanUpFiles(target: Path) {
+        target.toFile().deleteRecursively()
     }
 
     private fun readFiles(src: Path): List<File> {
