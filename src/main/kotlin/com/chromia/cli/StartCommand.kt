@@ -51,6 +51,7 @@ class StartCommand : AbstractNodeCommand(help = """
                     if (deployedBlockchain == null) {
                         BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     }
+                    //TODO move to postchain
                     val usedRids = BlockchainApi.listConfigurations(eContext).map { BlockchainApi.getConfiguration(eContext, it)!! }
                             .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
                     val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
