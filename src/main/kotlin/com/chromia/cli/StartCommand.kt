@@ -7,8 +7,11 @@ import com.github.ajalt.clikt.output.CliktHelpFormatter
 import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
+import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
+import net.postchain.crypto.Secp256K1CryptoSystem
+import net.postchain.gtv.GtvDecoder
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
@@ -44,9 +47,15 @@ class StartCommand : AbstractNodeCommand(help = """
                     BLOCKCHAIN_RID_TAG to brid.toHex()
             ) {
                 withReadWriteConnection(node.postchainContext.storage, iid) { eContext: EContext ->
-                    BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
+                    val deployedBlockchain = BlockchainApi.findBlockchain(eContext)
+                    if (deployedBlockchain == null) {
+                        BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
+                    }
+                    val usedRids = BlockchainApi.listConfigurations(eContext).map { BlockchainApi.getConfiguration(eContext, it)!! }
+                            .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
+                    val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
                     val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                    if (lastHeight >= 0) {
+                    if (lastHeight >= 0 && !usedRids.contains(newRid)) {
                         BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
                 }

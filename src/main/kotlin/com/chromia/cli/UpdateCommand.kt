@@ -1,14 +1,18 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.withSigner
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.StorageBuilder
 import net.postchain.api.internal.BlockchainApi
+import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
+import net.postchain.crypto.Secp256K1CryptoSystem
+import net.postchain.gtv.GtvDecoder
 
 class UpdateCommand : AbstractNodeCommand(help = """
     Updates a running test node
@@ -26,8 +30,12 @@ class UpdateCommand : AbstractNodeCommand(help = """
         extractConfigs().toList().forEachIndexed { index, (_, _, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
+                val usedRids = BlockchainApi.listConfigurations(eContext).map { BlockchainApi.getConfiguration(eContext, it)!! }
+                        .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
+                val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                require(lastHeight >= 0) { "Blockchain must be initialized before you can update it, brid: ${BlockchainApi.findBlockchain(eContext)}, height: $lastHeight" }
+                if (lastHeight >= 0) throw PrintMessage("Blockchain must be initialized before you can update it, brid: ${BlockchainApi.findBlockchain(eContext)}, height: $lastHeight")
+                if (!usedRids.contains(newRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot update")
                 BlockchainApi.addConfiguration(eContext, lastHeight + preemption, override = true, gtvWithSigners, allowUnknownSigners = true)
                 echo("Configuration added at height ${lastHeight + preemption}")
             }
