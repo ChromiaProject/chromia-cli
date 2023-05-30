@@ -24,6 +24,7 @@ class StartCommand : AbstractNodeCommand(help = """
     Use --wipe to wipe the database schema upon startup and thus enforce starting the chain from height=0.
 """.trimIndent()) {
     private val wipe by wipeDatabaseOption()
+    val cryptoSystem = Secp256K1CryptoSystem()
 
 
     init {
@@ -48,29 +49,23 @@ class StartCommand : AbstractNodeCommand(help = """
                     BLOCKCHAIN_RID_TAG to brid.toHex()
             ) {
                 withReadWriteConnection(node.postchainContext.storage, iid) { eContext: EContext ->
-                    val deployedBlockchain = BlockchainApi.findBlockchain(eContext)
-                    if (deployedBlockchain == null) {
+                    if (BlockchainApi.findBlockchain(eContext) == null) {
                         BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     }
-                    //TODO move to postchain
-                    val configurationIndexes = BlockchainApi.listConfigurations(eContext)
-                    val usedRids = configurationIndexes.map { BlockchainApi.getConfiguration(eContext, it)!! }
-                            .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
-                    val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
-                    val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                    val lastConfig = BlockchainApi.getConfiguration(eContext, configurationIndexes.max())!!
-                    val lastConfigRid = lastConfig.let { GtvDecoder.decodeGtv(it) }.let {
-                        GtvToBlockchainRidFactory.calculateBlockchainRid(
-                                it,
-                                Secp256K1CryptoSystem()
-                        )
-                    }
 
-                    if (lastHeight >= 0 && usedRids.contains(newRid) && lastConfigRid != newRid) {
-                        throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
-                    }
-                    if (lastHeight >= 0 && !usedRids.contains(newRid)) {
-                        BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
+                    val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
+                    if (lastHeight >= 0) {
+                        //TODO move to postchain
+                        val previousBlockchainRids = BlockchainApi.listConfigurations(eContext)
+                                .map { BlockchainApi.getConfiguration(eContext, it)!! }
+                                .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), cryptoSystem) }
+                                .toMutableList()
+
+                        val lastBlockchainRid = previousBlockchainRids.removeAt(previousBlockchainRids.lastIndex)
+                        val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, cryptoSystem)
+
+                        if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
+                        if (blockchainRid != lastBlockchainRid) BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
                 }
             }
