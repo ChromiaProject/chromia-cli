@@ -36,7 +36,7 @@ class UpdateCommand : AbstractNodeCommand(help = """
                         .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
                 val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                if (lastHeight < 0) throw PrintMessage("Blockchain must be initialized before you can update it, brid: ${BlockchainApi.findBlockchain(eContext)}, height: $lastHeight")
+                if (lastHeight < 0) throw PrintMessage("Blockchain must be initialized before you can update it")
                 if (usedRids.contains(newRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot update")
                 BlockchainApi.addConfiguration(eContext, lastHeight + preemption, override = true, gtvWithSigners, allowUnknownSigners = true)
                 echo("Configuration added at height ${lastHeight + preemption}")
