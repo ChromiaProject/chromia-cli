@@ -24,6 +24,7 @@ class UpdateCommand : AbstractNodeCommand(help = """
     private val preemption by option("-n", "--preemption", help = "Update the configuration at a height this many blocks into the future")
             .int().default(2)
             .validate { require(it > 1) { "Must be more than one block in the future" } }
+    val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
         val storage = StorageBuilder.buildStorage(nodeConfig, false)
@@ -32,12 +33,13 @@ class UpdateCommand : AbstractNodeCommand(help = """
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
                 //TODO move to postchain
-                val usedRids = BlockchainApi.listConfigurations(eContext).map { BlockchainApi.getConfiguration(eContext, it)!! }
-                        .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
-                val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
+                val previousBlockchainRids = BlockchainApi.listConfigurations(eContext)
+                        .map { BlockchainApi.getConfiguration(eContext, it)!! }
+                        .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), cryptoSystem) }
+                val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, cryptoSystem)
                 val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
                 if (lastHeight < 0) throw PrintMessage("Blockchain must be initialized before you can update it")
-                if (usedRids.contains(newRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot update")
+                if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot update")
                 BlockchainApi.addConfiguration(eContext, lastHeight + preemption, override = true, gtvWithSigners, allowUnknownSigners = true)
                 echo("Configuration added at height ${lastHeight + preemption}")
             }
