@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.util.wipeDatabaseOption
 import com.chromia.cli.util.withSigner
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import mu.withLoggingContext
@@ -52,10 +53,22 @@ class StartCommand : AbstractNodeCommand(help = """
                         BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     }
                     //TODO move to postchain
-                    val usedRids = BlockchainApi.listConfigurations(eContext).map { BlockchainApi.getConfiguration(eContext, it)!! }
+                    val configurationIndexes = BlockchainApi.listConfigurations(eContext)
+                    val usedRids = configurationIndexes.map { BlockchainApi.getConfiguration(eContext, it)!! }
                             .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), Secp256K1CryptoSystem()) }
                     val newRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, Secp256K1CryptoSystem())
                     val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
+                    val lastConfig = BlockchainApi.getConfiguration(eContext, configurationIndexes.max())!!
+                    val lastConfigRid = lastConfig.let { GtvDecoder.decodeGtv(it) }.let {
+                        GtvToBlockchainRidFactory.calculateBlockchainRid(
+                                it,
+                                Secp256K1CryptoSystem()
+                        )
+                    }
+
+                    if (lastHeight >= 0 && usedRids.contains(newRid) && lastConfigRid != newRid) {
+                        throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
+                    }
                     if (lastHeight >= 0 && !usedRids.contains(newRid)) {
                         BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
