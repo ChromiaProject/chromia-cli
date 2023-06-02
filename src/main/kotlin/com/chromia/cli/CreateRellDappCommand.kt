@@ -35,7 +35,10 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Ge
             }
         }
         File(baseDir, "config.yml").writeText(
-                this::class.java.getResource("init/config.yml")!!.readText().replace("hello", name).replace("RELL_VERSION", RellVersion)
+                this::class.java.getResource("init/config.yml")!!.readText()
+                        .replace("hello", name)
+                        .replace("RELL_VERSION", RellVersion)
+                        .replace("RELL_SCHEMA", "schema_$name")
         )
         val sourceDir = File(baseDir, "src")
         sourceDir.mkdir()
