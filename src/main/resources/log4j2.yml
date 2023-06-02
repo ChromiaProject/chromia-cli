@@ -10,14 +10,27 @@ Appenders:
    PatternLayout:
      pattern: ${logpattern}
 
+ RollingFile:
+   name: LogToRollingFile
+   fileName: ${sys:CHR_LOG_FOLDER:-logs}/chromia-cli.log
+   filePattern: "${sys:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
+   PatternLayout:
+     pattern: ${logpattern}
+   Policies:
+     SizeBasedTriggeringPolicy:
+       size: 10MB
+   DefaultRollOverStrategy:
+     max: 10
+
 Loggers:
   Root:
     level: ${sys:CHR_LOG_LEVEL:-warn}
     AppenderRef:
-      - ref: ConsoleAppender
+      - ref: LogToRollingFile
   Logger:
     - name: net.postchain
       level: ${sys:CHR_LOG_LEVEL:-info}
       additivity: false
       AppenderRef:
         - ref: ConsoleAppender
+        - ref: LogToRollingFile
