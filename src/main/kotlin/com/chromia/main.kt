@@ -16,6 +16,7 @@ import kotlin.system.exitProcess
 
 class Launcher : NoOpCliktCommand(name = "chr") {
     private val logger = KotlinLogging.logger {}
+
     init {
         completionOption()
         versionOption("""
