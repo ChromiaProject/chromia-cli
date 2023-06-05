@@ -10,5 +10,5 @@ import java.io.File
 fun parseModel(src: File) = try {
    GtvYaml().loadAnchor<ChromiaCliModel>(src)
 } catch (e: JsonMappingException) {
-    throw PrintMessage(e.message ?: "Failed to parse json ${e.stackTrace}")
+    throw RuntimeException("Failed to parse json", e)
 }

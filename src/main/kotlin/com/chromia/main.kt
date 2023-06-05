@@ -14,8 +14,9 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import kotlin.system.exitProcess
 
+private val logger = KotlinLogging.logger {}
+
 class Launcher : NoOpCliktCommand(name = "chr") {
-    private val logger = KotlinLogging.logger {}
 
     init {
         completionOption()
