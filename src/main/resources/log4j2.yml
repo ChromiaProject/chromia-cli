@@ -34,3 +34,4 @@ Loggers:
       AppenderRef:
         - ref: ConsoleAppender
         - ref: LogToRollingFile
+          level: warn
