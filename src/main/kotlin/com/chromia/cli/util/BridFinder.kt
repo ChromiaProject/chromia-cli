@@ -18,7 +18,7 @@ class BridFinder(private val httpHandler: HttpHandler, private val url: String) 
             val response = httpHandler(request)
             return BlockchainRid.buildFromHex(response.body.toString())
         } catch (e: ConnectException) {
-            throw PrintMessage("Could not auto-detect brid from $url")
+            throw RuntimeException("Could not auto-detect brid from $url", e)
         }
     }
 }
