@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.cli.interfaces
 
 import java.io.File
 

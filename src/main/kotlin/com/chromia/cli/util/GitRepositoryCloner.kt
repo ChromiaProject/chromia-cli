@@ -1,5 +1,6 @@
 package com.chromia.cli.util
 
+import com.chromia.cli.interfaces.RepositoryCloner
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.TextProgressMonitor
 import java.io.File

@@ -2,7 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.exception.LibraryMisMatchException
 import com.chromia.cli.util.GitRepositoryCloner
-import com.chromia.cli.util.RepositoryCloner
+import com.chromia.cli.interfaces.RepositoryCloner
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context

@@ -1,5 +1,8 @@
 package com.chromia.cli
 
+import com.chromia.cli.exception.RellDeployVersionException
+import com.chromia.cli.interfaces.RellVersionControllerInterface
+import com.chromia.cli.util.RellVersionController
 import com.chromia.cli.util.withSigner
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
@@ -14,7 +17,9 @@ import net.postchain.core.EContext
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvDecoder
 
-class UpdateCommand : AbstractNodeCommand(help = """
+class UpdateCommand(
+        private val rellVersionController: () -> RellVersionControllerInterface = { RellVersionController() }
+) : AbstractNodeCommand(help = """
     Updates a running test node
     
     Will add a configuration to a block height 5 higher that current height for the running blockchain. 
@@ -28,6 +33,13 @@ class UpdateCommand : AbstractNodeCommand(help = """
 
     override fun run() {
         val storage = StorageBuilder.buildStorage(nodeConfig, false)
+
+        val targetVersion = rellVersionController().getTargetVersion(settings)
+        if (targetVersion != settings.compile.rellVersion) {
+            throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
+
+        }
+
 
         extractConfigs().toList().forEachIndexed { index, (_, _, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)

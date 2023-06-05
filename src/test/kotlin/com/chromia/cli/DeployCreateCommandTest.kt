@@ -3,7 +3,9 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.TestConsole
+import com.chromia.cli.util.TestRellVersionController
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -46,8 +48,37 @@ class DeployCreateCommandTest {
         }
         val testConsole = TestConsole()
         val throwable = assertThrows<CliktError> {
-            DeployCreateCommand(mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployCreateCommand({ TestRellVersionController() }, mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
+    }
+
+    @Test
+    fun cannotDeployNotMatchingRellVersion(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+            """.trimIndent())
+        }
+        val settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  wrongConfig: 
+                    module: main
+                deployments:
+                  test:
+                    url: "localhost:7740"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000001"
+                compile:
+                    rellVersion: 0.11.0
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        val throwable = assertThrows<PrintMessage> {
+            DeployCreateCommand({ TestRellVersionController() }, mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+        }
+        assertThat(throwable.message!!).contains("The local compile version 0.11.0 does not match the network version NO MATCH VERSION you are deploying towards.\n" +
+                "The deployment is aborted.")
     }
 }

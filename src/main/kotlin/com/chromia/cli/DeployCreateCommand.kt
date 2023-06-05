@@ -2,13 +2,15 @@ package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.cli.exception.RellDeployVersionException
+import com.chromia.cli.interfaces.RellVersionControllerInterface
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
+import com.chromia.cli.util.RellVersionController
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
@@ -16,10 +18,16 @@ import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
 
 class DeployCreateCommand(
+        private val rellVersionController: () -> RellVersionControllerInterface = { RellVersionController() },
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+        val targetVersion = rellVersionController().getTargetVersion(settings)
+        if (targetVersion != settings.compile.rellVersion) {
+            throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
+        }
+
         deployedChains.forEach { (name, _, _) ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             confirm(
