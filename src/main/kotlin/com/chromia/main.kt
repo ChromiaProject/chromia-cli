@@ -43,8 +43,7 @@ class Launcher : NoOpCliktCommand(name = "chr") {
     override fun aliases() = createAliases()
 
     private fun translateExceptionToMessage(exception: Exception): String {
-        val prefix = "Oops! Something went wrong."
-        val humanFriedlyMessage = when (exception) {
+        val humanFriendlyMessage = when (exception) {
             is NullPointerException -> "A null value was encountered."
             is ArrayIndexOutOfBoundsException -> "The index provided is out of bounds."
             is IllegalArgumentException -> "An invalid argument was passed."
@@ -56,7 +55,7 @@ class Launcher : NoOpCliktCommand(name = "chr") {
         }
         val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "logs"
         val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
-        return "$prefix $humanFriedlyMessage ${formatExceptionMessage(exception)}$suffix"
+        return "$humanFriendlyMessage ${formatExceptionMessage(exception)}$suffix"
     }
 
     private fun formatExceptionMessage(exception: Exception): String {
