@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isNotNull
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.withReadConnection
@@ -78,5 +79,62 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
             }
         }
         assertThrows<CliktError> { UpdateCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml", "-n", "1")) }
+    }
+
+    @Test
+    fun `Start and update a dapp then revert`(@TempDir dir: Path) {
+        // TODO: Add signer and schema dynamically
+        with(File(dir.toFile(), "config.yml")) {
+            writeText("""
+                blockchains:
+                  a:
+                    module: main
+                    config:
+                      signers:
+                        - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+                      blockstrategy:
+                        name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+                    
+                database:
+                  schema: updatecommandtest0_0
+            """.trimIndent())
+        }
+
+        //Create original file
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello() = "Hello";
+            """.trimIndent())
+        }
+        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
+        createTestNode("${dir.absolutePathString()}/build/a.xml")
+        nodes.forEach { it.buildBlocksUpTo(0, 0) }
+        //Update the file and send update command
+        with(File(dir.toFile(), "src/main.rell")) {
+            writeText("""
+                module;
+                query hello() = "Hello";
+                query new_hello() = "Hi";
+            """.trimIndent())
+        }
+        val testConsole = TestConsole()
+        UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
+        testConsole.assertContains("Configuration added at height 2")
+        nodes.forEach {
+            withReadConnection(it.postchainContext.storage, 0) { ctx ->
+                assertThat(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
+            }
+        }
+
+        //revert file to original code
+        with(File(dir.toFile(), "src/main.rell")) {
+            writeText("""
+                module;
+                query hello() = "Hello";
+            """.trimIndent())
+        }
+        assertThrows<PrintMessage> { UpdateCommand().parse(listOf("-s", "${dir.absolutePathString()}/config.yml")) }
     }
 }

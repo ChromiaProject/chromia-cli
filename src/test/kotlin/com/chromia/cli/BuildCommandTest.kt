@@ -10,7 +10,7 @@ import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
-import net.postchain.rell.utils.PostchainUtils
+import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -149,7 +149,7 @@ internal class BuildCommandTest {
         command.parse()
         val outputFile = File(dir, "build/hello.xml")
         assertTrue(outputFile.exists())
-        val outputGtv = PostchainUtils.xmlToGtv(outputFile.readText())
+        val outputGtv = GtvMLParser.parseGtvML(outputFile.readText())
         assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsAll(
                 "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
                 "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule",

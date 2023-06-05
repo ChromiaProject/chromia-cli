@@ -2,13 +2,17 @@ package com.chromia.cli
 
 import com.chromia.cli.util.wipeDatabaseOption
 import com.chromia.cli.util.withSigner
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.api.internal.BlockchainApi
+import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.base.withReadWriteConnection
 import net.postchain.core.EContext
+import net.postchain.crypto.Secp256K1CryptoSystem
+import net.postchain.gtv.GtvDecoder
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
@@ -20,6 +24,7 @@ class StartCommand : AbstractNodeCommand(help = """
     Use --wipe to wipe the database schema upon startup and thus enforce starting the chain from height=0.
 """.trimIndent()) {
     private val wipe by wipeDatabaseOption()
+    val cryptoSystem = Secp256K1CryptoSystem()
 
 
     init {
@@ -44,10 +49,23 @@ class StartCommand : AbstractNodeCommand(help = """
                     BLOCKCHAIN_RID_TAG to brid.toHex()
             ) {
                 withReadWriteConnection(node.postchainContext.storage, iid) { eContext: EContext ->
-                    BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
+                    if (BlockchainApi.findBlockchain(eContext) == null) {
+                        BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
+                    }
+
                     val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
                     if (lastHeight >= 0) {
-                        BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
+                        //TODO move to postchain
+                        val previousBlockchainRids = BlockchainApi.listConfigurations(eContext)
+                                .map { BlockchainApi.getConfiguration(eContext, it)!! }
+                                .map { GtvToBlockchainRidFactory.calculateBlockchainRid(GtvDecoder.decodeGtv(it), cryptoSystem) }
+                                .toMutableList()
+
+                        val lastBlockchainRid = previousBlockchainRids.removeAt(previousBlockchainRids.lastIndex)
+                        val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, cryptoSystem)
+
+                        if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
+                        if (blockchainRid != lastBlockchainRid) BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
                 }
             }
