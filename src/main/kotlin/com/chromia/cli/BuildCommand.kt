@@ -18,8 +18,8 @@ import com.github.ajalt.clikt.output.CliktHelpFormatter
 import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 import java.nio.file.Files
+import java.util.stream.Collectors
 import kotlin.io.path.exists
-import kotlin.streams.toList
 
 
 class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
@@ -47,7 +47,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
                 run {
                     val libraryLocation = target.toPath().resolve("libs").resolve(name)
                     if (libraryLocation.exists()) {
-                        val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
+                        val files = Files.walk(libraryLocation).map { it.toFile() }.collect(Collectors.toList())
                         val (isValid, rid) = rellLibrary.isValid(files)
                         if (!isValid) {
                             throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)

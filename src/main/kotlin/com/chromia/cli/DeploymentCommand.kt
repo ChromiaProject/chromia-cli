@@ -64,6 +64,11 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     private fun createClient(): PostchainClient {
+        return createClientConfig()
+                .let { clientProvider.createClient(it) }
+    }
+
+    protected fun createClientConfig(): PostchainClientConfig {
         return BaseConfiguration().apply {
             setProperty("api.url", deployModel.urls.joinToString(","))
             setProperty("brid", deployModel.blockchainRid.toHex())
@@ -77,7 +82,6 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
             }
         }
                 .let { PostchainClientConfig.fromConfiguration(it) }
-                .let { clientProvider.createClient(it) }
     }
 
     final override fun run() {

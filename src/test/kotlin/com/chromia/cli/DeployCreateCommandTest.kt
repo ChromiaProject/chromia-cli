@@ -2,20 +2,27 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.exception.RellDeployVersionException
+import com.chromia.cli.model.parseModel
+import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole
-import com.chromia.cli.util.TestRellVersionController
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
+import org.http4k.core.HttpHandler
+import org.http4k.core.Response
+import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.file.Path
 
 
 class DeployCreateCommandTest {
+    private val httpHandler = mock<HttpHandler>()
 
     @Test
     fun cannotDeployFaultyConfig(@TempDir dir: Path) {
@@ -26,7 +33,7 @@ class DeployCreateCommandTest {
                 struct module_args { name; } 
             """.trimIndent())
         }
-        val settings = File(dir.toFile(), "config.yml").apply {
+        val settingsFile = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 blockchains:
                   wrongConfig: 
@@ -47,8 +54,10 @@ class DeployCreateCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
+        val settings = Settings(settingsFile, parseModel(settingsFile))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<CliktError> {
-            DeployCreateCommand({ TestRellVersionController() }, mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -61,24 +70,32 @@ class DeployCreateCommandTest {
                 module;
             """.trimIndent())
         }
-        val settings = File(dir.toFile(), "config.yml").apply {
+        val settingsFile = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 blockchains:
-                  wrongConfig: 
+                  main:
                     module: main
                 deployments:
                   test:
-                    url: "localhost:7740"
+                    url: "http://foo.com"
                     brid: x"0000000000000000000000000000000000000000000000000000000000000001"
+                    container: foo
                 compile:
                     rellVersion: 0.11.0
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        val throwable = assertThrows<PrintMessage> {
-            DeployCreateCommand({ TestRellVersionController() }, mock()).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+        val secretFile = File(dir.toFile(), ".secret").apply {
+            writeText("""
+                pubkey = 12
+                privkey = 00
+            """.trimIndent())
         }
-        assertThat(throwable.message!!).contains("The local compile version 0.11.0 does not match the network version NO MATCH VERSION you are deploying towards.\n" +
+        val testConsole = TestConsole()
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.12.0"))
+        val throwable = assertThrows<RellDeployVersionException> {
+            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "main", "--network", "test", "--secret", secretFile.absolutePath))
+        }
+        assertThat(throwable.message!!).contains("The local compile version 0.11.0 does not match the network version 0.12.0 you are deploying towards.\n" +
                 "The deployment is aborted.")
     }
 }

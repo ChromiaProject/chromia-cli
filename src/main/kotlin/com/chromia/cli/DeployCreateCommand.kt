@@ -3,7 +3,6 @@ package com.chromia.cli
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.exception.RellDeployVersionException
-import com.chromia.cli.interfaces.RellVersionControllerInterface
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.RellVersionController
@@ -14,16 +13,21 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
+import org.http4k.core.HttpHandler
 
 class DeployCreateCommand(
-        private val rellVersionController: () -> RellVersionControllerInterface = { RellVersionController() },
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { DeployInfoCommand.httpHandlerFactory(it) },
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
-        val targetVersion = rellVersionController().getTargetVersion(settings)
+        val httpClient = httpHandlerFactory(createClientConfig())
+        val rellVersionController = RellVersionController(httpClient)
+        val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
+
         if (targetVersion != settings.compile.rellVersion) {
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
