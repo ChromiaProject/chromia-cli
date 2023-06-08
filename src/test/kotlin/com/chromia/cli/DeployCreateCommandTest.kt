@@ -81,7 +81,7 @@ class DeployCreateCommandTest {
                     brid: x"0000000000000000000000000000000000000000000000000000000000000001"
                     container: foo
                 compile:
-                    rellVersion: 0.11.0
+                    rellVersion: 0.12.0
             """.trimIndent())
         }
         val secretFile = File(dir.toFile(), ".secret").apply {
@@ -91,11 +91,11 @@ class DeployCreateCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.12.0"))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.11.0"))
         val throwable = assertThrows<RellDeployVersionException> {
             DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "main", "--network", "test", "--secret", secretFile.absolutePath))
         }
-        assertThat(throwable.message!!).contains("The local compile version 0.11.0 does not match the network version 0.12.0 you are deploying towards.\n" +
+        assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")
     }
 }

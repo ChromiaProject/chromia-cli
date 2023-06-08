@@ -3,7 +3,7 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
-import com.chromia.cli.exception.LibraryMisMatchException
+import com.chromia.cli.exception.LibraryMismatchException
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
@@ -121,7 +121,7 @@ internal class BuildCommandTest {
                   rid: x"11" 
         """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
-        val e = assertFailsWith<LibraryMisMatchException> { command.parse() }
+        val e = assertFailsWith<LibraryMismatchException> { command.parse() }
         assertThat(e.message!!).contains("The rid for library bar does not match the configured value.\n" +
                 "Should be: 11\n" +
                 "Was: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5\n" +

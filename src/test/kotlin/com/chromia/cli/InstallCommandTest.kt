@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.exception.LibraryMisMatchException
+import com.chromia.cli.exception.LibraryMismatchException
 import com.chromia.cli.exception.LibraryNonSafeFiles
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
@@ -28,7 +28,7 @@ class InstallCommandTest {
 
     @Test
     fun ridNotMatchingTest(@TempDir dir: Path) {
-        val exception = assertFailsWith<LibraryMisMatchException> {
+        val exception = assertFailsWith<LibraryMismatchException> {
             settings = File(dir.toFile(), "config.yml").apply {
                 writeText("""
                 blockchains:

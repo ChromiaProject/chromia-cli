@@ -16,6 +16,7 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
+import net.postchain.rell.base.model.R_LangVersion
 import org.http4k.core.HttpHandler
 
 class DeployCreateCommand(
@@ -28,7 +29,7 @@ class DeployCreateCommand(
         val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
 
-        if (targetVersion != settings.compile.rellVersion) {
+        if (R_LangVersion.of(targetVersion) < R_LangVersion.of(settings.compile.rellVersion)) {
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
 
