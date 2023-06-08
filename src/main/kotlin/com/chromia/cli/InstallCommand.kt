@@ -1,8 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.exception.LibraryMisMatchException
-import com.chromia.cli.util.GitRepositoryCloner
-import com.chromia.cli.util.RepositoryCloner
+import com.chromia.cli.lib.LibraryMismatchException
+import com.chromia.cli.lib.GitRepositoryCloner
+import com.chromia.cli.lib.RepositoryCloner
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
@@ -44,7 +44,7 @@ class InstallCommand(
 
                 if (!isValid) {
                     cleanUpFiles(tempDir)
-                    throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
+                    throw LibraryMismatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
                 }
 
                 copyDir(files, tempDir.resolve(rellLibrary.path), libraryTarget)

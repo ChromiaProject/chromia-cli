@@ -1,9 +1,9 @@
 package com.chromia.cli
 
-import com.chromia.cli.exception.LibraryNonSafeFiles
+import com.chromia.cli.lib.LibraryMismatchException
+import com.chromia.cli.lib.LibraryNonSafeFilesException
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -28,7 +28,7 @@ class InstallCommandTest {
 
     @Test
     fun ridNotMatchingTest(@TempDir dir: Path) {
-        val exception = assertFailsWith<CliktError> {
+        val exception = assertFailsWith<LibraryMismatchException> {
             settings = File(dir.toFile(), "config.yml").apply {
                 writeText("""
                 blockchains:
@@ -195,7 +195,7 @@ class InstallCommandTest {
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
             """.trimIndent())
         }
-        val exception = assertFailsWith<LibraryNonSafeFiles> {
+        val exception = assertFailsWith<LibraryNonSafeFilesException> {
             InstallCommand { TestRepositoryCloner() }
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))

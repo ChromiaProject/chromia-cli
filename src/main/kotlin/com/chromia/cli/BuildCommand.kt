@@ -3,7 +3,7 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
-import com.chromia.cli.exception.LibraryMisMatchException
+import com.chromia.cli.lib.LibraryMismatchException
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel
@@ -50,7 +50,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
                         val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
                         val (isValid, rid) = rellLibrary.isValid(files)
                         if (!isValid) {
-                            throw LibraryMisMatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
+                            throw LibraryMismatchException(rellLibrary.rid?.toHex() ?: "", rid?.toHex() ?: "", name)
                         }
                     } else {
                         throw PrintMessage("Library $name is not installed, install before building")

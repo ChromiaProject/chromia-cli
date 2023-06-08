@@ -2,24 +2,37 @@ package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
+import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
+import net.postchain.rell.base.model.R_LangVersion
+import org.http4k.core.HttpHandler
 
 class DeployCreateCommand(
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { DeployInfoCommand.httpHandlerFactory(it) },
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+        val httpClient = httpHandlerFactory(createClientConfig())
+        val rellVersionController = Http4kRellVersionFinder(httpClient)
+        val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
+
+        if (targetVersion < settings.compile.langVersion) {
+            throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
+        }
+
         deployedChains.forEach { (name, _, _) ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             confirm(

@@ -1,5 +1,6 @@
 package com.chromia.cli.util
 
+import com.chromia.cli.lib.RepositoryCloner
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import java.io.File
 

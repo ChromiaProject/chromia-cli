@@ -1,6 +1,6 @@
 package com.chromia.cli.model
 
-import com.chromia.cli.exception.LibraryNonSafeFiles
+import com.chromia.cli.lib.LibraryNonSafeFilesException
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory.gtv
@@ -23,7 +23,7 @@ data class RellLibraryModel(
 
         //TODO show which file might be malicious
         if (libraryFiles.any { !it.isDirectory && it.extension != "rell" }) {
-            throw LibraryNonSafeFiles(path)
+            throw LibraryNonSafeFilesException(path)
         }
 
         val calculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())

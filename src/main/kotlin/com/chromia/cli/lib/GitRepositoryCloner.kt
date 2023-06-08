@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.cli.lib
 
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.lib.TextProgressMonitor

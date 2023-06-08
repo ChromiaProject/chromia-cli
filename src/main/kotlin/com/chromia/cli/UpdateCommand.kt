@@ -14,7 +14,8 @@ import net.postchain.core.EContext
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvDecoder
 
-class UpdateCommand : AbstractNodeCommand(help = """
+class UpdateCommand(
+) : AbstractNodeCommand(help = """
     Updates a running test node
     
     Will add a configuration to a block height 5 higher that current height for the running blockchain. 
