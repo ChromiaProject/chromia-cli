@@ -5,6 +5,7 @@ import assertk.assertions.contains
 import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
+import net.postchain.rell.base.model.R_LangVersion
 import org.http4k.core.HttpHandler
 import org.http4k.core.Response
 import org.http4k.core.Status
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import kotlin.test.assertEquals
 
 class RellVersionControllerTest {
 
@@ -22,7 +24,7 @@ class RellVersionControllerTest {
     fun getTargetVersion200Status() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.12.0"))
         val res = Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32)))
-        assertThat(res).contains("0.12.0")
+        assertEquals(res, R_LangVersion.of("0.12.0"))
     }
 
     @Test

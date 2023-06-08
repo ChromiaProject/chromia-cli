@@ -29,7 +29,7 @@ class DeployCreateCommand(
         val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
 
-        if (R_LangVersion.of(targetVersion) < R_LangVersion.of(settings.compile.rellVersion)) {
+        if (targetVersion < settings.compile.langVersion) {
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
 
