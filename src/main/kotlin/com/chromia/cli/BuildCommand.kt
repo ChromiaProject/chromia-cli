@@ -3,7 +3,7 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
-import com.chromia.cli.exception.LibraryMismatchException
+import com.chromia.cli.lib.LibraryMismatchException
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel

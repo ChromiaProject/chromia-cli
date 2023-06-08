@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import org.http4k.core.HttpHandler

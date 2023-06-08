@@ -2,7 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.exception.RellDeployVersionException
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole

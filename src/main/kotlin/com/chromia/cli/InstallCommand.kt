@@ -1,8 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.exception.LibraryMismatchException
-import com.chromia.cli.util.GitRepositoryCloner
-import com.chromia.cli.interfaces.RepositoryCloner
+import com.chromia.cli.lib.LibraryMismatchException
+import com.chromia.cli.lib.GitRepositoryCloner
+import com.chromia.cli.lib.RepositoryCloner
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context

@@ -2,10 +2,10 @@ package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigHolder
-import com.chromia.cli.exception.RellDeployVersionException
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.util.Http4kRellVersionFinder
+import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage

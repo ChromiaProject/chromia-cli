@@ -1,6 +1,5 @@
-package com.chromia.cli.util
+package com.chromia.cli.versionfinder
 
-import com.chromia.cli.interfaces.RellVersionFinderInterface
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import org.http4k.core.ContentType

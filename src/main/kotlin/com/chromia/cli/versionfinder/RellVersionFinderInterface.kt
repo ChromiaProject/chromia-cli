@@ -1,4 +1,4 @@
-package com.chromia.cli.interfaces
+package com.chromia.cli.versionfinder
 
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid

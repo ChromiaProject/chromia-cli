@@ -1,4 +1,4 @@
-package com.chromia.cli.exception
+package com.chromia.cli.versionfinder
 
 class RellDeployVersionException(compileVersion: String, targetVersion: String) :
         RuntimeException("The local compile version $compileVersion is not supported on the target network. Maximum version allowed is $targetVersion.\n" +
