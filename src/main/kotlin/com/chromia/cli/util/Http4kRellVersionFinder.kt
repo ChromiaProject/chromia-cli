@@ -1,6 +1,6 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.interfaces.RellVersionControllerInterface
+import com.chromia.cli.interfaces.RellVersionFinderInterface
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import org.http4k.core.ContentType
@@ -9,7 +9,7 @@ import org.http4k.core.Method
 import org.http4k.core.Request
 import org.http4k.core.Status
 
-class RellVersionController(private val httpHandler: HttpHandler) : RellVersionControllerInterface {
+class Http4kRellVersionFinder(private val httpHandler: HttpHandler) : RellVersionFinderInterface {
 
     override fun getTargetVersion(endpoint: Endpoint, brid: BlockchainRid): String {
         val request = Request(Method.GET, "${endpoint.url.trimEnd().replace(Regex("/$"), "")}/query/${brid.toHex()}?type=rell.get_rell_version")

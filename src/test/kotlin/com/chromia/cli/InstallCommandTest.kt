@@ -4,7 +4,6 @@ import com.chromia.cli.exception.LibraryMisMatchException
 import com.chromia.cli.exception.LibraryNonSafeFiles
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach

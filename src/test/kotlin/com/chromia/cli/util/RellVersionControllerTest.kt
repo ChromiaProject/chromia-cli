@@ -20,21 +20,21 @@ class RellVersionControllerTest {
     @Test
     fun getTargetVersion200Status() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.12.0"))
-        val res = RellVersionController(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32)))
+        val res = Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32)))
         assertThat(res).contains("0.12.0")
     }
 
     @Test
     fun getTargetVersion404Status() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.NOT_FOUND, ""))
-        val res = assertThrows<RuntimeException> { RellVersionController(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
+        val res = assertThrows<RuntimeException> { Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
         assertThat(res).contains("Can not find blockchain with blockchainRID: 0000000000000000000000000000000000000000000000000000000000000000")
     }
 
     @Test
     fun getTargetVersion502Status() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.BAD_GATEWAY, ""))
-        val res = assertThrows<RuntimeException> { RellVersionController(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
+        val res = assertThrows<RuntimeException> { Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
         assertThat(res).contains("Unknown status 502 Bad Gateway for request foo/query/0000000000000000000000000000000000000000000000000000000000000000?type=rell.get_rell_version")
     }
 }

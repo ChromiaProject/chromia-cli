@@ -5,7 +5,7 @@ import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.exception.RellDeployVersionException
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.util.RellVersionController
+import com.chromia.cli.util.Http4kRellVersionFinder
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
@@ -25,7 +25,7 @@ class DeployCreateCommand(
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
         val httpClient = httpHandlerFactory(createClientConfig())
-        val rellVersionController = RellVersionController(httpClient)
+        val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
 
         if (targetVersion != settings.compile.rellVersion) {
