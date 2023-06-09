@@ -3,7 +3,7 @@ include:
     ref: 1.0.1
     file: templates/release.yml
 
-image: maven:3.8.4-jdk-11
+image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker:1.0.0
 
 .setup:
   artifacts:
@@ -16,14 +16,6 @@ image: maven:3.8.4-jdk-11
         - "*/target/failsafe-reports/TEST-*.xml"
     expire_in: 1 week
 
-.docker_setup: &docker_setup
-  - apt-get -q update && apt-get -q install -y docker.io
-  - mkdir -p $HOME/.docker/cli-plugins/
-  - wget --no-verbose -O $HOME/.docker/cli-plugins/docker-buildx $BUILDX_URL
-  - chmod a+x $HOME/.docker/cli-plugins/docker-buildx
-  - mkdir -p $TEST_MOUNT_DIRECTORY
-  - docker buildx create --use --name chromia-cli --platform linux/amd64,linux/arm64,linux/arm/v8
-
 stages:
   - build
   - deploy
@@ -35,11 +27,11 @@ build:
   interruptible: true
   except:
     refs:
-      - dev
       - tags
   script:
     - mvn
       $MAVEN_CLI_OPTS
+      --activate-profiles docker
       verify
 
 # Triggered by that a semver tag was pushed
@@ -51,7 +43,7 @@ deploy:
   script:
     - mvn
       $MAVEN_CLI_OPTS
-      --activate-profiles gitlab-registry
+      --activate-profiles docker,docker-push
       -Drevision=$CI_COMMIT_TAG
       deploy
 
@@ -64,8 +56,6 @@ variables:
   # `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true -s .gitlab-settings.xml"
   # Configure postgres service (https://hub.docker.com/_/postgres/)
-  BUILDX_URL: https://github.com/docker/buildx/releases/download/v0.3.1/buildx-v0.3.1.linux-amd64
-  TEST_MOUNT_DIRECTORY: /builds/$CI_PROJECT_PATH/mnt
   DOCKER_HOST: tcp://docker:2375
   POSTGRES_DB: postchain
   POSTGRES_USER: postchain
