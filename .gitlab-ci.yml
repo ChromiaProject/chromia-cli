@@ -3,7 +3,7 @@ include:
     ref: 1.0.1
     file: templates/release.yml
 
-image: maven:3.8.4-jdk-11
+image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker:1.0.0
 
 .setup:
   artifacts:
