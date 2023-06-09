@@ -35,7 +35,6 @@ build:
   interruptible: true
   except:
     refs:
-      - dev
       - tags
   script:
     - mvn
