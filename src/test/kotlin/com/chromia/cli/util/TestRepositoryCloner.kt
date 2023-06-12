@@ -5,7 +5,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException
 import java.io.File
 
 class TestRepositoryCloner : RepositoryCloner {
-    override fun clone(registry: String, target: File) {
+    override fun clone(registry: String, target: File, branch: String) {
         when (registry) {
             "http://bar.com" -> createFile(target, "lib/d.rell")
             "http://foo.com" -> {
