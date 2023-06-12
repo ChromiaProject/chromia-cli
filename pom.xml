@@ -24,6 +24,8 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <kotlin.code.style>obsolete</kotlin.code.style>
+        <project.build.outputTimestamp>10</project.build.outputTimestamp>
+
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
 
         <image.platforms>linux/amd64,linux/arm64</image.platforms>
@@ -176,6 +178,28 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.0.0</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <useNativeGit>true</useNativeGit> <!-- git worktree does not work with JGit implementation -->
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git\.commit\.time$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <dateFormatTimeZone>UTC</dateFormatTimeZone>
+                    <dateFormat>yyyy-MM-dd'T'HH:mm:ssX</dateFormat>
+                </configuration>
+            </plugin>
         </plugins>
 
         <pluginManagement>
@@ -193,6 +217,8 @@
                             <appRoot>/usr/share/chr</appRoot>
                             <workingDirectory>/usr/app</workingDirectory>
                             <mainClass>${main.class}</mainClass>
+                            <creationTime>${git.commit.time}</creationTime>
+                            <filesModificationTime>${git.commit.time}</filesModificationTime>
                         </container>
                         <containerizingMode>packaged</containerizingMode>
                     </configuration>
