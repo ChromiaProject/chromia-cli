@@ -74,7 +74,7 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
         testConsole.assertContains("Configuration added at height 2")
         nodes.forEach {
-            withReadConnection(it.postchainContext.storage, 0) { ctx ->
+            withReadConnection(it.postchainContext.sharedStorage, 0) { ctx ->
                 assertThat(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
             }
         }
@@ -123,7 +123,7 @@ internal class UpdateCommandTest : IntegrationTestSetup() {
         UpdateCommand().context { console = testConsole }.parse(listOf("-s", "${dir.absolutePathString()}/config.yml"))
         testConsole.assertContains("Configuration added at height 2")
         nodes.forEach {
-            withReadConnection(it.postchainContext.storage, 0) { ctx ->
+            withReadConnection(it.postchainContext.sharedStorage, 0) { ctx ->
                 assertThat(BlockchainApi.getConfiguration(ctx, 2)).isNotNull()
             }
         }
