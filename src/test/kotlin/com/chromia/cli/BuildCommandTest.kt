@@ -88,7 +88,7 @@ internal class BuildCommandTest {
                   path: lib
                   rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
         """.trimIndent())
-        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"), "")
         command.parse()
     }
 
@@ -120,7 +120,7 @@ internal class BuildCommandTest {
                   path: lib
                   rid: x"11" 
         """.trimIndent())
-        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"))
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("build/libs/bar"), "")
         val e = assertFailsWith<LibraryMismatchException> { command.parse() }
         assertThat(e.message!!).contains("The rid for library bar does not match the configured value.\n" +
                 "Should be: 11\n" +
