@@ -31,7 +31,7 @@ class InstallCommand(
                 val tempDir = Path(settings.target.absolutePath, ".lib").resolve(name)
 
                 //TODO make it so file name is persistent between clones
-                repositoryClonerFactory().clone(rellLibrary.registry, tempDir.toFile(), rellLibrary.branch)
+                repositoryClonerFactory().clone(rellLibrary.registry, tempDir.toFile(), rellLibrary.revision)
                 val files = readFiles(tempDir.resolve(rellLibrary.path))
                 if (!libraryTarget.toFile().exists()) {
                     libraryTarget.toFile().mkdirs()
