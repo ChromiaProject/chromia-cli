@@ -48,7 +48,7 @@ class StartCommand : AbstractNodeCommand(help = """
                     CHAIN_IID_TAG to iid.toString(),
                     BLOCKCHAIN_RID_TAG to brid.toHex()
             ) {
-                withReadWriteConnection(node.postchainContext.storage, iid) { eContext: EContext ->
+                withReadWriteConnection(node.postchainContext.sharedStorage, iid) { eContext: EContext ->
                     if (BlockchainApi.findBlockchain(eContext) == null) {
                         BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
                     }

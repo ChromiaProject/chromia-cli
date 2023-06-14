@@ -28,7 +28,7 @@ class UpdateCommand(
     val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
-        val storage = StorageBuilder.buildStorage(nodeConfig, false)
+        val storage = StorageBuilder.buildStorage(nodeConfig, wipeDatabase = false)
 
         extractConfigs().toList().forEachIndexed { index, (_, _, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
