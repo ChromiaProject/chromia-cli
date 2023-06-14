@@ -11,7 +11,7 @@ import java.io.File
 
 data class RellLibraryModel(
         val registry: String,
-        val revision: String? = null,
+        val tagOrBranch: String? = null,
         val path: String,
         val insecure: Boolean = false,
         val rid: WrappedByteArray?,
