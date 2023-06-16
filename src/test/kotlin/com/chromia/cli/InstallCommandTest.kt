@@ -1,9 +1,11 @@
 package com.chromia.cli
 
+import com.chromia.cli.lib.InstallDirTarget
 import com.chromia.cli.lib.LibraryMismatchException
 import com.chromia.cli.lib.LibraryNonSafeFilesException
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
+import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -13,11 +15,12 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 
 class InstallCommandTest {
     lateinit var settings: File
-    val path = "src/lib"
+    val path = "src/${InstallDirTarget.SOURCE.target}"
 
     lateinit var testConsole: TestConsole
 
@@ -48,8 +51,32 @@ class InstallCommandTest {
         }
         assertEquals("The rid for library foo does not match the configured value.\n" +
                 "Should be: 11\n" +
-                "Was: 1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5\n" +
+                "Was: CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA\n" +
                 "Do not blindly copy the calculated rid as it might be tampered with.", exception.message)
+    }
+
+    @Test
+    fun insecureTrueRidNotMatchingTest(@TempDir dir: Path) {
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    bar:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"11"
+                      insecure: true
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath))
+
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
     }
 
     @Test
@@ -64,7 +91,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"  
             """.trimIndent())
         }
 
@@ -91,7 +118,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"  
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"  
             """.trimIndent())
         }
 
@@ -128,6 +155,7 @@ class InstallCommandTest {
         Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
     }
 
+
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
 
@@ -140,7 +168,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
                     bar:
                       registry: http://bar.com
                       path: lib
@@ -156,6 +184,92 @@ class InstallCommandTest {
         Assertions.assertTrue(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
         Assertions.assertFalse(File(dir.toFile(), "$path/foo/not/include/c.rell").exists())
+    }
+
+    @Test
+    fun missingSpecificLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      path: lib
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+            """.trimIndent())
+        }
+
+        assertFailsWith<BadParameterValue> {
+            InstallCommand { TestRepositoryCloner() }
+                    .context { console = testConsole }
+                    .parse(listOf("-s", settings.absolutePath, "-lib", "bar2"))
+        }
+    }
+
+    @Test
+    fun specificLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      path: lib
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+                    bar:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath, "-lib", "bar"))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
+    }
+
+    @Test
+    fun multipleSpecificLibraryTest(@TempDir dir: Path) {
+
+        settings = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      path: lib
+                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+                    bar:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                    bar2:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
+            """.trimIndent())
+        }
+
+        InstallCommand { TestRepositoryCloner() }
+                .context { console = testConsole }
+                .parse(listOf("-s", settings.absolutePath, "-lib", "bar", "-lib", "bar2"))
+        Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar/d.rell").exists())
+        Assertions.assertTrue(File(dir.toFile(), "$path/bar2/d.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/a.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/foo/nested/b.rell").exists())
     }
 
     @Test
@@ -200,8 +314,9 @@ class InstallCommandTest {
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))
         }
-        assertEquals("The library lib contains files that has non rell type files. Can not verify integrity", exception.message)
+        assertTrue(exception.message!!.contains("The library lib contains files that has non rell type files. Can not verify integrity.\nAffected files are:\n"))
+        assertTrue(exception.message!!.contains("/build/.lib/foo/lib/a.yml"))
+        assertTrue(exception.message!!.contains("/build/.lib/foo/lib/nested/b.yml"))
     }
-
 
 }

@@ -1,5 +1,6 @@
 package com.chromia.cli.model
 
+import com.chromia.cli.lib.LibraryMismatchException
 import com.chromia.cli.lib.LibraryNonSafeFilesException
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
@@ -16,15 +17,14 @@ data class RellLibraryModel(
         val insecure: Boolean = false,
         val rid: WrappedByteArray?,
 ) {
-    fun isValid(libraryFiles: List<File>): Pair<Boolean, WrappedByteArray?> {
+    fun verify(libraryFiles: List<File>, name: String) {
 
         if (insecure) {
-            return true to null
+            return
         }
-
-        //TODO show which file might be malicious
+        
         if (libraryFiles.any { !it.isDirectory && it.extension != "rell" }) {
-            throw LibraryNonSafeFilesException(path)
+            throw LibraryNonSafeFilesException(path, libraryFiles.filter { !it.isDirectory && it.extension != "rell" })
         }
 
         val calculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
@@ -33,6 +33,9 @@ data class RellLibraryModel(
         )
 
         val calcRid = WrappedByteArray(srcGtv.merkleHash(calculator))
-        return (calcRid == this.rid) to calcRid
+
+        if (calcRid != this.rid) {
+            throw LibraryMismatchException(rid?.toHex() ?: "", calcRid.toHex(), name)
+        }
     }
 }

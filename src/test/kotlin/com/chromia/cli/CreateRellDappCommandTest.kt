@@ -20,6 +20,5 @@ internal class CreateRellDappCommandTest {
         assertTrue(File(dir, "src/main.rell").exists())
         BuildCommand().parse(listOf("-s", configYmlFile.absolutePath))
         assertTrue(File(dir, "build/hello.xml").exists())
-        // TestCommand().parse(listOf("-s", File(dir, "config.yml").absolutePath)) TODO: Configure db url on gitlab/local env
     }
 }

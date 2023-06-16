@@ -24,6 +24,7 @@ fun CliktCommand.nodePropertiesOption() =
 fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Specify which deployment target to use")
 fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
         option("--blockchain", "-bc", help = help, metavar = metavar)
+
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
@@ -71,3 +72,5 @@ fun CliktCommand.modulesOption(help: String = "Select which modules to test, wil
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
+
+fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
