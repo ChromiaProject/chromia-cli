@@ -66,6 +66,6 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
                     if (nop) addNop()
                     if (awaitConfirmation) postAwaitConfirmation() else post()
                 }
-        println("transaction with rid ${res.txRid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
+        echo("transaction with rid ${res.txRid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
     }
 }
