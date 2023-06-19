@@ -45,7 +45,7 @@ class RellLibraryModelTest {
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
+            it.value.verify(fileMap[it.key]!!, it.key)
         }
     }
 
@@ -100,7 +100,7 @@ class RellLibraryModelTest {
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
+            it.value.verify(fileMap[it.key]!!, it.key)
         }
     }
 
@@ -124,7 +124,7 @@ class RellLibraryModelTest {
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
         settings.libs.forEach {
-            Assertions.assertTrue(it.value.isValid(fileMap[it.key]!!).first)
+            it.value.verify(fileMap[it.key]!!, it.key)
         }
     }
 }

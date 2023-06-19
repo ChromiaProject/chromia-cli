@@ -1,4 +1,8 @@
 package com.chromia.cli.lib
 
-class LibraryNonSafeFilesException(lib: String) :
-        RuntimeException("The library $lib contains files that has non rell type files. Can not verify integrity")
+import java.io.File
+
+class LibraryNonSafeFilesException(lib: String, files: List<File>) :
+        RuntimeException("The library $lib contains files that has non rell type files. Can not verify integrity." +
+                "\nAffected files are:\n${files.joinToString("\n") { it.path }}"
+        )
