@@ -198,7 +198,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
             """.trimIndent())
         }
 
@@ -221,7 +221,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
                     bar:
                       registry: http://bar.com
                       path: lib
@@ -250,7 +250,7 @@ class InstallCommandTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"CEEA7DFC8D5FB95E9F1688FF764D60B69914166ED16E25B2FF8DD2C6A87355BA"
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
                     bar:
                       registry: http://bar.com
                       path: lib
