@@ -52,7 +52,7 @@ class TxCommandTest: IntegrationTestSetup() {
         nodes.forEach { it.buildBlocksUpTo(0, 0) }
         val testConsole = TestConsole()
         TxCommand().context { console = testConsole }.parse(listOf("pass_struct", "[\"foo\"]"
-        , "-brid", "07B6213B67C03F107C6EE59B8015143DD68C7D87C707DEA971EA7F16A15EE053"))
+        , "-brid", "94218C10C0F4D1216D4C5379C77C0E9AADCA61949F7AFB053A83E7B5A2F483B8"))
 
         testConsole.assertContains("WAITING")
     }
