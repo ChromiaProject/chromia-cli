@@ -12,7 +12,7 @@ class TestRepositoryCloner : RepositoryCloner {
             "http://foo.com" -> {
                 createFile(target, "${InstallDirTarget.SOURCE.target}/a.rell")
                 createFile(target, "${InstallDirTarget.SOURCE.target}/nested/b.rell")
-                createFile(target, "${InstallDirTarget.SOURCE.target}/include/c.rell")
+                createFile(target, "not/include/c.rell")
             }
 
             "http://filter.com" -> {
