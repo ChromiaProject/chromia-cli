@@ -9,10 +9,13 @@ import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
 import com.chromia.cli.util.settingsOption
+import com.chromia.directory1.proposal_blockchain.findBlockchainRid
+import com.chromia.directory1.version.apiVersion
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.output.CliktHelpFormatter
@@ -20,12 +23,16 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
+import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.transaction.TransactionBuilder
+import net.postchain.common.BlockchainRid
+import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
+import net.postchain.crypto.sha256Digest
 import org.apache.commons.configuration2.BaseConfiguration
 import java.io.File
 import java.time.Instant
@@ -85,35 +92,71 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-
         val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, settings.source)
         val chainsToDeploy = chainsToDeploy(generator)
         beforeDeployment(chainsToDeploy)
         val client = createClient()
-        val result = client
-                .transactionBuilder()
-                .addNop()
-                .apply { chainsToDeploy.forEach { addDeploymentOperation(client, client.config, it) } }
-                .sign()
-                .postAwaitConfirmation()
-        if (result.status != TransactionStatus.CONFIRMED) {
-            throw CliktError("Deployment failed: ${result.rejectReason ?: "still waiting for confirmation"}")
-        } else {
-            echo("Deployment of blockchain ${chainsToDeploy.joinToString(", ") { it.name }} was successful")
+        val apiVersion = client.apiVersion()
+        var failure = false
+        val txs = buildList {
+            for (chain in chainsToDeploy) {
+                val result = client
+                        .transactionBuilder()
+                        .addNop()
+                        .apply { addDeploymentOperation(client, client.config, chain) }
+                        .sign()
+                        .post()
+                if (result.status == TransactionStatus.REJECTED) {
+                    echo("Deployment of blockchain ${chain.name} failed: ${result.rejectReason ?: ""}", err = true)
+                    failure = true
+                } else {
+                    add(chain to result.txRid)
+                }
+            }
         }
 
-        chainsToDeploy.forEach { configHolder ->
-            BlockchainConfigurationWriter.storeConfig(configHolder.config, "${target}_${configHolder.name}_${Instant.now().toEpochMilli()}", settings.target.toPath())
+        val deployChains = buildList {
+            for ((chain, tx) in txs) {
+                val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
+                when (result.status) {
+                    TransactionStatus.CONFIRMED -> {
+                        BlockchainConfigurationWriter.storeConfig(chain.config, "${target}_${chain.name}_${Instant.now().toEpochMilli()}", settings.target.toPath())
+                        val maybeBcRid = if (apiVersion >= 8) {
+                            client.findBlockchainRid(tx.rid.hexStringToByteArray())?.let { BlockchainRid(it) }
+                        } else {
+                            GtvToBlockchainRidFactory.calculateBlockchainRid(chain.config, ::sha256Digest)
+                        }
+                        if (maybeBcRid != null) {
+                            echo("Deployment of blockchain ${chain.name} was successful")
+                            add(chain.name to maybeBcRid)
+                        } else {
+                            echo("Deployment of blockchain ${chain.name} was proposed, tx-rid: ${tx.rid}")
+                        }
+                    }
+
+                    TransactionStatus.REJECTED -> {
+                        echo("Deployment of blockchain ${chain.name} failed: ${result.rejectReason ?: ""}", err = true)
+                        failure = true
+                    }
+
+                    TransactionStatus.WAITING -> echo("Deployment of blockchain ${chain.name} still pending, tx-rid: ${tx.rid}")
+                    else -> throw CliktError("Cannot find status for this transaction")
+                }
+            }
         }
 
-        afterDeployment(chainsToDeploy)
+        afterDeployment(deployChains)
+
+        if (failure) {
+            throw ProgramResult(1)
+        }
     }
 
     abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder)
 
     abstract fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>)
 
-    abstract fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>)
+    abstract fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>)
 
     private fun chainsToDeploy(generator: BlockchainConfigurationGenerator): Collection<BlockchainConfigHolder> {
         return blockchain?.let { chains ->

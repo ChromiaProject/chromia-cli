@@ -30,7 +30,7 @@ class UpdateCommand(
     override fun run() {
         val storage = StorageBuilder.buildStorage(nodeConfig, wipeDatabase = false)
 
-        extractConfigs().toList().forEachIndexed { index, (_, _, gtv) ->
+        extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
             withReadWriteConnection(storage, index.toLong()) { eContext: EContext ->
                 //TODO move to postchain

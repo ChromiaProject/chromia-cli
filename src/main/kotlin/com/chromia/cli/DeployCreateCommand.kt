@@ -2,12 +2,12 @@ package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.compile.config.BlockchainConfigHolder
-import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
+import com.chromia.cli.versionfinder.Http4kRellVersionFinder
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
@@ -16,7 +16,7 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.rell.base.model.R_LangVersion
+import net.postchain.common.BlockchainRid
 import org.http4k.core.HttpHandler
 
 class DeployCreateCommand(
@@ -33,7 +33,7 @@ class DeployCreateCommand(
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
 
-        deployedChains.forEach { (name, _, _) ->
+        deployedChains.forEach { (name, _) ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             confirm(
                     "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
@@ -41,13 +41,13 @@ class DeployCreateCommand(
         }
     }
 
-    override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {
         echo("""
             Add the following to your project settings file:
             deployments:
               $target:
                 chains:
-                  ${deployedChains.joinToString("\n      ") { "${it.name}: x\"${it.brid}\"" }}
+                  ${deployedChains.joinToString("\n      ") { "${it.first}: x\"${it.second.toHex()}\"" }}
             """.trimIndent())
     }
 

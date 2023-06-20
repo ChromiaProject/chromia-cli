@@ -32,7 +32,7 @@ class Launcher : NoOpCliktCommand(name = "chr") {
                 ReplCommand(),
                 nodeCommands(),
                 deployCommands(),
-                BuildCommand().apply { subcommands(BuildInfoCommand()) },
+                BuildCommand(),
                 QueryCommand(),
                 TxCommand(),
                 KeygenCommand(),

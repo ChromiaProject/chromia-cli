@@ -12,6 +12,7 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
+import net.postchain.common.BlockchainRid
 
 
 open class DeployActionCommand(
@@ -34,12 +35,12 @@ open class DeployActionCommand(
     }
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
-        deployedChains.forEach { (name, _, _) ->
+        deployedChains.forEach { (name, _) ->
             if (!deployModel.chains.containsKey(name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain $name cannot be done since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
         }
     }
     
-    override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {}
+    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
 }
 
 class DeployResumeCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container", clientProvider)

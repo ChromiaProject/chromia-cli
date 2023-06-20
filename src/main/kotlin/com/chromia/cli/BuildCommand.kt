@@ -23,7 +23,6 @@ import kotlin.streams.toList
 
 
 class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
-    private val showBrid by showBridOption()
     private val settings by settingsOption()
     override fun aliases() = createAliases()
 
@@ -33,9 +32,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
 
     override fun run() {
         if (currentContext.invokedSubcommand != null) return
-        compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains, settings.libs).apply {
-            if (showBrid) this.forEach { (name, brid, _) -> echo("$name $brid") }
-        }
+        compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains, settings.libs)
     }
 
     companion object {
@@ -53,7 +50,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
 
             return BlockchainConfigurationGenerator(cliEnv, compileModel, blockchains, source)
                     .generate()
-                    .onEach { (name, _, gtv) -> storeConfig(gtv, name, target.toPath()) }
+                    .onEach { (name, gtv) -> storeConfig(gtv, name, target.toPath()) }
 
         }
     }
