@@ -13,6 +13,7 @@ import net.postchain.base.withReadWriteConnection
 import net.postchain.common.BlockchainRid
 import net.postchain.core.EContext
 import net.postchain.crypto.Secp256K1CryptoSystem
+import net.postchain.crypto.sha256Digest
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
@@ -39,8 +40,9 @@ class StartCommand : AbstractNodeCommand(help = """
         val chainsToStart = mutableListOf<Long>()
         val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
-        extractConfigs().toList().forEachIndexed { index, (name, brid, gtv) ->
+        extractConfigs().toList().forEachIndexed { index, (name, gtv) ->
             val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
+            val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, ::sha256Digest)
             val iid = index.toLong()
             chainsToStart.add(iid)
             withLoggingContext(

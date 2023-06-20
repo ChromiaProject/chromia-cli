@@ -43,12 +43,12 @@ class BlockchainConfigurationGenerator(
 
     fun generateConfiguration(name: String, model: BlockchainModel): BlockchainConfigHolder {
         val gtvModel = generateGtv(model)
-        val configholder = BlockchainConfigHolder.from(name, gtvModel)
-        validateGtvConfiguration(gtvModel, configholder.brid)
+        val configholder = BlockchainConfigHolder(name, gtvModel)
+        validateGtvConfiguration(gtvModel)
         return configholder
     }
 
-    private fun validateGtvConfiguration(configuration: Gtv, generatedBlockchainRid: BlockchainRid) {
+    private fun validateGtvConfiguration(configuration: Gtv) {
         try {
             val gtvBuilder = GtvBuilder()
             gtvBuilder.update(configuration)
@@ -59,7 +59,10 @@ class BlockchainConfigurationGenerator(
 
             gtvBuilder.update(gtxModules, "gtx", "modules")
 
-            GTXBlockchainConfigurationFactory.validateConfiguration(withSigner(gtvBuilder.build(), "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()), generatedBlockchainRid)
+            GTXBlockchainConfigurationFactory.validateConfiguration(
+                    withSigner(gtvBuilder.build(), "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()),
+                    BlockchainRid.ZERO_RID // dummy blockchain RID, works with Rell and all standard GTX modules, might not work properly with custom GTX modules
+            )
         } catch (e: UserMistake) {
             throw CliktError(e.message)
         }

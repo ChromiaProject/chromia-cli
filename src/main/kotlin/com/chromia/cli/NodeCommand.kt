@@ -14,7 +14,7 @@ import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.gtvml.GtvMLParser
 
-class NodeCommand : NoOpCliktCommand(help = "Interract with a test node") {
+class NodeCommand : NoOpCliktCommand(help = "Interact with a test node") {
     override fun aliases() = createAliases()
 }
 
@@ -55,7 +55,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                             it.nameWithoutExtension to GtvMLParser.parseGtvML(it.readText())
                         }
                     }
-                    .map { BlockchainConfigHolder.from(it.key, it.value) }
+                    .map { BlockchainConfigHolder(it.key, it.value) }
 
         }.sortedBy { it.name }
 

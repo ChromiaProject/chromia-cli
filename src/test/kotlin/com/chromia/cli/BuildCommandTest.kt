@@ -36,12 +36,6 @@ internal class BuildCommandTest {
     }
 
     @Test
-    fun testBridOutput() {
-        command.parse(listOf("--show-brid"))
-        testConsole.assertContains("hello C9DDF31E360F2EA39909FB8229381F4C7E17AF8A204A0FE0F3F80D52BDBA855D")
-    }
-
-    @Test
     fun testMultipleRun() {
         command.parse()
         command.parse()

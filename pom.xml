@@ -18,7 +18,7 @@
         <postchain.chromia.version>3.11.1</postchain.chromia.version>
         <postchain.client.version>3.11.1</postchain.client.version>
         <rell.version>0.13.1</rell.version>
-        <directory.chain.version>1.5.2</directory.chain.version>
+        <directory.chain.version>1.8.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

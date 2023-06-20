@@ -17,6 +17,7 @@ import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
+import net.postchain.common.BlockchainRid
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -27,13 +28,12 @@ class DeployUpdateCommand(
     }
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
-        deployedChains.forEach { (name, _, _) ->
+        deployedChains.forEach { (name, _) ->
             if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
         }
     }
 
-    override fun afterDeployment(deployedChains: Collection<BlockchainConfigHolder>) {}
-
+    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
 
     override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
