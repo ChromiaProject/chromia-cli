@@ -16,7 +16,7 @@
         <codegen.version>0.9.6</codegen.version>
         <postchain.version>3.11.0</postchain.version>
         <postchain.chromia.version>3.11.1</postchain.chromia.version>
-        <postchain.client.version>3.11.1</postchain.client.version>
+        <postchain.client.version>3.11.2</postchain.client.version>
         <rell.version>0.13.1</rell.version>
         <directory.chain.version>1.8.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
@@ -243,7 +243,9 @@
                     <configuration>
                         <allowInsecureRegistries>false</allowInsecureRegistries>
                         <from>
-                            <image>registry.gitlab.com/chromaway/core-tools/chromia-images/java17:1.0.2@sha256:756673c4f33a67b88dbc4ce0019137b13e9bd351cee804cfbbda3b9aa9a2cba2</image>
+                            <image>
+                                registry.gitlab.com/chromaway/core-tools/chromia-images/java17:1.0.2@sha256:756673c4f33a67b88dbc4ce0019137b13e9bd351cee804cfbbda3b9aa9a2cba2
+                            </image>
                         </from>
                         <container>
                             <appRoot>/usr/share/chr</appRoot>
@@ -338,6 +340,13 @@
             <groupId>net.postchain</groupId>
             <artifactId>chromia-client</artifactId>
             <version>${postchain.chromia.version}</version>
+        </dependency>
+        <!--TODO: this should be removed when the postchain chromia dep is solved. Core team to say when done-->
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-client</artifactId>
+            <version>3.10.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
@@ -495,7 +504,8 @@
                                     <goal>checkout</goal>
                                 </goals>
                                 <configuration>
-                                    <connectionUrl>scm:git:https://gitlab.com/chromaway/core/directory-chain.git</connectionUrl>
+                                    <connectionUrl>scm:git:https://gitlab.com/chromaway/core/directory-chain.git
+                                    </connectionUrl>
                                     <checkoutDirectory>${project.build.directory}/directory-chain</checkoutDirectory>
                                     <scmVersion>${directory.chain.version}</scmVersion>
                                     <scmVersionType>tag</scmVersionType>
