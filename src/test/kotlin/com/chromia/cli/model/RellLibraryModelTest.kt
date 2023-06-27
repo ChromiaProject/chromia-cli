@@ -1,9 +1,13 @@
 package com.chromia.cli.model
 
+import assertk.assertThat
+import assertk.assertions.contains
 import com.chromia.cli.util.Settings
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
@@ -47,6 +51,27 @@ class RellLibraryModelTest {
         settings.libs.forEach {
             it.value.verify(fileMap[it.key]!!, it.key)
         }
+    }
+
+    @Test
+    fun unrecognizedFieldInRellLibraryModelTest(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "config.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      path: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                      some_unexpected_field: 123 
+            """.trimIndent())
+        }
+        val throwable = assertThrows<UnrecognizedPropertyException> {
+            Settings(settingsFile, parseModel(settingsFile))
+        }
+        assertThat(throwable.message!!).contains("Unrecognized field \"some_unexpected_field\"")
     }
 
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
