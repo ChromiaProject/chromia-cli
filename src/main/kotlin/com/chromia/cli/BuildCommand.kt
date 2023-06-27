@@ -39,7 +39,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
         fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>, libs: Map<String, RellLibraryModel> = mapOf()): Collection<BlockchainConfigHolder> {
 
             libs.forEach { (name, rellLibrary) ->
-                val libraryLocation = target.toPath().resolve(InstallDirTarget.SOURCE.target).resolve(name)
+                val libraryLocation = source.toPath().resolve(InstallDirTarget.SOURCE.target).resolve(name)
                 if (libraryLocation.exists()) {
                     val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
                     rellLibrary.verify(files, name)
