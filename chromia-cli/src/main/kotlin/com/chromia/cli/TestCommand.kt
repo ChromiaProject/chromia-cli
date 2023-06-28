@@ -1,18 +1,18 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.AnsiColorScheme
+import com.chromia.cli.color.AnsiColorScheme
 import com.chromia.cli.util.CliktCliEnv
-import com.chromia.cli.util.ColorAware
-import com.chromia.cli.util.ColorFormat
-import com.chromia.cli.util.NoColorScheme
-import com.chromia.cli.util.green
-import com.chromia.cli.util.heading
-import com.chromia.cli.util.line
+import com.chromia.cli.color.ColorAware
+import com.chromia.cli.color.ColorFormat
+import com.chromia.cli.color.NoColorScheme
+import com.chromia.cli.color.green
+import com.chromia.cli.color.heading
+import com.chromia.cli.color.line
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
-import com.chromia.cli.util.red
+import com.chromia.cli.color.red
 import com.chromia.cli.util.settingsOption
-import com.chromia.cli.util.space
+import com.chromia.cli.color.space
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context

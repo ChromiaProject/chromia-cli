@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.cli.color
 
 interface ColorAware {
     val colorScheme: ColorScheme

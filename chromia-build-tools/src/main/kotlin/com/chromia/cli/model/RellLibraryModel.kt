@@ -1,7 +1,7 @@
 package com.chromia.cli.model
 
-import com.chromia.cli.lib.LibraryMismatchException
-import com.chromia.cli.lib.LibraryNonSafeFilesException
+import com.chromia.cli.error.LibraryMismatchException
+import com.chromia.cli.error.LibraryNonSafeFilesException
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory.gtv

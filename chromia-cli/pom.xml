@@ -148,6 +148,10 @@
             <artifactId>chromia-build-tools</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.chromia.cli</groupId>
+            <artifactId>chromia-cli-tools</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-api-gtx</artifactId>
             <version>${rell.version}</version>

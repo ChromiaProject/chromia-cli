@@ -1,8 +1,8 @@
 package com.chromia.cli
 
 import com.chromia.cli.lib.InstallDirTarget
-import com.chromia.cli.lib.LibraryMismatchException
-import com.chromia.cli.lib.LibraryNonSafeFilesException
+import com.chromia.cli.error.LibraryMismatchException
+import com.chromia.cli.error.LibraryNonSafeFilesException
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.BadParameterValue

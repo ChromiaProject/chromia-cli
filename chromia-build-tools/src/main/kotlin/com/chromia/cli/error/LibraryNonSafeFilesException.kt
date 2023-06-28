@@ -1,4 +1,4 @@
-package com.chromia.cli.lib
+package com.chromia.cli.error
 
 import java.io.File
 
