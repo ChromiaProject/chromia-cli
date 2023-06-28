@@ -247,6 +247,21 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.chromia.cli</groupId>
+                <artifactId>chromia-cli-tools</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.chromia.cli</groupId>
+                <artifactId>chromia-cli</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.chromia.cli</groupId>
+                <artifactId>chromia-build-tools</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
