@@ -10,9 +10,11 @@
     <packaging>pom</packaging>
     <modules>
         <module>chromia-cli</module>
+        <module>chromia-cli-tools</module>
+        <module>chromia-build-tools</module>
     </modules>
 
-    <name>chromia-cli</name>
+    <name>Chromia Cli Parent</name>
 
     <properties>
         <revision>dev</revision>

@@ -14,7 +14,7 @@
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>chromia-cli</name>
+    <name>Chromia Cli</name>
 
     <properties>
         <revision>dev</revision>

@@ -1,10 +1,7 @@
-/.idea/
-/logs/
-/target/
-/sample/test/logs/
-/sample/test2/logs/
-/sample/smallEx/logs/postchain.log
-/sample/logs/
+.idea
+logs
 .DS_Store
 .flattened-pom.xml
 target
+*.iml
+*.versionsBackup
