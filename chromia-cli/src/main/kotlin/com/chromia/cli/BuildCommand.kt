@@ -10,7 +10,6 @@ import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.settingsOption
-import com.chromia.cli.util.showBridOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
@@ -19,7 +18,6 @@ import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.exists
-import kotlin.streams.toList
 
 
 class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {

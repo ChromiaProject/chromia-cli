@@ -7,3 +7,4 @@
 /sample/logs/
 .DS_Store
 .flattened-pom.xml
+target

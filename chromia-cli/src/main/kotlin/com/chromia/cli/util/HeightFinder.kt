@@ -5,7 +5,6 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
 import net.postchain.client.request.Endpoint
 import net.postchain.client.request.EndpointPool
-import net.postchain.client.request.SingleEndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 

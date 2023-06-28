@@ -1,7 +1,6 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaCliModel
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -15,11 +14,6 @@ import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.d1.client.ChromiaClientProvider
 import org.http4k.core.HttpHandler
-import java.net.ConnectException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(name, help) {
     abstract val brid: BlockchainRid

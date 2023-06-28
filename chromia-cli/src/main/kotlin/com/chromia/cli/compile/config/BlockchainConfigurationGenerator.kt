@@ -3,6 +3,7 @@ package com.chromia.cli.compile.config
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.util.withSigner
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.github.ajalt.clikt.core.CliktError
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
@@ -86,6 +87,7 @@ class BlockchainConfigurationGenerator(
             b.update(rellBcConfig, "gtx", "rell")
         } catch (e: RellCliException) {
             throw CliktError(e.message, e)
+        } catch (e: UnrecognizedPropertyException) {
         }
 
         blockchainModel.config.filterKeys { it != "modules" }
