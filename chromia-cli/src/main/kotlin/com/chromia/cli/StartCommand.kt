@@ -7,8 +7,10 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter
 import mu.withLoggingContext
 import net.postchain.PostchainNode
+import net.postchain.StorageInitializer
 import net.postchain.api.internal.BlockchainApi
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
+import net.postchain.base.runStorageCommand
 import net.postchain.base.withReadWriteConnection
 import net.postchain.common.BlockchainRid
 import net.postchain.core.EContext
@@ -70,6 +72,9 @@ class StartCommand : AbstractNodeCommand(help = """
                     }
                 }
             }
+        }
+        runStorageCommand(nodeConfig) {
+            StorageInitializer.setupInitialPeers(nodeConfig, it)
         }
         chainsToStart.forEach {
             node.startBlockchain(it)
