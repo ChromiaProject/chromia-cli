@@ -12,6 +12,23 @@ import kotlin.io.path.absolutePathString
 internal class IncludeYamlTest {
 
     @Test
+    fun includeRelativeYaml(@TempDir dir: Path) {
+        with(File(dir.toFile(), "a.yml")) {
+            writeText("""
+               a: 13
+           """.trimIndent())
+        }
+        with(File(dir.toFile(), "b.yml")) {
+            writeText("""
+                b: !include a.yml
+            """.trimIndent())
+        }
+        val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
+        assertThat(res["b"] is Map<*, *>)
+        assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
+    }
+
+    @Test
     fun includeYaml(@TempDir dir: Path) {
         with(File(dir.toFile(), "a.yml")) {
             writeText("""
