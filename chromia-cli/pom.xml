@@ -4,35 +4,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>chromia-cli-parent</artifactId>
-    <groupId>com.chromia.cli</groupId>
-    <version>${revision}</version>
-    <packaging>pom</packaging>
-    <modules>
-        <module>chromia-cli</module>
-        <module>chromia-cli-tools</module>
-        <module>chromia-build-tools</module>
-    </modules>
+    <parent>
+        <groupId>com.chromia.cli</groupId>
+        <artifactId>chromia-cli-parent</artifactId>
+        <version>${revision}</version>
+    </parent>
 
-    <name>Chromia Cli Parent</name>
+    <artifactId>chromia-cli</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+
+    <name>Chromia Cli</name>
 
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.9.6</codegen.version>
-        <postchain.version>3.11.5</postchain.version>
-        <postchain.chromia.version>3.11.2</postchain.chromia.version>
-        <postchain.client.version>3.11.2</postchain.client.version>
-        <rell.version>0.13.1</rell.version>
-        <directory.chain.version>1.8.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>1.8.21</kotlin.version>
-        <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <kotlin.code.style>obsolete</kotlin.code.style>
-        <project.build.outputTimestamp>10</project.build.outputTimestamp>
 
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
 
@@ -42,230 +28,129 @@
         <main.class>com.chromia.MainKt</main.class>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>postchain-chromia</id>
-            <url>https://gitlab.com/api/v4/projects/33481005/packages/maven</url>
-        </repository>
-        <repository>
-            <id>postchain</id>
-            <name>Postchain GitLab Registry</name>
-            <url>https://gitlab.com/api/v4/projects/32294340/packages/maven</url>
-        </repository>
-        <repository>
-            <id>postchain-client</id>
-            <name>Postchain Client GitLab Registry</name>
-            <url>https://gitlab.com/api/v4/projects/46288950/packages/maven</url>
-        </repository>
-        <repository>
-            <id>rellr</id>
-            <name>Rell Runtime Registry</name>
-            <url>https://gitlab.com/api/v4/projects/32802097/packages/maven</url>
-        </repository>
-        <repository>
-            <id>rell-codegen</id>
-            <name>Rell Codegen Registry</name>
-            <url>https://gitlab.com/api/v4/projects/37660703/packages/maven</url>
-        </repository>
-        <repository>
-            <id>mavenCentral</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>rell-maven</id>
-            <url>https://gitlab.com/api/v4/projects/37668820/packages/maven</url>
-        </pluginRepository>
-    </pluginRepositories>
-    <distributionManagement>
-        <repository>
-            <id>gitlab-maven</id>
-            <url>https://gitlab.com/api/v4/projects/39844192/packages/maven</url>
-        </repository>
-    </distributionManagement>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
-                    <configuration>
-                        <archive>
-                            <manifest>
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            </manifest>
-                        </archive>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>net.postchain.rell</groupId>
-                    <artifactId>rell-maven-plugin</artifactId>
-                    <version>0.7.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.jetbrains.kotlin</groupId>
-                    <artifactId>kotlin-maven-plugin</artifactId>
-                    <version>${kotlin.version}</version>
-                    <executions>
-                        <execution>
-                            <id>compile</id>
-                            <phase>compile</phase>
-                            <goals>
-                                <goal>compile</goal>
-                            </goals>
-                            <configuration>
-                                <sourceDirs>
-                                    <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
-                                </sourceDirs>
-                            </configuration>
-                        </execution>
-                        <execution>
-                            <id>test-compile</id>
-                            <phase>test-compile</phase>
-                            <goals>
-                                <goal>test-compile</goal>
-                            </goals>
-                            <configuration>
-                                <sourceDirs>
-                                    <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                                </sourceDirs>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.10.1</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
-                    <configuration>
-                        <workingDirectory>${project.build.directory}/test</workingDirectory>
-                        <excludes>
-                            <exclude>**/*IT.java</exclude>
-                            <exclude>**/*Nightly.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>pl.project13.maven</groupId>
-                    <artifactId>git-commit-id-plugin</artifactId>
-                    <version>4.0.0</version>
-                    <executions>
-                        <execution>
-                            <id>get-the-git-infos</id>
-                            <goals>
-                                <goal>revision</goal>
-                            </goals>
-                            <phase>initialize</phase>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <useNativeGit>true</useNativeGit> <!-- git worktree does not work with JGit implementation -->
-                        <includeOnlyProperties>
-                            <includeOnlyProperty>^git\.commit\.time$</includeOnlyProperty>
-                        </includeOnlyProperties>
-                        <dateFormatTimeZone>UTC</dateFormatTimeZone>
-                        <dateFormat>yyyy-MM-dd'T'HH:mm:ssX</dateFormat>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>com.google.cloud.tools</groupId>
-                    <artifactId>jib-maven-plugin</artifactId>
-                    <version>3.3.2</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.4.1</version>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-maven-plugin</artifactId>
                 <configuration>
-                    <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                    <source>${directory.source}</source>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
+                        <id>rell-client-gen</id>
+                        <phase>generate-resources</phase>
                         <goals>
-                            <goal>flatten</goal>
+                            <goal>rell-generate-client</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
+                        <configuration>
+                            <packageName>com.chromia.directory1</packageName>
+                            <mainModule>version,proposal_blockchain</mainModule>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-archive</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${assembly.path}</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <mainClass>com.chromia.MainKt</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+            </plugin>
+
         </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <configuration>
+                        <allowInsecureRegistries>false</allowInsecureRegistries>
+                        <from>
+                            <image>
+                                registry.gitlab.com/chromaway/core-tools/chromia-images/java17:1.0.2@sha256:756673c4f33a67b88dbc4ce0019137b13e9bd351cee804cfbbda3b9aa9a2cba2
+                            </image>
+                        </from>
+                        <container>
+                            <appRoot>/usr/share/chr</appRoot>
+                            <workingDirectory>/usr/app</workingDirectory>
+                            <mainClass>${main.class}</mainClass>
+                            <creationTime>${git.commit.time}</creationTime>
+                            <filesModificationTime>${git.commit.time}</filesModificationTime>
+                        </container>
+                        <containerizingMode>packaged</containerizingMode>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>docker-build</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>dockerBuild</goal>
+                            </goals>
+                            <configuration>
+                                <to>
+                                    <image>${image.name}</image>
+                                </to>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-bom</artifactId>
-                <version>${kotlin.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <dependency>
-                <groupId>net.postchain</groupId>
-                <artifactId>postchain</artifactId>
-                <version>${postchain.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.postchain.rell</groupId>
-                <artifactId>rell</artifactId>
-                <version>${rell.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.9.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.chromia.cli</groupId>
-                <artifactId>chromia-cli-tools</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.chromia.cli</groupId>
-                <artifactId>chromia-cli</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.chromia.cli</groupId>
-                <artifactId>chromia-build-tools</artifactId>
-                <version>${revision}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
+        <dependency>
+            <groupId>com.chromia.cli</groupId>
+            <artifactId>chromia-build-tools</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chromia.cli</groupId>
+            <artifactId>chromia-cli-tools</artifactId>
+        </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-api-gtx</artifactId>
@@ -285,12 +170,6 @@
             <groupId>net.postchain.client</groupId>
             <artifactId>postchain-client</artifactId>
             <version>${postchain.client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.postchain</groupId>
-            <artifactId>postchain-client</artifactId>
-            <version>3.10.0</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
@@ -444,6 +323,62 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>artifact</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!local</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.11.2</version>
+                        <executions>
+                            <execution>
+                                <id>d1-resources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>checkout</goal>
+                                </goals>
+                                <configuration>
+                                    <connectionUrl>scm:git:https://gitlab.com/chromaway/core/directory-chain.git
+                                    </connectionUrl>
+                                    <checkoutDirectory>${project.build.directory}/directory-chain</checkoutDirectory>
+                                    <scmVersion>${directory.chain.version}</scmVersion>
+                                    <scmVersionType>tag</scmVersionType>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>local</id>
+            <activation>
+                <property>
+                    <name>local</name>
+                </property>
+            </activation>
+            <properties>
+                <directory.source>${project.basedir}/../../directory-chain/src</directory.source>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>docker-arm</id>
             <activation>
