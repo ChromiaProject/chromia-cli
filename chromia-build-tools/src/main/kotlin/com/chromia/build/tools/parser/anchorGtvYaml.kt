@@ -14,7 +14,7 @@ import org.yaml.snakeyaml.nodes.Tag
 import java.io.File
 
 
-class ConstructorIncludeSupport: EnvScalarConstructor() {
+class ConstructorIncludeSupport(val rootFile: File): EnvScalarConstructor() {
     init {
         yamlConstructors[Tag("!include")] = IncludeConstructor()
     }
@@ -23,18 +23,18 @@ class ConstructorIncludeSupport: EnvScalarConstructor() {
         val yaml = Yaml()
         override fun construct(p0: Node): Any {
             p0 as ScalarNode
-            return if (p0.value.contains("#")) {
-                val (f, sub) = p0.value.split("#")
-                File(f).inputStream().use {
-                    val result = yaml.load<Map<String, Any>>(it)
-                    require(result.containsKey(sub)) { "File $f does not contain $sub" }
-                    result[sub]!!
-                }
+            val rawFilePath = if (p0.value.startsWith("/")) p0.value else "${rootFile.parent}/${p0.value}"
+            val (path, sub) = if (rawFilePath.contains("#")) rawFilePath.split("#") else listOf(rawFilePath, "")
+            return parseSubFile(File(path), sub)
+        }
+
+        fun parseSubFile(file: File, sub: String) = file.inputStream().use {
+            val result = yaml.load<Map<String, Any>>(it)
+            if (sub.isNotBlank()) {
+                require(result.containsKey(sub)) { "File ${file.path} does not contain $sub" }
+                result[sub]!!
             } else {
-                val file = File(p0.value)
-                file.inputStream().use {
-                    yaml.load(it)
-                }
+                result
             }
         }
 
@@ -43,7 +43,7 @@ class ConstructorIncludeSupport: EnvScalarConstructor() {
 }
 
 inline fun <reified T> GtvYaml.loadAnchor(src: File): T {
-    val yaml = Yaml(ConstructorIncludeSupport())
+    val yaml = Yaml(ConstructorIncludeSupport(src))
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
 
     return src.inputStream().use {
