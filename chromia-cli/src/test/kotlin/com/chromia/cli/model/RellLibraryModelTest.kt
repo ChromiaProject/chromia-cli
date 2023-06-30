@@ -2,8 +2,10 @@ package com.chromia.cli.model
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.util.Settings
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
+import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -47,9 +49,13 @@ class RellLibraryModelTest {
 
         val settings = Settings(settingsFile, parseModel(settingsFile))
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"))
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+            override fun error(msg: String) = println(msg)
+            override fun print(msg: String) = println(msg)
+        })
 
         settings.libs.forEach {
-            it.value.verify(fileMap[it.key]!!, it.key)
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
         }
     }
 
@@ -123,9 +129,12 @@ class RellLibraryModelTest {
         val settings = Settings(settingsFile, parseModel(settingsFile))
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
-
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+            override fun error(msg: String) = println(msg)
+            override fun print(msg: String) = println(msg)
+        })
         settings.libs.forEach {
-            it.value.verify(fileMap[it.key]!!, it.key)
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
         }
     }
 
@@ -148,8 +157,12 @@ class RellLibraryModelTest {
         val settings = Settings(settingsFile, parseModel(settingsFile))
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+            override fun error(msg: String) = println(msg)
+            override fun print(msg: String) = println(msg)
+        })
         settings.libs.forEach {
-            it.value.verify(fileMap[it.key]!!, it.key)
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
         }
     }
 }

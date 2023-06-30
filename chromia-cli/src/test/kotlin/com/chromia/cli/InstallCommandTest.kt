@@ -1,8 +1,9 @@
 package com.chromia.cli
 
-import com.chromia.cli.lib.InstallDirTarget
-import com.chromia.cli.error.LibraryMismatchException
-import com.chromia.cli.error.LibraryNonSafeFilesException
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import com.chromia.build.tools.lib.InstallDirTarget
+import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.BadParameterValue
@@ -10,12 +11,11 @@ import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 
 class InstallCommandTest {
@@ -31,7 +31,7 @@ class InstallCommandTest {
 
     @Test
     fun ridNotMatchingTest(@TempDir dir: Path) {
-        val exception = assertFailsWith<LibraryMismatchException> {
+        val exception = assertFailsWith<LibraryInstallException> {
             settings = File(dir.toFile(), "config.yml").apply {
                 writeText("""
                 blockchains:
@@ -49,10 +49,11 @@ class InstallCommandTest {
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))
         }
-        assertEquals("The rid for library foo does not match the configured value.\n" +
+        testConsole.assertContains(
+        "The rid for library foo does not match the configured value.\n" +
                 "Should be: 11\n" +
                 "Was: 1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5\n" +
-                "Do not blindly copy the calculated rid as it might be tampered with.", exception.message)
+                "Do not blindly copy the calculated rid as the integrity of the library cannot be verified.")
     }
 
     @Test
@@ -95,8 +96,8 @@ class InstallCommandTest {
             """.trimIndent())
         }
 
-        TestRepositoryCloner().createFile(dir.resolve("$path/foo/existingFileFoo.rell").toFile(), "existingFileFoo.rell")
-        TestRepositoryCloner().createFile(dir.resolve("$path/bar/existingFileBar.rell").toFile(), "existingFileFoo.rell")
+        TestRepositoryCloner().createFile(dir.resolve("$path/foo").toFile(), "existingFileFoo.rell")
+        TestRepositoryCloner().createFile(dir.resolve("$path/bar").toFile(), "existingFileBar.rell")
 
         InstallCommand { TestRepositoryCloner() }
                 .context { console = testConsole }
@@ -104,6 +105,7 @@ class InstallCommandTest {
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/bar/existingFileBar.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/Foo/existingFileFoo.rell").exists())
     }
 
     @Test
@@ -287,11 +289,13 @@ class InstallCommandTest {
                       rid: x"13"
             """.trimIndent())
         }
-        InstallCommand { TestRepositoryCloner() }
-                .context { console = testConsole }
-                .parse(listOf("-s", settings.absolutePath))
+        val error = assertThrows<LibraryInstallException> {
+            InstallCommand { TestRepositoryCloner() }
+                    .context { console = testConsole }
+                    .parse(listOf("-s", settings.absolutePath))
+        }
 
-        Assertions.assertEquals("Invalid remote host. Error: This is an error\n", testConsole.out[0].first)
+        assertThat(error.message).isEqualTo("This is an error")
     }
 
     @Test
@@ -309,14 +313,14 @@ class InstallCommandTest {
                       rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
             """.trimIndent())
         }
-        val exception = assertFailsWith<LibraryNonSafeFilesException> {
+        val exception = assertFailsWith<LibraryInstallException> {
             InstallCommand { TestRepositoryCloner() }
                     .context { console = testConsole }
                     .parse(listOf("-s", settings.absolutePath))
         }
-        assertTrue(exception.message!!.contains("The library lib contains files that has non rell type files. Can not verify integrity.\nAffected files are:\n"))
-        assertTrue(exception.message!!.contains("/build/.lib/foo/lib/a.yml"))
-        assertTrue(exception.message!!.contains("/build/.lib/foo/lib/nested/b.yml"))
+        testConsole.assertContains("Library foo contains files that are not rell files.")
+        testConsole.assertContains("/build/.lib/foo/lib/a.yml")
+        testConsole.assertContains("/build/.lib/foo/lib/nested/b.yml")
     }
 
 }

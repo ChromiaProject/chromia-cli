@@ -1,7 +1,9 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.lib.InstallDirTarget
-import com.chromia.cli.lib.RepositoryCloner
+import com.chromia.build.tools.lib.InstallDirTarget
+import com.chromia.build.tools.lib.LibraryInstallException
+import com.chromia.build.tools.lib.RepositoryCloner
+import net.postchain.common.exception.UserMistake
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import java.io.File
 
@@ -22,7 +24,7 @@ class TestRepositoryCloner : RepositoryCloner {
                 createFile(target, "${InstallDirTarget.SOURCE.target}/nested/b.yml")
             }
 
-            "http://wrongAddress.com" -> throw InvalidRemoteException("This is an error")
+            "http://wrongAddress.com" -> throw LibraryInstallException("This is an error")
         }
     }
 
