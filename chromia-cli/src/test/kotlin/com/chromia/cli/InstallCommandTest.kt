@@ -105,6 +105,7 @@ class InstallCommandTest {
         Assertions.assertTrue(File(dir.toFile(), "config.yml").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(dir.toFile(), "$path/bar/existingFileBar.rell").exists())
+        Assertions.assertFalse(File(dir.toFile(), "$path/Foo/existingFileFoo.rell").exists())
     }
 
     @Test
