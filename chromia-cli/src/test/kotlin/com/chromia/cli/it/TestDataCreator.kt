@@ -10,6 +10,7 @@ object TestDataCreator {
             writeText("""
                 module;
                 query hello() = "Hi!";
+                operation call_op(value: integer) {}
             """.trimIndent())
         }
         with(File(dir.toFile(), "config.yml")) {
@@ -17,6 +18,9 @@ object TestDataCreator {
                 blockchains:
                   hello:
                     module: main
+                    config:
+                      blockstrategy:
+                        maxblocktime: 1000
             """.trimIndent())
         }
     }
