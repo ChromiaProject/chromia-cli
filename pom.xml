@@ -163,8 +163,8 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>3.1.2</version>
                     <configuration>
-                        <workingDirectory>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin</workingDirectory>
                         <environmentVariables>
+                            <DIST_DIR>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin</DIST_DIR>
                             <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
                         </environmentVariables>
                     </configuration>

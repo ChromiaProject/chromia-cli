@@ -3,12 +3,9 @@ package com.chromia.cli.it
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.absolutePathString
 
 class StartCommandIT {
     @Test
@@ -27,24 +24,22 @@ class StartCommandIT {
                     module: main
             """.trimIndent())
         }
-        val process = ProcessBuilder("./chr", "node", "start", "-s", "${dir.absolutePathString()}/config.yml", "--wipe")
-                .apply {
-                    redirectErrorStream(true)
-                }.start()
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
-
-        var blockchainHasStarted = false
-        val startTime = System.currentTimeMillis()
-        val timeout = TimeUnit.SECONDS.toMillis(10)
-        while (!blockchainHasStarted && System.currentTimeMillis() - startTime < timeout) {
-            reader.readLine()?.let {
-                println(it)
-                if (it.contains("Blockchain has been started")) {
-                    blockchainHasStarted = true
+        ChrProcess.Builder("node", "start", "--wipe")
+                .awaitCompletion(false)
+                .setConfig(dir.resolve("config.yml").toFile())
+                .start { process ->
+                    var blockchainHasStarted = false
+                    val startTime = System.currentTimeMillis()
+                    val timeout = TimeUnit.SECONDS.toMillis(10)
+                    while (!blockchainHasStarted && System.currentTimeMillis() - startTime < timeout) {
+                        process.readLine()?.let {
+                            println(it)
+                            if (it.contains("Blockchain has been started")) {
+                                blockchainHasStarted = true
+                            }
+                        }
+                    }
+                    assertThat(blockchainHasStarted).isTrue()
                 }
-            }
-        }
-        process.destroy()
-        assertThat(blockchainHasStarted).isTrue()
     }
 }
