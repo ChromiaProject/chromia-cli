@@ -4,8 +4,6 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
-import com.chromia.cli.error.LibraryMismatchException
-import com.chromia.cli.error.LibraryNonSafeFilesException
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.BadParameterValue
@@ -17,9 +15,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 
 class InstallCommandTest {

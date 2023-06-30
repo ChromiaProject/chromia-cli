@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
 import com.chromia.build.tools.lib.InstallDirTarget
-import com.chromia.cli.error.LibraryMismatchException
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
 import com.chromia.cli.util.TestRepositoryCloner
