@@ -3,7 +3,8 @@ package com.chromia.cli
 import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
-import com.chromia.cli.lib.InstallDirTarget
+import com.chromia.build.tools.lib.InstallDirTarget
+import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel
@@ -35,12 +36,13 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
 
     companion object {
         fun compile(cliEnv: RellCliEnv, source: File, target: File, compileModel: CompileModel, blockchains: Map<String, BlockchainModel>, libs: Map<String, RellLibraryModel> = mapOf()): Collection<BlockchainConfigHolder> {
+            val libraryVerifyer = LibraryVerifyer(cliEnv)
 
             libs.forEach { (name, rellLibrary) ->
                 val libraryLocation = source.toPath().resolve(InstallDirTarget.SOURCE.target).resolve(name)
                 if (libraryLocation.exists()) {
                     val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
-                    rellLibrary.verify(files, name)
+                    require(libraryVerifyer.verifyLib(rellLibrary, name, files)) { "Failed validation of library $name" }
                 } else {
                     throw PrintMessage("Library $name is not installed, install before building")
                 }
