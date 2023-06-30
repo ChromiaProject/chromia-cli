@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.error.LibraryMismatchException
 import com.chromia.cli.lib.GitRepositoryCloner
 import com.chromia.cli.lib.InstallDirTarget
 import com.chromia.cli.lib.RepositoryCloner
@@ -17,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 class InstallCommand(
         private val repositoryClonerFactory: () -> RepositoryCloner = { GitRepositoryCloner() },
@@ -44,12 +46,19 @@ class InstallCommand(
         val libraryTarget = Path(settings.source.absolutePath, InstallDirTarget.SOURCE.target).resolve(name)
         val tempDir = Path(settings.target.absolutePath, InstallDirTarget.TEMP.target).resolve(name)
         try {
+            if (libraryTarget.exists()) {
+                try {
+                    rellLibrary.verify(readFiles(libraryTarget), name)
+                    return
+                } catch (e: LibraryMismatchException) {
+                    echo("Library $name not up to date, reinstalling")
+                }
+            }
             repositoryClonerFactory().clone(rellLibrary.registry, tempDir.toFile(), rellLibrary.tagOrBranch)
             val files = readFiles(tempDir.resolve(rellLibrary.path))
             if (!libraryTarget.toFile().exists()) {
                 libraryTarget.toFile().mkdirs()
             } else {
-                echo("Reinstalling ${libraryTarget.fileName}")
                 cleanUpFiles(libraryTarget)
             }
 
