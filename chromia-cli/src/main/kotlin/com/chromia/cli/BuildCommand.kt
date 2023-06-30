@@ -30,6 +30,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     }
 
     override fun run() {
+        echo("Buildinggggg")
         if (currentContext.invokedSubcommand != null) return
         compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, settings.blockchains, settings.libs)
     }

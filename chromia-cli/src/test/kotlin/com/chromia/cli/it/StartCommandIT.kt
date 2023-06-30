@@ -10,20 +10,7 @@ import java.util.concurrent.TimeUnit
 class StartCommandIT {
     @Test
     fun startNode(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                module;
-                query hello() = "Hi!";
-            """.trimIndent())
-        }
-        with(File(dir.toFile(), "config.yml")) {
-            writeText("""
-                blockchains:
-                  hello:
-                    module: main
-            """.trimIndent())
-        }
+        TestDataCreator.basicApp(dir)
         ChrProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
                 .setConfig(dir.resolve("config.yml").toFile())
