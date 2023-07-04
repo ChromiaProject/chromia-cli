@@ -35,11 +35,8 @@
         <project.build.outputTimestamp>10</project.build.outputTimestamp>
 
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
-
         <image.platforms>linux/amd64,linux/arm64</image.platforms>
         <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
-        <image.name>chr</image.name>
-        <main.class>com.chromia.MainKt</main.class>
     </properties>
 
     <repositories>

@@ -8,8 +8,8 @@ import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel
+import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
-import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
