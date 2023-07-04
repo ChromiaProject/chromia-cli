@@ -1,6 +1,5 @@
 package com.chromia.cli.model
 
-import com.github.ajalt.clikt.core.CliktError
 import net.postchain.common.BlockchainRid
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
@@ -18,7 +17,7 @@ data class DeploymentModel(
         return when (url) {
             is GtvString -> listOf(url.asString())
             is GtvArray -> url.asArray().map { it.asString() }
-            else -> throw CliktError("deployment url must be either a single string or an array")
+            else -> throw IllegalArgumentException("deployment url must be either a single string or an array")
         }
     }
 }
