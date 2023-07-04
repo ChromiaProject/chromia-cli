@@ -23,14 +23,15 @@ class ConstructorIncludeSupport(val rootFile: File): EnvScalarConstructor() {
         val yaml = Yaml()
         override fun construct(p0: Node): Any {
             p0 as ScalarNode
-            val rawFilePath = if (p0.value.startsWith("/")) p0.value else "${rootFile.parent}/${p0.value}"
+            val rawFilePath = if (p0.value.startsWith("/")) p0.value else "${rootFile.absoluteFile.parent}/${p0.value}"
             val (path, sub) = if (rawFilePath.contains("#")) rawFilePath.split("#") else listOf(rawFilePath, "")
             return parseSubFile(File(path), sub)
         }
 
         fun parseSubFile(file: File, sub: String) = file.inputStream().use {
-            val result = yaml.load<Map<String, Any>>(it)
+            val result = yaml.load<Any>(it)
             if (sub.isNotBlank()) {
+                require(result is Map<*,*>) { "File ${file.path} must be a dict to be able to extract a sub field"}
                 require(result.containsKey(sub)) { "File ${file.path} does not contain $sub" }
                 result[sub]!!
             } else {
