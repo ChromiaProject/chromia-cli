@@ -2,8 +2,8 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
-import com.chromia.cli.util.createAliases
 import com.chromia.cli.util.nodePropertiesOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand

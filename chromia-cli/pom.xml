@@ -22,8 +22,6 @@
 
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
 
-        <image.platforms>linux/amd64,linux/arm64</image.platforms>
-        <gitlab.registry>registry.gitlab.com/chromaway/core-tools/chromia-cli</gitlab.registry>
         <image.name>chr</image.name>
         <main.class>com.chromia.MainKt</main.class>
     </properties>
@@ -82,7 +80,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.6.0</version>
                 <configuration>
-                    <mainClass>com.chromia.MainKt</mainClass>
+                    <mainClass>${main.class}</mainClass>
                 </configuration>
             </plugin>
             <plugin>
