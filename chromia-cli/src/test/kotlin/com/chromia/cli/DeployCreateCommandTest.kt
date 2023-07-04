@@ -55,7 +55,7 @@ class DeployCreateCommandTest {
         }
         val testConsole = TestConsole()
         val settings = Settings(settingsFile, parseModel(settingsFile))
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body(settings.compile.rellVersion))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<CliktError> {
             DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
@@ -91,7 +91,7 @@ class DeployCreateCommandTest {
             """.trimIndent())
         }
         val testConsole = TestConsole()
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.ACCEPTED, "").body("0.11.0"))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.11.0"))
         val throwable = assertThrows<RellDeployVersionException> {
             DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "main", "--network", "test", "--secret", secretFile.absolutePath))
         }
