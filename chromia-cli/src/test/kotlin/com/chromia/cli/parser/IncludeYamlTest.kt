@@ -29,6 +29,23 @@ internal class IncludeYamlTest {
     }
 
     @Test
+    fun includeRelativeYamlList(@TempDir dir: Path) {
+        with(File(dir.toFile(), "a.yml")) {
+            writeText("""
+               - 13
+           """.trimIndent())
+        }
+        with(File(dir.toFile(), "b.yml")) {
+            writeText("""
+                b: !include a.yml
+            """.trimIndent())
+        }
+        val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
+        assertThat(res["b"] is List<*>)
+        assertThat((res["b"] as List<Int>).first()).isEqualTo(13)
+    }
+
+    @Test
     fun includeYaml(@TempDir dir: Path) {
         with(File(dir.toFile(), "a.yml")) {
             writeText("""
