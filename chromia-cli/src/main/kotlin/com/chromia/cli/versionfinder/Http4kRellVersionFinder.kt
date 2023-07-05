@@ -1,8 +1,10 @@
 package com.chromia.cli.versionfinder
 
+import net.postchain.api.rest.json.JsonFactory.auto
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.base.model.R_LangVersion
+import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
@@ -16,8 +18,9 @@ class Http4kRellVersionFinder(private val httpHandler: HttpHandler) : RellVersio
                 .header("Accept", ContentType.APPLICATION_JSON.value)
 
         val result = httpHandler(request)
+        val versionLens = Body.auto<String>().toLens()
         return when (result.status) {
-            Status.OK -> R_LangVersion.of(result.body.toString())
+            Status.OK -> R_LangVersion.of(versionLens(result))
             Status.NOT_FOUND -> throw RuntimeException("Can not find blockchain with blockchainRID: $brid")
             else -> {
                 throw RuntimeException("Unknown status ${result.status} for request ${request.uri}")
