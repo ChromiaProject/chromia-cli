@@ -34,11 +34,19 @@ class RunNodeIT {
                     ChrProcess.Builder("node", "update")
                             .setConfig(dir.resolve("config.yml").toFile())
                             .start {
-                                it.waitUntil("onfiguration added at height", Duration.ofSeconds(5))
+                                assertThat(it.readLines()).anyMatch { it.contains("onfiguration added at height") }
                             }
                     process.waitUntil("Blockchain has been started", Duration.ofSeconds(10))
 
                     ChrProcess.Builder("query", "new_query").start { assertThat(it.readLines()).containsExactly("1") }
+
+                    // Fail to update using configuration that already exists
+                    TestDataCreator.basicApp(dir)
+                    ChrProcess.Builder("node", "update")
+                            .setConfig(dir.resolve("config.yml").toFile())
+                            .start {
+                                assertThat(it.readLines()).anyMatch { it.contains("Blockchain configuration already exists in database, cannot update") }
+                            }
                 }
     }
 }
