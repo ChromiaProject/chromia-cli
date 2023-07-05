@@ -28,7 +28,11 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
                 }
             }
         }
-        if (!found) println(output.joinToString("\n"))
+        if (!found) {
+            println("Timed out ($timeout) waiting for message: $msg")
+            println("Process output:")
+            println(output.joinToString("\n"))
+        }
         assertThat(found).isTrue()
     }
 

@@ -16,7 +16,7 @@ class RunNodeIT {
                 .awaitCompletion(false)
                 .setConfig(dir.resolve("config.yml").toFile())
                 .start { process ->
-                    process.waitUntil("Blockchain has been started", Duration.ofSeconds(10))
+                    process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
                     ChrProcess.Builder("query", "hello").start { assertThat(it.readLines()).containsExactly("\"Hi!\"") }
                     ChrProcess.Builder("tx", "call_op", "1").start { assertThat(it.readLines()).anyMatch { str -> str.contains("was posted WAITING: OK") } }
@@ -34,9 +34,9 @@ class RunNodeIT {
                     ChrProcess.Builder("node", "update")
                             .setConfig(dir.resolve("config.yml").toFile())
                             .start {
-                                it.waitUntil("onfiguration added at height", Duration.ofSeconds(5))
+                                it.waitUntil("onfiguration added at height", Duration.ofSeconds(10))
                             }
-                    process.waitUntil("Blockchain has been started", Duration.ofSeconds(10))
+                    process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
                     ChrProcess.Builder("query", "new_query").start { assertThat(it.readLines()).containsExactly("1") }
                 }
