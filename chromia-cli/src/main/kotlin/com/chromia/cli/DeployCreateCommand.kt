@@ -9,6 +9,8 @@ import com.chromia.cli.util.pubkey
 import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
@@ -23,6 +25,7 @@ class DeployCreateCommand(
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { DeployInfoCommand.httpHandlerFactory(it) },
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
+    val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
     override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
         val httpClient = httpHandlerFactory(createClientConfig())
@@ -35,7 +38,7 @@ class DeployCreateCommand(
 
         deployedChains.forEach { (name, _) ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
-            confirm(
+            if (!confirm) confirm(
                     "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
                     default = false, abort = true)
         }
