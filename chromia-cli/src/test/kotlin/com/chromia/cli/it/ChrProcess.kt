@@ -17,15 +17,18 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
     fun readLines() = reader.readLines()
     fun waitUntil(msg: String, timeout: Duration) {
         var found = false
+        val output = mutableListOf<String>()
         val startTime = System.currentTimeMillis()
         while (!found && System.currentTimeMillis() - startTime < timeout.toMillis()) {
             readLine()?.let {
+                output.add(it)
                 if (verbose) println(it)
                 if (it.contains(msg)) {
                     found = true
                 }
             }
         }
+        if (!found) println(output.joinToString("\n"))
         assertThat(found).isTrue()
     }
 
