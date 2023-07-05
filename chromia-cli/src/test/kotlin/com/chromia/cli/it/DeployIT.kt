@@ -55,13 +55,14 @@ class DeployIT {
                 privkey=D33345577D6E08997D35D3D359DAF6CD4AF91651B2C006F9974E4B73E06574F7
             """.trimIndent())
         }
-        val restApi = RestApi(7740, "")
-        restApi.attachModel(BlockchainRid.ZERO_RID, SuccessfulDeploymentModel(BlockchainRid.ZERO_RID))
+        RestApi(7740, "").use {
+            it.attachModel(BlockchainRid.ZERO_RID, SuccessfulDeploymentModel(BlockchainRid.ZERO_RID))
 
-        ChrProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
-                .setConfig(dir.resolve("config.yml").toFile())
-                .start { process ->
-                    assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }
-                }
+            ChrProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
+                    .setConfig(dir.resolve("config.yml").toFile())
+                    .start { process ->
+                        assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }
+                    }
+        }
     }
 }
