@@ -47,7 +47,7 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
         fun verbose(value: Boolean) = apply { verbose = value }
 
 
-        fun <R> start(f: (ChrProcess) -> R): R {
+        fun <R> start(onCompleted: (ChrProcess) -> R): R {
             val processArgs = buildList<String> {
                 add("${System.getenv("DIST_DIR")}/chr")
                 addAll(args)
@@ -58,7 +58,7 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
                         redirectErrorStream(true)
                     }.start()
             if (shouldFinish) process.waitFor(timeout.seconds, TimeUnit.SECONDS)
-            return ChrProcess(process, verbose).use(f)
+            return ChrProcess(process, verbose).use(onCompleted)
         }
     }
 }
