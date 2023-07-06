@@ -1,8 +1,13 @@
 package com.chromia.cli.tools.formatter
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.mordant.rendering.BorderType
+import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyles
 import com.github.ajalt.mordant.rendering.Theme
+import com.github.ajalt.mordant.table.TableBuilder
+import com.github.ajalt.mordant.table.table
 
 val theme = Theme {
     // Use ANSI-16 codes for help colors
@@ -21,3 +26,15 @@ val CliktCommand.success get() = currentContext.terminal.theme.success
 val CliktCommand.info get() = currentContext.terminal.theme.info
 val CliktCommand.warning get() = currentContext.terminal.theme.warning
 val CliktCommand.muted get() = currentContext.terminal.theme.muted
+
+
+fun CliktCommand.defaultTable(init: TableBuilder.() -> Unit) = currentContext.terminal.theme.defaultTable(init)
+
+fun Theme.defaultTable(init: TableBuilder.() -> Unit) = table {
+    align = TextAlign.LEFT
+    borderType = BorderType.ROUNDED
+    header {
+        style = info + TextStyles.bold
+    }
+    init()
+}
