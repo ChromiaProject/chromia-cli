@@ -3,6 +3,7 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
@@ -99,7 +100,7 @@ internal class BuildCommandTest {
                   path: lib
                   rid: x"11" 
         """.trimIndent())
-        val e = assertFailsWith<CliktError> { command.parse() }
+        val e = assertFailsWith<ValidationException> { command.parse() }
         assertThat(e.message!!).contains("Library missing is not installed, install before building")
     }
 
@@ -116,7 +117,7 @@ internal class BuildCommandTest {
                   rid: x"11" 
         """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/${InstallDirTarget.SOURCE.target}/bar"), "")
-        assertFailsWith<IllegalArgumentException> { command.parse() }
+        assertFailsWith<ValidationException> { command.parse() }
         testConsole.assertContains("Should be: 11")
         testConsole.assertContains("Was: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5")
     }

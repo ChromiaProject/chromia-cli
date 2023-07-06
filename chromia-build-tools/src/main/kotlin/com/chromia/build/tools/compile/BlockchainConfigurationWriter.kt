@@ -1,4 +1,4 @@
-package com.chromia.cli.compile.config
+package com.chromia.build.tools.compile
 
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.gtvml.GtvMLEncoder

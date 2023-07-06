@@ -6,7 +6,6 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 
 class RunNodeIT {
     @Test

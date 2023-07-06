@@ -2,7 +2,8 @@ package com.chromia.cli
 
 import com.chromia.build.tools.compile.BlockchainConfigHolder
 import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
-import com.chromia.cli.compile.config.BlockchainConfigurationWriter
+import com.chromia.build.tools.compile.BlockchainConfigurationWriter
+import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
@@ -92,7 +93,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, settings.source)
+        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, settings.file.parentFile)
         val chainsToDeploy = chainsToDeploy(generator)
         beforeDeployment(chainsToDeploy)
         val client = createClient()

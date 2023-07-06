@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
@@ -41,8 +42,8 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
     protected fun extractConfigs(): Collection<BlockchainConfigHolder> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
-            val blockchainsToCompile = settings.blockchains.filter { name.isEmpty() || name.contains(it.key) }
-            BuildCommand.compile(CliktCliEnv(this), settings.source, settings.target, settings.compile, blockchainsToCompile, settings.libs)
+            val blockchainsToCompile = settings.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
+            ChromiaCompileApi.compile(CliktCliEnv(this), settings.model, settings.file.parentFile, blockchainsToCompile)
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }

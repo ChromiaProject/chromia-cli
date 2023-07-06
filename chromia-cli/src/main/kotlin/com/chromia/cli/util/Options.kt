@@ -42,7 +42,7 @@ data class Settings(val file: File, val model: ChromiaCliModel) {
     val libs get() = model.libs
 }
 
-internal val DEFAULT_CONFIG_FILE = File("config.yml")
+internal val DEFAULT_CONFIG_FILE = File("config.yml").absoluteFile
 
 internal fun requireDefaultConfig() {
     if (!DEFAULT_CONFIG_FILE.exists()) {
