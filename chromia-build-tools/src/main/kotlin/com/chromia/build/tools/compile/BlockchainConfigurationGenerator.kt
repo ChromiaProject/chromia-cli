@@ -2,7 +2,7 @@ package com.chromia.build.tools.compile
 
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
+import java.io.File
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -18,9 +18,8 @@ import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.module.RellPostchainModuleFactory
-import java.io.File
 
-class BlockchainConfigurationGenerator(
+internal class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
@@ -35,13 +34,13 @@ class BlockchainConfigurationGenerator(
             "net.postchain.eif.EifGTXModule",
     )
 
-    fun generate(): Collection<BlockchainConfigHolder> {
+    fun generate(): Collection<ChromiaCompileResult> {
         return blockchainModels.toList().map { generateConfiguration(it.first, it.second) }
     }
 
-    fun generateConfiguration(name: String, model: BlockchainModel): BlockchainConfigHolder {
+    fun generateConfiguration(name: String, model: BlockchainModel): ChromiaCompileResult {
         val gtvModel = generateGtv(model)
-        val configholder = BlockchainConfigHolder(name, gtvModel)
+        val configholder = ChromiaCompileResult(name, gtvModel)
         validateGtvConfiguration(gtvModel)
         return configholder
     }

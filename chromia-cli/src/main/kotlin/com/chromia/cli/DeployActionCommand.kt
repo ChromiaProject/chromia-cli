@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation
@@ -23,7 +23,7 @@ open class DeployActionCommand(
 
     private val description by option(help = "Description on why the blockchain is being acted on").default("")
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
         blockchain?.map {
             proposeBlockchainActionOperation(
                     clientConfig.pubkey.data,

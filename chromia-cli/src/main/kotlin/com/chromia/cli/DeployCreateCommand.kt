@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
@@ -51,7 +51,7 @@ class DeployCreateCommand(
             """.trimIndent())
     }
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
         BlockchainOperations(client.apiVersion, this)
                 .newBlockchainOperation(clientConfig.pubkey.data, configHolder.configByteArray, configHolder.name, deployModel.container!!)
     }

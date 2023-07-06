@@ -1,8 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.build.tools.compile.BlockchainConfigHolder
-import com.chromia.build.tools.compile.BlockchainConfigurationWriter
 import com.chromia.build.tools.compile.ChromiaCompileApi
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
@@ -121,7 +120,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
                 when (result.status) {
                     TransactionStatus.CONFIRMED -> {
-                        BlockchainConfigurationWriter.storeConfig(chain.config, "${target}_${chain.name}_${Instant.now().toEpochMilli()}", settings.target.toPath())
+                        chain.save(settings.target,"${target}_${chain.name}_${Instant.now().toEpochMilli()}")
                         val maybeBcRid = if (apiVersion >= 8) {
                             client.findBlockchainRid(tx.rid.hexStringToByteArray())?.let { BlockchainRid(it) }
                         } else {
@@ -153,7 +152,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         }
     }
 
-    abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder)
+    abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult)
 
     abstract fun beforeDeployment(deployedChains: Collection<String>)
 

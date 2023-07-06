@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
-import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
@@ -40,7 +40,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     private val overrides by option("-p", help = "Override any property value (usage: -p key=value)", metavar = "KEY=VALUE").associate()
     protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
 
-    protected fun extractConfigs(): Collection<BlockchainConfigHolder> {
+    protected fun extractConfigs(): Collection<ChromiaCompileResult> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val blockchainsToCompile = settings.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
             ChromiaCompileApi.compile(CliktCliEnv(this), settings.model, settings.file.parentFile, blockchainsToCompile)
@@ -56,7 +56,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                             it.nameWithoutExtension to GtvMLParser.parseGtvML(it.readText())
                         }
                     }
-                    .map { BlockchainConfigHolder(it.key, it.value) }
+                    .map { ChromiaCompileResult(it.key, it.value) }
 
         }.sortedBy { it.name }
 

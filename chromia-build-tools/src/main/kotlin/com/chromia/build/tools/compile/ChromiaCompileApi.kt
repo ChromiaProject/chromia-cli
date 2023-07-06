@@ -7,11 +7,11 @@ import java.io.File
 import net.postchain.rell.api.base.RellCliEnv
 
 object ChromiaCompileApi {
-    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File): Collection<BlockchainConfigHolder> {
+    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File): Collection<ChromiaCompileResult> {
         return compile(cliEnv, model, projectFolder, model.blockchains.keys)
     }
 
-    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File, blockchains: Collection<String>): Collection<BlockchainConfigHolder> {
+    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File, blockchains: Collection<String>): Collection<ChromiaCompileResult> {
         val libraryVerifyer = LibraryVerifyer(cliEnv)
         libraryVerifyer.verifyLibs(File(projectFolder, model.compile.source), model.libs)
 

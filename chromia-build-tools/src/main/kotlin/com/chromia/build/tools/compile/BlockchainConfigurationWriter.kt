@@ -1,12 +1,12 @@
 package com.chromia.build.tools.compile
 
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.gtvml.GtvMLEncoder
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.writeText
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.gtvml.GtvMLEncoder
 
-object BlockchainConfigurationWriter {
+internal object BlockchainConfigurationWriter {
     fun storeConfig(
         gtvConfig: Gtv,
         outputName: String,

@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
@@ -35,7 +35,7 @@ class DeployUpdateCommand(
 
     override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
         val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
         val blockchainRid = deployModel.chains[configHolder.name]!!
