@@ -1,7 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.apiVersion
@@ -24,7 +24,7 @@ class DeployCreateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
 
-    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+    override fun beforeDeployment(deployedChains: Collection<String>) {
         val httpClient = httpHandlerFactory(createClientConfig())
         val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
@@ -33,7 +33,7 @@ class DeployCreateCommand(
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
 
-        deployedChains.forEach { (name, _) ->
+        deployedChains.forEach { name ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             confirm(
                     "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",

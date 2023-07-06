@@ -34,8 +34,8 @@ open class DeployActionCommand(
         }
     }
 
-    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
-        deployedChains.forEach { (name, _) ->
+    override fun beforeDeployment(deployedChains: Collection<String>) {
+        deployedChains.forEach { name ->
             if (!deployModel.chains.containsKey(name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain $name cannot be done since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
         }
     }

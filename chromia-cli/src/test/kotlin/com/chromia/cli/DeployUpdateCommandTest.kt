@@ -5,17 +5,16 @@ import assertk.assertions.contains
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.util.TestConsole
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
+import java.io.File
+import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
@@ -59,6 +58,7 @@ class DeployUpdateCommandTest {
                     container: foo
                     chains:
                       okConfig: x"0000000000000000000000000000000000000000000000000000000000000002"
+                      wrongConfig: x"0000000000000000000000000000000000000000000000000000000000000003"
             """.trimIndent())
             }
             secret = File(dir.toFile(), ".secret").apply {
@@ -87,7 +87,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
     @Test
     fun cannotDeployFaultyConfig(@TempDir dir: Path) {
         val throwable = assertThrows<RellCliBasicException> {
-            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }

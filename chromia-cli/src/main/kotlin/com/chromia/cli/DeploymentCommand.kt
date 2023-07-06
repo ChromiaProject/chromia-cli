@@ -1,7 +1,6 @@
 package com.chromia.cli
 
 import com.chromia.build.tools.compile.BlockchainConfigHolder
-import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.cli.tools.launcher.createAliases
@@ -24,6 +23,9 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
+import java.io.File
+import java.time.Instant
+import java.util.Properties
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -35,9 +37,6 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.crypto.sha256Digest
 import org.apache.commons.configuration2.BaseConfiguration
-import java.io.File
-import java.time.Instant
-import java.util.Properties
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments") {
     override fun aliases() = createAliases()
@@ -93,14 +92,15 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-        val generator = BlockchainConfigurationGenerator(CliktCliEnv(this), settings.compile, settings.blockchains, settings.file.parentFile)
-        val chainsToDeploy = chainsToDeploy(generator)
+        val chainsToDeploy = chainsToDeploy()
+        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.file.parentFile, chainsToDeploy)
         beforeDeployment(chainsToDeploy)
+
         val client = createClient()
         val apiVersion = client.apiVersion()
         var failure = false
         val txs = buildList {
-            for (chain in chainsToDeploy) {
+            for (chain in compiledChains) {
                 val result = client
                         .transactionBuilder()
                         .addNop()
@@ -155,13 +155,11 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder)
 
-    abstract fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>)
+    abstract fun beforeDeployment(deployedChains: Collection<String>)
 
     abstract fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>)
 
-    private fun chainsToDeploy(generator: BlockchainConfigurationGenerator): Collection<BlockchainConfigHolder> {
-        return blockchain?.let { chains ->
-            chains.map { generator.generateConfiguration(it, settings.blockchains[it]!!) }
-        } ?: generator.generate().toList()
+    private fun chainsToDeploy(): Collection<String> {
+        return blockchain ?: settings.blockchains.keys
     }
 }

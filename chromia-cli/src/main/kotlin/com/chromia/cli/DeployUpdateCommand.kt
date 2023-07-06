@@ -1,7 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HeightFinder
@@ -27,8 +27,8 @@ class DeployUpdateCommand(
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
     }
 
-    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
-        deployedChains.forEach { (name, _) ->
+    override fun beforeDeployment(deployedChains: Collection<String>) {
+        deployedChains.forEach { name ->
             if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
         }
     }

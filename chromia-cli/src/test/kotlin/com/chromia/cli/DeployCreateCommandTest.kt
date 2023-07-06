@@ -2,12 +2,13 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole
-import com.github.ajalt.clikt.core.CliktError
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.context
+import java.io.File
+import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliBasicException
 import org.http4k.core.HttpHandler
 import org.http4k.core.Response
@@ -18,8 +19,6 @@ import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.io.File
-import java.nio.file.Path
 
 
 class DeployCreateCommandTest {
@@ -46,19 +45,21 @@ class DeployCreateCommandTest {
                   test:
                     url: "localhost:7740"
                     brid: x"0000000000000000000000000000000000000000000000000000000000000001"
+                    container: mycontainer
             """.trimIndent())
         }
-        with(File(dir.toFile(), ".secret")) {
+        val secret = File(dir.toFile(), ".secret")
+        with(secret) {
             writeText("""
-                pubkey = 12312312414124124124121
-                privkey = 000000000000000000000000000000000000001
+privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
+pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
             """.trimIndent())
         }
         val testConsole = TestConsole()
         val settings = Settings(settingsFile, parseModel(settingsFile))
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
-            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
