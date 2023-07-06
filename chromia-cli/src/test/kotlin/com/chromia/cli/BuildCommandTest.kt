@@ -11,6 +11,7 @@ import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.gtv.gtvml.GtvMLParser
@@ -32,10 +33,8 @@ internal class BuildCommandTest {
 
     @Test
     fun testCanNotFindSettings() {
-        val exception = assertFailsWith<FileNotFound> {
-            BuildCommand().parse(listOf())
-        }
-        assertTrue(exception.message?.contains("config.yml not found") ?: false)
+        val res = BuildCommand().test(listOf())
+        assertTrue(res.stderr.contains("config.yml not found"))
     }
 
     @Test
