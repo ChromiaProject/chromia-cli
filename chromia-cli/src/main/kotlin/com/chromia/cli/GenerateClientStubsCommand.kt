@@ -1,11 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.formatter.PanelHelpFormatter
-import com.chromia.cli.tools.formatter.theme
 import com.chromia.cli.util.LanguageSupport
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.groups.required
@@ -14,7 +11,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.mordant.terminal.Terminal
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentSaver
@@ -25,13 +21,6 @@ import java.io.File
 
 class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", help = "Generates client code for a rell dapp") {
     private val settings by settingsOption()
-
-    init {
-        context {
-            Terminal(theme = theme)
-            helpFormatter = { PanelHelpFormatter(it) }
-        }
-    }
 
     private val moduleName by option("--module",
             help = "Explicitly set which modules to generate code for. Separate modules with ','").split(",")

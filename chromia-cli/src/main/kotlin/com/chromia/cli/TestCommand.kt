@@ -1,29 +1,25 @@
 package com.chromia.cli
 
 import com.chromia.cli.color.AnsiColorScheme
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.color.ColorAware
 import com.chromia.cli.color.ColorFormat
 import com.chromia.cli.color.NoColorScheme
 import com.chromia.cli.color.green
 import com.chromia.cli.color.heading
 import com.chromia.cli.color.line
+import com.chromia.cli.color.red
+import com.chromia.cli.color.space
+import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
-import com.chromia.cli.color.red
 import com.chromia.cli.util.settingsOption
-import com.chromia.cli.color.space
-import com.chromia.cli.tools.formatter.PanelHelpFormatter
-import com.chromia.cli.tools.formatter.theme
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.mordant.terminal.Terminal
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -48,13 +44,6 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
             .flag("--no-db", default = true)
     override val colorScheme by option("--no-color", help = "Do not use ansi colors").flag()
             .convert { if (it) NoColorScheme(::echo) else AnsiColorScheme(::echo) }
-
-    init {
-        context {
-            Terminal(theme = theme)
-            helpFormatter = { PanelHelpFormatter(it) }
-        }
-    }
 
 
     override fun run() {

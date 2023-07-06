@@ -1,12 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.wipeDatabaseOption
 import com.chromia.build.tools.compile.withSigner
-import com.chromia.cli.tools.formatter.PanelHelpFormatter
-import com.chromia.cli.tools.formatter.theme
+import com.chromia.cli.util.wipeDatabaseOption
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.mordant.terminal.Terminal
 import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.StorageInitializer
@@ -30,14 +26,6 @@ class StartCommand : AbstractNodeCommand(help = """
 """.trimIndent()) {
     private val wipe by wipeDatabaseOption()
     val cryptoSystem = Secp256K1CryptoSystem()
-
-
-    init {
-        context {
-            Terminal(theme = theme)
-            helpFormatter = { PanelHelpFormatter(it) }
-        }
-    }
 
     override fun run() {
         startPostchainNode()

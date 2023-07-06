@@ -1,16 +1,12 @@
 package com.chromia.cli
 
-import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.MissingArgument
+import assertk.assertThat
+import assertk.assertions.contains
+import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import assertk.assertThat
-import assertk.assertions.contains
-import com.github.ajalt.clikt.testing.test
 
 class QueryCommandTest {
 
@@ -18,7 +14,7 @@ class QueryCommandTest {
     @Test
     fun testMissingQueryName() {
         val res = QueryCommand().test(listOf())
-        assertThat(res.stderr).contains("missing argument QUERYNAME")
+        assertThat(res.stderr).contains("missing argument <queryname>")
     }
 
     @Test
@@ -30,7 +26,7 @@ class QueryCommandTest {
     @Test
     fun testCanNotParseArgs() {
         val res = QueryCommand().test(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1 -> 1"))
-        assertThat(res.stderr).contains("invalid value for ARGS: query must be done with named parameters in a dict")
+        assertThat(res.stderr).contains("invalid value for <args>: query must be done with named parameters in a dict")
     }
 
 

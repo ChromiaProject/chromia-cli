@@ -1,16 +1,16 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.formatter.PanelHelpFormatter
-import com.chromia.cli.tools.formatter.theme
-import com.chromia.cli.util.*
+import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.settingsOptionDefault
+import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.arguments.validate
-import com.github.ajalt.clikt.parameters.groups.*
-import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.clikt.parameters.groups.cooccurring
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
@@ -20,12 +20,6 @@ import org.apache.commons.configuration2.BaseConfiguration
 
 
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
-    init {
-        context {
-            Terminal(theme = theme)
-            helpFormatter = { PanelHelpFormatter(it) }
-        }
-    }
 
     private val settings by settingsOptionNotRequired()
     private val explicitTarget by LocalDeploymentOption()
