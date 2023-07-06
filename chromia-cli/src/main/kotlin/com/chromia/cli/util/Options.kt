@@ -12,8 +12,8 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.base.model.R_ModuleName
 import java.io.File
+import net.postchain.rell.base.model.R_ModuleName
 
 
 fun CliktCommand.nodePropertiesOption() =
@@ -56,7 +56,7 @@ fun CliktCommand.settingsOption() = settingsOptionNotRequired()
 fun CliktCommand.settingsOptionNotRequired() =
         option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
-                .convert { Settings(it, parseModel(it)) }
+                .convert { Settings(it.absoluteFile, parseModel(it)) }
 
 fun settingsOptionDefault(): Settings {
     requireDefaultConfig()
