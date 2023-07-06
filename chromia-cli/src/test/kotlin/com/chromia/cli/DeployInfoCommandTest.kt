@@ -3,9 +3,15 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.chromia.cli.tools.formatter.defaultTable
+import com.chromia.cli.tools.formatter.theme
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.table.SectionBuilder
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import java.time.Duration
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.BlockDetail
 import net.postchain.client.core.PostchainClient
@@ -25,13 +31,10 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
-import java.time.Duration
 
 class DeployInfoCommandTest {
 
-    private val logger = TerminalRecorder()
+    private val logger = TerminalRecorder(width = 1000)
     private val testTerminal = Terminal(logger)
 
     @Test
@@ -53,26 +56,24 @@ class DeployInfoCommandTest {
             """.trimIndent())
         }
 
-
-
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "ok", "--network", "test"))
-        assertThat(logger.output()).contains("ok         | 00:002 | my_cluster")
-        assertThat(logger.output()).contains("http://myhost:7740 | 569889 | OK")
+        assertBlockchainTableContainsRow("ok", "00:002", "my_cluster")
+        assertNodeTableContainsRow("http://myhost:7740", "569889", "OK")
         logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_found", "--network", "test"))
-        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
+        assertNodeTableContainsRow("http://myhost:7740", "-1", "Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
         logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_deployed", "--network", "test"))
         assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
         logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "has_errors", "--network", "test"))
-        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
+        assertNodeTableContainsRow("http://myhost:7740", "-1", "Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
         logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test"))
-        assertThat(logger.output()).contains("http://myhost:7740 | 570320 | OK")
+        assertNodeTableContainsRow("http://myhost:7740", "570320", "OK")
         logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test", "--verbose"))
-        assertThat(logger.output()).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertVerboseNodeTableContainsRow("http://myhost:7740", "119329", "HaveBlock", "2", "true", "OK")
     }
 
     @Test
@@ -80,23 +81,45 @@ class DeployInfoCommandTest {
         val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { terminal = testTerminal }
 
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000002", "--url", "http://myhost:7740"))
-        assertThat(logger.output()).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
-        assertThat(logger.output()).contains("http://myhost:7740 | 569889 | OK")
+        assertBlockchainTableContainsRow("0000000000000000000000000000000000000000000000000000000000000002", "00:002", "my_cluster")
+        assertThat(logger.output()).contains("0000000000000000000000000000000000000000000000000000000000000002") // Make sure we don't cut the line lenght
         logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000003", "--url", "http://myhost:7740"))
-        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
+        assertNodeTableContainsRow("http://myhost:7740", "-1", "Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
         logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000004", "--url", "http://myhost:7740"))
         assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
         logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000005", "--url", "http://myhost:7740"))
-        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
+        assertNodeTableContainsRow("http://myhost:7740", "-1", "Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
         logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740"))
-        assertThat(logger.output()).contains("http://myhost:7740 | 570320 | OK")
+        assertNodeTableContainsRow("http://myhost:7740", "570320", "OK")
         logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740", "--verbose"))
-        assertThat(logger.output()).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertVerboseNodeTableContainsRow("http://myhost:7740", "119329", "HaveBlock", "2", "true", "OK")
+    }
+
+    private fun assertBlockchainTableContainsRow(vararg row: String) {
+        assertTableContainsRow({ row("Blockchain", "Rid", "Cluster") }, { row(row)})
+    }
+
+    private fun assertNodeTableContainsRow(vararg row: String) {
+        assertTableContainsRow({ row("Node url", "Height", "Status") }, { row(row)})
+    }
+
+    private fun assertVerboseNodeTableContainsRow(vararg row: String) {
+        assertTableContainsRow({ row("Node url", "Height", "State", "Round", "Revolting", "Status") }, { row(row) })
+    }
+
+    private fun assertTableContainsRow(headerRow: SectionBuilder.() -> Unit, bodyRow: SectionBuilder.() -> Unit) {
+        val recorder = TerminalRecorder()
+        val testTerminal = Terminal(recorder)
+        theme.defaultTable {
+            header(headerRow)
+            body(bodyRow)
+        }.render(testTerminal)
+        assertThat(logger.output()).contains(recorder.output())
     }
 
 

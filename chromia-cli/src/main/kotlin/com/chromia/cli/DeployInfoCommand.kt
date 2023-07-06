@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
@@ -11,8 +12,6 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import de.m3y.kformat.Table
-import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
@@ -48,26 +47,26 @@ class DeployInfoCommand(
         val nodeStatusFinder = NodeStatusFinder(httpHandlerFactory(config), clientProvider, config, clusterManagement, verbose)
 
         try {
-            table {
-                hints {
-                    defaultAlignment = Table.Hints.Alignment.LEFT
-                    borderStyle = Table.BorderStyle.SINGLE_LINE
+            echo(defaultTable {
+                header {
+                    row("Blockchain", "Rid", "Cluster")
                 }
-                header("Blockchain", "Rid", "Cluster")
-                row(option.blockchainName, option.brid.toShortHex(), clusterManagement.getClusterOfBlockchain(option.brid))
-            }.render().also { echo(it) }
+                body {
+                    row(option.blockchainName, option.brid.toShortHex(), clusterManagement.getClusterOfBlockchain(option.brid))
+                }
+            })
             val clusterUrls = clusterManagement.getBlockchainApiUrls(option.brid)
-            table {
-                hints {
-                    defaultAlignment = Table.Hints.Alignment.LEFT
-                    borderStyle = Table.BorderStyle.SINGLE_LINE
+            echo(defaultTable {
+                header{
+                    row(*nodeStatusFinder.tableHeaders().toTypedArray())
                 }
-                header(nodeStatusFinder.tableHeaders())
-                clusterUrls.forEach { url ->
-                    val result = nodeStatusFinder.findStatus(Endpoint(url), option.brid)
-                    row(*result.values())
+                body {
+                    clusterUrls.forEach { url ->
+                        val result = nodeStatusFinder.findStatus(Endpoint(url), option.brid)
+                        row(*result.values())
+                    }
                 }
-            }.render().also { echo(it) }
+            })
         } catch (e: ClientError) {
             echo("Cluster not found for blockchain rid ${option.brid.toShortHex()}")
             echo(e.message)
