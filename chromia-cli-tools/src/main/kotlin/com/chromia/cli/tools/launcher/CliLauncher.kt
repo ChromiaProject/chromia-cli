@@ -21,7 +21,7 @@ class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     init {
         completionOption()
         context {
-            Terminal(theme = theme)
+            terminal = Terminal(theme = theme)
             helpFormatter = { PanelHelpFormatter(it) }
         }
     }

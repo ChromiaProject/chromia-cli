@@ -1,25 +1,17 @@
 package com.chromia.cli
 
-import com.chromia.cli.color.AnsiColorScheme
-import com.chromia.cli.color.ColorAware
-import com.chromia.cli.color.ColorFormat
-import com.chromia.cli.color.NoColorScheme
-import com.chromia.cli.color.green
-import com.chromia.cli.color.heading
-import com.chromia.cli.color.line
-import com.chromia.cli.color.red
-import com.chromia.cli.color.space
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.rendering.TextStyle
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -32,7 +24,7 @@ import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 
-class TestCommand : CliktCommand(help = "Run tests in working directory"), ColorAware {
+class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
             .multiple()
@@ -42,9 +34,6 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     private val sourceDir by lazy { settings.source }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
-    override val colorScheme by option("--no-color", help = "Do not use ansi colors").flag()
-            .convert { if (it) NoColorScheme(::echo) else AnsiColorScheme(::echo) }
-
 
     override fun run() {
         try {
@@ -71,7 +60,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testModuleArgs = settings.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
-        heading("Running unit tests")
+        currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         printResults(res)
     }
@@ -89,7 +78,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
         val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
 
-        heading("Running tests for chain: $blockchain")
+        echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         printResults(res)
     }
@@ -133,14 +122,15 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     }
 
     private fun UnitTestCase.print() {
-        echo("${colorScheme.blue.format("TEST")}: $name")
+
+        echo("${TextColors.blue("TEST")}: $name")
     }
 
     private fun UnitTestCaseResult.print() {
         if (res.isOk) {
-            green("$res $case")
+            currentContext.terminal.success("$res $case")
         } else {
-            red("$res $case")
+            currentContext.terminal.danger("$res $case")
         }
     }
 
@@ -149,22 +139,22 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
 
         if (failedTests.isNotEmpty()) {
-            space()
-            line()
+            echo()
+            echo("-".repeat(60))
             echo("FAILED TESTS:")
             for (r in failedTests) {
-                space()
+                echo()
                 echo(r.case.name)
                 printException(r.res.error!!)
             }
         }
 
-        space()
-        line()
+        echo()
+        echo("-".repeat(60))
         echo("TEST RESULTS:")
 
-        printResults(okTests, colorScheme.green)
-        printResults(failedTests, colorScheme.red)
+        printResults(okTests, TextColors.green)
+        printResults(failedTests, TextColors.red)
 
         val nTests = results.getResults().size
         val nOk = okTests.size
@@ -173,17 +163,17 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
         echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
 
         if (nFailed == 0) {
-            green("***** OK *****")
+            currentContext.terminal.success("***** OK *****")
         } else {
-            throw CliktError(colorScheme.red.format("***** FAILED *****"))
+            throw CliktError(TextColors.red("***** FAILED *****"))
         }
     }
 
-    private fun printResults(list: List<UnitTestCaseResult>, color: ColorFormat) {
+    private fun printResults(list: List<UnitTestCaseResult>, color: TextStyle) {
         if (list.isNotEmpty()) {
-            space()
+            echo()
             for (r in list) {
-                echo("${color.format(r.res)} ${r.case}")
+                echo("${color(r.res.toString())} ${r.case}")
             }
         }
     }
@@ -191,7 +181,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory"), Color
     private fun printException(e: Throwable) {
         when (e) {
             is Rt_Exception -> {
-                val msg = Rt_Utils.appendStackTrace("${colorScheme.red.format("ERROR:")} ${e.message}", e.info.stack)
+                val msg = Rt_Utils.appendStackTrace("${TextColors.red("ERROR:")} ${e.message}", e.info.stack)
                 echo(msg)
             }
 
