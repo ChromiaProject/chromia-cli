@@ -5,9 +5,10 @@ import com.github.ajalt.mordant.rendering.Theme
 
 val theme = Theme {
     // Use ANSI-16 codes for help colors
-    styles["info"] = TextColors.green
-    styles["warning"] = TextColors.blue
-    styles["danger"] = TextColors.magenta
+    styles["success"] = TextColors.green
+    styles["info"] = TextColors.brightBlue
+    styles["warning"] = TextColors.red
+    styles["danger"] = TextColors.brightYellow
     styles["muted"] = TextColors.gray
 
     // Remove the border around code blocks
