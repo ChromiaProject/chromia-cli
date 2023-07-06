@@ -2,6 +2,8 @@ package com.chromia.cli
 
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.cli.tools.formatter.PanelHelpFormatter
+import com.chromia.cli.tools.formatter.theme
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
@@ -17,11 +19,11 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.time.Instant
 import java.util.Properties
@@ -66,7 +68,10 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
+        context {
+            Terminal(theme = theme)
+            helpFormatter = { PanelHelpFormatter(it) }
+        }
     }
 
     private fun createClient(): PostchainClient {
@@ -120,7 +125,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
                 when (result.status) {
                     TransactionStatus.CONFIRMED -> {
-                        chain.save(settings.target,"${target}_${chain.name}_${Instant.now().toEpochMilli()}")
+                        chain.save(settings.target, "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
                         val maybeBcRid = if (apiVersion >= 8) {
                             client.findBlockchainRid(tx.rid.hexStringToByteArray())?.let { BlockchainRid(it) }
                         } else {

@@ -1,11 +1,12 @@
 package com.chromia.cli.util
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext
 
-class CommandExtension(private val command: CliktCommand): BeforeEachCallback, AfterEachCallback {
+class CommandExtension(private val command: CliktCommand) : BeforeEachCallback, AfterEachCallback {
 
     private val init = InitExtension()
     val dir get() = init.dir
@@ -18,6 +19,6 @@ class CommandExtension(private val command: CliktCommand): BeforeEachCallback, A
         init.afterEach(p0)
     }
 
-    fun parse(argv: List<String> = listOf()) = command.parse(listOf("--settings", init.dir.absolutePath.plus("/config.yml")) + argv)
-    fun emptyParse(argv: List<String> = listOf()) = command.parse(argv)
+    fun parse(argv: List<String> = listOf()) = command.test(listOf("--settings", init.dir.absolutePath.plus("/config.yml")) + argv)
+    fun emptyParse(argv: List<String> = listOf()) = command.test(argv)
 }

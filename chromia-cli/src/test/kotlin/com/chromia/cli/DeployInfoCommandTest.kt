@@ -3,8 +3,9 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.BlockDetail
 import net.postchain.client.core.PostchainClient
@@ -29,10 +30,13 @@ import java.nio.file.Path
 import java.time.Duration
 
 class DeployInfoCommandTest {
+
+    private val logger = TerminalRecorder()
+    private val testTerminal = Terminal(logger)
+
     @Test
     fun failedVerification(@TempDir dir: Path) {
-        val testConsole = TestConsole()
-        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { console = testConsole }
+        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { terminal = testTerminal }
 
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
@@ -48,49 +52,51 @@ class DeployInfoCommandTest {
                       have_block:   x"0000000000000000000000000000000000000000000000000000000000000006"
             """.trimIndent())
         }
+
+
+
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "ok", "--network", "test"))
-        assertThat(testConsole.out[0].first).contains("ok         | 00:002 | my_cluster")
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
-        testConsole.reset()
+        assertThat(logger.output()).contains("ok         | 00:002 | my_cluster")
+        assertThat(logger.output()).contains("http://myhost:7740 | 569889 | OK")
+        logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_found", "--network", "test"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
+        logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "not_deployed", "--network", "test"))
-        testConsole.assertContains("Cluster not found for blockchain rid 00:004")
-        testConsole.reset()
+        assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
+        logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "has_errors", "--network", "test"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
+        logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | 570320 | OK")
+        logger.clearOutput()
         command.parse(listOf("-s", settings.absolutePath, "--blockchain", "have_block", "--network", "test", "--verbose"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertThat(logger.output()).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
     @Test
     fun failedVerificationManualChain(@TempDir dir: Path) {
-        val testConsole = TestConsole()
-        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { console = testConsole }
+        val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { terminal = testTerminal }
 
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000002", "--url", "http://myhost:7740"))
-        assertThat(testConsole.out[0].first).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 569889 | OK")
-        testConsole.reset()
+        assertThat(logger.output()).contains("0000000000000000000000000000000000000000000000000000000000000002 | 00:002 | my_cluster")
+        assertThat(logger.output()).contains("http://myhost:7740 | 569889 | OK")
+        logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000003", "--url", "http://myhost:7740"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 404 Not Found  Can't find blockchain from http://myhost:7740")
+        logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000004", "--url", "http://myhost:7740"))
-        testConsole.assertContains("Cluster not found for blockchain rid 00:004")
-        testConsole.reset()
+        assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
+        logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000005", "--url", "http://myhost:7740"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | -1     | Context: 500 Internal Server Error  Module initialization error from http://myhost:7740")
+        logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 570320 | OK")
-        testConsole.reset()
+        assertThat(logger.output()).contains("http://myhost:7740 | 570320 | OK")
+        logger.clearOutput()
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000006", "--url", "http://myhost:7740", "--verbose"))
-        assertThat(testConsole.out[1].first).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
+        assertThat(logger.output()).contains("http://myhost:7740 | 119329 | HaveBlock | 2     | true      | OK")
     }
 
 

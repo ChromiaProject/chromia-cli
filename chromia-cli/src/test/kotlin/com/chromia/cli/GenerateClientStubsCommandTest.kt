@@ -1,11 +1,11 @@
 package com.chromia.cli
 
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
-import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -13,37 +13,35 @@ import java.io.File
 
 internal class GenerateClientStubsCommandTest {
 
-    private val testConsole = TestConsole()
-
     @RegisterExtension
-    val command = CommandExtension(GenerateClientStubsCommand().context { console = testConsole })
+    val command = CommandExtension(GenerateClientStubsCommand().context { })
     val dir get() = command.dir
 
     @Test
     fun generateKotlin() {
-        command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--kotlin", "--package", "com.example"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--kotlin", "--package", "com.example"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.kt")
         assertThat(File(dir, "build/stubs/main/main.kt").readLines()[2]).isEqualTo("package com.example.main")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]")
+        assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]")
     }
 
     @Test
     fun generateTypescript() {
-        command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--typescript"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--typescript"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.ts")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]")
+        assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]")
     }
 
     @Test
     fun generateJavascript() {
-        command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--javascript"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--javascript"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.js")
         assertThat(File(dir, "build/stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "build/stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]")
+        assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]")
     }
 
     @Test
@@ -87,23 +85,23 @@ internal class GenerateClientStubsCommandTest {
             """.trimIndent())
         }
 
-        command.parse(listOf("-s", "${settings.absolutePath}", "--typescript"))
+        val res = command.parse(listOf("-s", "${settings.absolutePath}", "--typescript"))
 
         assertThat(File(dir, "build/stubs/").listFiles()).hasSize(3)
         assertThat(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A1 = {" }).hasSize(1)
         assertThat(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A2 = {" }).hasSize(1)
-        testConsole.assertContains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]")
+        assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]")
     }
 
     @Test
     fun generateWithTarget() {
         val targetDir = dir.absolutePath
-        command.parse(listOf("-s", "$targetDir/config.yml", "--javascript", "--target", "$targetDir/stubs"))
+        val res = command.parse(listOf("-s", "$targetDir/config.yml", "--javascript", "--target", "$targetDir/stubs"))
         assertThat(File(dir, "stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "stubs/main").list()).containsAll("main.js")
         assertThat(File(dir, "stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "stubs/").list()).containsAll("root.js")
-        testConsole.assertContains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
+        assertThat(res.output).contains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
 
     }
 }

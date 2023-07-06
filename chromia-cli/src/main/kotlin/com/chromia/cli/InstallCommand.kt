@@ -4,14 +4,16 @@ import com.chromia.build.tools.lib.GitRepositoryCloner
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstaller
 import com.chromia.build.tools.lib.RepositoryCloner
+import com.chromia.cli.tools.formatter.PanelHelpFormatter
+import com.chromia.cli.tools.formatter.theme
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.libraryOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.mordant.terminal.Terminal
 import kotlin.io.path.Path
 
 class InstallCommand(
@@ -22,7 +24,10 @@ class InstallCommand(
             .validate { require(settings.libs.keys.containsAll(it)) { "Specified library(s) $it does not exist in config file" } }
 
     init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
+        context {
+            Terminal(theme = theme)
+            helpFormatter = { PanelHelpFormatter(it) }
+        }
     }
 
     override fun run() {

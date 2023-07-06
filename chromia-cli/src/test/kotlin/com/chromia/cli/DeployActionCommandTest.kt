@@ -3,12 +3,9 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.TestClient
-import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
-import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
@@ -54,17 +51,10 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
         }
     }
 
-    lateinit var testConsole: TestConsole
-
-    @BeforeEach
-    fun setupTest() {
-        testConsole = TestConsole()
-    }
-
     @Test
     fun cannotPauseNotDeployedBlockchain(@TempDir dir: Path) {
         val throwable = assertThrows<CliktError> {
-            DeployPauseCommand { TestClient(it) }.context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
+            DeployPauseCommand { TestClient(it) }.context { }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("The action \"pause\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
     }
@@ -72,7 +62,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
     @Test
     fun cannotResumeNotDeployedBlockchain(@TempDir dir: Path) {
         val throwable = assertThrows<CliktError> {
-            DeployResumeCommand { TestClient(it) }.context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
+            DeployResumeCommand { TestClient(it) }.context { }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("The action \"resume\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
     }

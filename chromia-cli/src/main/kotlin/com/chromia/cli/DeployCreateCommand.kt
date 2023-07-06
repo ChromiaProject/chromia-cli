@@ -40,7 +40,8 @@ class DeployCreateCommand(
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             if (!confirm) confirm(
                     "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
-                    default = false, abort = true)
+                    default = false
+            )
         }
     }
 

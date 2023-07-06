@@ -1,21 +1,28 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.formatter.PanelHelpFormatter
+import com.chromia.cli.tools.formatter.theme
 import com.chromia.cli.model.RellVersion
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
+
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.util.*
 
 class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Generates a template project") {
     private val name by argument(help = "Dapp name").default("hello")
+
     init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
+        context {
+            Terminal(theme = theme)
+            helpFormatter = { PanelHelpFormatter(it) }
+        }
     }
 
     private val baseDir by option("-d", "--base-dir", help = "Directory to generate template project in")

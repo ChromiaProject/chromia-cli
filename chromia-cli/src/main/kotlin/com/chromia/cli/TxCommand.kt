@@ -1,9 +1,10 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.formatter.PanelHelpFormatter
+import com.chromia.cli.tools.formatter.theme
 import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -11,6 +12,7 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.mordant.terminal.Terminal
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
@@ -18,13 +20,18 @@ import java.util.*
 
 class TxCommand : CliktCommand(help = "Make a transaction") {
     init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
+        context {
+            Terminal(theme = theme)
+            helpFormatter = { PanelHelpFormatter(it) }
+        }
     }
 
     private val settings by settingsOptionNotRequired()
     private val secret by secretOption()
     private val explicitTarget by LocalDeploymentOption()
-    private val deploymentTarget by RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption {
+        settings?.model ?: settingsOptionDefault().model
+    }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
 

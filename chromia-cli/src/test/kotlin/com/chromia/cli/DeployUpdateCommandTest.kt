@@ -4,17 +4,15 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
-import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.context
-import java.io.File
-import java.nio.file.Path
+import com.github.ajalt.clikt.testing.test
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
@@ -71,23 +69,17 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
         }
     }
 
-    lateinit var testConsole: TestConsole
-
-    @BeforeEach
-    fun setupTest() {
-        testConsole = TestConsole()
-    }
 
     @Test
     fun successfulDeployment() {
-        DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "okConfig", "--network", "test", "--secret", secret.absolutePath))
-        testConsole.assertContains("Deployment of blockchain okConfig was successful")
+        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settings.absolutePath, "--blockchain", "okConfig", "--network", "test", "--secret", secret.absolutePath))
+        assertThat(res.output).contains("Deployment of blockchain okConfig was successful")
     }
 
     @Test
     fun cannotDeployFaultyConfig(@TempDir dir: Path) {
         val throwable = assertThrows<RellCliBasicException> {
-            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
+            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -95,7 +87,7 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
     @Test
     fun deploymentMustExistToUpdate() {
         val throwable = assertThrows<PrintMessage> {
-            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test", "--secret", secret.absolutePath))
+            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test", "--secret", secret.absolutePath))
         }
         assertThat(throwable.message!!).contains("Blockchain notDeployed cannot be updated since it has not been deployed to network test")
     }
