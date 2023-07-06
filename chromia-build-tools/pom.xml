@@ -56,6 +56,15 @@
             <version>${rell.version}</version>
         </dependency>
         <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-gtx</artifactId>
+            <version>${rell.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-base</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>postchain-gtv</artifactId>
         </dependency>

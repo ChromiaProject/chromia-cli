@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.util.wipeDatabaseOption
-import com.chromia.cli.util.withSigner
+import com.chromia.build.tools.compile.withSigner
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.output.CliktHelpFormatter

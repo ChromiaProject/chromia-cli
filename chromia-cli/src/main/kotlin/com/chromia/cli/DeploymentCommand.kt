@@ -1,7 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.compile.config.BlockchainConfigHolder
-import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
+import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv

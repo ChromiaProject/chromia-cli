@@ -1,7 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.compile.config.BlockchainConfigHolder
-import com.chromia.cli.compile.config.BlockchainConfigurationGenerator
+import com.chromia.build.tools.compile.BlockchainConfigHolder
+import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
 import com.chromia.cli.compile.config.BlockchainConfigurationWriter.storeConfig
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryVerifyer

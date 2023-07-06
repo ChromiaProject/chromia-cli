@@ -1,10 +1,8 @@
-package com.chromia.cli.compile.config
+package com.chromia.build.tools.compile
 
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
-import com.chromia.cli.util.withSigner
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
-import com.github.ajalt.clikt.core.CliktError
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -19,7 +17,6 @@ import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.module.RellPostchainModuleFactory
 import java.io.File
 
@@ -65,7 +62,7 @@ class BlockchainConfigurationGenerator(
                     BlockchainRid.ZERO_RID // dummy blockchain RID, works with Rell and all standard GTX modules, might not work properly with custom GTX modules
             )
         } catch (e: UserMistake) {
-            throw CliktError(e.message)
+            throw ValidationException(e.message!!)
         }
     }
 
@@ -82,13 +79,8 @@ class BlockchainConfigurationGenerator(
                 .quiet(compileModel.quiet)
                 .build()
 
-        try {
-            val rellBcConfig = RellApiCompile.compileGtv(config, sourceDir, blockchainModel.module)
-            b.update(rellBcConfig, "gtx", "rell")
-        } catch (e: RellCliException) {
-            throw CliktError(e.message, e)
-        } catch (e: UnrecognizedPropertyException) {
-        }
+        val rellBcConfig = RellApiCompile.compileGtv(config, sourceDir, blockchainModel.module)
+        b.update(rellBcConfig, "gtx", "rell")
 
         blockchainModel.config.filterKeys { it != "modules" }
                 .forEach { (path, value) -> b.update(value, path) }

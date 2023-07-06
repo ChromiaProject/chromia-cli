@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.compile.NodeConfig
-import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.build.tools.compile.BlockchainConfigHolder
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption

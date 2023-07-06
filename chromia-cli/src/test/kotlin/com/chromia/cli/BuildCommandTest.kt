@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
 import net.postchain.gtv.gtvml.GtvMLParser
+import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -66,7 +67,7 @@ internal class BuildCommandTest {
             module;
             struct module_args { my_args: integer; }
         """.trimIndent())
-        val e = assertFailsWith<CliktError> { command.parse() }
+        val e = assertFailsWith<RellCliBasicException> { command.parse() }
         assertThat(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
     }
 

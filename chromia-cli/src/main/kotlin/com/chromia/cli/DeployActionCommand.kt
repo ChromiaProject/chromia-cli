@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.build.tools.compile.BlockchainConfigHolder
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation

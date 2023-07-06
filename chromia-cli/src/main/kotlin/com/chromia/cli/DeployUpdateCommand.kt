@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.compatibility.BlockchainOperations
-import com.chromia.cli.compile.config.BlockchainConfigHolder
+import com.chromia.build.tools.compile.BlockchainConfigHolder
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.HeightFinder

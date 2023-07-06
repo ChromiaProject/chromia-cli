@@ -8,6 +8,7 @@ import com.chromia.cli.util.Settings
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
+import net.postchain.rell.api.base.RellCliBasicException
 import org.http4k.core.HttpHandler
 import org.http4k.core.Response
 import org.http4k.core.Status
@@ -56,7 +57,7 @@ class DeployCreateCommandTest {
         val testConsole = TestConsole()
         val settings = Settings(settingsFile, parseModel(settingsFile))
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
-        val throwable = assertThrows<CliktError> {
+        val throwable = assertThrows<RellCliBasicException> {
             DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
