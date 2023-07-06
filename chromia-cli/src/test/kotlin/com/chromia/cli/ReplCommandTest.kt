@@ -8,6 +8,8 @@ import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.test.assertFailsWith
+import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 class ReplCommandTest {
@@ -22,8 +24,9 @@ class ReplCommandTest {
     @Test
     fun testCanNotConnectToDb() {
         EnvironmentVariables("CHR_DB_URL", "jdbc:postgresql://invalidhost/postgres").execute {
-            val res = command.parse(listOf("--module=main", "--use-db"))
-            assertThat(res.stderr).contains("The connection attempt failed.")
+            assertFailsWith<PSQLException> {
+                command.parse(listOf("--module=main", "--use-db"))
+            }
         }
     }
 

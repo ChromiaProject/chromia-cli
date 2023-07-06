@@ -13,9 +13,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.terminal.Terminal
+import java.io.File
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
-import java.io.File
 
 
 class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
@@ -57,10 +57,6 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
                 .build()
-        try {
-            RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
-        } catch (e: Exception) {
-            throw CliktError(e.message, e)
-        }
+        RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
 }
