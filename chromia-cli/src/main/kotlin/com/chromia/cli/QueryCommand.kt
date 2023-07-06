@@ -1,14 +1,16 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.*
+import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.settingsOptionDefault
+import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.arguments.validate
-import com.github.ajalt.clikt.parameters.groups.*
+import com.github.ajalt.clikt.parameters.groups.cooccurring
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
@@ -18,18 +20,23 @@ import org.apache.commons.configuration2.BaseConfiguration
 
 
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
-    init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
-    }
 
     private val settings by settingsOptionNotRequired()
     private val explicitTarget by LocalDeploymentOption()
-    private val deploymentTarget by RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption {
+        settings?.model ?: settingsOptionDefault().model
+    }.cooccurring()
 
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a single dict element.")
             .multiple()
-            .transformAll { try { createDict(it) } catch (e: Exception){ echo(e.message)} }
+            .transformAll {
+                try {
+                    createDict(it)
+                } catch (e: Exception) {
+                    echo(e.message)
+                }
+            }
             .validate { require(it is GtvDictionary) { "query must be done with named parameters in a dict" } }
 
     private fun createDict(args: List<String>): Gtv {

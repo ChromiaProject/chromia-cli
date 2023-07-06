@@ -1,9 +1,11 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.*
+import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.settingsOptionDefault
+import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -17,14 +19,13 @@ import org.apache.commons.configuration2.BaseConfiguration
 import java.util.*
 
 class TxCommand : CliktCommand(help = "Make a transaction") {
-    init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
-    }
 
     private val settings by settingsOptionNotRequired()
     private val secret by secretOption()
     private val explicitTarget by LocalDeploymentOption()
-    private val deploymentTarget by RemoteDeploymentOption { settings?.model ?: settingsOptionDefault().model }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption {
+        settings?.model ?: settingsOptionDefault().model
+    }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
 

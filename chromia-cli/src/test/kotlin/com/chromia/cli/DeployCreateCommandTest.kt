@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.Settings
-import com.chromia.cli.util.TestConsole
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.context
 import java.io.File
@@ -55,11 +54,10 @@ privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
 pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
             """.trimIndent())
         }
-        val testConsole = TestConsole()
         val settings = Settings(settingsFile, parseModel(settingsFile))
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
-            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
+            DeployCreateCommand({ httpHandler }, mock()).context { }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -92,10 +90,9 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
                 privkey = 00
             """.trimIndent())
         }
-        val testConsole = TestConsole()
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.11.0"))
         val throwable = assertThrows<RellDeployVersionException> {
-            DeployCreateCommand({ httpHandler }, mock()).context { console = testConsole }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "main", "--network", "test", "--secret", secretFile.absolutePath))
+            DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "main", "--network", "test", "--secret", secretFile.absolutePath))
         }
         assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")

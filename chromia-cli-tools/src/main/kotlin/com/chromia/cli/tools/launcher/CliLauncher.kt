@@ -1,7 +1,11 @@
 package com.chromia.cli.tools.launcher
 
+import com.chromia.cli.tools.formatter.PanelHelpFormatter
+import com.chromia.cli.tools.formatter.theme
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -11,10 +15,15 @@ import mu.KotlinLogging
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.base.RellCliExitException
 
-class CliLauncher(name: String): NoOpCliktCommand(name = name) {
+class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
+
     init {
         completionOption()
+        context {
+            terminal = Terminal(theme = theme)
+            helpFormatter = { PanelHelpFormatter(it) }
+        }
     }
 
     override fun aliases() = createAliases()

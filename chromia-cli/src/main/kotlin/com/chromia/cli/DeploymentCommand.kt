@@ -15,16 +15,11 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
-import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
-import java.io.File
-import java.time.Instant
-import java.util.Properties
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -36,6 +31,9 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.crypto.sha256Digest
 import org.apache.commons.configuration2.BaseConfiguration
+import java.io.File
+import java.time.Instant
+import java.util.*
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments") {
     override fun aliases() = createAliases()
@@ -63,10 +61,6 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 ?: throw PrintMessage("deployment target with name $target not found")
         if (deployModel.container == null) throw PrintMessage("No container specified on network $target")
         deployModel
-    }
-
-    init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
     }
 
     private fun createClient(): PostchainClient {
@@ -120,7 +114,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
                 when (result.status) {
                     TransactionStatus.CONFIRMED -> {
-                        chain.save(settings.target,"${target}_${chain.name}_${Instant.now().toEpochMilli()}")
+                        chain.save(settings.target, "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
                         val maybeBcRid = if (apiVersion >= 8) {
                             client.findBlockchainRid(tx.rid.hexStringToByteArray())?.let { BlockchainRid(it) }
                         } else {

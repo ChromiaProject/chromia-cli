@@ -6,14 +6,12 @@ import com.chromia.cli.util.module
 import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
+import java.io.File
 
 
 class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
@@ -23,10 +21,6 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val sqlLog by option(help = "Log sql expressions").flag()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
-
-    init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
-    }
 
     override fun run() {
 

@@ -8,8 +8,6 @@ import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.libraryOption
 import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.output.CliktHelpFormatter
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.validate
 import kotlin.io.path.Path
@@ -20,10 +18,6 @@ class InstallCommand(
     private val settings by settingsOption()
     private val library by libraryOption().multiple()
             .validate { require(settings.libs.keys.containsAll(it)) { "Specified library(s) $it does not exist in config file" } }
-
-    init {
-        context { helpFormatter = CliktHelpFormatter(showDefaultValues = true) }
-    }
 
     override fun run() {
         val libraryInstaller = LibraryInstaller(

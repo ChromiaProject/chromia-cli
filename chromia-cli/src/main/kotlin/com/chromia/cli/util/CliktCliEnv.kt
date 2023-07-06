@@ -6,10 +6,10 @@ import net.postchain.rell.api.base.RellCliEnv
 
 class CliktCliEnv(val command: CliktCommand) : RellCliEnv() {
     override fun error(msg: String) {
-        command.currentContext.console.print(msg + command.currentContext.console.lineSeparator, true)
+        command.currentContext.terminal.println(msg, stderr = true)
     }
 
     override fun print(msg: String) {
-        command.currentContext.console.print(msg + command.currentContext.console.lineSeparator, false)
+        command.currentContext.terminal.println(msg)
     }
 }

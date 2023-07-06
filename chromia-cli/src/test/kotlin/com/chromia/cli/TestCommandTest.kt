@@ -1,8 +1,11 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.TestConsole
+import assertk.assertThat
+import assertk.assertions.contains
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
@@ -11,6 +14,9 @@ import java.nio.file.Path
 
 internal class TestCommandTest {
 
+    private val logger = TerminalRecorder()
+    private val testTerminal = Terminal(logger)
+
     @Test
     fun testFilter(@TempDir dir: Path) {
 
@@ -18,7 +24,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_a() {}
                 function test_b() {}
             """.trimIndent())
@@ -27,23 +33,22 @@ internal class TestCommandTest {
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 test:
-                  modules: 
+                  modules:
                     - test
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
-        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
     fun testSubModuleSelectiveTest(@TempDir dir: Path) {
 
-        with(File(dir.toFile(), "src/testDir/test.rell"), ) {
+        with(File(dir.toFile(), "src/testDir/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_a() {}
                 function test_b() {}
             """.trimIndent())
@@ -53,7 +58,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_c() {}
                 function test_d() {}
             """.trimIndent())
@@ -62,13 +67,13 @@ internal class TestCommandTest {
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 test:
-                  modules: 
+                  modules:
                     - testDir
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
-        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
@@ -78,7 +83,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_a() {}
                 function test_b() {}
             """.trimIndent())
@@ -88,7 +93,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_c() {}
                 function test_d() {}
             """.trimIndent())
@@ -97,13 +102,12 @@ internal class TestCommandTest {
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 test:
-                  modules: 
+                  modules:
                     - testDir
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--no-db"))
-        testConsole.assertContains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
     @Test
@@ -112,10 +116,10 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 module;
-                
+
                 struct module_args { name; } // Makes sure module args are propagated from config when making a rell.test.tx()
                 entity foo { name; }
-                
+
                 operation add_foo(name) { create foo(name); }
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
@@ -131,7 +135,7 @@ internal class TestCommandTest {
             writeText("""
                 @test module;
                 import ^.main.*;
-                
+
                 function test_get_foo() {
                   rell.test.tx().op(add_foo("bar")).run();
                   assert_not_null(get_foo("bar"));
@@ -142,7 +146,7 @@ internal class TestCommandTest {
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 test:
-                  modules: 
+                  modules:
                     - test
                   moduleArgs:
                     main:
@@ -151,9 +155,8 @@ internal class TestCommandTest {
                       foo: bar
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--use-db"))
-        testConsole.assertContains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--use-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
@@ -162,7 +165,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_a() {}
                 function test_b() { assert_equals(1, 2); }
             """.trimIndent())
@@ -171,15 +174,14 @@ internal class TestCommandTest {
         val settings = File(dir.toFile(), "config.yml").apply {
             writeText("""
                 test:
-                  modules: 
+                  modules:
                     - test
             """.trimIndent())
         }
-        val testConsole = TestConsole()
         assertThrows<CliktError> {
-            TestCommand().context { console = testConsole }.parse(listOf("-s", settings.absolutePath, "--no-db"))
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--no-db"))
         }
-        testConsole.assertContains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
+        assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
     }
 
     @Test
@@ -188,10 +190,10 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 module;
-                
+
                 struct module_args { name; age: integer;}
                 entity foo { name; }
-                
+
                 operation add_foo(name) { create foo(name); }
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
@@ -201,7 +203,7 @@ internal class TestCommandTest {
             writeText("""
                 @test module;
                 import ^^.development.*;
-                
+
                 function test_get_foo() {
                   rell.test.tx().op(add_foo("bar")).run();
                   assert_not_null(get_foo("bar"));
@@ -212,7 +214,7 @@ internal class TestCommandTest {
             parentFile.mkdirs()
             writeText("""
                 @test module;
-                
+
                 function test_a() {}
                 function test_b() {}
             """.trimIndent())
@@ -241,10 +243,9 @@ internal class TestCommandTest {
                         - non_existent_prod_tests
             """.trimIndent())
         }
-        val testConsole = TestConsole()
-        TestCommand().context { console = testConsole }.parse(
+        TestCommand().context { terminal = testTerminal }.parse(
                 listOf("-s", settings.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
         )
-        testConsole.assertContains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
     }
 }
