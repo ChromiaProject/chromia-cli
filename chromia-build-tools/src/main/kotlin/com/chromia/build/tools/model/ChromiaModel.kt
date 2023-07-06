@@ -1,7 +1,7 @@
 package com.chromia.cli.model
 
 
-data class ChromiaCliModel(
+data class ChromiaModel(
         private val definitions: Any = Any(), // Placeholder for anchor objects
         private val database: DatabaseModel = DatabaseModel(),
         val compile: CompileModel = CompileModel(),

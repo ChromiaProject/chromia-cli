@@ -1,5 +1,6 @@
 package com.chromia.build.tools.lib
 
+import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.RellLibraryModel
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
@@ -9,9 +10,21 @@ import net.postchain.gtv.merkleHash
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
 import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.exists
+import kotlin.io.path.notExists
 
 class LibraryVerifyer(private val env: RellCliEnv) {
     val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
+
+    fun verifyLibs(source: File, libs: Map<String, RellLibraryModel>) {
+        libs.forEach { (name, rellLibrary) ->
+            val libraryLocation = source.toPath().resolve(InstallDirTarget.SOURCE.target).resolve(name)
+            if (libraryLocation.notExists()) throw ValidationException("Library $name is not installed, install before building")
+            val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
+            if (!verifyLib(rellLibrary, name, files)) throw ValidationException("Failed validation of library $name")
+        }
+    }
 
     fun verifyLib(model: RellLibraryModel, name: String, files: List<File>, quiet: Boolean = false): Boolean {
         if (model.insecure) return true

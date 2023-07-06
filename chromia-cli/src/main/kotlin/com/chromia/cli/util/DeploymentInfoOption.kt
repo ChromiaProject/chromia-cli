@@ -1,6 +1,6 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DeploymentModel
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -25,7 +25,7 @@ sealed class DeploymentInfoOption(name: String, help: String? = null) : OptionGr
     abstract fun blockchainClient(): PostchainClient
 }
 
-class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val settings: () -> ChromiaCliModel) : DeploymentInfoOption("Configured", help = "Information about a deployed blockchain") {
+class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val settings: () -> ChromiaModel) : DeploymentInfoOption("Configured", help = "Information about a deployed blockchain") {
     private val target by deployTargetOption().required().validate {
         val deployment = settings().deployments[it]
         require(deployment != null) { "Deployment $it not found" }

@@ -1,7 +1,7 @@
 package com.chromia.cli
 
+import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compatibility.BlockchainOperations
-import com.chromia.cli.compile.config.BlockchainConfigHolder
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.apiVersion
@@ -27,7 +27,7 @@ class DeployCreateCommand(
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
     val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
-    override fun beforeDeployment(deployedChains: Collection<BlockchainConfigHolder>) {
+    override fun beforeDeployment(deployedChains: Collection<String>) {
         val httpClient = httpHandlerFactory(createClientConfig())
         val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
@@ -36,7 +36,7 @@ class DeployCreateCommand(
             throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
         }
 
-        deployedChains.forEach { (name, _) ->
+        deployedChains.forEach { name ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             if (!confirm) confirm(
                     "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
@@ -54,7 +54,7 @@ class DeployCreateCommand(
             """.trimIndent())
     }
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfigHolder) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
         BlockchainOperations(client.apiVersion, this)
                 .newBlockchainOperation(clientConfig.pubkey.data, configHolder.configByteArray, configHolder.name, deployModel.container!!)
     }

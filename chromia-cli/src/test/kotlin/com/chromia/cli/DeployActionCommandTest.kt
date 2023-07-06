@@ -6,6 +6,7 @@ import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
+import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

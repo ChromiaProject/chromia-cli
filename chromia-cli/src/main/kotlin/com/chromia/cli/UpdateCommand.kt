@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.util.withSigner
+import com.chromia.build.tools.compile.withSigner
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option

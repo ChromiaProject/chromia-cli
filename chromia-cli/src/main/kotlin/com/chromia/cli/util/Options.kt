@@ -1,7 +1,7 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.FileNotFound
@@ -12,8 +12,8 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.rell.base.model.R_ModuleName
 import java.io.File
+import net.postchain.rell.base.model.R_ModuleName
 
 
 fun CliktCommand.nodePropertiesOption() =
@@ -32,7 +32,7 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-data class Settings(val file: File, val model: ChromiaCliModel) {
+data class Settings(val file: File, val model: ChromiaModel) {
     val source get() = File(file.parentFile, model.compile.source)
     val target get() = File(file.parentFile, model.compile.target)
     val compile get() = model.compile
@@ -42,7 +42,7 @@ data class Settings(val file: File, val model: ChromiaCliModel) {
     val libs get() = model.libs
 }
 
-internal val DEFAULT_CONFIG_FILE = File("config.yml")
+internal val DEFAULT_CONFIG_FILE = File("config.yml").absoluteFile
 
 internal fun requireDefaultConfig() {
     if (!DEFAULT_CONFIG_FILE.exists()) {
@@ -56,7 +56,7 @@ fun CliktCommand.settingsOption() = settingsOptionNotRequired()
 fun CliktCommand.settingsOptionNotRequired() =
         option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
                 .file(mustExist = false, canBeDir = false, canBeFile = true)
-                .convert { Settings(it, parseModel(it)) }
+                .convert { Settings(it.absoluteFile, parseModel(it)) }
 
 fun settingsOptionDefault(): Settings {
     requireDefaultConfig()
