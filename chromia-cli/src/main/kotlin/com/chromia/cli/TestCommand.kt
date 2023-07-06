@@ -1,5 +1,9 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.formatter.danger
+import com.chromia.cli.tools.formatter.info
+import com.chromia.cli.tools.formatter.success
+import com.chromia.cli.tools.formatter.warning
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
@@ -123,14 +127,14 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun UnitTestCase.print() {
 
-        echo("${TextColors.blue("TEST")}: $name")
+        echo("${info("TEST")}: $name")
     }
 
     private fun UnitTestCaseResult.print() {
         if (res.isOk) {
-            currentContext.terminal.success("$res $case")
+            echo("${success(res.toString())}: $case")
         } else {
-            currentContext.terminal.danger("$res $case")
+            echo("${warning(res.toString())}: $case")
         }
     }
 
@@ -153,8 +157,8 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         echo("-".repeat(60))
         echo("TEST RESULTS:")
 
-        printResults(okTests, TextColors.green)
-        printResults(failedTests, TextColors.red)
+        printResults(okTests, success)
+        printResults(failedTests, danger)
 
         val nTests = results.getResults().size
         val nOk = okTests.size
