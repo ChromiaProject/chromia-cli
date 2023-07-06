@@ -4,11 +4,12 @@ import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestConsole
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.RegisterExtension
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
+import org.postgresql.util.PSQLException
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 class ReplCommandTest {
 
@@ -21,7 +22,7 @@ class ReplCommandTest {
     @Test
     fun testCanNotConnectToDb() {
         EnvironmentVariables("CHR_DB_URL", "jdbc:postgresql://invalidhost/postgres").execute {
-            assertFailsWith<CliktError> {
+            assertFailsWith<PSQLException> {
                 command.parse(listOf("--module=main", "--use-db"))
             }
         }

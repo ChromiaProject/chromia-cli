@@ -2,13 +2,14 @@ package com.chromia.cli.tools.launcher
 
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
-import mu.KotlinLogging
-import net.postchain.rell.api.base.RellCliException
-import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.sql.SQLException
 import kotlin.system.exitProcess
+import mu.KotlinLogging
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.base.RellCliExitException
 
 class CliLauncher(name: String): NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
@@ -50,6 +51,10 @@ class CliLauncher(name: String): NoOpCliktCommand(name = name) {
             exitProcess(1)
         } catch (e: RellCliException) {
             echo(e.message, err = true)
+            exitProcess(2)
+        } catch (e: SQLException) {
+            echo("Error connecting to database: ${e.message}", err = true)
+            echo("Check your database connection")
             exitProcess(2)
         } catch (e: Exception) {
             logger.error(e.message, e)
