@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.module
 import com.chromia.cli.util.settingsOptionNotRequired
@@ -38,7 +38,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
         if (useDB && settings == null) {
             throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
-        val localModel = settings?.model ?: ChromiaCliModel()
+        val localModel = settings?.model ?: ChromiaModel()
         val compileConfig = RellApiCompile.Config.Builder()
                 .cliEnv(CliktCliEnv(this))
                 .mountConflictError(false)

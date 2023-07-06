@@ -1,6 +1,6 @@
 package com.chromia.cli.compile
 
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.config.app.AppConfig
@@ -13,7 +13,7 @@ object NodeConfig {
          return AppConfig.fromPropertiesFile(nodeConfigFile.absolutePath)
      }
 
-     fun getDefaultNodeConfig(config: ChromiaCliModel, overrides: Map<String, Any> = mapOf()): AppConfig {
+     fun getDefaultNodeConfig(config: ChromiaModel, overrides: Map<String, Any> = mapOf()): AppConfig {
          val privKey = "42".repeat(32).hexStringToByteArray()
          val pubKey = secp256k1_derivePubKey(privKey)
 

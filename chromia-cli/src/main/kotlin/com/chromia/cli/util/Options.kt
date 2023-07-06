@@ -1,7 +1,7 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.FileNotFound
@@ -32,7 +32,7 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-data class Settings(val file: File, val model: ChromiaCliModel) {
+data class Settings(val file: File, val model: ChromiaModel) {
     val source get() = File(file.parentFile, model.compile.source)
     val target get() = File(file.parentFile, model.compile.target)
     val compile get() = model.compile

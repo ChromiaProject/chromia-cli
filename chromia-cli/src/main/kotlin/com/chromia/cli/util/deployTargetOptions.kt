@@ -1,6 +1,6 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -21,7 +21,7 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     abstract fun createClient(config: PostchainClientConfig): PostchainClient
 }
 
-class RemoteDeploymentOption(private val settings: () -> ChromiaCliModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
+class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
     private val network by deployTargetOption()
     private val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
 

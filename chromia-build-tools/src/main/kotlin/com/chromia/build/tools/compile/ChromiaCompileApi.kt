@@ -2,16 +2,16 @@ package com.chromia.build.tools.compile
 
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
 import com.chromia.build.tools.lib.LibraryVerifyer
-import com.chromia.cli.model.ChromiaCliModel
+import com.chromia.cli.model.ChromiaModel
 import java.io.File
 import net.postchain.rell.api.base.RellCliEnv
 
 object ChromiaCompileApi {
-    fun compile(cliEnv: RellCliEnv, model: ChromiaCliModel, projectFolder: File) {
+    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File) {
         compile(cliEnv, model, projectFolder, model.blockchains.keys)
     }
 
-    fun compile(cliEnv: RellCliEnv, model: ChromiaCliModel, projectFolder: File, blockchains: Collection<String>) {
+    fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File, blockchains: Collection<String>) {
         val libraryVerifyer = LibraryVerifyer(cliEnv)
         libraryVerifyer.verifyLibs(File(projectFolder, model.compile.source), model.libs)
 
