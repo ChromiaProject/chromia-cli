@@ -1,7 +1,7 @@
 package com.chromia.cli.tools.launcher
 
 import com.chromia.cli.tools.formatter.PanelHelpFormatter
-import com.chromia.cli.tools.formatter.theme
+import com.chromia.cli.tools.formatter.chromiaTheme
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
@@ -15,13 +15,13 @@ import mu.KotlinLogging
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.base.RellCliExitException
 
-class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
+open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
 
     init {
         completionOption()
         context {
-            terminal = Terminal(theme = theme)
+            terminal = Terminal(theme = chromiaTheme)
             helpFormatter = { PanelHelpFormatter(it) }
         }
     }

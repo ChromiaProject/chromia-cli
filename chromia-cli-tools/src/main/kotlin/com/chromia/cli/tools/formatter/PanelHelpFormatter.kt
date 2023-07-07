@@ -13,7 +13,7 @@ class PanelHelpFormatter(context: Context) : MordantHelpFormatter(context, showD
     // You can override which styles are used for each part of the output.
     // If you want to change the color of the styles themselves, you can set them in the terminal's
     // theme (see the main function below).
-    override fun styleSectionTitle(title: String): String = theme.style("muted")(title)
+    override fun styleSectionTitle(title: String): String = title
 
     // Print section titles like "Options" instead of "Options:"
     override fun renderSectionTitle(title: String): String = title

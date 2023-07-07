@@ -3,8 +3,8 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
-import com.chromia.cli.tools.formatter.theme
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.table.SectionBuilder
 import com.github.ajalt.mordant.terminal.Terminal
@@ -115,7 +115,7 @@ class DeployInfoCommandTest {
     private fun assertTableContainsRow(headerRow: SectionBuilder.() -> Unit, bodyRow: SectionBuilder.() -> Unit) {
         val recorder = TerminalRecorder()
         val testTerminal = Terminal(recorder)
-        theme.defaultTable {
+        chromiaTheme.defaultTable {
             header(headerRow)
             body(bodyRow)
         }.render(testTerminal)
