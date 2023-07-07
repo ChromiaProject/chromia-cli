@@ -9,19 +9,18 @@ import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
-import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import kotlin.test.assertFailsWith
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
-import kotlin.test.assertFailsWith
 
 internal class BuildCommandTest {
     private val logger = TerminalRecorder()
@@ -34,7 +33,7 @@ internal class BuildCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val res = BuildCommand().test(listOf())
-        assertTrue(res.stderr.contains("config.yml not found"))
+        assertThat(res.stderr).contains("chromia.yml not found")
     }
 
     @Test

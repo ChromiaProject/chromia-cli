@@ -1,7 +1,7 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.util.LanguageSupport
-import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
@@ -11,16 +11,16 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
+import java.io.File
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
-import java.io.File
 
 class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", help = "Generates client code for a rell dapp") {
-    private val settings by settingsOption()
+    private val settings by chromiaConfigOption()
 
     private val moduleName by option("--module",
             help = "Explicitly set which modules to generate code for. Separate modules with ','").split(",")
@@ -34,12 +34,12 @@ class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", 
 
     private val target by option("--target", help = "Directory to generate template project in")
             .file(canBeFile = false)
-            .defaultLazy(defaultForHelp = "<target>/stubs") { File(settings.target, "stubs") }
+            .defaultLazy(defaultForHelp = "<target>/stubs") { File(settings.targetDir, "stubs") }
 
     override fun run() {
         val generator = CodeGenerator(languageOption.factory())
-        val modules = moduleName ?: settings.blockchains.map { it.value.module }
-        val sections = modules.flatMap { generator.createSections(settings.source, it) }
+        val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
+        val sections = modules.flatMap { generator.createSections(settings.sourceDir, it) }
         val documents = generator.constructDocuments(sections, true)
         DocumentSaver(target).saveDocuments(documents)
         echo("Created files in $target: ${documents.keys}")

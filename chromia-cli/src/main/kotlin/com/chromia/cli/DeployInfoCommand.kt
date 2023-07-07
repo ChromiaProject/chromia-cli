@@ -1,12 +1,11 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.NodeStatusFinder
-import com.chromia.cli.util.settingsOptionDefault
-import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
@@ -31,10 +30,8 @@ class DeployInfoCommand(
         help = "Information about a deployed blockchain"
 ) {
 
-    private val settings by settingsOptionNotRequired()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
-        settings?.model ?: settingsOptionDefault().model
-    }.cooccurring()
+    private val settings by chromiaConfigOption()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }

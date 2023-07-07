@@ -7,6 +7,7 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.EndpointPool
+import net.postchain.common.BlockchainRid
 import net.postchain.common.PropertiesFileLoader
 import net.postchain.crypto.KeyPair
 import org.apache.commons.configuration2.Configuration
@@ -14,26 +15,47 @@ import org.apache.commons.configuration2.PropertiesConfiguration
 
 class ChromiaConfig(
         private val config: Configuration,
-        val model: ChromiaModel?,
-        val modelFile: File?
-): Configuration by config {
+        val nullableModel: ChromiaModel?,
+        val nullableModelFile: File?
+) : Configuration by config {
+    val model get() = nullableModel ?: throw IllegalArgumentException("Chromia model is not configured")
+    val modelFile get() = nullableModelFile ?: throw IllegalArgumentException("Chromia model is not configured")
 
-    fun clientConfig(secret: File? = null, network: String? = null, blockchain: String? = null): PostchainClientConfig {
+    val sourceDir get() = model.compile.sourceFile(modelFile.parentFile)
+    val targetDir get() = model.compile.targetFile(modelFile.parentFile)
+    val compileModel get() = model.compile
+    val testModel get() = model.test
+
+    fun clientConfig(apiurl: String, blockchainRid: BlockchainRid, secret: File? = null): PostchainClientConfig {
+        val tempConfig = PropertiesConfiguration().apply {
+            copy(config)
+            setProperty("api.url", apiurl)
+            setProperty("brid", blockchainRid.toHex())
+        }
+        return clientConfig(tempConfig, secret)
+    }
+
+    fun clientConfig(template: Configuration = config, secret: File? = null, network: String? = null, blockchain: String? = null): PostchainClientConfig {
         val config = if (network == null) {
-            PostchainClientConfig.fromConfiguration(config)
+            PostchainClientConfig.fromConfiguration(template)
         } else {
-            require(model != null) { "Chromia model is null" }
-            val deploymentModel = model.deployments[network]
-            require(deploymentModel != null) { "Network $network not configured in deployments part of ${modelFile?.path}" }
-            require(blockchain == null || deploymentModel.chains[blockchain] != null) { "Configured blockchain $blockchain is not configured in ${modelFile?.path}" }
-            PostchainClientConfig.fromConfiguration(config).copy(
+            require(nullableModel != null) { "Chromia model is null" }
+            val deploymentModel = nullableModel.deployments[network]
+            require(deploymentModel != null) { "Network $network not configured in deployments part of ${nullableModelFile?.path}" }
+            require(blockchain == null || deploymentModel.chains[blockchain] != null) { "Configured blockchain $blockchain is not configured in ${nullableModelFile?.path}" }
+            PostchainClientConfig(
                     endpointPool = EndpointPool.default(deploymentModel.urls),
-                    blockchainRid = blockchain?.let { deploymentModel.chains[blockchain]!! } ?: deploymentModel.blockchainRid,
+                    blockchainRid = blockchain?.let { deploymentModel.chains[blockchain]!! }
+                            ?: deploymentModel.blockchainRid,
             )
         }
-        if (secret == null) return config
+        return config.withSecret(secret)
+    }
+
+    private fun PostchainClientConfig.withSecret(secret: File?): PostchainClientConfig {
+        if (secret == null) return this
         val secretProps = PropertiesFileLoader.load(secret.absolutePath)
-        return config.copy(
+        return copy(
                 signers = listOf(
                         KeyPair.of(secretProps.getString("pubkey"), secretProps.getString("privkey"))
                 )
@@ -66,6 +88,7 @@ class ChromiaConfig(
                 c.keys.forEach { key -> config.setProperty(key, c.getProperty(key)) }
             }
         }
+
         fun globalConfigurationFile() = File("${System.getProperty("user.home")}/$DEFAULT_CONFIG_FILENAME")
         fun localConfigurationFile() = File(DEFAULT_CONFIG_FILENAME)
         private fun chromiaModel(explicitFile: File?): Pair<File, ChromiaModel>? {

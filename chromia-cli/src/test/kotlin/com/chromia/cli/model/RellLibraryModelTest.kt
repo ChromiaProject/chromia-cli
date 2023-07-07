@@ -3,16 +3,15 @@ package com.chromia.cli.model
 import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.build.tools.lib.LibraryVerifyer
-import com.chromia.cli.util.Settings
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
+import java.io.File
+import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 class RellLibraryModelTest {
     private lateinit var settingsFile: File
@@ -47,7 +46,7 @@ class RellLibraryModelTest {
             """.trimIndent())
         }
 
-        val settings = Settings(settingsFile, parseModel(settingsFile))
+        val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"))
         val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
             override fun error(msg: String) = println(msg)
@@ -74,9 +73,7 @@ class RellLibraryModelTest {
                       some_unexpected_field: 123 
             """.trimIndent())
         }
-        val throwable = assertThrows<UnrecognizedPropertyException> {
-            Settings(settingsFile, parseModel(settingsFile))
-        }
+        val throwable = assertThrows<UnrecognizedPropertyException> { parseModel(settingsFile) }
         assertThat(throwable.message!!).contains("Unrecognized field \"some_unexpected_field\"")
     }
 
@@ -100,7 +97,7 @@ class RellLibraryModelTest {
             """.trimIndent())
         }
 
-        val settings = Settings(settingsFile, parseModel(settingsFile))
+        val settings = parseModel(settingsFile)
         Assertions.assertEquals(settings.libs.size, 1)
         Assertions.assertEquals(settings.libs["foo"]!!.registry, "http://foo2.com")
     }
@@ -126,7 +123,7 @@ class RellLibraryModelTest {
             """.trimIndent())
         }
 
-        val settings = Settings(settingsFile, parseModel(settingsFile))
+        val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
         val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
@@ -154,7 +151,7 @@ class RellLibraryModelTest {
             """.trimIndent())
         }
 
-        val settings = Settings(settingsFile, parseModel(settingsFile))
+        val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
         val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {

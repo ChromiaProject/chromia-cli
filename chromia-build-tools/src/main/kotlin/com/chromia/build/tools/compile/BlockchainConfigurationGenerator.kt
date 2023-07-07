@@ -78,7 +78,7 @@ internal class BlockchainConfigurationGenerator(
                 .quiet(compileModel.quiet)
                 .build()
 
-        val rellBcConfig = RellApiCompile.compileGtv(config, File(sourceDir, compileModel.source), blockchainModel.module)
+        val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.sourceFile(sourceDir), blockchainModel.module)
         b.update(rellBcConfig, "gtx", "rell")
 
         blockchainModel.config.filterKeys { it != "modules" }

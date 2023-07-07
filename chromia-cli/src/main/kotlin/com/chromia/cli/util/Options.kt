@@ -1,18 +1,13 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
-import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.model.parseModel
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
 import net.postchain.rell.base.model.R_ModuleName
 
 
@@ -32,39 +27,8 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-data class Settings(val file: File, val model: ChromiaModel) {
-    val source get() = File(file.parentFile, model.compile.source)
-    val target get() = File(file.parentFile, model.compile.target)
-    val compile get() = model.compile
-    val deployments get() = model.deployments
-    val blockchains get() = model.blockchains
-    val test get() = model.test
-    val libs get() = model.libs
-}
-
-internal val DEFAULT_CONFIG_FILE = File("config.yml").absoluteFile
-
-internal fun requireDefaultConfig() {
-    if (!DEFAULT_CONFIG_FILE.exists()) {
-        throw FileNotFound(DEFAULT_CONFIG_FILE.name)
-    }
-}
-
-fun CliktCommand.settingsOption() = settingsOptionNotRequired()
-        .defaultLazy(DEFAULT_CONFIG_FILE.name) { settingsOptionDefault() }
-
-fun CliktCommand.settingsOptionNotRequired() =
-        option("-s", "--settings", help = "Alternate path for the project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
-                .file(mustExist = false, canBeDir = false, canBeFile = true)
-                .convert { Settings(it.absoluteFile, parseModel(it)) }
-
-fun settingsOptionDefault(): Settings {
-    requireDefaultConfig()
-    return Settings(DEFAULT_CONFIG_FILE, parseModel(DEFAULT_CONFIG_FILE))
-}
-
 fun CliktCommand.secretOption() =
-        option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, canBeFile = true)
+        option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, mustBeReadable = true)
 
 fun CliktCommand.modulesOption(help: String = "Select which modules to test, will default to tests in settings file (Comma separated)") =
         option("-m", "--modules", help = help, metavar = "MODULES")

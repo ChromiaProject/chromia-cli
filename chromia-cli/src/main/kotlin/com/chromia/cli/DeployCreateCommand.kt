@@ -28,12 +28,13 @@ class DeployCreateCommand(
     val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
     override fun beforeDeployment(deployedChains: Collection<String>) {
+
         val httpClient = httpHandlerFactory(createClientConfig())
         val rellVersionController = Http4kRellVersionFinder(httpClient)
         val targetVersion = rellVersionController.getTargetVersion(Endpoint(deployModel.urls.first()), deployModel.blockchainRid)
 
-        if (targetVersion < settings.compile.langVersion) {
-            throw RellDeployVersionException(settings.compile.rellVersion, targetVersion)
+        if (targetVersion < settings.model.compile.langVersion) {
+            throw RellDeployVersionException(settings.model.compile.rellVersion, targetVersion)
         }
 
         deployedChains.forEach { name ->

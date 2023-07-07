@@ -3,7 +3,6 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.model.parseModel
-import com.chromia.cli.util.Settings
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.context
 import java.io.File
@@ -54,7 +53,7 @@ privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
 pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
             """.trimIndent())
         }
-        val settings = Settings(settingsFile, parseModel(settingsFile))
+        val settings = parseModel(settingsFile)
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
             DeployCreateCommand({ httpHandler }, mock()).context { }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))

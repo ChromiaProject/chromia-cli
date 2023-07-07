@@ -4,7 +4,11 @@ import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
+
+fun ParameterHolder.requiredChromiaConfigOption(vararg names: String = arrayOf("-s", "--settings")) = chromiaConfigOption(*names)
+        .validate { require(it.nullableModel != null) { "chromia.yml not found" } }
 
 fun ParameterHolder.chromiaConfigOption(vararg names: String = arrayOf("-s", "--settings")) = option(*names, help = "Alternate path for project settings file", metavar = "SETTINGS", envvar = "CHR_SETTINGS")
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
