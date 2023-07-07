@@ -21,6 +21,17 @@ val theme = Theme {
     flags["markdown.code.block.border"] = false
 }
 
+val chromiaTheme = Theme {
+    styles["success"] = TextColors.green
+    styles["info"] = TextColors.rgb("#CB92F0")
+    styles["warning"] = TextColors.rgb("#FFB600")
+    styles["danger"] = TextColors.rgb("#FF405E")
+    styles["muted"] = TextColors.rgb("#4F4B4F")
+
+    // Remove the border around code blocks
+    flags["markdown.code.block.border"] = false
+}
+
 val CliktCommand.danger get() = currentContext.terminal.theme.danger
 val CliktCommand.success get() = currentContext.terminal.theme.success
 val CliktCommand.info get() = currentContext.terminal.theme.info
@@ -33,6 +44,7 @@ fun CliktCommand.defaultTable(init: TableBuilder.() -> Unit) = currentContext.te
 fun Theme.defaultTable(init: TableBuilder.() -> Unit) = table {
     align = TextAlign.LEFT
     borderType = BorderType.ROUNDED
+    borderStyle = muted
     header {
         style = info + TextStyles.bold
     }
