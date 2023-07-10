@@ -45,14 +45,14 @@ class ChromiaConfigLoader {
             return explicitFile.absoluteFile
         }
         val chromiaModelFile = File(DEFAULT_CHROMIA_MODEL_FILENAME)
-        if (chromiaModelFile.isFile) {
-            return chromiaModelFile
+        if (chromiaModelFile.exists() && chromiaModelFile.isFile) {
+            return chromiaModelFile.absoluteFile
         }
 
         val configModelFile = File(DEFAULT_CONFIG_MODEL_FILENAME)
-        if (configModelFile.isFile) {
+        if (configModelFile.exists() && configModelFile.isFile) {
             //cliEnv.print("Found config.yml settings file. Rename to chromia.yml to silence this message")
-            return chromiaModelFile
+            return configModelFile.absoluteFile
         }
         throw PrintMessage("Project settings file not found")
     }
