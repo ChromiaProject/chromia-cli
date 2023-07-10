@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.exists
+import com.chromia.cli.KeygenCommand
 import net.postchain.common.PropertiesFileLoader
 import org.bitcoinj.crypto.MnemonicException
 import org.junit.jupiter.api.Test

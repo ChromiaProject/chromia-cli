@@ -25,7 +25,7 @@ class DeployCreateCommand(
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { DeployInfoCommand.httpHandlerFactory(it) },
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
-    val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
+    private val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
     override fun beforeDeployment(deployedChains: Collection<String>) {
         val httpClient = httpHandlerFactory(createClientConfig())
@@ -39,9 +39,9 @@ class DeployCreateCommand(
         deployedChains.forEach { name ->
             if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
             if (!confirm && confirm(
-                    "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
-                    default = false
-            ) != true) throw PrintMessage("Deployment was aborted")
+                            "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
+                            default = false
+                    ) != true) throw PrintMessage("Deployment was aborted")
         }
     }
 

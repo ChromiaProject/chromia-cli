@@ -21,4 +21,16 @@ internal class CreateRellDappCommandTest {
         BuildCommand().parse(listOf("-s", configYmlFile.absolutePath))
         assertTrue(File(dir, "build/hello.xml").exists())
     }
+
+    @Test
+    fun initCreatesNewFilesWithCustomName() {
+        CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath, "newName"))
+        val configYmlFile = File(dir, "config.yml")
+        assertTrue(File(dir, "src/main.rell").exists())
+        configYmlFile.readText().contains("""
+        blockchains:
+            newName:
+                module: main
+        """.trimIndent())
+    }
 }

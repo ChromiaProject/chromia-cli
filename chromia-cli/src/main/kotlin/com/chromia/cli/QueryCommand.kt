@@ -54,10 +54,11 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
             setProperty("brid", target.brid.toHex())
             setProperty("api.url", target.url)
             PostchainClientConfig.fromConfiguration(this)
+
         }
+
         try {
-            val res = target
-                    .createClient(clientConfig)
+            val res = target.createClient(clientConfig)
                     .query(queryName, args as Gtv)
             echo(res)
         } catch (e: Exception) {
