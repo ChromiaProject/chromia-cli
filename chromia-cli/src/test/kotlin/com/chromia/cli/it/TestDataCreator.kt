@@ -49,16 +49,6 @@ object TestDataCreator {
                     moduleArgs:
                       main:
                         name: { nameIsInterprededAsDict }
-                  gtxConfig:
-                    module: main
-                    config:
-                      gtx:
-                        modules:
-                          - "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule"
-                          - "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule"
-                          - "net.postchain.d1.icmf.IcmfSenderGTXModule"
-                          - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
-                          - "net.postchain.d1.iccf.IccfGTXModule"
                 deployments:
                   test:
                     url: "https://localhost:7740"

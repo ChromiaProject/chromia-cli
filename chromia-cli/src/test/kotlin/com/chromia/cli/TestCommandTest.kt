@@ -17,12 +17,14 @@ internal class TestCommandTest {
 
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(logger)
+
+    @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
 
     @BeforeEach
-    fun setup(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/main.rell")) {
+    fun setup() {
+        with(File(testDir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -30,7 +32,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(dir.toFile(), "src/test.rell")) {
+        with(File(testDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -40,7 +42,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(testDir.toFile(), "config.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -54,7 +56,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(dir.toFile(), "src/testDir/bar.rell")) {
+        with(File(testDir.toFile(), "src/testDir/bar.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -64,7 +66,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(dir.toFile(), "src/testDir/foo.rell")) {
+        with(File(testDir.toFile(), "src/testDir/foo.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -73,7 +75,6 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
-        testDir = dir
     }
 
     @Test

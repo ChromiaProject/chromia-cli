@@ -59,8 +59,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     protected val deployModel by lazy {
         val deployModel = settings.deployments[target]
-                ?: throw PrintMessage("deployment target with name $target not found")
-        if (deployModel.container == null) throw PrintMessage("No container specified on network $target")
+        if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
         deployModel
     }
 

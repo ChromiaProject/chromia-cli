@@ -18,17 +18,16 @@ import java.nio.file.Path
 
 class DeployUpdateCommandTest {
 
+    @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
     private lateinit var secret: File
 
     @BeforeEach
-    fun setup(@TempDir dir: Path) {
-        testDir = dir
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
-        TestDataCreator.unitTestApp(dir)
-
     }
 
 

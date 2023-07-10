@@ -16,13 +16,13 @@ import java.nio.file.Path
 
 class QueryCommandTest {
 
+    @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
 
     @BeforeEach
-    fun setup(@TempDir dir: Path) {
-        TestDataCreator.unitTestApp(dir)
-        testDir = dir
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
 
     }

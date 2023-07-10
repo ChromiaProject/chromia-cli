@@ -122,9 +122,24 @@ internal class BuildCommandTest {
 
     @Test
     fun whiteListedGtxModules() {
-        TestDataCreator.unitTestApp(dir.toPath())
+        File(dir, "config.yml").writeText("""
+            blockchains:
+              hello:
+                module: main
+                config:
+                  gtx:
+                    modules:
+                      - "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule"
+                      - "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule"
+                      - "net.postchain.d1.icmf.IcmfSenderGTXModule"
+                      - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
+                      - "net.postchain.d1.iccf.IccfGTXModule"
+        """.trimIndent())
+        File(dir, "src/main.rell").writeText("""
+            module;
+        """.trimIndent())
         command.parse()
-        val outputFile = File(dir, "build/gtxConfig.xml")
+        val outputFile = File(dir, "build/hello.xml")
         assertTrue(outputFile.exists())
         val outputGtv = GtvMLParser.parseGtvML(outputFile.readText())
         assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsAll(

@@ -28,16 +28,17 @@ class InstallCommandTest {
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(logger)
 
+    @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
     private lateinit var settings: ChromiaModel
     private lateinit var secret: File
 
     @BeforeEach
-    fun setup(@TempDir dir: Path) {
-        TestDataCreator.unitTestApp(dir)
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
 
-        with(File(dir.toFile(), "config.yml")) {
+        with(File(testDir.toFile(), "config.yml")) {
             writeText("""
                 libs:
                     foo:
@@ -57,7 +58,6 @@ class InstallCommandTest {
             """.trimIndent())
         }
 
-        testDir = dir
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
@@ -155,7 +155,7 @@ class InstallCommandTest {
     }
 
     @Test
-    fun missingSpecificLibraryTest(@TempDir dir: Path) {
+    fun missingSpecificLibraryTest() {
         val res = InstallCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "missingLib"))
         assertThat(res.stderr).contains("Error: invalid value for --library: Specified library(s) [missingLib] does not exist in config file")
@@ -163,7 +163,7 @@ class InstallCommandTest {
 
 
     @Test
-    fun wrongRegistryTest(@TempDir dir: Path) {
+    fun wrongRegistryTest() {
         File(testDir.toFile(), "config.yml").writeText("""
             blockchains:
               hello:

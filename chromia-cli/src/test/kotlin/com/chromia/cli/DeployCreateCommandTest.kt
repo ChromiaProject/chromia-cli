@@ -24,15 +24,17 @@ import java.nio.file.Path
 
 class DeployCreateCommandTest {
     private val httpHandler = mock<HttpHandler>()
+
+    @TempDir
     private lateinit var testDir: Path
+
     private lateinit var settingsFile: File
     private lateinit var settings: ChromiaModel
     private lateinit var secret: File
 
     @BeforeEach
-    fun setup(@TempDir dir: Path) {
-        TestDataCreator.unitTestApp(dir)
-        testDir = dir
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
@@ -67,13 +69,13 @@ class DeployCreateCommandTest {
     }
 
     @Test
-    fun parseResumeAttributeChainMissing(@TempDir dir: Path) {
+    fun parseResumeAttributeChainMissing() {
         val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing chain", "--network", "test"))
         assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing chain] does not exist")
     }
 
     @Test
-    fun parseResumeAttributeNetworkMissing(@TempDir dir: Path) {
+    fun parseResumeAttributeNetworkMissing() {
         val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
         assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
     }
