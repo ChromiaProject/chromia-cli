@@ -4,12 +4,12 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
-import com.github.ajalt.clikt.core.FileNotFound
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
@@ -75,18 +75,9 @@ internal class BuildCommandTest {
 
     @Test
     fun simpleLibraryExistTest() {
-        File(dir, "config.yml").writeText("""
-            blockchains:
-              hello:
-                module: main
-            libs:
-                bar:
-                  registry: http://bar.com
-                  path: lib
-                  rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-        """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar"), "")
         command.parse()
+        assertThat(dir.resolve("src/lib/bar").listFiles()).isNotEmpty()
     }
 
     @Test
@@ -131,6 +122,7 @@ internal class BuildCommandTest {
 
     @Test
     fun whiteListedGtxModules() {
+        TestDataCreator.basicApp(dir.toPath())
         File(dir, "config.yml").writeText("""
             blockchains:
               hello:
@@ -144,9 +136,7 @@ internal class BuildCommandTest {
                       - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
                       - "net.postchain.d1.iccf.IccfGTXModule"
         """.trimIndent())
-        File(dir, "src/main.rell").writeText("""
-            module;
-        """.trimIndent())
+
         command.parse()
         val outputFile = File(dir, "build/hello.xml")
         assertTrue(outputFile.exists())

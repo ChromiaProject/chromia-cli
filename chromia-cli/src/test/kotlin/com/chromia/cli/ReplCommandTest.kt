@@ -8,9 +8,9 @@ import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import kotlin.test.assertFailsWith
 import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import kotlin.test.assertFailsWith
 
 class ReplCommandTest {
 
