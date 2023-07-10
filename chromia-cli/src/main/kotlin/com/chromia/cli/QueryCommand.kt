@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.chromiaConfigOption
+import com.chromia.cli.tools.config.OptionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -19,9 +19,9 @@ import net.postchain.gtv.parse.GtvParser
 
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
 
-    private val settings by chromiaConfigOption()
+    private val settings by OptionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption()
-    private val deploymentTarget by RemoteDeploymentOption { settings.nullableModel ?: ChromiaModel() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
 
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query. The dict is passed either as key-value pairs or as a single dict element.")
@@ -45,8 +45,8 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget!!
-        val clientConfig = settings.clientConfig(target.url, target.brid)
+        val target = deploymentTarget ?: explicitTarget
+        val clientConfig = settings.config.get(target.url, target.brid)
         try {
             val res = target
                     .createClient(clientConfig)

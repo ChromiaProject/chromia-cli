@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.config.chromiaConfigOption
+import com.chromia.cli.tools.config.ChromiaModelOption
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
@@ -10,6 +10,7 @@ import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -33,7 +34,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
             .multiple()
     private val modules by modulesOption()
-    private val settings by chromiaConfigOption()
+    private val settings by ChromiaModelOption()
     private val tests by option(help = "test method pattern").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
@@ -60,8 +61,8 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     private fun runUnitTests() {
-        val testModules = modules ?: settings.testModel.modules
-        val testModuleArgs = settings.testModel.moduleArgs
+        val testModules = modules ?: settings.model.test.modules
+        val testModuleArgs = settings.model.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
@@ -99,14 +100,14 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .appModuleInTestsError(appModuleInTestsError)
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
-                .version(settings.compileModel.langVersion)
-                .quiet(settings.compileModel.quiet)
+                .version(settings.model.compile.langVersion)
+                .quiet(settings.model.compile.quiet)
                 .build()
         return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) settings.model.databaseUrl else null)
-                .stopOnError(settings.testModel.failOnError)
+                .stopOnError(settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter(printer)
                 .outPrinter(printer)

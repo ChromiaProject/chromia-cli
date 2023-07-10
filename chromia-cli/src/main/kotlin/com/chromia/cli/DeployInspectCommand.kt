@@ -1,6 +1,7 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.config.chromiaConfigOption
+import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.OptionalChromiaModelOption
 import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
@@ -10,6 +11,7 @@ import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import de.m3y.kformat.Table
 import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
@@ -27,8 +29,8 @@ class DeployInspectCommand(
         help = "Inspect the API of a deployed blockchain"
 ) {
 
-    private val settings by chromiaConfigOption()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model }.cooccurring()
+    private val settings by OptionalChromiaModelOption()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")
     private val option by lazy {

@@ -2,7 +2,8 @@ package com.chromia.cli
 
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
-import com.chromia.cli.tools.config.chromiaConfigOption
+import com.chromia.cli.tools.config.ChromiaModelConfigOption
+import com.chromia.cli.tools.config.client
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
@@ -16,6 +17,7 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
@@ -46,7 +48,7 @@ fun deployCommands() = DeploymentCommand().subcommands(
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
 
-    protected val settings by chromiaConfigOption()
+    protected val settings by ChromiaModelConfigOption()
     private val secret by secretOption()
     protected val target by deployTargetOption().required()
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
@@ -65,7 +67,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     protected fun createClientConfig(): PostchainClientConfig {
-        return settings.clientConfig(secret = secret, apiurl = deployModel.urls.joinToString(","), blockchainRid = deployModel.blockchainRid)
+        return settings.model.client(settings.config, secret = secret, network = target, blockchain = null)
     }
 
     final override fun run() {

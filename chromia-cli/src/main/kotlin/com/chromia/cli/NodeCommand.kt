@@ -3,15 +3,15 @@ package com.chromia.cli
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compile.NodeConfig
-import com.chromia.cli.tools.config.chromiaConfigOption
+import com.chromia.cli.tools.config.ChromiaModelOption
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.associate
-import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -29,7 +29,7 @@ fun nodeCommands() = NodeCommand().subcommands(
 )
 
 abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
-    protected val settings by chromiaConfigOption()
+    protected val settings by ChromiaModelOption()
     protected val blockchainConfigs by option(
             "-bc", "--blockchain-config",
             help = "Manually specify which blockchain-configs to run"
@@ -41,7 +41,8 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
             .multiple()
 
     private val overrides by option("-p", help = "Override any property value (usage: -p key=value)", metavar = "KEY=VALUE").associate()
-    protected val nodeConfig by nodePropertiesOption().defaultLazy { NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
+    private val nodeConfigFile by nodePropertiesOption()
+    protected val nodeConfig by lazy { nodeConfigFile ?: NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
 
     protected fun extractConfigs(): Collection<ChromiaCompileResult> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
