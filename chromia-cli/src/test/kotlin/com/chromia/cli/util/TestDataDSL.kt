@@ -32,7 +32,7 @@ class TestDataBuilder {
         secretBuilder?.createFile(target)
     }
 
-    fun config(init: ConfigBuilder.() -> String) {
+    fun config(init: ConfigBuilder.() -> Unit) {
         init(configBuilder)
     }
 
