@@ -1,8 +1,7 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.DeployUpdateCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
@@ -28,7 +27,7 @@ class DeployUpdateCommandTest {
         testDir = dir
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
-        TestDataCreator.basicApp(dir)
+        TestDataCreator.unitTestApp(dir)
 
     }
 

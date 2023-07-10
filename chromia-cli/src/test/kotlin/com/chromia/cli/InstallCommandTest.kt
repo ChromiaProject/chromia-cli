@@ -1,11 +1,10 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
-import com.chromia.cli.InstallCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
@@ -36,7 +35,7 @@ class InstallCommandTest {
 
     @BeforeEach
     fun setup(@TempDir dir: Path) {
-        TestDataCreator.basicApp(dir)
+        TestDataCreator.unitTestApp(dir)
 
         with(File(dir.toFile(), "config.yml")) {
             writeText("""

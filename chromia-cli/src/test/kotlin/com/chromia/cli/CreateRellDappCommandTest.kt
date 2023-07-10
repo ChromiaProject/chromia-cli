@@ -1,7 +1,5 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
-import com.chromia.cli.BuildCommand
-import com.chromia.cli.CreateRellDappCommand
 import com.chromia.cli.model.RellVersion
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

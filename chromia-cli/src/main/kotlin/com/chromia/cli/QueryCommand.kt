@@ -19,7 +19,7 @@ import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
 
 
-class QueryCommand() : CliktCommand(help = "Make a query towards a running node") {
+class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
 
     private val settings by settingsOptionNotRequired()
     private val explicitTarget by LocalDeploymentOption()

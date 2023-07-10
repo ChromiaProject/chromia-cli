@@ -21,6 +21,27 @@ object TestDataCreator {
                     config:
                       blockstrategy:
                         maxblocktime: 1000
+            """.trimIndent())
+        }
+    }
+
+    fun unitTestApp(dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello() = "Hi!";
+                operation call_op(value: integer) {}
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "config.yml")) {
+            writeText("""
+                blockchains:
+                  hello:
+                    module: main
+                    config:
+                      blockstrategy:
+                        maxblocktime: 1000
                   deployed:
                     module: main      
                   wrongConfig: 
@@ -28,6 +49,16 @@ object TestDataCreator {
                     moduleArgs:
                       main:
                         name: { nameIsInterprededAsDict }
+                  gtxConfig:
+                    module: main
+                    config:
+                      gtx:
+                        modules:
+                          - "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule"
+                          - "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule"
+                          - "net.postchain.d1.icmf.IcmfSenderGTXModule"
+                          - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
+                          - "net.postchain.d1.iccf.IccfGTXModule"
                 deployments:
                   test:
                     url: "https://localhost:7740"

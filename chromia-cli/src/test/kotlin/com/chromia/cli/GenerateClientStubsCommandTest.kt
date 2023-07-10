@@ -1,11 +1,10 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
-import com.chromia.cli.GenerateClientStubsCommand
 import com.chromia.cli.util.CommandExtension
 import com.github.ajalt.clikt.core.context
 import org.junit.jupiter.api.Test

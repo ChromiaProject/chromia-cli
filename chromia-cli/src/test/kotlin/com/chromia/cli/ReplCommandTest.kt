@@ -1,4 +1,4 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains

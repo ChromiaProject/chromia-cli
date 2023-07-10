@@ -1,9 +1,8 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.chromia.cli.DeployInfoCommand
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
 import com.github.ajalt.clikt.core.context

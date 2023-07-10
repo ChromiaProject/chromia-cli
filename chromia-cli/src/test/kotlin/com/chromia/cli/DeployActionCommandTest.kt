@@ -1,4 +1,4 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
@@ -20,7 +20,7 @@ class DeployActionCommandTest {
 
     @BeforeEach
     fun setup(@TempDir dir: Path) {
-        TestDataCreator.basicApp(dir)
+        TestDataCreator.unitTestApp(dir)
         testDir = dir
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()

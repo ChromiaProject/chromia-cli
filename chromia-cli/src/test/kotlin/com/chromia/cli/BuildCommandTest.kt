@@ -1,4 +1,4 @@
-package com.chromia.cli.unit
+package com.chromia.cli
 
 import assertk.all
 import assertk.assertThat
@@ -7,7 +7,6 @@ import assertk.assertions.containsAll
 import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
-import com.chromia.cli.BuildCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
@@ -99,7 +98,7 @@ internal class BuildCommandTest {
 
     @Test
     fun libraryTamperedTest() {
-        TestDataCreator.basicApp(dir.toPath())
+        TestDataCreator.unitTestApp(dir.toPath())
 
         File(dir, "config.yml").writeText("""
             blockchains:
@@ -123,23 +122,9 @@ internal class BuildCommandTest {
 
     @Test
     fun whiteListedGtxModules() {
-        TestDataCreator.basicApp(dir.toPath())
-        File(dir, "config.yml").writeText("""
-            blockchains:
-              hello:
-                module: main
-                config:
-                  gtx:
-                    modules:
-                      - "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule"
-                      - "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule"
-                      - "net.postchain.d1.icmf.IcmfSenderGTXModule"
-                      - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
-                      - "net.postchain.d1.iccf.IccfGTXModule"
-        """.trimIndent())
-
+        TestDataCreator.unitTestApp(dir.toPath())
         command.parse()
-        val outputFile = File(dir, "build/hello.xml")
+        val outputFile = File(dir, "build/gtxConfig.xml")
         assertTrue(outputFile.exists())
         val outputGtv = GtvMLParser.parseGtvML(outputFile.readText())
         assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsAll(
