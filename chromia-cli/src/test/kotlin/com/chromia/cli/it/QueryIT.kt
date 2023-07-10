@@ -4,11 +4,8 @@ import java.io.File
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.RestApi
-import net.postchain.api.rest.model.ApiStatus
-import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
-import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
@@ -17,20 +14,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 
-class Directory1Model(val model: Model, val chains: Map<BlockchainRid, List<String>>) : Model by model {
-    constructor(blockchainRid: BlockchainRid, chains: Map<BlockchainRid, List<String>>) : this(TestModelImpl(blockchainRid), chains)
-    override fun query(query: GtxQuery): Gtv {
-        require(query.name == "cm_get_blockchain_api_urls")
-        val brid = BlockchainRid(query.args.asDict()["blockchain_rid"]!!.asByteArray())
-        return gtv(chains[brid]!!.map { gtv(it) })
-    }
-}
-
 class QueryDeploymentModel(val model: Model) : Model by model {
     constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
-
-    override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
-    override fun postTransaction(tx: ByteArray) {}
 
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
