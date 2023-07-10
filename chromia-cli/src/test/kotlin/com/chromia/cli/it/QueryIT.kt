@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
@@ -30,7 +31,7 @@ class QueryIT {
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
         val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
-        TestDataCreator.basicApp(dir)
+        testData(dir)
         with(File(dir.toFile(), "config.yml")) {
             appendText("\n")
             appendText("""
