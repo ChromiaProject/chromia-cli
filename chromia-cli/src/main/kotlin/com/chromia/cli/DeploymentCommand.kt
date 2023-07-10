@@ -72,7 +72,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
-        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.modelFile.parentFile, chainsToDeploy)
+        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
         beforeDeployment(chainsToDeploy)
 
         val client = createClient()

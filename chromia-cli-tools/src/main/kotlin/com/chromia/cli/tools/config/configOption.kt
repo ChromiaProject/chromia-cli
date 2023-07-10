@@ -33,33 +33,38 @@ class ChromiaConfigOption internal constructor(cliEnv: RellCliEnv): OptionGroup(
 }
 
 open class ChromiaModelOption internal constructor(cliEnv: RellCliEnv): OptionGroup("Configuration Properties") {
-    val modelFile: File by requiredChromiaModelOption(cliEnv)
+    private val modelFile: File by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
-    val sourceDir get() = model.compile.sourceFile(modelFile.parentFile)
-    val targetDir get() = model.compile.targetFile(modelFile.parentFile)
+    val projectFolder by lazy { modelFile.parentFile }
+    val sourceDir get() = model.compile.sourceFile(projectFolder)
+    val targetDir get() = model.compile.targetFile(projectFolder)
 }
 
 class OptionalChromiaModelOption internal constructor(cliEnv: RellCliEnv): OptionGroup("Configuration Properties") {
-    val modelFile by chromiaModelOption()
-    val model by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile)?.let { parseModel(it) } }
-    val sourceDir get() = model?.compile?.sourceFile(modelFile!!.parentFile)
+    private val modelFile by chromiaModelOption()
+    private val resolvedModelFile by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile) }
+    val projectFolder by lazy { resolvedModelFile?.parentFile }
+    val model by lazy { resolvedModelFile?.let { parseModel(it) } }
+    val sourceDir get() = model?.compile?.sourceFile(projectFolder!!)
 }
 
 
 class ChromiaModelConfigOption internal constructor(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
     val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
-    val modelFile by requiredChromiaModelOption(cliEnv)
+    private val modelFile by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
-    val sourceDir get() = model.compile.sourceFile(modelFile.parentFile)
-    val targetDir get() = model.compile.targetFile(modelFile.parentFile)
+    val projectFolder by lazy { modelFile.parentFile }
+    val sourceDir get() = model.compile.sourceFile(projectFolder)
+    val targetDir get() = model.compile.targetFile(projectFolder)
 }
 
 class OptionalChromiaModelConfigOption internal constructor(cliEnv: RellCliEnv): OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
     val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
-    val modelFile by chromiaModelOption()
+    private val modelFile by chromiaModelOption()
     val model by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile)?.let { parseModel(it) } }
+    val projectFolder by lazy { modelFile?.parentFile }
 }
 
 internal fun ParameterHolder.requiredChromiaModelOption(cliEnv: RellCliEnv) = chromiaModelOption()

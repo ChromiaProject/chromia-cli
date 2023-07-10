@@ -12,6 +12,6 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     override fun aliases() = createAliases()
 
     override fun run() {
-        ChromiaCompileApi.compile(cliEnv(), settings.model, settings.modelFile.parentFile)
+        ChromiaCompileApi.compile(cliEnv(), settings.model, settings.projectFolder)
     }
 }
