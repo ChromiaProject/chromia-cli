@@ -1,4 +1,4 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.all
 import assertk.assertThat
@@ -7,6 +7,7 @@ import assertk.assertions.containsAll
 import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
+import com.chromia.cli.BuildCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner

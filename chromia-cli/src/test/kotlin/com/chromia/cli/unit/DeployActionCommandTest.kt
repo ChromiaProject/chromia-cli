@@ -1,7 +1,9 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.DeployPauseCommand
+import com.chromia.cli.DeployResumeCommand
 import com.chromia.cli.it.TestDataCreator
 import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.BeforeEach

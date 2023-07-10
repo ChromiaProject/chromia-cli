@@ -38,6 +38,7 @@ class TestClient(override val config: PostchainClientConfig) : PostchainClient {
     override fun query(name: String, args: Gtv): Gtv = when (name) {
         "api_version" -> gtv(8)
         "find_blockchain_rid" -> gtv(BlockchainRid.ZERO_RID.data)
+        "hello" -> gtv("hello there")
         else -> TODO("Not yet implemented")
     }
 }

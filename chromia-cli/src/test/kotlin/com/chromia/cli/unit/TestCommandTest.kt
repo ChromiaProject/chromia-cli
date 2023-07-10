@@ -1,11 +1,13 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.TestCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
@@ -16,9 +18,18 @@ internal class TestCommandTest {
 
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(logger)
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
 
-    @Test
-    fun testFilter(@TempDir dir: Path) {
+    @BeforeEach
+    fun setup(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello() = "Hi!";
+            """.trimIndent())
+        }
 
         with(File(dir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
@@ -30,27 +41,17 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        val settings = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "config.yml").apply {
             writeText("""
+                blockchains:
+                    hello:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
                 test:
                   modules:
                     - test
-            """.trimIndent())
-        }
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
-        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
-    }
-
-    @Test
-    fun testSubModuleSelectiveTest(@TempDir dir: Path) {
-
-        with(File(dir.toFile(), "src/testDir/test.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                @test module;
-
-                function test_a() {}
-                function test_b() {}
             """.trimIndent())
         }
 
@@ -63,21 +64,6 @@ internal class TestCommandTest {
                 function test_d() {}
             """.trimIndent())
         }
-
-        val settings = File(dir.toFile(), "config.yml").apply {
-            writeText("""
-                test:
-                  modules:
-                    - testDir
-            """.trimIndent())
-        }
-
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--tests", "test_a", "--no-db"))
-        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
-    }
-
-    @Test
-    fun testSubModuleAllTests(@TempDir dir: Path) {
 
         with(File(dir.toFile(), "src/testDir/foo.rell")) {
             parentFile.mkdirs()
@@ -88,31 +74,63 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
+        testDir = dir
+    }
 
-        with(File(dir.toFile(), "src/testDir/bar.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                @test module;
+    @Test
+    fun testFilter() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--tests", "test_a", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
 
-                function test_c() {}
-                function test_d() {}
-            """.trimIndent())
-        }
+    @Test
+    fun testFilterWildCard() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--tests", "test_*", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
+    }
 
-        val settings = File(dir.toFile(), "config.yml").apply {
+    @Test
+    fun testBlockchain() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+    }
+
+    @Test
+    fun testModule() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun testSubModuleSelectiveTest() {
+        File(testDir.toFile(), "config.yml").apply {
             writeText("""
                 test:
                   modules:
                     - testDir
             """.trimIndent())
         }
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--no-db"))
+
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--tests", "test_a", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun testSubModuleAllTests() {
+        File(testDir.toFile(), "config.yml").apply {
+            writeText("""
+                test:
+                  modules:
+                    - testDir
+            """.trimIndent())
+        }
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
     @Test
-    fun testWithDb(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/main.rell")) {
+    fun testWithDb() {
+        with(File(testDir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -124,13 +142,13 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
-        with(File(dir.toFile(), "src/test_ops.rell")) {
+        with(File(testDir.toFile(), "src/test_ops.rell")) {
             writeText("""
                 module;
                 operation add_foo(name, pubkey) {} // Conflict
             """.trimIndent())
         }
-        with(File(dir.toFile(), "src/test.rell")) {
+        with(File(testDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -143,7 +161,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        val settings = File(dir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "config.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -155,13 +173,13 @@ internal class TestCommandTest {
                       foo: bar
             """.trimIndent())
         }
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--use-db"))
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test
-    fun failingTest(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/test.rell")) {
+    fun failingTest() {
+        with(File(testDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -171,22 +189,15 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        val settings = File(dir.toFile(), "config.yml").apply {
-            writeText("""
-                test:
-                  modules:
-                    - test
-            """.trimIndent())
-        }
         assertThrows<CliktError> {
-            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settings.absolutePath, "--no-db"))
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db"))
         }
         assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
     }
 
     @Test
-    fun testBlockchainTestScope(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/development.rell")) {
+    fun testBlockchainTestScope() {
+        with(File(testDir.toFile(), "src/development.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -198,7 +209,7 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
-        with(File(dir.toFile(), "src/moduleA/test.rell")) {
+        with(File(testDir.toFile(), "src/moduleA/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -210,7 +221,7 @@ internal class TestCommandTest {
                 }
             """.trimIndent())
         }
-        with(File(dir.toFile(), "src/moduleB/test.rell")) {
+        with(File(testDir.toFile(), "src/moduleB/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -219,7 +230,7 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
-        val settings = File(dir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "config.yml").apply {
             writeText("""
                 blockchains:
                   foo_chain_dev:
@@ -244,7 +255,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         TestCommand().context { terminal = testTerminal }.parse(
-                listOf("-s", settings.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
+                listOf("-s", settingsFile.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
         )
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
     }

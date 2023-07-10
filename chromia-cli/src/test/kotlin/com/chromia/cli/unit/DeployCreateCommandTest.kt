@@ -1,7 +1,8 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.DeployCreateCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel

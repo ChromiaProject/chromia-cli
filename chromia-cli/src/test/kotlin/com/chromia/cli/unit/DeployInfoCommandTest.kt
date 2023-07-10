@@ -1,8 +1,9 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.chromia.cli.DeployInfoCommand
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
 import com.github.ajalt.clikt.core.context
@@ -101,11 +102,11 @@ class DeployInfoCommandTest {
     }
 
     private fun assertBlockchainTableContainsRow(vararg row: String) {
-        assertTableContainsRow({ row("Blockchain", "Rid", "Cluster") }, { row(row)})
+        assertTableContainsRow({ row("Blockchain", "Rid", "Cluster") }, { row(row) })
     }
 
     private fun assertNodeTableContainsRow(vararg row: String) {
-        assertTableContainsRow({ row("Node url", "Height", "Status") }, { row(row)})
+        assertTableContainsRow({ row("Node url", "Height", "Status") }, { row(row) })
     }
 
     private fun assertVerboseNodeTableContainsRow(vararg row: String) {

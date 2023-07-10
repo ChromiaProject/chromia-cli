@@ -1,7 +1,8 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.ReplCommand
 import com.chromia.cli.util.CommandExtension
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal

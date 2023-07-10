@@ -1,10 +1,11 @@
-package com.chromia.cli
+package com.chromia.cli.unit
 
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
+import com.chromia.cli.InstallCommand
 import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
@@ -36,6 +37,27 @@ class InstallCommandTest {
     @BeforeEach
     fun setup(@TempDir dir: Path) {
         TestDataCreator.basicApp(dir)
+
+        with(File(dir.toFile(), "config.yml")) {
+            writeText("""
+                libs:
+                    foo:
+                      registry: http://foo.com
+                      path: lib
+                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
+                    bar:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                    insecureBar:
+                      registry: http://bar.com
+                      path: lib
+                      rid: x"11"
+                      insecure: true
+
+            """.trimIndent())
+        }
+
         testDir = dir
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
