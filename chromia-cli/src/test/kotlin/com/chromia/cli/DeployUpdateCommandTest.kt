@@ -2,12 +2,13 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
 import net.postchain.rell.api.base.RellCliBasicException
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
@@ -17,69 +18,50 @@ import java.nio.file.Path
 
 class DeployUpdateCommandTest {
 
-    companion object {
-        lateinit var settings: File
-        lateinit var secret: File
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+    private lateinit var secret: File
 
-        @BeforeAll
-        @JvmStatic
-        fun setup(@TempDir dir: Path) {
-            with(File(dir.toFile(), "src/main.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                module;
-                struct module_args { name; } 
-            """.trimIndent())
-            }
-            with(File(dir.toFile(), "src/mainNoArgs.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                module;
-            """.trimIndent())
-            }
-            settings = File(dir.toFile(), "config.yml").apply {
-                writeText("""
-                blockchains:
-                  wrongConfig: 
-                    module: main
-                    moduleArgs:
-                      main:
-                        name: { nameIsInterprededAsDict }
-                  okConfig:
-                    module: mainNoArgs
-                  notDeployed:
-                    module: mainNoArgs
-                deployments:
-                  test:
-                    url: "localhost:7740"
-                    brid: x"0000000000000000000000000000000000000000000000000000000000000001"
-                    container: foo
-                    chains:
-                      okConfig: x"0000000000000000000000000000000000000000000000000000000000000002"
-                      wrongConfig: x"0000000000000000000000000000000000000000000000000000000000000003"
-            """.trimIndent())
-            }
-            secret = File(dir.toFile(), ".secret").apply {
-                writeText("""
-privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
-pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
-            """.trimIndent())
-            }
-
-        }
+    @BeforeEach
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
+        settingsFile = testDir.resolve("config.yml").toFile()
+        secret = testDir.resolve(".secret").toFile()
     }
 
 
     @Test
     fun successfulDeployment() {
-        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settings.absolutePath, "--blockchain", "okConfig", "--network", "test", "--secret", secret.absolutePath))
-        assertThat(res.output).contains("Deployment of blockchain okConfig was successful")
+        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+        assertThat(res.output).contains("Deployment of blockchain deployed was successful")
     }
 
     @Test
-    fun cannotDeployFaultyConfig(@TempDir dir: Path) {
+    fun successfulDeploymentOnHeight() {
+        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--height", "100"))
+        assertThat(res.output).contains("Deployment of blockchain deployed was successful")
+    }
+
+    @Test
+    fun failDeploymentOnHeightWithMultipleChains() {
+        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed,hello", "--network", "test", "--height", "100"))
+        assertThat(res.stderr).contains("Error: invalid value for --height: When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify")
+    }
+
+    @Test
+    fun cannotDeployFaultyConfig() {
+
+        with(File(testDir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                struct module_args { name; } 
+            """.trimIndent())
+        }
+
         val throwable = assertThrows<RellCliBasicException> {
-            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settings.absolutePath, "--blockchain", "wrongConfig", "--network", "test", "--secret", secret.absolutePath))
+            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -87,8 +69,8 @@ pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
     @Test
     fun deploymentMustExistToUpdate() {
         val throwable = assertThrows<PrintMessage> {
-            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test", "--secret", secret.absolutePath))
+            DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
         }
-        assertThat(throwable.message!!).contains("Blockchain notDeployed cannot be updated since it has not been deployed to network test")
+        assertThat(throwable.message!!).contains("Blockchain hello cannot be updated since it has not been deployed to network test")
     }
 }

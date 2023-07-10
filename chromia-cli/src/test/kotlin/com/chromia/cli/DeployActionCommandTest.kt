@@ -2,68 +2,62 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.util.TestClient
-import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.context
-import org.junit.jupiter.api.BeforeAll
+import com.chromia.cli.it.TestDataCreator
+import com.github.ajalt.clikt.testing.test
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 
 class DeployActionCommandTest {
 
-    companion object {
-        lateinit var settings: File
-        lateinit var secret: File
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+    private lateinit var secret: File
 
-        @BeforeAll
-        @JvmStatic
-        fun setup(@TempDir dir: Path) {
-            with(File(dir.toFile(), "src/mainNoArgs.rell")) {
-                parentFile.mkdirs()
-                writeText("""
-                module;
-            """.trimIndent())
-            }
-            settings = File(dir.toFile(), "config.yml").apply {
-                writeText("""
-                blockchains:
-                  notDeployed:
-                    module: mainNoArgs
-                deployments:
-                  test:
-                    url: "localhost:7740"
-                    brid: x"0000000000000000000000000000000000000000000000000000000000000001"
-                    container: foo
-                    chains:
-                      okConfig: x"0000000000000000000000000000000000000000000000000000000000000002"
-            """.trimIndent())
-            }
-            secret = File(dir.toFile(), ".secret").apply {
-                writeText("""
-privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
-pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
-            """.trimIndent())
-            }
+    @BeforeEach
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
+        settingsFile = testDir.resolve("config.yml").toFile()
+        secret = testDir.resolve(".secret").toFile()
 
-        }
     }
 
     @Test
-    fun cannotPauseNotDeployedBlockchain(@TempDir dir: Path) {
-        val throwable = assertThrows<CliktError> {
-            DeployPauseCommand { TestClient(it) }.context { }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
-        }
-        assertThat(throwable.message!!).contains("The action \"pause\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
+    fun cannotPauseNotDeployedBlockchain() {
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+        assertThat(res.output).contains("The action \"pause\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
     }
 
     @Test
-    fun cannotResumeNotDeployedBlockchain(@TempDir dir: Path) {
-        val throwable = assertThrows<CliktError> {
-            DeployResumeCommand { TestClient(it) }.context { }.parse(listOf("-s", settings.absolutePath, "--blockchain", "notDeployed", "--network", "test"))
-        }
-        assertThat(throwable.message!!).contains("The action \"resume\" of Blockchain notDeployed cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
+    fun parsePauseAttributeChainMissing() {
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing chain", "--network", "test"))
+        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing chain] does not exist")
+    }
+
+    @Test
+    fun parsePauseAttributeNetworkMissing() {
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
+        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
+    }
+
+    @Test
+    fun cannotResumeNotDeployedBlockchain() {
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+        assertThat(res.output).contains("The action \"resume\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
+    }
+
+    @Test
+    fun parseResumeAttributeChainMissing() {
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing chain", "--network", "test"))
+        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing chain] does not exist")
+    }
+
+    @Test
+    fun parseResumeAttributeNetworkMissing() {
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
+        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
     }
 }

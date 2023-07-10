@@ -101,11 +101,11 @@ class DeployInfoCommandTest {
     }
 
     private fun assertBlockchainTableContainsRow(vararg row: String) {
-        assertTableContainsRow({ row("Blockchain", "Rid", "Cluster") }, { row(row)})
+        assertTableContainsRow({ row("Blockchain", "Rid", "Cluster") }, { row(row) })
     }
 
     private fun assertNodeTableContainsRow(vararg row: String) {
-        assertTableContainsRow({ row("Node url", "Height", "Status") }, { row(row)})
+        assertTableContainsRow({ row("Node url", "Height", "Status") }, { row(row) })
     }
 
     private fun assertVerboseNodeTableContainsRow(vararg row: String) {
