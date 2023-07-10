@@ -2,14 +2,30 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.cli.QueryCommand
+import com.chromia.cli.it.TestDataCreator
+import com.chromia.cli.util.TestClient
 import com.github.ajalt.clikt.testing.test
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Path
+
 
 class QueryCommandTest {
 
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+
+    @BeforeEach
+    fun setup() {
+        TestDataCreator.unitTestApp(testDir)
+        settingsFile = testDir.resolve("config.yml").toFile()
+
+    }
 
     @Test
     fun testMissingQueryName() {
@@ -25,21 +41,16 @@ class QueryCommandTest {
 
     @Test
     fun testCanNotParseArgs() {
-        val res = QueryCommand().test(listOf("--settings", dir!!.absolutePath.plus("/config.yml"), "hello_world", "arg1 -> 1"))
+        val res = QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "hello", "arg1 -> 1"))
         assertThat(res.stderr).contains("invalid value for <args>: query must be done with named parameters in a dict")
     }
 
-
-    companion object {
-        @TempDir
-        @JvmField
-        var dir: File? = null
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath))
-            //StartCommand().parse(listOf("-s", dir!!.absolutePath.plus("/config.yml"), "--wipe"))
+    @Test
+    fun testMissingBrid() {
+        val thrown = assertThrows<IllegalArgumentException> {
+            QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
         }
+
+        assertThat(thrown.message!!).contains("Wrong size of Blockchain RID, was 0 should be 32 (64 characters)")
     }
 }

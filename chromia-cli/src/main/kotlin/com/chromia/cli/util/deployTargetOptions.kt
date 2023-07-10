@@ -24,7 +24,6 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
     private val network by deployTargetOption()
     private val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
-
     override val brid: BlockchainRid
         get() {
             val deploymentModel = settings().deployments[network]

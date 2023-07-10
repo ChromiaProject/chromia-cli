@@ -53,13 +53,13 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     protected val settings by settingsOption()
     private val secret by secretOption().defaultLazy { File(".secret") }
     protected val target by deployTargetOption().required()
+            .validate { require(settings.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
             .validate { require(settings.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
 
     protected val deployModel by lazy {
         val deployModel = settings.deployments[target]
-                ?: throw PrintMessage("deployment target with name $target not found")
-        if (deployModel.container == null) throw PrintMessage("No container specified on network $target")
+        if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
         deployModel
     }
 
