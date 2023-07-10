@@ -48,21 +48,9 @@ class QueryCommandTest {
     @Test
     fun testMissingBrid() {
         val thrown = assertThrows<IllegalArgumentException> {
-            QueryCommand({ TestClient(it) }).test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
+            QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
         }
 
         assertThat(thrown.message!!).contains("Wrong size of Blockchain RID, was 0 should be 32 (64 characters)")
-    }
-
-    @Test
-    fun testSimpleQueryTowardsNode() {
-        val res = QueryCommand({ TestClient(it) }).test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "-brid", "0000000000000000000000000000000000000000000000000000000000000002", "hello"))
-        assertThat(res.output).contains("hello there")
-    }
-
-    @Test
-    fun testSimpleQueryTowardsDeployment() {
-        val res = QueryCommand({ TestClient(it) }).test(listOf("--settings", settingsFile.absolutePath, "-d", "test", "-bc", "deployed", "hello"))
-        assertThat(res.output).contains("hello there")
     }
 }

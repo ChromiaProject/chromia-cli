@@ -12,8 +12,6 @@ import com.github.ajalt.clikt.parameters.arguments.validate
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClientProvider
-import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
@@ -21,7 +19,7 @@ import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
 
 
-class QueryCommand(val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : CliktCommand(help = "Make a query towards a running node") {
+class QueryCommand() : CliktCommand(help = "Make a query towards a running node") {
 
     private val settings by settingsOptionNotRequired()
     private val explicitTarget by LocalDeploymentOption()
@@ -60,7 +58,7 @@ class QueryCommand(val clientProvider: PostchainClientProvider = PostchainClient
         }
 
         try {
-            val res = clientConfig.let { clientProvider.createClient(it) }
+            val res = target.createClient(clientConfig)
                     .query(queryName, args as Gtv)
             echo(res)
         } catch (e: Exception) {
