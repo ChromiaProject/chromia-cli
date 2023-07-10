@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.OptionalChromiaModelOption
+import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
@@ -32,7 +32,7 @@ class DeployInfoCommand(
         help = "Information about a deployed blockchain"
 ) {
 
-    private val settings by OptionalChromiaModelOption()
+    private val settings by optionalChromiaModelOption()
     private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()

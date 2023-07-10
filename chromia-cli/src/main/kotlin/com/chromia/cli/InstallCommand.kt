@@ -4,8 +4,8 @@ import com.chromia.build.tools.lib.GitRepositoryCloner
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstaller
 import com.chromia.build.tools.lib.RepositoryCloner
-import com.chromia.cli.tools.config.ChromiaModelOption
-import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.tools.config.chromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.libraryOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 class InstallCommand(
         private val repositoryClonerFactory: () -> RepositoryCloner = { GitRepositoryCloner() },
 ) : CliktCommand(help = "Install library dependencies, if no library specified all will be installed") {
-    private val settings by ChromiaModelOption()
+    private val settings by chromiaModelOption()
     private val library by libraryOption().multiple()
             .validate { require(settings.model.libs.keys.containsAll(it)) { "Specified library(s) $it does not exist in config file" } }
 

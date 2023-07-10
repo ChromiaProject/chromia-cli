@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.OptionalChromiaModelOption
+import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
@@ -29,7 +29,7 @@ class DeployInspectCommand(
         help = "Inspect the API of a deployed blockchain"
 ) {
 
-    private val settings by OptionalChromiaModelOption()
+    private val settings by optionalChromiaModelOption()
     private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")

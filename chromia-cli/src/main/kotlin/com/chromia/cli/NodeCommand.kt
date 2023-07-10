@@ -3,9 +3,9 @@ package com.chromia.cli
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compile.NodeConfig
-import com.chromia.cli.tools.config.ChromiaModelOption
+import com.chromia.cli.tools.config.chromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.launcher.createAliases
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.NoOpCliktCommand
@@ -29,7 +29,7 @@ fun nodeCommands() = NodeCommand().subcommands(
 )
 
 abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
-    protected val settings by ChromiaModelOption()
+    protected val settings by chromiaModelOption()
     protected val blockchainConfigs by option(
             "-bc", "--blockchain-config",
             help = "Manually specify which blockchain-configs to run"

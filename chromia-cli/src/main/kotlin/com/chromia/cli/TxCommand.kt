@@ -1,7 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.OptionalChromiaModelConfigOption
+import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
@@ -17,7 +17,7 @@ import net.postchain.gtv.parse.GtvParser
 
 class TxCommand : CliktCommand(help = "Make a transaction") {
 
-    private val settings by OptionalChromiaModelConfigOption()
+    private val settings by optionalChromiaModelConfigOption()
     private val secret by secretOption()
     private val explicitTarget by LocalDeploymentOption()
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()

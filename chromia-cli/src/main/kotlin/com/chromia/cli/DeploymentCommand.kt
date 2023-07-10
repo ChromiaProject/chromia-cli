@@ -2,10 +2,10 @@ package com.chromia.cli
 
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
-import com.chromia.cli.tools.config.ChromiaModelConfigOption
+import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.client
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.launcher.createAliases
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
@@ -48,7 +48,7 @@ fun deployCommands() = DeploymentCommand().subcommands(
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
 
-    protected val settings by ChromiaModelConfigOption()
+    protected val settings by chromiaModelConfigOption()
     private val secret by secretOption()
     protected val target by deployTargetOption().required()
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")

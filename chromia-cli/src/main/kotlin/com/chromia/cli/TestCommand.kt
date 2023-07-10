@@ -1,11 +1,11 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.config.ChromiaModelOption
+import com.chromia.cli.tools.config.chromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -34,7 +34,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
             .multiple()
     private val modules by modulesOption()
-    private val settings by ChromiaModelOption()
+    private val settings by chromiaModelOption()
     private val tests by option(help = "test method pattern").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")

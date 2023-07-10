@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.config.ChromiaModelOption
+import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.util.LanguageSupport
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
@@ -20,7 +20,7 @@ import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
 class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", help = "Generates client code for a rell dapp") {
-    private val settings by ChromiaModelOption()
+    private val settings by chromiaModelOption()
 
     private val moduleName by option("--module",
             help = "Explicitly set which modules to generate code for. Separate modules with ','").split(",")

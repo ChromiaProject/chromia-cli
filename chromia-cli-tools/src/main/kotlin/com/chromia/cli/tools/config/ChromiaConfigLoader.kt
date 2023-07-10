@@ -1,13 +1,13 @@
 package com.chromia.cli.tools.config
 
-import com.github.ajalt.clikt.core.PrintMessage
 import java.io.File
 import net.postchain.common.PropertiesFileLoader
+import net.postchain.rell.api.base.RellCliEnv
 import org.apache.commons.configuration2.Configuration
 import org.apache.commons.configuration2.PropertiesConfiguration
 
 
-class ChromiaConfigLoader {
+class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
 
     companion object {
         private const val DEFAULT_CONFIG_FILENAME = ".chromia/config"
@@ -23,7 +23,7 @@ class ChromiaConfigLoader {
         config.setProperty("status.poll-interval", 2000)
         loadFromFileIfExists(globalConfigurationFile(), config)
         if (File(DEFAULT_PMC_CONFIG_FILENAME).exists()) {
-            //cliEnv.print("Loading .pmc/config file. Rename to .chromia/config to silence this message")
+            cliEnv.print("Loading .pmc/config file. Rename to .chromia/config to silence this message")
             loadFromFileIfExists(File(DEFAULT_PMC_CONFIG_FILENAME), config) // Backwards compatibility
         }
 
@@ -39,7 +39,7 @@ class ChromiaConfigLoader {
         }
     }
 
-    fun findModelFile(explicitFile: File?): File {
+    fun findModelFile(explicitFile: File?): File? {
         if (explicitFile != null) {
             require(explicitFile.isFile) { "File $explicitFile is not a regular file" }
             return explicitFile.absoluteFile
@@ -51,9 +51,9 @@ class ChromiaConfigLoader {
 
         val configModelFile = File(DEFAULT_CONFIG_MODEL_FILENAME)
         if (configModelFile.exists() && configModelFile.isFile) {
-            //cliEnv.print("Found config.yml settings file. Rename to chromia.yml to silence this message")
+            cliEnv.print("Found config.yml settings file. Rename to chromia.yml to silence this message")
             return configModelFile.absoluteFile
         }
-        throw PrintMessage("Project settings file not found")
+        return null
     }
 }

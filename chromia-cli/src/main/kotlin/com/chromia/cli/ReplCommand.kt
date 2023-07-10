@@ -1,8 +1,8 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.OptionalChromiaModelOption
-import com.chromia.cli.util.CliktCliEnv
+import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.module
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -16,7 +16,7 @@ import net.postchain.rell.api.shell.RellApiRunShell
 
 
 class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
-    private val settings by OptionalChromiaModelOption()
+    private val settings by optionalChromiaModelOption()
     private val sourceDir by lazy { settings.sourceDir ?: File(System.getProperty("user.dir")) }
     private val module by module()
     private val sqlLog by option(help = "Log sql expressions").flag()
