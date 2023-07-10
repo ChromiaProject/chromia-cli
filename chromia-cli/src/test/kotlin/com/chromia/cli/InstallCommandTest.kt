@@ -5,7 +5,6 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
-import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.TestRepositoryCloner
@@ -13,14 +12,14 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
-import kotlin.test.assertFailsWith
 
 
 class InstallCommandTest {
@@ -36,8 +35,6 @@ class InstallCommandTest {
 
     @BeforeEach
     fun setup() {
-        TestDataCreator.unitTestApp(testDir)
-
         with(File(testDir.toFile(), "config.yml")) {
             writeText("""
                 libs:

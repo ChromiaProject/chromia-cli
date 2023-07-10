@@ -2,7 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.it.TestDataCreator
+import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,7 +19,7 @@ class DeployActionCommandTest {
 
     @BeforeEach
     fun setup() {
-        TestDataCreator.unitTestApp(testDir)
+        DeploymentTestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
 

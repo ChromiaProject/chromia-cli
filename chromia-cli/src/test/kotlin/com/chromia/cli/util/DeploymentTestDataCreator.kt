@@ -1,9 +1,9 @@
-package com.chromia.cli.it
+package com.chromia.cli.util
 
 import java.io.File
 import java.nio.file.Path
 
-object TestDataCreator {
+object DeploymentTestDataCreator {
 
     fun unitTestApp(dir: Path) {
         with(File(dir.toFile(), "src/main.rell")) {
