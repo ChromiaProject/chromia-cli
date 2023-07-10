@@ -1,8 +1,9 @@
-package com.chromia.cli.model
+package com.chromia.build.tools.lib
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.build.tools.lib.LibraryVerifyer
+import assertk.assertions.isTrue
+import com.chromia.cli.model.parseModel
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import java.io.File
 import java.nio.file.Path
@@ -17,11 +18,11 @@ class RellLibraryModelTest {
     private lateinit var settingsFile: File
     private var fileMap = mutableMapOf<String, List<File>>()
 
-    private fun createFile(dir: File, name: String): File {
+    private fun createFile(dir: File, name: String, code: String = ""): File {
         return File(dir, "$name.rell").apply {
             parentFile.mkdirs()
             writeText("""
-                    module; 
+                    module; $code
                 """.trimIndent())
         }
     }
@@ -42,19 +43,19 @@ class RellLibraryModelTest {
                     foo:
                       registry: http://foo.com
                       path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
+                      rid: x"B06598BD8F8963AAE587ECBE3CA5442DE437F332D60DFC1FF10D77E4D524A6B5"  
             """.trimIndent())
         }
 
         val settings = parseModel(settingsFile)
-        fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"))
+        fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo"), createFile(dir.toFile(), "lib/bar", "//Bar"))
         val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })
 
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
         }
     }
 
@@ -131,7 +132,7 @@ class RellLibraryModelTest {
             override fun print(msg: String) = println(msg)
         })
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
         }
     }
 
@@ -159,7 +160,7 @@ class RellLibraryModelTest {
             override fun print(msg: String) = println(msg)
         })
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!))
+            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
         }
     }
 }

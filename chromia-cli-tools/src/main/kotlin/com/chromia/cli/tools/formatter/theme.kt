@@ -26,7 +26,7 @@ val chromiaTheme = Theme {
     styles["info"] = TextColors.rgb("#CB92F0")
     styles["warning"] = TextColors.rgb("#FFB600")
     styles["danger"] = TextColors.rgb("#FF405E")
-    styles["muted"] = TextColors.rgb("#4F4B4F")
+    styles["muted"] = TextColors.rgb("#827382")
 
     // Remove the border around code blocks
     flags["markdown.code.block.border"] = false

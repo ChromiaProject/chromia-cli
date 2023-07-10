@@ -2,6 +2,9 @@ package com.chromia.build.tools.lib
 
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.RellLibraryModel
+import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.notExists
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory
@@ -9,10 +12,6 @@ import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtv.merkleHash
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
-import java.io.File
-import java.nio.file.Files
-import kotlin.io.path.exists
-import kotlin.io.path.notExists
 
 class LibraryVerifyer(private val env: RellCliEnv) {
     val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
@@ -38,7 +37,7 @@ class LibraryVerifyer(private val env: RellCliEnv) {
         }
 
         val srcGtv = GtvFactory.gtv(
-                RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(files.filter { it.extension == "rell" }.map { GtvFactory.gtv(it.readText()) })
+                RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(files.filter { it.isFile }.sortedBy { it.path }.map { GtvFactory.gtv(it.readText()) })
         )
 
         val calculatedRid = WrappedByteArray(srcGtv.merkleHash(hashCalculator))
