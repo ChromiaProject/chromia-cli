@@ -1,6 +1,6 @@
 package com.chromia.cli.it
 
-import java.io.File
+import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
 import net.postchain.api.rest.controller.Model
@@ -16,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir
 
 class TxDeploymentModel(val model: Model) : Model by model {
     constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
+
     val txList = mutableListOf<ByteArray>()
 
     override fun postTransaction(tx: ByteArray) {
@@ -28,33 +29,28 @@ class TxIT {
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
         val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
-        TestDataCreator.basicApp(dir)
-        with(File(dir.toFile(), "config.yml")) {
-            appendText("\n")
-            appendText("""
-                deployments:
-                  test:
-                    url: "http://localhost:7741"
-                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
-                    container: testcontainer
-                    chains:
-                      hello: x"${testBrid.toHex()}"
-            """.trimIndent())
-        }
-        val secretFile = File(dir.toFile(), ".secret")
-        with(secretFile) {
-            writeText("""
-            privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
-            pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
-            """.trimIndent())
+        testData(dir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "http://localhost:7741"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        chains:
+                          hello: x"${testBrid.toHex()}"
+                        """.trimIndent()
+                )
+            }
+            secret()
         }
         val txDeploymentModel = TxDeploymentModel(testBrid)
         RestApi(7741, "").use { api ->
             api.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
             api.attachModel(testBrid, txDeploymentModel)
 
-            ChrProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--secret", secretFile.absolutePath)
-                    .setConfig(dir.resolve("config.yml").toFile())
+            ChrProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello")
+                    .setWorkingDir(dir.toFile())
                     .start { process ->
                         process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
                     }

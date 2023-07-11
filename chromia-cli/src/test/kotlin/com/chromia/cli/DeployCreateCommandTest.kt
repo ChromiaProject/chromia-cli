@@ -2,7 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.it.TestDataCreator
+import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.versionfinder.RellDeployVersionException
@@ -34,7 +34,7 @@ class DeployCreateCommandTest {
 
     @BeforeEach
     fun setup() {
-        TestDataCreator.unitTestApp(testDir)
+        DeploymentTestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
@@ -50,7 +50,6 @@ class DeployCreateCommandTest {
                 struct module_args { name; } 
             """.trimIndent())
         }
-
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
             DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))

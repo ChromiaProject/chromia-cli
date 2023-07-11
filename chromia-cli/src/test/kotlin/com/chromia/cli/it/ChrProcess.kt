@@ -41,21 +41,26 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
         private var shouldFinish = true
         private var timeout = Duration.ofSeconds(10)
         private var verbose = false
+        private var workingDir: File? = null
         fun setConfig(file: File) = apply { config = file }
+        fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
         fun timeout(value: Duration) = apply { timeout = value }
         fun verbose(value: Boolean) = apply { verbose = value }
 
 
         fun <R> start(onCompleted: (ChrProcess) -> R): R {
+            val executable = "${System.getenv("DIST_DIR")}/chr"
+            require(File(executable).exists()) { "Executable must be built first" }
             val processArgs = buildList<String> {
-                add("${System.getenv("DIST_DIR")}/chr")
+                add(executable)
                 addAll(args)
                 config?.let { addAll(listOf("-s", it.absolutePath)) }
             }
             val process = ProcessBuilder(*processArgs.toTypedArray())
                     .apply {
                         redirectErrorStream(true)
+                        workingDir?.let { directory(it) }
                     }.start()
             if (shouldFinish) process.waitFor(timeout.seconds, TimeUnit.SECONDS)
             return ChrProcess(process, verbose).use(onCompleted)

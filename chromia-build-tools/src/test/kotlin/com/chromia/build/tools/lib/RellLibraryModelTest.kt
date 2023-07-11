@@ -74,9 +74,7 @@ class RellLibraryModelTest {
                       some_unexpected_field: 123 
             """.trimIndent())
         }
-        val throwable = assertThrows<UnrecognizedPropertyException> {
-            parseModel(settingsFile)
-        }
+        val throwable = assertThrows<UnrecognizedPropertyException> { parseModel(settingsFile) }
         assertThat(throwable.message!!).contains("Unrecognized field \"some_unexpected_field\"")
     }
 

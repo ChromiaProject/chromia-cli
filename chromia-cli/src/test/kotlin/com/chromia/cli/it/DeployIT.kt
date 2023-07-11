@@ -1,5 +1,8 @@
 package com.chromia.cli.it
 
+import com.chromia.cli.util.testData
+import java.io.File
+import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.RestApi
 import net.postchain.api.rest.model.ApiStatus
@@ -13,8 +16,6 @@ import net.postchain.gtx.GtxQuery
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {
@@ -37,7 +38,7 @@ class DeployIT {
 
     @Test
     fun deploymentSuccesful(@TempDir dir: Path) {
-        TestDataCreator.basicApp(dir)
+        testData(dir)
         with(File(dir.toFile(), "config.yml")) {
             appendText("\n")
             appendText("""
