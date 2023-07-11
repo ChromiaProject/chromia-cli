@@ -2,12 +2,13 @@ package com.chromia.cli
 
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.cli.tools.config.chromiaModelConfigOption
+import com.chromia.cli.tools.config.client
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.launcher.createAliases
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
-import com.chromia.cli.util.settingsOption
 import com.chromia.directory1.proposal_blockchain.findBlockchainRid
 import com.chromia.directory1.version.apiVersion
 import com.github.ajalt.clikt.core.CliktCommand
@@ -16,10 +17,11 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
-import com.github.ajalt.clikt.parameters.options.defaultLazy
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
+import java.time.Instant
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -30,10 +32,6 @@ import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.crypto.sha256Digest
-import org.apache.commons.configuration2.BaseConfiguration
-import java.io.File
-import java.time.Instant
-import java.util.*
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments") {
     override fun aliases() = createAliases()
@@ -50,15 +48,15 @@ fun deployCommands() = DeploymentCommand().subcommands(
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
 
-    protected val settings by settingsOption()
-    private val secret by secretOption().defaultLazy { File(".secret") }
+    protected val settings by chromiaModelConfigOption()
+    private val secret by secretOption()
     protected val target by deployTargetOption().required()
-            .validate { require(settings.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
+            .validate { require(settings.model.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
-            .validate { require(settings.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
+            .validate { require(settings.model.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
 
     protected val deployModel by lazy {
-        val deployModel = settings.deployments[target]
+        val deployModel = settings.model.deployments[target]
         if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
         deployModel
     }
@@ -69,24 +67,12 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     protected fun createClientConfig(): PostchainClientConfig {
-        return BaseConfiguration().apply {
-            setProperty("api.url", deployModel.urls.joinToString(","))
-            setProperty("brid", deployModel.blockchainRid.toHex())
-            secret.let { s ->
-                s.inputStream().use {
-                    Properties().apply { load(it) }.let { p ->
-                        p["pubkey"]?.let { setProperty("pubkey", it) }
-                        p["privkey"]?.let { setProperty("privkey", it) }
-                    }
-                }
-            }
-        }
-                .let { PostchainClientConfig.fromConfiguration(it) }
+        return settings.model.client(settings.config, secret = secret, network = target, blockchain = null)
     }
 
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
-        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.file.parentFile, chainsToDeploy)
+        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
         beforeDeployment(chainsToDeploy)
 
         val client = createClient()
@@ -114,7 +100,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
                 when (result.status) {
                     TransactionStatus.CONFIRMED -> {
-                        chain.save(settings.target, "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
+                        chain.save(settings.targetDir, "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
                         val maybeBcRid = if (apiVersion >= 8) {
                             client.findBlockchainRid(tx.rid.hexStringToByteArray())?.let { BlockchainRid(it) }
                         } else {
@@ -153,6 +139,6 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     abstract fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>)
 
     private fun chainsToDeploy(): Collection<String> {
-        return blockchain ?: settings.blockchains.keys
+        return blockchain ?: settings.model.blockchains.keys
     }
 }

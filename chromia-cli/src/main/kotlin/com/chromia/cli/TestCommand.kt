@@ -1,15 +1,16 @@
 package com.chromia.cli
 
+import com.chromia.cli.tools.config.chromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
-import com.chromia.cli.util.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.modulesOption
-import com.chromia.cli.util.settingsOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -33,9 +34,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
             .multiple()
     private val modules by modulesOption()
-    private val settings by settingsOption()
+    private val settings by chromiaModelOption()
     private val tests by option(help = "test method pattern").split(",")
-    private val sourceDir by lazy { settings.source }
+    private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
 
@@ -53,15 +54,15 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     private fun runBlockchainTests() {
-        settings.blockchains
+        settings.model.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
                 .forEach { runTestsForChain(it.key) }
     }
 
     private fun runUnitTests() {
-        val testModules = modules ?: settings.test.modules
-        val testModuleArgs = settings.test.moduleArgs
+        val testModules = modules ?: settings.model.test.modules
+        val testModuleArgs = settings.model.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
@@ -74,7 +75,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
 
     private fun runTestsForChain(blockchain: String) {
-        val chainConfig = settings.blockchains[blockchain]
+        val chainConfig = settings.model.blockchains[blockchain]
                 ?: throw CliktError("Blockchain '$blockchain' not found")
 
         val appModules = listOf(chainConfig.module)
@@ -99,14 +100,14 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .appModuleInTestsError(appModuleInTestsError)
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
-                .version(settings.compile.langVersion)
-                .quiet(settings.compile.quiet)
+                .version(settings.model.compile.langVersion)
+                .quiet(settings.model.compile.quiet)
                 .build()
         return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) settings.model.databaseUrl else null)
-                .stopOnError(settings.test.failOnError)
+                .stopOnError(settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter(printer)
                 .outPrinter(printer)

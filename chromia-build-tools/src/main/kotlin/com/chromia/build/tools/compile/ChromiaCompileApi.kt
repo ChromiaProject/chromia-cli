@@ -13,11 +13,11 @@ object ChromiaCompileApi {
 
     fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File, blockchains: Collection<String>): Collection<ChromiaCompileResult> {
         val libraryVerifyer = LibraryVerifyer(cliEnv)
-        libraryVerifyer.verifyLibs(File(projectFolder, model.compile.source), model.libs)
+        libraryVerifyer.verifyLibs(model.compile.sourceFile(projectFolder), model.libs)
 
         if (!model.blockchains.keys.containsAll(blockchains)) throw ValidationException("Cannot compile blockchains $blockchains. Configured chains are ${model.blockchains.keys}")
         return BlockchainConfigurationGenerator(cliEnv, model.compile, model.blockchains.filter { blockchains.contains(it.key) }, projectFolder)
                 .generate()
-                .onEach { (name, gtv) -> storeConfig(gtv, name, File(projectFolder, model.compile.target).toPath()) }
+                .onEach { (name, gtv) -> storeConfig(gtv, name, model.compile.targetFile(projectFolder).toPath()) }
     }
 }

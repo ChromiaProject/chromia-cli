@@ -16,4 +16,14 @@ class BuildCommandIT {
                     assertThat(dir.resolve("build/hello.xml")).exists()
                 }
     }
+
+    @Test
+    fun findsLegacyFile(@TempDir dir: Path) {
+        testData(dir)
+        ChrProcess.Builder("build")
+                .setWorkingDir(dir.toFile())
+                .start {
+                    assertThat(dir.resolve("build/hello.xml")).exists()
+                }
+    }
 }

@@ -34,7 +34,7 @@ internal class BuildCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val res = BuildCommand().test(listOf())
-        assertTrue(res.stderr.contains("config.yml not found"))
+        assertThat(res.output).contains("Project settings file not found")
     }
 
     @Test

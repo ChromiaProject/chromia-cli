@@ -34,7 +34,7 @@ class QueryCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val res = QueryCommand().test(listOf("--settings=missingFile.yml", "hello_world"))
-        assertThat(res.stderr).contains("invalid value for --settings: missingFile.yml")
+        assertThat(res.stderr).contains("invalid value for --settings: file \"missingFile.yml")
     }
 
     @Test

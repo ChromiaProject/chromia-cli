@@ -50,7 +50,6 @@ class DeployCreateCommandTest {
                 struct module_args { name; } 
             """.trimIndent())
         }
-
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
             DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
