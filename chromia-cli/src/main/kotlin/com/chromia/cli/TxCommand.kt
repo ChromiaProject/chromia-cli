@@ -13,10 +13,10 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import java.util.Properties
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.parse.GtvParser
 import org.apache.commons.configuration2.BaseConfiguration
-import java.util.*
 
 class TxCommand : CliktCommand(help = "Make a transaction") {
 
