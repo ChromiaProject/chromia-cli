@@ -74,7 +74,7 @@ internal fun ParameterHolder.chromiaModelOption() = option(
         "-s", "--settings",
         help = "Alternate path for project settings file",
         metavar = "SETTINGS",
-        envvar = "CHR_SETTINGS",
+        envvar = "CHROMIA_PROJECT_SETTINGS",
 )
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .convert { it.absoluteFile }
@@ -83,6 +83,7 @@ internal fun ParameterHolder.chromiaConfigOption() = option(
         "-cfg", "--config",
         help = "Alternate path for client configuration file",
         metavar = "CONFIG",
-        envvar = "CHR_CONFIG",
+        envvar = "CHROMIA_CONFIG",
 )
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
+        .convert { it.absoluteFile }
