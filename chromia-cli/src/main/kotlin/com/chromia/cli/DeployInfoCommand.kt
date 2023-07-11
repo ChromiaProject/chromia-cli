@@ -1,15 +1,16 @@
 package com.chromia.cli
 
+import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.NodeStatusFinder
-import com.chromia.cli.util.settingsOptionDefault
-import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
@@ -31,10 +32,8 @@ class DeployInfoCommand(
         help = "Information about a deployed blockchain"
 ) {
 
-    private val settings by settingsOptionNotRequired()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
-        settings?.model ?: settingsOptionDefault().model
-    }.cooccurring()
+    private val settings by optionalChromiaModelOption()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }

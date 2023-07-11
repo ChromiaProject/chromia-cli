@@ -2,15 +2,13 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.QueryCommand
 import com.chromia.cli.it.TestDataCreator
-import com.chromia.cli.util.TestClient
 import com.github.ajalt.clikt.testing.test
+import java.io.File
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 
 
@@ -36,7 +34,7 @@ class QueryCommandTest {
     @Test
     fun testCanNotFindSettings() {
         val res = QueryCommand().test(listOf("--settings=missingFile.yml", "hello_world"))
-        assertThat(res.stderr).contains("invalid value for --settings: missingFile.yml")
+        assertThat(res.stderr).contains("invalid value for --settings: file \"missingFile.yml")
     }
 
     @Test

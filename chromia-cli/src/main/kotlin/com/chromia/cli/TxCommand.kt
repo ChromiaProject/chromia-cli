@@ -1,10 +1,10 @@
 package com.chromia.cli
 
+import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
-import com.chromia.cli.util.settingsOptionDefault
-import com.chromia.cli.util.settingsOptionNotRequired
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -13,19 +13,14 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.config.PostchainClientConfig
 import net.postchain.gtv.parse.GtvParser
-import org.apache.commons.configuration2.BaseConfiguration
-import java.util.*
 
 class TxCommand : CliktCommand(help = "Make a transaction") {
 
-    private val settings by settingsOptionNotRequired()
+    private val settings by optionalChromiaModelConfigOption()
     private val secret by secretOption()
     private val explicitTarget by LocalDeploymentOption()
-    private val deploymentTarget by RemoteDeploymentOption {
-        settings?.model ?: settingsOptionDefault().model
-    }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
 
@@ -44,21 +39,8 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
             }
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget!!
-        val clientConfig = BaseConfiguration().run {
-            setProperty("brid", target.brid.toHex())
-            setProperty("api.url", target.url)
-            secret?.let { s ->
-                s.inputStream().use {
-                    Properties().apply { load(it) }.let { p ->
-                        p["pubkey"]?.let { setProperty("pubkey", it) }
-                        p["privkey"]?.let { setProperty("privkey", it) }
-                    }
-                }
-            }
-            PostchainClientConfig.fromConfiguration(this)
-        }
-        val res = target.createClient(clientConfig)
+        val target = deploymentTarget ?: explicitTarget
+        val res = target.createClient(settings.config.get(target.url, target.brid, secret))
                 .transactionBuilder()
                 .addOperation(opName, *args.toTypedArray())
                 .run {

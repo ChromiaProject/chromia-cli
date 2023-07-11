@@ -41,7 +41,9 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
         private var shouldFinish = true
         private var timeout = Duration.ofSeconds(10)
         private var verbose = false
+        private var workingDir: File? = null
         fun setConfig(file: File) = apply { config = file }
+        fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
         fun timeout(value: Duration) = apply { timeout = value }
         fun verbose(value: Boolean) = apply { verbose = value }
@@ -56,6 +58,7 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
             val process = ProcessBuilder(*processArgs.toTypedArray())
                     .apply {
                         redirectErrorStream(true)
+                        workingDir?.let { directory(it) }
                     }.start()
             if (shouldFinish) process.waitFor(timeout.seconds, TimeUnit.SECONDS)
             return ChrProcess(process, verbose).use(onCompleted)
