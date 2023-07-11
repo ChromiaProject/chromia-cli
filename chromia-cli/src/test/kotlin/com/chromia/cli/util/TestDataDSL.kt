@@ -54,17 +54,20 @@ class ConfigBuilder {
     """.trimIndent()
     private var deployments = ""
     private var libs = ""
+    private var test = ""
 
     fun blockchains(init: String) { content = init }
 
     fun deployments(init: String) { deployments = init }
     fun libs(init: String) { libs = init }
+    fun test(init: String) { test = init }
 
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
         if (libs.isNotEmpty()) sb.append("\n$libs")
+        if (test.isNotEmpty()) sb.append("\n$test")
         File(target.toFile(), "config.yml").writeText(sb.toString())
     }
 }
