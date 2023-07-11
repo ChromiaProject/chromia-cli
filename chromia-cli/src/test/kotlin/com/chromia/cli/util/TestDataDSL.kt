@@ -15,12 +15,12 @@ class TestDataBuilder {
     private val configBuilder = ConfigBuilder()
     private var secretBuilder: SecretBuilder? = null
 
-    fun content(init: () -> String) {
-        content = init()
+    fun content(init: String) {
+        content = init
     }
 
-    fun addFile(name: String, content: () -> String) {
-        sourceFiles[name] = content
+    fun addFile(name: String, content: String) {
+        sourceFiles[name] = { content }
     }
 
     internal fun createFiles(target: Path) {
@@ -53,15 +53,18 @@ class ConfigBuilder {
                 maxblocktime: 1000
     """.trimIndent()
     private var deployments = ""
+    private var libs = ""
 
-    fun blockchains(init: () -> String) { content = init() }
+    fun blockchains(init: String) { content = init }
 
-    fun deployments(init: () -> String) { deployments = init() }
+    fun deployments(init: String) { deployments = init }
+    fun libs(init: String) { libs = init }
 
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
+        if (libs.isNotEmpty()) sb.append("\n$libs")
         File(target.toFile(), "config.yml").writeText(sb.toString())
     }
 }

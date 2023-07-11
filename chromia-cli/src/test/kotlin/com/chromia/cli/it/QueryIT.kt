@@ -32,7 +32,7 @@ class QueryIT {
         val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
         testData(dir) {
             config {
-                deployments {
+                deployments(
                     """
                 deployments:
                   test:
@@ -41,8 +41,7 @@ class QueryIT {
                     container: testcontainer
                     chains:
                       hello: x"${testBrid.toHex()}"
-            """.trimIndent()
-                }
+            """.trimIndent())
             }
         }
         RestApi(7741, "").use {
