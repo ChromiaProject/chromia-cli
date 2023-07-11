@@ -15,6 +15,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.gtv.parse.GtvParser
 
+
 class TxCommand : CliktCommand(help = "Make a transaction") {
 
     private val settings by optionalChromiaModelConfigOption()

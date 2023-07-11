@@ -50,8 +50,10 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
 
 
         fun <R> start(onCompleted: (ChrProcess) -> R): R {
+            val executable = "${System.getenv("DIST_DIR")}/chr"
+            require(File(executable).exists()) { "Executable must be built first" }
             val processArgs = buildList<String> {
-                add("${System.getenv("DIST_DIR")}/chr")
+                add(executable)
                 addAll(args)
                 config?.let { addAll(listOf("-s", it.absolutePath)) }
             }

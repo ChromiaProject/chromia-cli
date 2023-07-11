@@ -76,7 +76,7 @@ class SecretBuilder {
     }
 
     fun createFile(target: Path) {
-        File(target.toFile(), ".secret").writeText("""
+        File(target.toFile(), ".chromia/config").also { it.parentFile.mkdirs() }.writeText("""
            pubkey=${keyPair.pubKey.hex()} 
            privkey=${keyPair.privKey.hex()} 
         """.trimIndent() )
