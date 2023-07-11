@@ -2,18 +2,20 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isEqualTo
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
+import com.chromia.cli.util.TestConfiguration
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
@@ -33,7 +35,11 @@ class DeployUpdateCommandTest {
 
     @Test
     fun successfulDeployment() {
-        val res = DeployUpdateCommand({ TestClient(it) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+        val config = TestConfiguration()
+        val res = DeployUpdateCommand({ TestClient(it, config) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+        assertThat(config.txs.size).isEqualTo(1)
+        val operations = config.txs.first().gtxBody.operations.map { it.opName }
+        assertThat(operations.containsAll(listOf("nop", "blockchain_proposal")))
         assertThat(res.output).contains("Deployment of blockchain deployed was successful")
     }
 

@@ -13,8 +13,18 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.Gtx
 import java.time.Duration
 
-class TestClient(override val config: PostchainClientConfig) : PostchainClient {
-    val txs = mutableListOf<Gtx>()
+data class TestConfiguration(
+        val txs: MutableList<Gtx> = mutableListOf(),
+        val txRid: TxRid = TxRid(""),
+        val returnStatus: TransactionStatus = TransactionStatus.CONFIRMED,
+        val httpStatus: Int? = null,
+        val rejectReason: String? = null
+) {
+    fun transactionResult() = TransactionResult(this.txRid, this.returnStatus, this.httpStatus, this.rejectReason)
+}
+
+
+open class TestClient(override val config: PostchainClientConfig, private val testConfiguration: TestConfiguration = TestConfiguration()) : PostchainClient {
     override fun blockAtHeight(height: Long) = TODO()
     override fun awaitConfirmation(txRid: TxRid, retries: Int, pollInterval: Duration): TransactionResult =
             TransactionResult(txRid, TransactionStatus.CONFIRMED, null, null)
@@ -26,12 +36,14 @@ class TestClient(override val config: PostchainClientConfig) : PostchainClient {
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
 
     override fun postTransaction(tx: Gtx): TransactionResult =
-            TransactionResult(TxRid(""), TransactionStatus.CONFIRMED, null, null).also { txs.add(tx) }
+            testConfiguration.transactionResult().also { testConfiguration.txs.add(tx) }
 
     override fun postTransactionAwaitConfirmation(tx: Gtx): TransactionResult =
-            TransactionResult(TxRid(""), TransactionStatus.CONFIRMED, null, null).also { txs.add(tx) }
+            testConfiguration.transactionResult().also { testConfiguration.txs.add(tx) }
 
-    override fun transactionBuilder() = TransactionBuilder(this, config.blockchainRid, listOf(), listOf())
+    override fun transactionBuilder() = TransactionBuilder(
+            this, config.blockchainRid, listOf(), listOf()
+    )
 
     override fun transactionBuilder(signers: List<KeyPair>) = TODO("Not yet implemented")
 

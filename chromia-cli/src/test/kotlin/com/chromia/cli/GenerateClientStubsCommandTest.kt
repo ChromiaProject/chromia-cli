@@ -104,4 +104,44 @@ internal class GenerateClientStubsCommandTest {
         assertThat(res.output).contains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
 
     }
+
+    @Test
+    fun multiModuleProjectDoNotOverwriteEachOther() {
+
+        with(File(dir, "config.yml")) {
+            parentFile.mkdirs()
+            writeText("""
+                blockchains:
+                    a:
+                        module: foo.main
+                    b:
+                        module: bar.main
+
+            """.trimIndent())
+        }
+
+
+        with(File(dir, "src/foo/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello() = "hello";
+            """.trimIndent())
+        }
+
+        with(File(dir, "src/bar/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello() = "hello";
+            """.trimIndent())
+        }
+
+        val targetDir = dir.absolutePath
+        val res = command.parse(listOf("-s", "$targetDir/config.yml", "--kotlin", "--package", "com.example"))
+        assertThat(File(dir, "build/stubs/foo/main").listFiles()).hasSize(1)
+        assertThat(File(dir, "build/stubs/bar/main").listFiles()).hasSize(1)
+        assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
+
+    }
 }
