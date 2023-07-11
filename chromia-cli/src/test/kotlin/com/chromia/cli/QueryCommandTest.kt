@@ -2,14 +2,14 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.it.TestDataCreator
+import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.testing.test
 import java.io.File
+import java.nio.file.Path
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 
 
 class QueryCommandTest {
@@ -20,7 +20,7 @@ class QueryCommandTest {
 
     @BeforeEach
     fun setup() {
-        TestDataCreator.unitTestApp(testDir)
+        testData(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
 
     }

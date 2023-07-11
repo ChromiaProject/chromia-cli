@@ -1,16 +1,17 @@
 package com.chromia.cli.it
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
+import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 class RunNodeIT {
     @Test
     fun startNode(@TempDir dir: Path) {
-        TestDataCreator.basicApp(dir)
+        testData(dir)
         ChrProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
                 .setConfig(dir.resolve("config.yml").toFile())
@@ -40,7 +41,7 @@ class RunNodeIT {
                     ChrProcess.Builder("query", "new_query").start { assertThat(it.readLines()).containsExactly("1") }
 
                     // Fail to update using configuration that already exists
-                    TestDataCreator.basicApp(dir)
+                    testData(dir)
                     ChrProcess.Builder("node", "update")
                             .setConfig(dir.resolve("config.yml").toFile())
                             .start {

@@ -7,9 +7,9 @@ import assertk.assertions.containsAll
 import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
-import com.chromia.cli.it.TestDataCreator
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
+import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
@@ -57,18 +57,22 @@ internal class BuildCommandTest {
 
     @Test
     fun failsValidation() {
-        File(dir, "config.yml").writeText("""
-            blockchains:
-              hello:
-                module: main
-                moduleArgs:
-                  main:
-                    my_args: "wrong_type"
-        """.trimIndent())
-        File(dir, "src/main.rell").writeText("""
+        testData(dir.toPath()) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: main
+                        moduleArgs:
+                          main:
+                            my_args: "wrong_type"
+            """.trimIndent())
+            }
+            content("""
             module;
             struct module_args { my_args: integer; }
-        """.trimIndent())
+            """.trimIndent())
+        }
         val e = assertFailsWith<RellCliBasicException> { command.parse() }
         assertThat(e.message!!).contains("Bad module_args for module 'main': Decoding type 'integer': expected INTEGER, actual STRING")
     }
@@ -82,34 +86,35 @@ internal class BuildCommandTest {
 
     @Test
     fun libraryMissingTest() {
-        File(dir, "config.yml").writeText("""
-            blockchains:
-              hello:
-                module: main
-            libs:
-                missing:
-                  registry: http://missing.com
-                  path: lib
-                  rid: x"11"
-        """.trimIndent())
+        testData(dir.toPath()) {
+            config {
+                libs("""
+                    libs:
+                        missing:
+                          registry: http://missing.com
+                          path: lib
+                          rid: x"11"
+                """.trimIndent())
+            }
+        }
         val e = assertFailsWith<ValidationException> { command.parse() }
         assertThat(e.message!!).contains("Library missing is not installed, install before building")
     }
 
     @Test
     fun libraryTamperedTest() {
-        TestDataCreator.unitTestApp(dir.toPath())
+        testData(dir.toPath()) {
+            config {
+                libs("""
+                    libs:
+                        bar:
+                          registry: http://bar.com
+                          path: lib
+                          rid: x"11"
+                """.trimIndent())
+            }
+        }
 
-        File(dir, "config.yml").writeText("""
-            blockchains:
-              hello:
-                module: main
-            libs:
-                bar:
-                  registry: http://bar.com
-                  path: lib
-                  rid: x"11"
-        """.trimIndent())
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/${InstallDirTarget.SOURCE.target}/bar"), "")
         assertFailsWith<ValidationException> {
             BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/config.yml")))

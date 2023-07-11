@@ -2,18 +2,18 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.it.TestDataCreator
+import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
+import java.io.File
+import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
@@ -25,7 +25,7 @@ class DeployUpdateCommandTest {
 
     @BeforeEach
     fun setup() {
-        TestDataCreator.unitTestApp(testDir)
+        DeploymentTestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("config.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
     }

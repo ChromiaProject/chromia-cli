@@ -1,6 +1,6 @@
 package com.chromia.cli.it
 
-import java.io.File
+import com.chromia.cli.util.testData
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.RestApi
@@ -30,10 +30,10 @@ class QueryIT {
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
         val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
-        TestDataCreator.basicApp(dir)
-        with(File(dir.toFile(), "config.yml")) {
-            appendText("\n")
-            appendText("""
+        testData(dir) {
+            config {
+                deployments(
+                    """
                 deployments:
                   test:
                     url: "http://localhost:7741"
@@ -42,6 +42,7 @@ class QueryIT {
                     chains:
                       hello: x"${testBrid.toHex()}"
             """.trimIndent())
+            }
         }
         RestApi(7741, "").use {
             it.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
