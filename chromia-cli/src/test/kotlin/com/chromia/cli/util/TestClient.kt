@@ -1,5 +1,6 @@
 package com.chromia.cli.util
 
+import java.time.Duration
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.TransactionResult
@@ -11,18 +12,11 @@ import net.postchain.crypto.KeyPair
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.Gtx
-import java.time.Duration
 
 data class TestConfiguration(
         val txs: MutableList<Gtx> = mutableListOf(),
-        val txRid: TxRid = TxRid(""),
-        val returnStatus: TransactionStatus = TransactionStatus.CONFIRMED,
-        val httpStatus: Int? = null,
-        val rejectReason: String? = null
-) {
-    fun transactionResult() = TransactionResult(this.txRid, this.returnStatus, this.httpStatus, this.rejectReason)
-}
-
+        val txResultFactory: (n: Int) -> TransactionResult = { TransactionResult(TxRid(""), TransactionStatus.CONFIRMED, null, null) },
+)
 
 open class TestClient(override val config: PostchainClientConfig, private val testConfiguration: TestConfiguration = TestConfiguration()) : PostchainClient {
     override fun blockAtHeight(height: Long) = TODO()
@@ -36,10 +30,10 @@ open class TestClient(override val config: PostchainClientConfig, private val te
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
 
     override fun postTransaction(tx: Gtx): TransactionResult =
-            testConfiguration.transactionResult().also { testConfiguration.txs.add(tx) }
+            testConfiguration.txResultFactory(testConfiguration.txs.size).also { testConfiguration.txs.add(tx) }
 
     override fun postTransactionAwaitConfirmation(tx: Gtx): TransactionResult =
-            testConfiguration.transactionResult().also { testConfiguration.txs.add(tx) }
+            testConfiguration.txResultFactory(testConfiguration.txs.size).also { testConfiguration.txs.add(tx) }
 
     override fun transactionBuilder() = TransactionBuilder(
             this, config.blockchainRid, listOf(), listOf()
