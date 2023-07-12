@@ -6,10 +6,11 @@ import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
+import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
+import java.io.File
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
 
 internal class GenerateClientStubsCommandTest {
 
@@ -102,6 +103,35 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "stubs/").list()).containsAll("root.js")
         assertThat(res.output).contains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
+
+    }
+
+    @Test
+    fun multiModuleProjectDoNotOverwriteEachOther() {
+        testData(dir.toPath()) {
+            config {
+                blockchains("""
+                blockchains:
+                  a:
+                    module: foo.main
+                  b:
+                    module: bar.main
+                """.trimIndent())
+            }
+            addFile("foo/main.rell", """
+                module;
+                query hello() = "hello";
+            """.trimIndent())
+            addFile("bar/main.rell", """
+                module;
+                query hello() = "hello";
+            """.trimIndent())
+        }
+        val targetDir = dir.absolutePath
+        val res = command.parse(listOf("-s", "$targetDir/config.yml", "--kotlin", "--package", "com.example"))
+        assertThat(File(dir, "build/stubs/foo/main").listFiles()!!).hasSize(1)
+        assertThat(File(dir, "build/stubs/bar/main").listFiles()!!).hasSize(1)
+        assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
 
     }
 }
