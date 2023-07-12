@@ -6,10 +6,11 @@ import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
+import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
+import java.io.File
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
 
 internal class GenerateClientStubsCommandTest {
 
@@ -107,40 +108,29 @@ internal class GenerateClientStubsCommandTest {
 
     @Test
     fun multiModuleProjectDoNotOverwriteEachOther() {
-
-        with(File(dir, "config.yml")) {
-            parentFile.mkdirs()
-            writeText("""
+        testData(dir.toPath()) {
+            config {
+                blockchains("""
                 blockchains:
-                    a:
-                        module: foo.main
-                    b:
-                        module: bar.main
-
+                  a:
+                    module: foo.main
+                  b:
+                    module: bar.main
+                """.trimIndent())
+            }
+            addFile("foo/main.rell", """
+                module;
+                query hello() = "hello";
             """.trimIndent())
-        }
-
-
-        with(File(dir, "src/foo/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
+            addFile("bar/main.rell", """
                 module;
                 query hello() = "hello";
             """.trimIndent())
         }
-
-        with(File(dir, "src/bar/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                module;
-                query hello() = "hello";
-            """.trimIndent())
-        }
-
         val targetDir = dir.absolutePath
         val res = command.parse(listOf("-s", "$targetDir/config.yml", "--kotlin", "--package", "com.example"))
-        assertThat(File(dir, "build/stubs/foo/main").listFiles()).hasSize(1)
-        assertThat(File(dir, "build/stubs/bar/main").listFiles()).hasSize(1)
+        assertThat(File(dir, "build/stubs/foo/main").listFiles()!!).hasSize(1)
+        assertThat(File(dir, "build/stubs/bar/main").listFiles()!!).hasSize(1)
         assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
 
     }
