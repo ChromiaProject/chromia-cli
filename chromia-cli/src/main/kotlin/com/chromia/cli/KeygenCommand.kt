@@ -1,19 +1,26 @@
 package com.chromia.cli
 
+import com.chromia.cli.CryptoSystemType.DILITHIUM
+import com.chromia.cli.CryptoSystemType.ECDSA
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.groups.default
+import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.toHex
-import net.postchain.crypto.KeyPair
-import net.postchain.crypto.PrivKey
-import net.postchain.crypto.PubKey
-import net.postchain.crypto.Secp256K1CryptoSystem
-import net.postchain.crypto.secp256k1_derivePubKey
+import net.postchain.crypto.*
 import org.bitcoinj.crypto.MnemonicCode
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
+
+enum class CryptoSystemType(val option: String) {
+    ECDSA("--ecdsa"),
+    DILITHIUM("--dilithium")
+}
 
 class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/private key pair") {
 
@@ -29,22 +36,41 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
     private val file by option("-s", "--save", help = "File to save the generated keypair in")
             .file(canBeDir = false)
 
+    private val cs by mutuallyExclusiveOptions(
+            option(ECDSA.option, help = "ECDSA keys").flag().convert { ECDSA },
+            option(DILITHIUM.option, help = "Dilithium keys").flag().convert { DILITHIUM },
+            name = "Provider tier",
+    ).default(ECDSA)
+
     /**
      * Cryptographic key generator. Will generate a pair of public and private keys and print to stdout.
      */
     override fun run() {
-        val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
+        if (cs == ECDSA) {
+            val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
 
-        file?.let {
-            saveSecp256k1KeyPair(keyPair, it.absoluteFile)
-        }
-        println(
-                """
+            file?.let {
+                saveKeyPair(keyPair, it.absoluteFile)
+            }
+            echo(
+                    """
             |privkey:   ${keyPair.privKey.data.toHex()}
             |pubkey:    ${keyPair.pubKey.data.toHex()}
             |mnemonic:  $mnemonic 
         """.trimMargin()
-        )
+            )
+
+        } else if (cs == DILITHIUM) {
+            if (file == null) {
+                error("--save option must be specified in case of ${DILITHIUM.option}")
+            }
+
+            val keyPair = generateDilithiumKeyPair()
+            file?.let {
+                saveKeyPair(keyPair, it)
+            }
+            echo(keyPair.pubKey.data.toHex())
+        }
     }
 }
 
@@ -67,14 +93,16 @@ private fun generateSecp256k1KeyPairWithMnemonic(wordList: String): Pair<KeyPair
     return keyPair to mnemonic
 }
 
-private fun saveSecp256k1KeyPair(keyPair: KeyPair, file: File) {
+private fun saveKeyPair(keyPair: KeyPair, file: File) {
     if (file.parentFile != null && !file.parentFile.exists()) file.parentFile.mkdirs()
     val properties = Properties()
     properties["privkey"] = keyPair.privKey.data.toHex()
     properties["pubkey"] = keyPair.pubKey.data.toHex()
 
     FileOutputStream(file).use { fs ->
-        properties.store(fs, "Keypair generated using secp256k1")
+        properties.store(fs, "Keypair generated")
         fs.flush()
     }
 }
+
+fun generateDilithiumKeyPair(): KeyPair = DilithiumCryptoSystem().generateKeyPair()
