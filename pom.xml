@@ -19,7 +19,7 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.9.7</codegen.version>
-        <postchain.version>3.11.7.3389-pqc</postchain.version>
+        <postchain.version>3.11.7.3391-pqc</postchain.version>
         <postchain.chromia.version>3.11.2</postchain.chromia.version>
         <postchain.client.version>3.11.2</postchain.client.version>
         <rell.version>0.13.1</rell.version>
