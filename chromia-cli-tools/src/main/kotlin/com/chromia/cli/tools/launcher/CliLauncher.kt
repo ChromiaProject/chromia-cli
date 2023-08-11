@@ -40,7 +40,7 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             else -> "An error occurred."
         }
         val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "logs"
-        val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
+        val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}$commandName.log"
         return "$humanFriendlyMessage ${formatExceptionMessage(exception)}$suffix"
     }
 
