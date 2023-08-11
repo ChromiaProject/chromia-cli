@@ -117,12 +117,27 @@
                             </image>
                         </from>
                         <container>
+                            <entrypoint>
+                                <arg>/bin/sh</arg>
+                                <args>-c</args>
+                            </entrypoint>
+                            <args>
+                                <arg>/usr/bin/chr</arg>
+                            </args>
                             <appRoot>/usr/share/chr</appRoot>
                             <workingDirectory>/usr/app</workingDirectory>
                             <mainClass>${main.class}</mainClass>
                             <creationTime>${git.commit.time}</creationTime>
                             <filesModificationTime>${git.commit.time}</filesModificationTime>
                         </container>
+                        <extraDirectories>
+                            <permissions>
+                                <permission>
+                                    <file>/usr/bin/chr</file>
+                                    <mode>755</mode>
+                                </permission>
+                            </permissions>
+                        </extraDirectories>
                         <containerizingMode>packaged</containerizingMode>
                     </configuration>
                     <executions>
