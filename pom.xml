@@ -372,7 +372,7 @@
             <dependency>
                 <groupId>com.github.ajalt.clikt</groupId>
                 <artifactId>clikt-jvm</artifactId>
-                <version>4.0.0</version>
+                <version>4.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -389,11 +389,6 @@
                 <groupId>org.http4k</groupId>
                 <artifactId>http4k-format-jackson</artifactId>
                 <version>4.34.0.4</version>
-            </dependency>
-            <dependency>
-                <groupId>de.m3y.kformat</groupId>
-                <artifactId>kformat</artifactId>
-                <version>0.9</version>
             </dependency>
 
             <dependency>
