@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
@@ -12,8 +13,6 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import de.m3y.kformat.Table
-import de.m3y.kformat.table
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.defaultHttpHandler
@@ -30,7 +29,9 @@ class DeployInspectCommand(
 ) {
 
     private val settings by optionalChromiaModelOption()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
+        settings.model ?: ChromiaModel()
+    }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")
     private val option by lazy {
@@ -60,46 +61,40 @@ class DeployInspectCommand(
     }
 
     private fun tableOfQueries(queries: Map<String, RellFunction>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
+        echo(defaultTable {
+            header { row("Query", "Return type", "Parameters") }
+            body {
+                queries.forEach { (queryName, query) ->
+                    row(queryName,
+                            query.returnType?.toString() ?: "",
+                            query.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
+                }
             }
-            header("Query", "Return type", "Parameters")
-            queries.forEach { (queryName, query) ->
-                row(queryName,
-                        query.returnType?.toString() ?: "",
-                        query.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
-            }
-        }.render().also { echo(it) }
+        })
     }
 
     private fun tableOfOperations(operations: Map<String, RellFunction>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
+        echo(defaultTable {
+            header { row("Operation", "Parameters") }
+            body {
+                operations.forEach { (operationName, operation) ->
+                    row(operationName, operation.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
+                }
             }
-            header("Operation", "Parameters")
-            operations.forEach { (operationName, operation) ->
-                row(operationName, operation.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
-            }
-        }.render().also { echo(it) }
+        })
     }
 
     private fun tableOfObjects(objects: Map<String, RellObject>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
-            }
-            header("Object", "Attribute", "Type", "Mutable")
-            objects.forEach { (objectName, objectDef) ->
-                row(objectName)
-                objectDef.attributes.forEach { (attribute, attributeType) ->
-                    row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else "No" })
+        echo(defaultTable {
+            header { row("Object", "Attribute", "Type", "Mutable") }
+            body {
+                objects.forEach { (objectName, objectDef) ->
+                    row(objectName)
+                    objectDef.attributes.forEach { (attribute, attributeType) ->
+                        row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else "No" })
+                    }
                 }
             }
-        }.render().also { echo(it) }
+        })
     }
 }
