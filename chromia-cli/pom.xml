@@ -118,11 +118,10 @@
                         </from>
                         <container>
                             <entrypoint>
-                                <arg>/bin/sh</arg>
-                                <args>-c</args>
+                                <args>/usr/bin/chr-entrypoint.sh</args>
                             </entrypoint>
                             <args>
-                                <arg>/usr/bin/chr</arg>
+                                <arg>chr</arg>
                             </args>
                             <appRoot>/usr/share/chr</appRoot>
                             <workingDirectory>/usr/app</workingDirectory>
@@ -134,6 +133,10 @@
                             <permissions>
                                 <permission>
                                     <file>/usr/bin/chr</file>
+                                    <mode>755</mode>
+                                </permission>
+                                <permission>
+                                    <file>/usr/bin/chr-entrypoint.sh</file>
                                     <mode>755</mode>
                                 </permission>
                             </permissions>
