@@ -46,7 +46,7 @@ class TestProcess private constructor(private val process: Process, val verbose:
         fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
         fun timeout(value: Duration) = apply { timeout = value }
-        fun verbose(value: Boolean) = apply { verbose = value }
+        fun verbose() = apply { verbose = true }
 
 
         fun <R> start(onCompleted: (TestProcess) -> R): R {
