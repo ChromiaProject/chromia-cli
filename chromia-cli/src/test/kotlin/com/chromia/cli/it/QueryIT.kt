@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
@@ -48,7 +49,7 @@ class QueryIT {
             it.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
             it.attachModel(testBrid, QueryDeploymentModel(testBrid))
 
-            ChrProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
+            TestProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
                     .setConfig(dir.resolve("config.yml").toFile())
                     .start { process ->
                         assertThat(process.readLines()).anyMatch { it.contains("Hello People!") }

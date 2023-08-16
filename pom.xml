@@ -161,8 +161,8 @@
                     <version>3.1.2</version>
                     <configuration>
                         <environmentVariables>
-                            <DIST_DIR>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin
-                            </DIST_DIR>
+                            <DIST_EXECUTABLE>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin/chr
+                            </DIST_EXECUTABLE>
                             <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
                         </environmentVariables>
                     </configuration>
@@ -278,6 +278,12 @@
                 <groupId>com.chromia.cli</groupId>
                 <artifactId>chromia-build-tools</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.chromia.cli</groupId>
+                <artifactId>chromia-build-tools</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
             </dependency>
             <dependency>
                 <groupId>net.postchain.rell</groupId>

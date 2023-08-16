@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 
-class RellLibraryModelTest {
+internal class RellLibraryModelTest {
     private lateinit var settingsFile: File
     private var fileMap = mutableMapOf<String, List<File>>()
 

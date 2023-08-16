@@ -169,6 +169,12 @@
         </dependency>
         <dependency>
             <groupId>com.chromia.cli</groupId>
+            <artifactId>chromia-build-tools</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.chromia.cli</groupId>
             <artifactId>chromia-cli-tools</artifactId>
         </dependency>
         <dependency>

@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
@@ -49,7 +50,7 @@ class TxIT {
             api.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
             api.attachModel(testBrid, txDeploymentModel)
 
-            ChrProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello")
+            TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello")
                     .setWorkingDir(dir.toFile())
                     .start { process ->
                         process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
