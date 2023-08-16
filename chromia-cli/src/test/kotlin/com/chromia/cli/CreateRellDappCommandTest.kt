@@ -1,10 +1,10 @@
 package com.chromia.cli
 
 import com.chromia.cli.model.RellVersion
-import org.junit.jupiter.api.Assertions.*
+import java.io.File
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 
 internal class CreateRellDappCommandTest {
     @TempDir
@@ -14,7 +14,7 @@ internal class CreateRellDappCommandTest {
     @Test
     fun initCreatesNewFiles() {
         CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath))
-        val configYmlFile = File(dir, "config.yml")
+        val configYmlFile = File(dir, "chromia.yml")
         assertTrue(configYmlFile.exists())
         assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
         assertTrue(File(dir, "src/main.rell").exists())
@@ -25,7 +25,7 @@ internal class CreateRellDappCommandTest {
     @Test
     fun initCreatesNewFilesWithCustomName() {
         CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath, "newName"))
-        val configYmlFile = File(dir, "config.yml")
+        val configYmlFile = File(dir, "chromia.yml")
         assertTrue(File(dir, "src/main.rell").exists())
         configYmlFile.readText().contains("""
         blockchains:

@@ -8,7 +8,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
-import java.util.*
+import java.util.Scanner
 
 class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Generates a template project") {
     private val name by argument(help = "Dapp name").default("hello")
@@ -20,17 +20,17 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Ge
     override fun run() {
 
         if (!baseDir.exists()) baseDir.mkdirs()
-        if (File(baseDir, "config.yml").exists()) {
-            println("A config.yml file exists in the working directory. Would you like to write over it? (All file content will be lost) Type DELETE to proceed with the deletion")
+        if (File(baseDir, "chromia.yml").exists()) {
+            echo("A chromia.yml file exists in the working directory. Would you like to write over it? (All file content will be lost) Type DELETE to proceed with the deletion")
             val resp = Scanner(System.`in`).nextLine().equals("DELETE", false)
             if (resp) {
-                File(baseDir, "config.yml").delete()
+                File(baseDir, "chromia.yml").delete()
             } else {
                 return
             }
         }
-        File(baseDir, "config.yml").writeText(
-                this::class.java.getResource("init/config.yml")!!.readText()
+        File(baseDir, "chromia.yml").writeText(
+                this::class.java.getResource("init/chromia.yml")!!.readText()
                         .replace("hello", name)
                         .replace("RELL_VERSION", RellVersion)
                         .replace("RELL_SCHEMA", "schema_$name")

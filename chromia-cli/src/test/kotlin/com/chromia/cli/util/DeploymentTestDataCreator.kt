@@ -14,7 +14,7 @@ object DeploymentTestDataCreator {
                 operation call_op(value: integer) {}
             """.trimIndent())
         }
-        with(File(dir.toFile(), "config.yml")) {
+        with(File(dir.toFile(), "chromia.yml")) {
             writeText("""
                 blockchains:
                   hello:

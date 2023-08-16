@@ -50,7 +50,7 @@ class QueryIT {
             it.attachModel(testBrid, QueryDeploymentModel(testBrid))
 
             TestProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
-                    .setConfig(dir.resolve("config.yml").toFile())
+                    .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { process ->
                         assertThat(process.readLines()).anyMatch { it.contains("Hello People!") }
                     }

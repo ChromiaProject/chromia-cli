@@ -42,7 +42,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        settingsFile = File(testDir.toFile(), "config.yml").apply {
+        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -103,7 +103,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleSelectiveTest() {
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -117,7 +117,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleAllTests() {
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -161,7 +161,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -230,7 +230,7 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   foo_chain_dev:

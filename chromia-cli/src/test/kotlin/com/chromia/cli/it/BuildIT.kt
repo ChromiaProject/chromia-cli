@@ -12,7 +12,7 @@ class BuildIT {
     fun startNode(@TempDir dir: Path) {
         testData(dir)
         TestProcess.Builder("build")
-                .setConfig(dir.resolve("config.yml").toFile())
+                .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
                     assertThat(dir.resolve("build/hello.xml")).exists()
                 }

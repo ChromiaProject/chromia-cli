@@ -32,7 +32,7 @@ class DeployUpdateCommandTest {
     @BeforeEach
     fun setup() {
         DeploymentTestDataCreator.unitTestApp(testDir)
-        settingsFile = testDir.resolve("config.yml").toFile()
+        settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
     }
 

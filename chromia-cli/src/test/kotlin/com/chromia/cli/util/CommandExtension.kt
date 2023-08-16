@@ -19,6 +19,6 @@ class CommandExtension(private val command: CliktCommand) : BeforeEachCallback, 
         init.afterEach(p0)
     }
 
-    fun parse(argv: List<String> = listOf()) = command.test(listOf("--settings", init.dir.absolutePath.plus("/config.yml")) + argv)
+    fun parse(argv: List<String> = listOf()) = command.test(listOf("--settings", init.dir.absolutePath.plus("/chromia.yml")) + argv)
     fun emptyParse(argv: List<String> = listOf()) = command.test(argv)
 }

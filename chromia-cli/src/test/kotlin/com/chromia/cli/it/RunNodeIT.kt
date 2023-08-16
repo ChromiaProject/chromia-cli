@@ -15,7 +15,7 @@ class RunNodeIT {
         testData(dir)
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
-                .setConfig(dir.resolve("config.yml").toFile())
+                .setConfig(dir.resolve("chromia.yml").toFile())
                 .start { process ->
                     process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
@@ -33,7 +33,7 @@ class RunNodeIT {
                         """.trimIndent())
                     }
                     TestProcess.Builder("node", "update")
-                            .setConfig(dir.resolve("config.yml").toFile())
+                            .setConfig(dir.resolve("chromia.yml").toFile())
                             .start {
                                 assertThat(it.readLines()).anyMatch { it.contains("onfiguration added at height") }
                             }
@@ -44,7 +44,7 @@ class RunNodeIT {
                     // Fail to update using configuration that already exists
                     testData(dir)
                     TestProcess.Builder("node", "update")
-                            .setConfig(dir.resolve("config.yml").toFile())
+                            .setConfig(dir.resolve("chromia.yml").toFile())
                             .start {
                                 assertThat(it.readLines()).anyMatch { it.contains("Blockchain configuration already exists in database, cannot update") }
                             }
