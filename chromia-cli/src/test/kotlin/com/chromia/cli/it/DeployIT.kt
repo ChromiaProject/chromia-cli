@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
@@ -59,7 +60,7 @@ class DeployIT {
         RestApi(7740, "").use {
             it.attachModel(BlockchainRid.ZERO_RID, SuccessfulDeploymentModel(BlockchainRid.ZERO_RID))
 
-            ChrProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
+            TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("config.yml").toFile())
                     .start { process ->
                         assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }

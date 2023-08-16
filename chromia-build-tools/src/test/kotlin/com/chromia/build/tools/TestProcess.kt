@@ -1,4 +1,4 @@
-package com.chromia.cli.it
+package com.chromia.build.tools
 
 import assertk.assertThat
 import assertk.assertions.isTrue
@@ -8,7 +8,7 @@ import java.io.InputStreamReader
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-class ChrProcess private constructor(private val process: Process, val verbose: Boolean) : AutoCloseable {
+class TestProcess private constructor(private val process: Process, val verbose: Boolean) : AutoCloseable {
 
     val reader = BufferedReader(InputStreamReader(process.inputStream))
     override fun close() = process.destroy()
@@ -49,9 +49,10 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
         fun verbose(value: Boolean) = apply { verbose = value }
 
 
-        fun <R> start(onCompleted: (ChrProcess) -> R): R {
-            val executable = "${System.getenv("DIST_DIR")}/chr"
-            require(File(executable).exists()) { "Executable must be built first" }
+        fun <R> start(onCompleted: (TestProcess) -> R): R {
+            val executable = System.getenv("DIST_EXECUTABLE")
+            require(executable.isNotBlank()) { "DIST_EXECUTABLE not set" }
+            require(File(executable).exists()) { "Executable $executable not found" }
             val processArgs = buildList<String> {
                 add(executable)
                 addAll(args)
@@ -63,7 +64,7 @@ class ChrProcess private constructor(private val process: Process, val verbose: 
                         workingDir?.let { directory(it) }
                     }.start()
             if (shouldFinish) process.waitFor(timeout.seconds, TimeUnit.SECONDS)
-            return ChrProcess(process, verbose).use(onCompleted)
+            return TestProcess(process, verbose).use(onCompleted)
         }
     }
 }

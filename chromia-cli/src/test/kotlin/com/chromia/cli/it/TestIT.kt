@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
@@ -23,7 +24,7 @@ class TestIT {
                 """.trimIndent())
             }
         }
-        ChrProcess.Builder("test")
+        TestProcess.Builder("test")
                 .setWorkingDir(dir.toFile())
                 .start {
                     it.waitUntil("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL", Duration.ofSeconds(10))

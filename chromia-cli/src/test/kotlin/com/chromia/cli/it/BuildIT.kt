@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import org.assertj.core.api.Assertions.assertThat
@@ -10,7 +11,7 @@ class BuildIT {
     @Test
     fun startNode(@TempDir dir: Path) {
         testData(dir)
-        ChrProcess.Builder("build")
+        TestProcess.Builder("build")
                 .setConfig(dir.resolve("config.yml").toFile())
                 .start {
                     assertThat(dir.resolve("build/hello.xml")).exists()
@@ -20,7 +21,7 @@ class BuildIT {
     @Test
     fun findsLegacyFile(@TempDir dir: Path) {
         testData(dir)
-        ChrProcess.Builder("build")
+        TestProcess.Builder("build")
                 .setWorkingDir(dir.toFile())
                 .start {
                     assertThat(dir.resolve("build/hello.xml")).exists()
