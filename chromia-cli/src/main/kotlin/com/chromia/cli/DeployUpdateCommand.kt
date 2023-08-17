@@ -29,7 +29,7 @@ class DeployUpdateCommand(
 
     override fun beforeDeployment(deployedChains: Collection<String>) {
         deployedChains.forEach { name ->
-            if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
+            if (!deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
         }
     }
 

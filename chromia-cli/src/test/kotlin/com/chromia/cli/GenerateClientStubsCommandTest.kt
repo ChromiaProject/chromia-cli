@@ -20,7 +20,7 @@ internal class GenerateClientStubsCommandTest {
 
     @Test
     fun generateKotlin() {
-        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--kotlin", "--package", "com.example"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml", "--kotlin", "--package", "com.example"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.kt")
         assertThat(File(dir, "build/stubs/main/main.kt").readLines()[2]).isEqualTo("package com.example.main")
@@ -29,7 +29,7 @@ internal class GenerateClientStubsCommandTest {
 
     @Test
     fun generateTypescript() {
-        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--typescript"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml", "--typescript"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.ts")
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]")
@@ -37,7 +37,7 @@ internal class GenerateClientStubsCommandTest {
 
     @Test
     fun generateJavascript() {
-        val res = command.parse(listOf("-s", "${dir.absolutePath}/config.yml", "--javascript"))
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml", "--javascript"))
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.js")
         assertThat(File(dir, "build/stubs/").listFiles()).hasSize(2)
@@ -76,7 +76,7 @@ internal class GenerateClientStubsCommandTest {
             """.trimIndent())
         }
 
-        val settings = File(dir, "config.yml").apply {
+        val settings = File(dir, "chromia.yml").apply {
             writeText("""
                 blockchains:
                   e1:
@@ -97,7 +97,7 @@ internal class GenerateClientStubsCommandTest {
     @Test
     fun generateWithTarget() {
         val targetDir = dir.absolutePath
-        val res = command.parse(listOf("-s", "$targetDir/config.yml", "--javascript", "--target", "$targetDir/stubs"))
+        val res = command.parse(listOf("-s", "$targetDir/chromia.yml", "--javascript", "--target", "$targetDir/stubs"))
         assertThat(File(dir, "stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "stubs/main").list()).containsAll("main.js")
         assertThat(File(dir, "stubs/").listFiles()).hasSize(2)
@@ -128,7 +128,7 @@ internal class GenerateClientStubsCommandTest {
             """.trimIndent())
         }
         val targetDir = dir.absolutePath
-        val res = command.parse(listOf("-s", "$targetDir/config.yml", "--kotlin", "--package", "com.example"))
+        val res = command.parse(listOf("-s", "$targetDir/chromia.yml", "--kotlin", "--package", "com.example"))
         assertThat(File(dir, "build/stubs/foo/main").listFiles()!!).hasSize(1)
         assertThat(File(dir, "build/stubs/bar/main").listFiles()!!).hasSize(1)
         assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")

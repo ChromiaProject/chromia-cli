@@ -40,7 +40,7 @@ class DeployIT {
     @Test
     fun deploymentSuccesful(@TempDir dir: Path) {
         testData(dir)
-        with(File(dir.toFile(), "config.yml")) {
+        with(File(dir.toFile(), "chromia.yml")) {
             appendText("\n")
             appendText("""
                 deployments:
@@ -61,7 +61,7 @@ class DeployIT {
             it.attachModel(BlockchainRid.ZERO_RID, SuccessfulDeploymentModel(BlockchainRid.ZERO_RID))
 
             TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
-                    .setConfig(dir.resolve("config.yml").toFile())
+                    .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { process ->
                         assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }
                     }

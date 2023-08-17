@@ -12,7 +12,7 @@ class CodegenIT {
     fun startNode(@TempDir dir: Path) {
         testData(dir)
         TestProcess.Builder("generate-client-stubs", "--kotlin", "--package", "com.example")
-                .setConfig(dir.resolve("config.yml").toFile())
+                .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
                     assertThat(dir.resolve("build/stubs/main/main.kt")).exists()
                 }

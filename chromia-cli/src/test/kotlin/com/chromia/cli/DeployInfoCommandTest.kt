@@ -41,7 +41,7 @@ class DeployInfoCommandTest {
     fun failedVerification(@TempDir dir: Path) {
         val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { terminal = testTerminal }
 
-        val settings = File(dir.toFile(), "config.yml").apply {
+        val settings = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 deployments:
                   test:

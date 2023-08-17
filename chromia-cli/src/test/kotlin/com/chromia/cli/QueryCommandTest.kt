@@ -21,7 +21,7 @@ class QueryCommandTest {
     @BeforeEach
     fun setup() {
         testData(testDir)
-        settingsFile = testDir.resolve("config.yml").toFile()
+        settingsFile = testDir.resolve("chromia.yml").toFile()
 
     }
 

@@ -34,7 +34,7 @@ internal class RellLibraryModelTest {
 
     @Test
     fun singleLibraryTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -61,7 +61,7 @@ internal class RellLibraryModelTest {
 
     @Test
     fun unrecognizedFieldInRellLibraryModelTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -81,7 +81,7 @@ internal class RellLibraryModelTest {
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
     @Test
     fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -107,7 +107,7 @@ internal class RellLibraryModelTest {
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
         val fileMap = mutableMapOf<String, List<File>>()
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -139,7 +139,7 @@ internal class RellLibraryModelTest {
     @Test
     fun skipLibraryValidationTest(@TempDir dir: Path) {
         val fileMap = mutableMapOf<String, List<File>>()
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:

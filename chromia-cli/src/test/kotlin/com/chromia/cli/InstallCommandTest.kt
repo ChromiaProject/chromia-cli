@@ -35,7 +35,7 @@ class InstallCommandTest {
 
     @BeforeEach
     fun setup() {
-        with(File(testDir.toFile(), "config.yml")) {
+        with(File(testDir.toFile(), "chromia.yml")) {
             writeText("""
                 libs:
                     foo:
@@ -55,7 +55,7 @@ class InstallCommandTest {
             """.trimIndent())
         }
 
-        settingsFile = testDir.resolve("config.yml").toFile()
+        settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
 
@@ -64,7 +64,7 @@ class InstallCommandTest {
     @Test
     fun ridNotMatchingTest() {
         assertFailsWith<LibraryInstallException> {
-            File(testDir.toFile(), "config.yml").writeText("""
+            File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
                 hello:
                   module: main
@@ -91,7 +91,7 @@ class InstallCommandTest {
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "insecureBar"))
 
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/insecureBar/d.rell").exists())
     }
 
@@ -102,7 +102,7 @@ class InstallCommandTest {
 
         val res = InstallCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "foo"))
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/existingFileBar.rell").exists())
         Assertions.assertFalse(File(testDir.toFile(), "$path/Foo/existingFileFoo.rell").exists())
@@ -114,7 +114,7 @@ class InstallCommandTest {
 
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "foo"))
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/nested/b.rell").exists())
         Assertions.assertFalse(File(testDir.toFile(), "$path/foo/not/include/c.rell").exists())
@@ -125,7 +125,7 @@ class InstallCommandTest {
     fun simpleSingleLibraryTest() {
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "bar"))
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/d.rell").exists())
     }
 
@@ -133,7 +133,7 @@ class InstallCommandTest {
     fun simpleAllLibraryTest() {
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath))
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/d.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/insecureBar/d.rell").exists())
@@ -144,7 +144,7 @@ class InstallCommandTest {
     fun multipleLibraryTest() {
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "bar", "-lib", "foo"))
-        Assertions.assertTrue(File(testDir.toFile(), "config.yml").exists())
+        Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/nested/b.rell").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/d.rell").exists())
@@ -161,7 +161,7 @@ class InstallCommandTest {
 
     @Test
     fun wrongRegistryTest() {
-        File(testDir.toFile(), "config.yml").writeText("""
+        File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
               hello:
                 module: main
@@ -181,7 +181,7 @@ class InstallCommandTest {
 
     @Test
     fun nonRellFilesTest() {
-        File(testDir.toFile(), "config.yml").writeText("""
+        File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
               hello:
                 module: main

@@ -4,11 +4,11 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.testing.test
+import java.io.File
+import java.nio.file.Path
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 class DeployActionCommandTest {
 
@@ -20,7 +20,7 @@ class DeployActionCommandTest {
     @BeforeEach
     fun setup() {
         DeploymentTestDataCreator.unitTestApp(testDir)
-        settingsFile = testDir.resolve("config.yml").toFile()
+        settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
 
     }
@@ -28,7 +28,7 @@ class DeployActionCommandTest {
     @Test
     fun cannotPauseNotDeployedBlockchain() {
         val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
-        assertThat(res.output).contains("The action \"pause\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
+        assertThat(res.output).contains("The action \"pause\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
     }
 
     @Test
@@ -46,7 +46,7 @@ class DeployActionCommandTest {
     @Test
     fun cannotResumeNotDeployedBlockchain() {
         val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
-        assertThat(res.output).contains("The action \"resume\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in config.yml")
+        assertThat(res.output).contains("The action \"resume\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
     }
 
     @Test
