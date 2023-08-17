@@ -1,14 +1,11 @@
-package com.chromia.cli.util
+package com.chromia.cli.tools.blockchain
 
-import com.github.ajalt.clikt.core.PrintMessage
+import java.net.ConnectException
 import net.postchain.common.BlockchainRid
-import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
 import org.http4k.core.Request
-import org.http4k.format.Jackson.auto
-import java.net.ConnectException
 
 class BridFinder(private val httpHandler: HttpHandler, private val url: String) {
     fun findBlockchainRid(id: Int): BlockchainRid {

@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DeploymentModel
+import com.chromia.cli.tools.blockchain.BridFinder
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
