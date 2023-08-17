@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestModelImpl
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path

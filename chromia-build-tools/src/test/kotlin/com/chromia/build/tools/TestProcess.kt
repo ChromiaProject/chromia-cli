@@ -1,7 +1,9 @@
 package com.chromia.build.tools
 
+import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.isTrue
+import assertk.assertions.support.expected
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
@@ -11,6 +13,13 @@ import java.util.concurrent.TimeUnit
 class TestProcess private constructor(private val process: Process, val verbose: Boolean) : AutoCloseable {
 
     val reader = BufferedReader(InputStreamReader(process.inputStream))
+
+    init {
+        if (!process.isAlive) {
+            //if (verbose) readLines().forEach { println(it) }
+            assertThat(this).finishedSuccessfully()
+        }
+    }
     override fun close() = process.destroy()
 
     fun readLine(): String? = reader.readLine()
@@ -34,6 +43,14 @@ class TestProcess private constructor(private val process: Process, val verbose:
             println(output.joinToString("\n"))
         }
         assertThat(found).isTrue()
+    }
+
+    private fun Assert<TestProcess>.finishedSuccessfully() = given { actual ->
+        if (actual.process.exitValue() == 0) {
+            if (verbose) actual.readLines().forEach { println(it) }
+            return
+        }
+        expected("process to complete successfully, but exit code was ${actual.process.exitValue()} with logs: \n${actual.readLines().joinToString("\n")}")
     }
 
     class Builder(vararg val args: String) {

@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestModelImpl
 import net.postchain.api.rest.controller.Model
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv

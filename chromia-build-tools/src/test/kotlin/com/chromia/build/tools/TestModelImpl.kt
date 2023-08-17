@@ -1,4 +1,4 @@
-package com.chromia.cli.it
+package com.chromia.build.tools
 
 import com.google.gson.JsonElement
 import net.postchain.api.rest.BlockHeight
