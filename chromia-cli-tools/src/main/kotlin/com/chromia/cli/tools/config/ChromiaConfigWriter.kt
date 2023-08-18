@@ -10,14 +10,9 @@ import org.apache.commons.configuration2.builder.fluent.Parameters
 class ChromiaConfigWriter private constructor(val configFile: File) {
 
     companion object {
-        val local = ChromiaConfigWriter(Level.LOCAL.file)
-        val global = ChromiaConfigWriter(Level.GLOBAL.file)
+        val local = ChromiaConfigWriter(ChromiaConfigLoader.localConfigurationFile())
+        val global = ChromiaConfigWriter(ChromiaConfigLoader.globalConfigurationFile())
         fun custom(file: File) = ChromiaConfigWriter(file)
-    }
-
-    enum class Level(val file: File) {
-        LOCAL(ChromiaConfigLoader.localConfigurationFile()),
-        GLOBAL(ChromiaConfigLoader.globalConfigurationFile()),
     }
 
     fun setBrid(blockchainRid: BlockchainRid) = setProperty("brid" to blockchainRid.toHex())
@@ -28,9 +23,9 @@ class ChromiaConfigWriter private constructor(val configFile: File) {
         val configuration = if (configFile.exists()) {
             Parameters().properties()
                     .setFile(configFile)
-                    .let {
+                    .let { parameters ->
                         FileBasedConfigurationBuilder(PropertiesConfiguration::class.java)
-                                .configure(it)
+                                .configure(parameters)
                                 .configuration
                     }
         } else {
