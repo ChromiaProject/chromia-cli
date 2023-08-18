@@ -4,7 +4,6 @@ import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.controller.RestApi
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
@@ -26,7 +25,7 @@ class QueryDeploymentModel(val model: Model) : Model by model {
     }
 }
 
-class QueryIT {
+class QueryIT: RestApiTestSuite() {
 
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
@@ -37,7 +36,7 @@ class QueryIT {
                     """
                 deployments:
                   test:
-                    url: "http://localhost:7741"
+                    url: "$apiUrl"
                     brid: x"0000000000000000000000000000000000000000000000000000000000000000"
                     container: testcontainer
                     chains:
@@ -45,10 +44,10 @@ class QueryIT {
             """.trimIndent())
             }
         }
-        RestApi(7741, "").use {
-            it.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
-            it.attachModel(testBrid, QueryDeploymentModel(testBrid))
-
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                QueryDeploymentModel(testBrid),
+        ) {
             TestProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { process ->

@@ -5,7 +5,6 @@ import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.controller.RestApi
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
@@ -35,7 +34,7 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
     }
 }
 
-class DeployIT {
+class DeployIT : RestApiTestSuite() {
 
     @Test
     fun deploymentSuccesful(@TempDir dir: Path) {
@@ -45,7 +44,7 @@ class DeployIT {
             appendText("""
                 deployments:
                   test:
-                    url: "http://localhost:7740"
+                    url: "$apiUrl"
                     brid: x"0000000000000000000000000000000000000000000000000000000000000000"
                     container: testcontainer
             """.trimIndent())
@@ -57,9 +56,7 @@ class DeployIT {
                 privkey=D33345577D6E08997D35D3D359DAF6CD4AF91651B2C006F9974E4B73E06574F7
             """.trimIndent())
         }
-        RestApi(7740, "").use {
-            it.attachModel(BlockchainRid.ZERO_RID, SuccessfulDeploymentModel(BlockchainRid.ZERO_RID))
-
+        withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
             TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { process ->

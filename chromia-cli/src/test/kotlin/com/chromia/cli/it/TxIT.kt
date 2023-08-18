@@ -5,7 +5,6 @@ import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
 import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.controller.RestApi
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvFactory.gtv
@@ -25,7 +24,7 @@ class TxDeploymentModel(val model: Model) : Model by model {
     }
 }
 
-class TxIT {
+class TxIT: RestApiTestSuite() {
 
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
@@ -35,7 +34,7 @@ class TxIT {
                 deployments("""
                     deployments:
                       test:
-                        url: "http://localhost:7741"
+                        url: "$apiUrl"
                         brid: x"0000000000000000000000000000000000000000000000000000000000000000"
                         container: testcontainer
                         chains:
@@ -46,9 +45,10 @@ class TxIT {
             secret()
         }
         val txDeploymentModel = TxDeploymentModel(testBrid)
-        RestApi(7741, "").use { api ->
-            api.attachModel(BlockchainRid.ZERO_RID, Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf("http://localhost:7741"))))
-            api.attachModel(testBrid, txDeploymentModel)
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                txDeploymentModel
+        ) {
 
             TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello")
                     .setWorkingDir(dir.toFile())
