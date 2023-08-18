@@ -30,6 +30,7 @@ class RunNodeIT {
                         """.trimIndent())
                     }
                     TestProcess.Builder("node", "update")
+                            .verbose()
                             .startCondition("Configuration added at height")
                             .setConfig(dir.resolve("chromia.yml").toFile())
                             .start()
