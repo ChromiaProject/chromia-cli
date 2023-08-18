@@ -10,6 +10,11 @@ import org.apache.commons.configuration2.builder.fluent.Parameters
 class ChromiaConfigWriter(val level: Level) {
     val configFile get() = level.file
 
+    companion object {
+        val local = ChromiaConfigWriter(Level.LOCAL)
+        val global = ChromiaConfigWriter(Level.GLOBAL)
+    }
+
     enum class Level(val file: File) {
         LOCAL(ChromiaConfigLoader.localConfigurationFile()),
         GLOBAL(ChromiaConfigLoader.globalConfigurationFile())
