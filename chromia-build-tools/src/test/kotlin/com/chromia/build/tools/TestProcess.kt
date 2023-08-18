@@ -1,19 +1,36 @@
 package com.chromia.build.tools
 
+import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.isTrue
+import assertk.assertions.support.expected
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-class TestProcess private constructor(private val process: Process, val verbose: Boolean) : AutoCloseable {
+class TestProcess private constructor(processBuilder: ProcessBuilder, startContition: String?, shouldFinish: Boolean, timeout: Duration, val verbose: Boolean) : AutoCloseable {
 
+    val process = processBuilder.start()
     val reader = BufferedReader(InputStreamReader(process.inputStream))
-    override fun close() = process.destroy()
 
-    fun readLine(): String? = reader.readLine()
+    init {
+        if (verbose) println("Starting command " +  processBuilder.command().subList(1, processBuilder.command().size))
+        if (!startContition.isNullOrBlank()) {
+            waitUntil(startContition, timeout)
+        }
+        if (shouldFinish) {
+            process.waitFor(timeout.seconds, TimeUnit.SECONDS)
+            assertThat(this).finishedSuccessfully()
+        }
+    }
+    override fun close() {
+        process.destroy()
+        process.waitFor(2, TimeUnit.SECONDS)
+    }
+
+    private fun readLine(): String? = reader.readLine()
     fun readLines() = reader.readLines()
     fun waitUntil(msg: String, timeout: Duration) {
         var found = false
@@ -36,18 +53,30 @@ class TestProcess private constructor(private val process: Process, val verbose:
         assertThat(found).isTrue()
     }
 
+    private fun Assert<TestProcess>.finishedSuccessfully() = given { actual ->
+        if (actual.process.exitValue() == 0) {
+            if (verbose) actual.readLines().forEach { println(it) }
+            return
+        }
+        expected("process to complete successfully, but exit code was ${actual.process.exitValue()} with logs: \n${actual.readLines().joinToString("\n")}")
+    }
+
     class Builder(vararg val args: String) {
         private var config: File? = null
         private var shouldFinish = true
         private var timeout = Duration.ofSeconds(10)
+        private var startCondition: String? = null
         private var verbose = false
         private var workingDir: File? = null
         fun setConfig(file: File) = apply { config = file }
         fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
         fun timeout(value: Duration) = apply { timeout = value }
+        fun startCondition(condition: String) = apply { startCondition = condition }
         fun verbose() = apply { verbose = true }
 
+
+        fun start() = start {}
 
         fun <R> start(onCompleted: (TestProcess) -> R): R {
             val executable = System.getenv("DIST_EXECUTABLE")
@@ -58,13 +87,12 @@ class TestProcess private constructor(private val process: Process, val verbose:
                 addAll(args)
                 config?.let { addAll(listOf("-s", it.absolutePath)) }
             }
-            val process = ProcessBuilder(*processArgs.toTypedArray())
+            val pb = ProcessBuilder(*processArgs.toTypedArray())
                     .apply {
                         redirectErrorStream(true)
                         workingDir?.let { directory(it) }
-                    }.start()
-            if (shouldFinish) process.waitFor(timeout.seconds, TimeUnit.SECONDS)
-            return TestProcess(process, verbose).use(onCompleted)
+                    }
+            return TestProcess(pb, startCondition, shouldFinish, timeout, verbose).use(onCompleted)
         }
     }
 }

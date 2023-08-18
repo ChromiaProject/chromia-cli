@@ -45,10 +45,10 @@ class QueryCommandTest {
 
     @Test
     fun testMissingBrid() {
-        val thrown = assertThrows<IllegalArgumentException> {
+        val thrown = assertThrows<RuntimeException> {
             QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
         }
 
-        assertThat(thrown.message!!).contains("Wrong size of Blockchain RID, was 0 should be 32 (64 characters)")
+        assertThat(thrown.message!!).contains("Could not auto-detect brid from")
     }
 }

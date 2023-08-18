@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.nio.file.Path
@@ -10,13 +11,12 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 
 class QueryDeploymentModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
@@ -51,9 +51,8 @@ class QueryIT {
 
             TestProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    .start { process ->
-                        assertThat(process.readLines()).anyMatch { it.contains("Hello People!") }
-                    }
+                    .startCondition("Hello People!")
+                    .start()
         }
     }
 }
