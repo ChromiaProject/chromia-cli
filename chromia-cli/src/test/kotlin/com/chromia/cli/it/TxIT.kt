@@ -1,6 +1,8 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.RestApiInstance.apiUrl
+import com.chromia.build.tools.RestApiInstance.withModel
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
@@ -24,7 +26,7 @@ class TxDeploymentModel(val model: Model) : Model by model {
     }
 }
 
-class TxIT: RestApiTestSuite() {
+class TxIT {
 
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {

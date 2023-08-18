@@ -1,6 +1,8 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.RestApiInstance.apiUrl
+import com.chromia.build.tools.RestApiInstance.withModel
 import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
@@ -34,7 +36,7 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
     }
 }
 
-class DeployIT : RestApiTestSuite() {
+class DeployIT {
 
     @Test
     fun deploymentSuccesful(@TempDir dir: Path) {
