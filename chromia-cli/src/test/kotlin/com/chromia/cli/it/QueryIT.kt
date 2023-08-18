@@ -11,7 +11,6 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -52,9 +51,8 @@ class QueryIT {
 
             TestProcess.Builder("query", "hello_world", "--network", "test", "--blockchain", "hello")
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    .start { process ->
-                        assertThat(process.readLines()).anyMatch { it.contains("Hello People!") }
-                    }
+                    .startCondition("Hello People!")
+                    .start()
         }
     }
 }

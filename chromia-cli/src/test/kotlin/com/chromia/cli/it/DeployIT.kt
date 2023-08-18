@@ -15,7 +15,6 @@ import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -63,9 +62,8 @@ class DeployIT {
 
             TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    .start { process ->
-                        assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }
-                    }
+                    .startCondition("Deployment of blockchain hello was successful")
+                    .start()
         }
     }
 }

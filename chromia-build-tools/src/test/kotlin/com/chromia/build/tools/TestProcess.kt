@@ -14,7 +14,6 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
 
     val process = processBuilder.start()
     val reader = BufferedReader(InputStreamReader(process.inputStream))
-    val outputCache = mutableListOf<String>()
 
     init {
         if (verbose) println("Starting command " +  processBuilder.command().subList(1, processBuilder.command().size))
@@ -31,8 +30,8 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         process.waitFor(2, TimeUnit.SECONDS)
     }
 
-    fun readLine(): String? = reader.readLine().also { outputCache.add(it) }
-    fun readLines() = reader.readLines().also { outputCache.addAll(it) }
+    private fun readLine(): String? = reader.readLine()
+    fun readLines() = reader.readLines()
     fun waitUntil(msg: String, timeout: Duration) {
         var found = false
         val output = mutableListOf<String>()
