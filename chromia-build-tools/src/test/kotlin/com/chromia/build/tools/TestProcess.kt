@@ -19,7 +19,10 @@ class TestProcess private constructor(private val process: Process, val verbose:
             assertThat(this).finishedSuccessfully()
         }
     }
-    override fun close() = process.destroy()
+    override fun close() {
+        process.destroy()
+        process.waitFor(2, TimeUnit.SECONDS)
+    }
 
     fun readLine(): String? = reader.readLine()
     fun readLines() = reader.readLines()
