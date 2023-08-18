@@ -16,7 +16,6 @@ class TestProcess private constructor(private val process: Process, val verbose:
 
     init {
         if (!process.isAlive) {
-            //if (verbose) readLines().forEach { println(it) }
             assertThat(this).finishedSuccessfully()
         }
     }

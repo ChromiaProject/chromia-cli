@@ -1,6 +1,6 @@
 package com.chromia.cli.it
 
-import com.chromia.build.tools.TestModelImpl
+import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
 import java.io.File
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.io.TempDir
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
     override fun postTransaction(tx: ByteArray) {}
