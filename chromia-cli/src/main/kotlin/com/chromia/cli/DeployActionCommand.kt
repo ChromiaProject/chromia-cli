@@ -8,12 +8,12 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
+import net.postchain.client.core.TxRid
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
-import net.postchain.common.BlockchainRid
-
 
 open class DeployActionCommand(
         private val action: BlockchainAction,
@@ -40,7 +40,11 @@ open class DeployActionCommand(
         }
     }
     
-    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+        for ((chain, _) in deployTxs) {
+            echo("${action.name} of blockchain ${chain.name} was successful")
+        }
+    }
 }
 
 class DeployResumeCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container", clientProvider)
