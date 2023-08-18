@@ -45,14 +45,14 @@ class DeployUpdateCommandTest {
         val operations = config.txs.first().gtxBody.operations
         assertThat(operations.map { it.opName }).containsExactly("nop", "propose_configuration")
         assertThat(operations.last().args).containsAll(gtv("03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05".hexStringToByteArray()), gtv("0000000000000000000000000000000000000000000000000000000000000002".hexStringToByteArray()), gtv(""))
-        assertThat(res.output).contains("Deployment of blockchain deployed was successful")
+        assertThat(res.output).contains("Update of blockchain deployed was successful")
     }
 
     @Test // TODO: Should only work if chain is in system cluster
     fun successfulDeploymentOnHeight() {
         val config = TestConfiguration()
         val res = DeployUpdateCommand({ TestClient(it, config) }, { TestClusterManagement() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--height", "100"))
-        assertThat(res.output).contains("Deployment of blockchain deployed was successful")
+        assertThat(res.output).contains("Update of blockchain deployed was successful")
     }
 
     @Test

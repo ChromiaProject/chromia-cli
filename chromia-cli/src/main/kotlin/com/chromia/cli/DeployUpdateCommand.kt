@@ -12,12 +12,13 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
+import net.postchain.client.core.TxRid
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.common.BlockchainRid
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -33,7 +34,11 @@ class DeployUpdateCommand(
         }
     }
 
-    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+        for ((chain, _) in deployTxs) {
+            echo("Update of blockchain ${chain.name} was successful")
+        }
+    }
 
     override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
