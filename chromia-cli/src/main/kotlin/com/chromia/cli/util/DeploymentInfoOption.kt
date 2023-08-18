@@ -2,7 +2,7 @@ package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DeploymentModel
-import com.chromia.cli.tools.blockchain.BridFinder
+import com.chromia.cli.tools.blockchain.BridFetcher
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -59,8 +59,8 @@ class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProv
     override val brid: BlockchainRid get() = blockchainRid.let { BlockchainRid.buildFromHex(it) }
     override val blockchainName: String get() = blockchainRid
     override val networkBrid: BlockchainRid
-        get() = BridFinder(httpHandlerFactory(PostchainClientConfig(brid, EndpointPool.default(urls))), url.first())
-                .findBlockchainRid(0)
+        get() = BridFetcher(httpHandlerFactory(PostchainClientConfig(brid, EndpointPool.default(urls))), url.first())
+                .fetchBlockchainRid(0)
 
     override fun networkClient(): PostchainClient {
         val config = PostchainClientConfig(networkBrid, EndpointPool.default(urls))
