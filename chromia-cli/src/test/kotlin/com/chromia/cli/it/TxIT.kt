@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.io.TempDir
 
 
 class TxDeploymentModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
     val txList = mutableListOf<ByteArray>()
 

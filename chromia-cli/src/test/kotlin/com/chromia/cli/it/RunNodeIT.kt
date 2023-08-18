@@ -5,7 +5,6 @@ import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -15,16 +14,14 @@ class RunNodeIT {
         testData(dir)
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
+                .startCondition("Blockchain has been started")
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start { process ->
-                    process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
-                    TestProcess.Builder("query", "hello").start { assertThat(it.readLines()).containsExactly("\"Hi!\"") }
-                    TestProcess.Builder("tx", "call_op", "1").start { assertThat(it.readLines()).anyMatch { str -> str.contains("was posted WAITING: OK") } }
+                    TestProcess.Builder("query", "hello").startCondition("Hi!").start()
+                    TestProcess.Builder("tx", "call_op", "1").startCondition("was posted WAITING: OK").start()
 
-                    TestProcess.Builder("query", "new_query").start {
-                        assertThat(it.readLines()).containsExactly("query: 400 Bad Request  Unknown query: new_query from http://localhost:7740")
-                    }
+                    TestProcess.Builder("query", "new_query").startCondition("Unknown query: new_query").start()
                     with(File(dir.toFile(), "src/main.rell")) {
                         writeText("""
                             module;
@@ -33,21 +30,20 @@ class RunNodeIT {
                         """.trimIndent())
                     }
                     TestProcess.Builder("node", "update")
+                            .verbose()
+                            .startCondition("Configuration added at height")
                             .setConfig(dir.resolve("chromia.yml").toFile())
-                            .start {
-                                assertThat(it.readLines()).anyMatch { it.contains("onfiguration added at height") }
-                            }
+                            .start()
                     process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
-                    TestProcess.Builder("query", "new_query").start { assertThat(it.readLines()).containsExactly("1") }
+                    TestProcess.Builder("query", "new_query").startCondition("1").start()
 
                     // Fail to update using configuration that already exists
                     testData(dir)
                     TestProcess.Builder("node", "update")
                             .setConfig(dir.resolve("chromia.yml").toFile())
-                            .start {
-                                assertThat(it.readLines()).anyMatch { it.contains("Blockchain configuration already exists in database, cannot update") }
-                            }
+                            .startCondition("Blockchain configuration already exists in database, cannot update")
+                            .start()
                 }
     }
 }

@@ -1,5 +1,6 @@
 package com.chromia.cli.it
 
+import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
@@ -15,13 +16,12 @@ import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModelImpl(blockchainRid))
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
     override fun postTransaction(tx: ByteArray) {}
@@ -61,9 +61,8 @@ class DeployIT {
         withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
             TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    .start { process ->
-                        assertThat(process.readLines()).anyMatch { it.contains("Deployment of blockchain hello was successful") }
-                    }
+                    .startCondition("Deployment of blockchain hello was successful")
+                    .start()
         }
     }
 }
