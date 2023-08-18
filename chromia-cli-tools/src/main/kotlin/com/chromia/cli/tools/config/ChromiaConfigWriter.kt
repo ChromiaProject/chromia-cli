@@ -7,22 +7,24 @@ import org.apache.commons.configuration2.PropertiesConfiguration
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
 import org.apache.commons.configuration2.builder.fluent.Parameters
 
-class ChromiaConfigWriter(val level: Level) {
-    val configFile get() = level.file
+class ChromiaConfigWriter private constructor(val configFile: File) {
 
     companion object {
-        val local = ChromiaConfigWriter(Level.LOCAL)
-        val global = ChromiaConfigWriter(Level.GLOBAL)
+        val local = ChromiaConfigWriter(Level.LOCAL.file)
+        val global = ChromiaConfigWriter(Level.GLOBAL.file)
+        fun custom(file: File) = ChromiaConfigWriter(file)
     }
 
     enum class Level(val file: File) {
         LOCAL(ChromiaConfigLoader.localConfigurationFile()),
-        GLOBAL(ChromiaConfigLoader.globalConfigurationFile())
+        GLOBAL(ChromiaConfigLoader.globalConfigurationFile()),
     }
 
     fun setBrid(blockchainRid: BlockchainRid) = setProperty("brid" to blockchainRid.toHex())
 
-    fun setProperty(vararg property: Pair<String, Any>) {
+    fun setProperty(vararg property: Pair<String, Any>) = setProperty(property.toMap())
+
+    fun setProperty(properties: Map<String, Any>) {
         val configuration = if (configFile.exists()) {
             Parameters().properties()
                     .setFile(configFile)
@@ -35,7 +37,7 @@ class ChromiaConfigWriter(val level: Level) {
             configFile.parentFile?.mkdirs()
             PropertiesConfiguration()
         }
-        property.forEach { (k, v) -> configuration.setProperty(k, v) }
+        properties.forEach { (k, v) -> configuration.setProperty(k, v) }
         configuration.write(FileWriter(configFile.absoluteFile))
     }
 }
