@@ -3,6 +3,7 @@ package com.chromia.cli
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
+import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.module
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -19,7 +20,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val settings by optionalChromiaModelOption()
     private val sourceDir by lazy { settings.sourceDir ?: File(System.getProperty("user.dir")) }
     private val module by module()
-    private val sqlLog by option(help = "Log sql expressions").flag()
+    private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
 
