@@ -5,6 +5,8 @@ import com.chromia.cli.tools.formatter.chromiaTheme
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
 import java.io.File
 import java.io.FileNotFoundException
@@ -20,8 +22,14 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
 
     init {
         completionOption()
+        val detectedTerminal = Terminal()
         context {
-            terminal = Terminal(theme = chromiaTheme)
+            terminal = Terminal(theme = when (detectedTerminal.info.ansiLevel) {
+                AnsiLevel.NONE -> Theme.Plain
+                AnsiLevel.ANSI16 -> Theme.Plain
+                else -> chromiaTheme
+            }
+            )
             helpFormatter = { PanelHelpFormatter(it) }
         }
     }
