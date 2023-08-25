@@ -5,32 +5,22 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
+import com.chromia.cli.util.TestClient
+import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.table.SectionBuilder
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import java.nio.file.Path
-import java.time.Duration
-import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.BlockDetail
-import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
-import net.postchain.client.core.TransactionResult
-import net.postchain.client.core.TxRid
 import net.postchain.client.exception.ClientError
-import net.postchain.client.request.Endpoint
-import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
-import net.postchain.crypto.KeyPair
-import net.postchain.d1.cluster.ClusterManagement
-import net.postchain.gtv.Gtv
-import net.postchain.gtx.Gtx
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 class DeployInfoCommandTest {
 
@@ -128,10 +118,10 @@ class DeployInfoCommandTest {
             assertThat(it.endpointPool.size).equals(1)
             val endpoint = it.endpointPool.first()
             return@PostchainClientProvider when (it.blockchainRid) {
-                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002") -> TestPostchainClient(it) { 569889L }
-                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000005") -> TestPostchainClient(it) { throw ClientError("Context", Status.INTERNAL_SERVER_ERROR, "Module initialization error", endpoint) }
-                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000006") -> TestPostchainClient(it) { 570320L }
-                else -> TestPostchainClient(it) { throw ClientError("Context", Status.NOT_FOUND, "Can't find blockchain", endpoint) }
+                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002") -> TestClient(it, { 569889L })
+                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000005") -> TestClient(it, { throw ClientError("Context", Status.INTERNAL_SERVER_ERROR, "Module initialization error", endpoint) })
+                BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000006") -> TestClient(it, { 570320L })
+                else -> TestClient(it, { throw ClientError("Context", Status.NOT_FOUND, "Can't find blockchain", endpoint) })
             }
         }
     }
@@ -144,36 +134,6 @@ class DeployInfoCommandTest {
             it.uri.path.contains("06") -> Response(Status.OK).body("{\"state\":\"HaveBlock\",\"height\":119329,\"serial\":159158134941,\"round\":2,\"blockRid\":\"328B9498981B459226B2E2B97B5E0AB4C0F4580D98E7C2F14DBA384FFFD90F80\",\"revolting\":true}")
             else -> Response(Status.NOT_FOUND).body("{\"error\":\"Can't find blockchain\"}")
         }
-    }
-
-    class TestPostchainClient(
-            override val config: PostchainClientConfig,
-            val blockHeight: () -> Long
-    ) : PostchainClient {
-        override fun currentBlockHeight() = blockHeight()
-        override fun close() {}
-        override fun transactionBuilder(): TransactionBuilder = TODO()
-        override fun transactionBuilder(signers: List<KeyPair>) = TODO()
-        override fun query(name: String, args: Gtv): Gtv = TODO()
-        override fun postTransaction(tx: Gtx): TransactionResult = TODO()
-        override fun checkTxStatus(txRid: TxRid): TransactionResult = TODO()
-        override fun postTransactionAwaitConfirmation(tx: Gtx): TransactionResult = TODO()
-        override fun awaitConfirmation(txRid: TxRid, retries: Int, pollInterval: Duration): TransactionResult = TODO()
-        override fun confirmationProof(txRid: TxRid): ByteArray = TODO()
-        override fun blockAtHeight(height: Long): BlockDetail? = TODO()
-        override fun getTransaction(txRid: TxRid): ByteArray = TODO()
-    }
-
-    class TestClusterManagement : ClusterManagement {
-
-        override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("4")) "my_cluster" else throw ClientError("", Status(404, null), "", Endpoint(""))
-        override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = listOf("http://myhost:7740")
-        override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
-        override fun getBlockchainPeers(blockchainRid: BlockchainRid, height: Long) = TODO("Not yet implemented")
-        override fun getClusterInfo(clusterName: String) = TODO("Not yet implemented")
-        override fun getClusterNames() = TODO("Not yet implemented")
-        override fun getClusterAnchoringChains() = TODO("Not yet implemented")
-        override fun getSystemAnchoringChain() = TODO("Not yet implemented")
     }
 }
 

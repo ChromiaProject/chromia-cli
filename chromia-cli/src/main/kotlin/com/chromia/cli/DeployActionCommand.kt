@@ -34,12 +34,12 @@ open class DeployActionCommand(
         }
     }
 
-    override fun beforeDeployment(deployedChains: Collection<String>) {
-        deployedChains.forEach { name ->
-            if (!deployModel.chains.containsKey(name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain $name cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
+    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+        compiledChains.forEach { chain ->
+            if (!deployModel.chains.containsKey(chain.name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain.name} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
         }
     }
-    
+
     override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
         for ((chain, _) in deployTxs) {
             echo("${action.name} of blockchain ${chain.name} was successful")
