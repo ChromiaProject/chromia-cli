@@ -23,6 +23,7 @@
         <postchain.chromia.version>3.11.2</postchain.chromia.version>
         <postchain.client.version>3.11.2</postchain.client.version>
         <rell.version>0.13.1</rell.version>
+        <eif.version>0.2.0</eif.version>
         <directory.chain.version>1.9.1</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
@@ -63,6 +64,11 @@
             <id>rell-codegen</id>
             <name>Rell Codegen Registry</name>
             <url>https://gitlab.com/api/v4/projects/37660703/packages/maven</url>
+        </repository>
+        <repository>
+            <id>postchain-eif</id>
+            <name>Postchain EIF Gtx module Registry</name>
+            <url>https://gitlab.com/api/v4/projects/36768178/packages/maven</url>
         </repository>
         <repository>
             <id>mavenCentral</id>

@@ -221,6 +221,12 @@
             <groupId>net.postchain.rell</groupId>
             <artifactId>codegen</artifactId>
         </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-eif-core</artifactId>
+            <version>${eif.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
