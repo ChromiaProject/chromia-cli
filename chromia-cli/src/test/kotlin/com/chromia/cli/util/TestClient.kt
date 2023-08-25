@@ -18,7 +18,11 @@ data class TestConfiguration(
         val txResultFactory: (n: Int) -> TransactionResult = { TransactionResult(TxRid(""), TransactionStatus.CONFIRMED, null, null) },
 )
 
-open class TestClient(override val config: PostchainClientConfig, private val testConfiguration: TestConfiguration = TestConfiguration()) : PostchainClient {
+open class TestClient(
+        override val config: PostchainClientConfig,
+        val blockHeight: () -> Long,
+        private val testConfiguration: TestConfiguration = TestConfiguration()
+) : PostchainClient {
     override fun blockAtHeight(height: Long) = TODO()
     override fun awaitConfirmation(txRid: TxRid, retries: Int, pollInterval: Duration): TransactionResult =
             TransactionResult(txRid, TransactionStatus.CONFIRMED, null, null)
@@ -26,7 +30,7 @@ open class TestClient(override val config: PostchainClientConfig, private val te
     override fun checkTxStatus(txRid: TxRid) = TODO("Not yet implemented")
     override fun close() = TODO("Not yet implemented")
     override fun confirmationProof(txRid: TxRid) = TODO("Not yet implemented")
-    override fun currentBlockHeight() = TODO("Not yet implemented")
+    override fun currentBlockHeight() = blockHeight()
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
 
     override fun postTransaction(tx: Gtx): TransactionResult =

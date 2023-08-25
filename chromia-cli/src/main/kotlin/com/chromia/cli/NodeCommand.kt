@@ -52,6 +52,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
+                        //TODO remove GTV is no longer supported
                         if (it.extension == "gtv") {
                             it.inputStream().use { inputStream ->
                                 it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)

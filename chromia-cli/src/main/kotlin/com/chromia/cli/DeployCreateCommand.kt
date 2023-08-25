@@ -34,7 +34,7 @@ class DeployCreateCommand(
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
     private val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
-    override fun beforeDeployment(deployedChains: Collection<String>) {
+    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
 
         val httpClient = httpHandlerFactory(createClientConfig())
         val rellVersionController = Http4kRellVersionFinder(httpClient)
@@ -44,10 +44,10 @@ class DeployCreateCommand(
             throw RellDeployVersionException(settings.model.compile.rellVersion, targetVersion)
         }
 
-        deployedChains.forEach { name ->
-            if (deployModel.chains.containsKey(name)) throw PrintMessage("Blockchain $name is already deployed to network $target")
+        compiledChains.forEach { chain ->
+            if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain ${chain.name} is already deployed to network $target")
             if (!confirm && confirm(
-                            "This will create a new deployment of $name on network $target. Would you like to create a new deployment?",
+                            "This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
                             default = false
                     ) != true) throw PrintMessage("Deployment was aborted")
         }

@@ -50,6 +50,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
             .validate { require(settings.model.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
 
+
     protected val deployModel by lazy {
         val deployModel = settings.model.deployments[target]
         if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
@@ -68,9 +69,9 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
         val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
-        beforeDeployment(chainsToDeploy)
-
         val client = createClient()
+        beforeDeployment(compiledChains, client)
+
         var failure = false
         val txs = buildList {
             for (chain in compiledChains) {
@@ -118,7 +119,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult)
 
-    abstract fun beforeDeployment(deployedChains: Collection<String>)
+    abstract fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient)
 
     abstract fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>)
 

@@ -61,7 +61,7 @@ class DeployCreateCommandTest {
     fun cannotDeployNotMatchingRellVersion() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.11.0"))
         val throwable = assertThrows<RellDeployVersionException> {
-            DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+            DeployCreateCommand({ httpHandler }, { mock() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")
