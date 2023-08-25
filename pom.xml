@@ -512,7 +512,11 @@
                                             </platforms>
                                         </from>
                                         <to>
-                                            <image>${gitlab.registry}/${image.name}:${project.version}</image>
+                                            <image>${gitlab.registry}/${image.name}</image>
+                                            <tags>
+                                                <tag>latest</tag>
+                                                <tag>${project.version}</tag>
+                                            </tags>
                                             <auth>
                                                 <username>${env.CI_REGISTRY_USER}</username>
                                                 <password>${env.CI_REGISTRY_PASSWORD}</password>
