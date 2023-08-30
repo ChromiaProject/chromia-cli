@@ -64,7 +64,7 @@ variables:
   CHR_DB_URL: jdbc:postgresql://postgres/postchain
 
 services:
-  - postgres:14.7-alpine3.17
+  - postgres:14.9-alpine3.18
   - name: docker:20-dind
     alias: docker
     # explicitly disable tls to avoid docker startup interruption
