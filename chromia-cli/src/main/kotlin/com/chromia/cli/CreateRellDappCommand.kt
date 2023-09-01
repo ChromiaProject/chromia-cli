@@ -33,7 +33,7 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Ge
                 this::class.java.getResource("init/chromia.yml")!!.readText()
                         .replace("hello", name)
                         .replace("RELL_VERSION", RellVersion)
-                        .replace("RELL_SCHEMA", "schema_$name")
+                        .replace("RELL_SCHEMA", "schema_${name.replace("-", "_")}")
         )
         val sourceDir = File(baseDir, "src")
         sourceDir.mkdir()

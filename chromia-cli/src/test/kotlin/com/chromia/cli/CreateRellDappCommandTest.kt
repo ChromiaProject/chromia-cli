@@ -1,5 +1,8 @@
 package com.chromia.cli
 
+import assertk.all
+import assertk.assertThat
+import assertk.assertions.contains
 import com.chromia.cli.model.RellVersion
 import java.io.File
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,13 +27,16 @@ internal class CreateRellDappCommandTest {
 
     @Test
     fun initCreatesNewFilesWithCustomName() {
-        CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath, "newName"))
+        CreateRellDappCommand().parse(listOf("-d", dir!!.absolutePath, "new-name"))
         val configYmlFile = File(dir, "chromia.yml")
         assertTrue(File(dir, "src/main.rell").exists())
-        configYmlFile.readText().contains("""
+        assertThat(configYmlFile.readText()).all {
+            contains("""
         blockchains:
-            newName:
-                module: main
+          new-name:
+            module: main
         """.trimIndent())
+            contains("schema: schema_new_name")
+        }
     }
 }
