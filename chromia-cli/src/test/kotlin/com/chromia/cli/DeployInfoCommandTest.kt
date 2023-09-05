@@ -2,7 +2,6 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.isEqualTo
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.TestClient
@@ -67,7 +66,7 @@ class DeployInfoCommandTest {
     }
 
     @Test
-    fun failedVerificationManualChain(@TempDir dir: Path) {
+    fun failedVerificationManualChain() {
         val command = DeployInfoCommand(testClientProvider(), { TestClusterManagement() }, { testClient() }).context { terminal = testTerminal }
 
         command.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000002", "--url", "http://myhost:7740"))

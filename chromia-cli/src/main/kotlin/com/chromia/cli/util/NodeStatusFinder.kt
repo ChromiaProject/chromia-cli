@@ -56,7 +56,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
 
     }
 
-    abstract sealed class StatusResult() {
+    sealed class StatusResult() {
         abstract fun values(): Array<String>
 
 
