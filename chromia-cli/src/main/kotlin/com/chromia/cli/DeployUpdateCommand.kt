@@ -58,7 +58,7 @@ class DeployUpdateCommand(
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
 
         val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
-        val request = Request(Method.POST, "${endpoint.single().url.trimEnd().replace(Regex("/$"), "")}/config/${blockchainRid.toHex()}")
+        val request = Request(Method.POST, "${endpoint.first().url.trimEnd().replace(Regex("/$"), "")}/config/${blockchainRid.toHex()}")
                 .body(compiledConfig)
 
         val result = httpHandler(request)
