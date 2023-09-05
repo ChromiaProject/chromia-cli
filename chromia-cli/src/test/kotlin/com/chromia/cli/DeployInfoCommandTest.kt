@@ -127,7 +127,7 @@ class DeployInfoCommandTest {
     }
 
     private fun testClient(): (Request) -> Response = {
-        assertThat(it.uri.host).isEqualTo("myhost")
+        assertThat(it.uri.host).contains("myhost")
         //assert(it.headers).contains("Accept" to "application/json") Can be PLAIN for /brid/iid_0
         when {
             it.uri.path.contains("brid/iid_0") -> Response(Status.OK).body("0000000000000000000000000000000000000000000000000000000000000001")

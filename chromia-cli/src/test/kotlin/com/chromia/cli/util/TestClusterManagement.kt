@@ -10,7 +10,7 @@ class TestClusterManagement(
         private val clusterOfBlockchain: Map<BlockchainRid, String> = mapOf(),
 ) : ClusterManagement {
     override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
-    override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = listOf("http://myhost:7740")
+    override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = listOf("http://myhost:7740", "http://myhost2:7740")
     override fun getBlockchainPeers(blockchainRid: BlockchainRid, height: Long) = TODO("Not yet implemented")
     override fun getClusterAnchoringChains() = TODO("Not yet implemented")
     override fun getClusterInfo(clusterName: String) = TODO("Not yet implemented")

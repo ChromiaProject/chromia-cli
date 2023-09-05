@@ -106,7 +106,7 @@ class DeployUpdateCommandTest {
     }
 
     private fun testHttpHandler(invalidUpdate: Boolean = false): (Request) -> Response = {
-        assertThat(it.uri.host).isEqualTo("myhost")
+        assertThat(it.uri.host).contains("myhost")
         if (invalidUpdate) Response(Status.BAD_REQUEST).body("{\n\"error\": \"Invalid configuration\"\n}")
         else Response(Status.OK).body("{}")
     }
