@@ -38,7 +38,7 @@ class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", 
     override fun run() {
         val generator = CodeGenerator(languageOption.factory())
         val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
-        val sections = modules.flatMap { generator.createSections(settings.sourceDir, it) }
+        val sections = modules.flatMap { generator.createSections(settings.sourceDir, listOf(it)) }
         val documents = generator.constructDocuments(sections, true)
         val targetFolder = target ?: File(settings.targetDir, "stubs")
         DocumentSaver(targetFolder).saveDocuments(documents)

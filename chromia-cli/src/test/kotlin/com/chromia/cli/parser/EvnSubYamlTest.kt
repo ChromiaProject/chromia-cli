@@ -29,6 +29,7 @@ class EvnSubYamlTest {
                 writeText("a: \${MY_A}")
             }
             val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "a.yml"))
+            @Suppress("CAST_NEVER_SUCCEEDS")
             assertThat(res["a"] as String).isEqualTo("1")
         }
     }

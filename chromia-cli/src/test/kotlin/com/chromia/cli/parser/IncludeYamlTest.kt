@@ -25,6 +25,7 @@ internal class IncludeYamlTest {
         }
         val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
         assertThat(res["b"] is Map<*, *>)
+        @Suppress("UNCHECKED_CAST")
         assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
     }
 
@@ -42,6 +43,7 @@ internal class IncludeYamlTest {
         }
         val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
         assertThat(res["b"] is List<*>)
+        @Suppress("UNCHECKED_CAST")
         assertThat((res["b"] as List<Int>).first()).isEqualTo(13)
     }
 
@@ -59,6 +61,7 @@ internal class IncludeYamlTest {
         }
         val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
         assertThat(res["b"] is Map<*, *>)
+        @Suppress("UNCHECKED_CAST")
         assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
     }
 

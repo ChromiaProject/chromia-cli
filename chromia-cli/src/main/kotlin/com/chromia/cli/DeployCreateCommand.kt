@@ -11,8 +11,10 @@ import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.directory1.proposal_blockchain.findBlockchainRid
 import com.chromia.directory1.version.apiVersion
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.mordant.terminal.YesNoPrompt
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -46,10 +48,9 @@ class DeployCreateCommand(
 
         compiledChains.forEach { chain ->
             if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain ${chain.name} is already deployed to network $target")
-            if (!confirm && confirm(
-                            "This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
-                            default = false
-                    ) != true) throw PrintMessage("Deployment was aborted")
+            if (!confirm && YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
+                            terminal, default = false
+                    ).ask() != true) throw PrintMessage("Deployment was aborted")
         }
     }
 

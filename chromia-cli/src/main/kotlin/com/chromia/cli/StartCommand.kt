@@ -42,7 +42,7 @@ class StartCommand : AbstractNodeCommand(help = """
         RellPostchainModuleEnvironment.set(environment) {
             val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
-            extractConfigs().toList().forEachIndexed { index, (name, gtv) ->
+            extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
                 val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
                 val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, ::sha256Digest)
                 val iid = index.toLong()
