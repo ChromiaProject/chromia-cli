@@ -38,8 +38,13 @@ class DeployUpdateCommand(
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
     }
     private val verifyOnly by option("--verify-only", help = "Verifies blockchain config without sending update transaction").flag()
+    private val skipVerification by option("--skip-verification", help = "Skip verification of blockchain config before sending update transaction").flag()
 
     override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+        if (skipVerification) {
+            echo("Skipping verification of blockchain config")
+            return
+        }
         compiledChains.forEach { chain -> verifyConfiguration(chain, client) }
     }
 

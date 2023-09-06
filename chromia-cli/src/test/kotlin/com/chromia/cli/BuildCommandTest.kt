@@ -53,6 +53,7 @@ internal class BuildCommandTest {
 
         assertEquals(File(dir, "build").list()?.size ?: 0, 1)
         assertTrue(File(dir, "build/hello.xml").exists())
+        assertTrue(File(dir, "build/hello.xml").readText(Charsets.UTF_8).contains("signers"))
     }
 
     @Test
