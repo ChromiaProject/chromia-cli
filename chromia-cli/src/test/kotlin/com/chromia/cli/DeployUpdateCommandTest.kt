@@ -105,6 +105,14 @@ class DeployUpdateCommandTest {
         assertThat(res.output).doesNotContain("Blockchain deployed was successfully updated on network test")
     }
 
+    @Test
+    fun skipVerification() {
+        val res = DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--skip-verification"))
+        assertThat(res.output).contains("Skipping verification of blockchain config")
+        assertThat(res.output).doesNotContain("Blockchain deployed vas successfully verified against deployed chain on network test")
+        assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
+    }
+
     private fun testHttpHandler(invalidUpdate: Boolean = false): (Request) -> Response = {
         assertThat(it.uri.host).contains("myhost")
         if (invalidUpdate) Response(Status.BAD_REQUEST).body("{\n\"error\": \"Invalid configuration\"\n}")
