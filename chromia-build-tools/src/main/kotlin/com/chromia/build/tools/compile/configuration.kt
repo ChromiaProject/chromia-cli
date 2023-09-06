@@ -4,7 +4,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 
 fun withSigner(gtvConfig: Gtv, signer: ByteArray) =
-        if (gtvConfig["signers"]!!.asArray().isNotEmpty()) {
+        if (gtvConfig["signers"] != null) {
             gtvConfig
         } else {
             GtvFactory.gtv(

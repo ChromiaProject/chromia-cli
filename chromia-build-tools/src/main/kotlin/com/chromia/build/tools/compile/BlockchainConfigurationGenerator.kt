@@ -57,7 +57,7 @@ internal class BlockchainConfigurationGenerator(
             gtvBuilder.update(gtxModules, "gtx", "modules")
 
             GTXBlockchainConfigurationFactory.validateConfiguration(
-                    gtvBuilder.build(),
+                    withSigner(gtvBuilder.build(), "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()),
                     BlockchainRid.ZERO_RID // dummy blockchain RID, works with Rell and all standard GTX modules, might not work properly with custom GTX modules
             )
         } catch (e: UserMistake) {
@@ -93,7 +93,6 @@ internal class BlockchainConfigurationGenerator(
         b.update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
         b.update(gtv("HEADER_HASH"), "config_consensus_strategy")
         b.update(gtv(2000), "revolt", "fast_revolt_status_timeout")
-        b.update(gtv(listOf()), "signers")
 
         val modulesGtv: MutableList<Gtv> = mutableListOf(
                 gtv(RellPostchainModuleFactory::class.qualifiedName!!),
