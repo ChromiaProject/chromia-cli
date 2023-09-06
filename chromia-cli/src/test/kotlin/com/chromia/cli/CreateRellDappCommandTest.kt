@@ -22,6 +22,7 @@ internal class CreateRellDappCommandTest {
         assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
         assertTrue(File(dir, "src/main.rell").exists())
         BuildCommand().parse(listOf("-s", configYmlFile.absolutePath))
+        TestCommand().parse(listOf("-s", configYmlFile.absolutePath))
         assertTrue(File(dir, "build/hello.xml").exists())
     }
 
