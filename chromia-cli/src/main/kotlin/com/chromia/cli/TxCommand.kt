@@ -5,8 +5,10 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
+import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -14,10 +16,14 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import net.postchain.common.hexStringToByteArray
+import net.postchain.common.toHex
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.mapper.Name
+import net.postchain.gtv.mapper.Nullable
+import net.postchain.gtv.mapper.toList
 import net.postchain.gtv.parse.GtvParser
 
 
@@ -47,11 +53,14 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     data class AuthDescriptor(
             @Name("id") val id: WrappedByteArray,
-            @Name("args") val args: List<Gtv>,
+            @Name("args") val args: Gtv,
             @Name("created") val created: Long,
             @Name("auth_type") val authType: String, // Enum
-            @Name("rules") val rules: Gtv // Can be GtvNull
-    )
+            @Name("rules") @Nullable val rules: Gtv?
+    ) {
+        val flags by lazy { args.asArray().first().asArray().map { it.asString() } }
+        fun containsFlag(flag: String) = flags.contains(flag)
+    }
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
@@ -59,16 +68,26 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
         val client = target.createClient(postchainClientConfig)
         val transactionBuilder = client.transactionBuilder()
         if (ftAuth) {
-            val signer = postchainClientConfig.signers.singleOrNull() ?: throw PrintMessage("A single keypair is required to use ft authentication")
-            val accountId = client.query("ft4.get_accounts_by_participant_id", gtv(mapOf("id" to gtv(signer.pubKey.data)))).asArray()
-            echo(accountId.map { it.toString() })
-            if (accountId.isEmpty()) throw PrintMessage("No accounts found for pubkey ${signer.pubKey}")
-            val authDescriptors = client.query("ft4.get_account_auth_descriptors_by_participant_id", gtv(mapOf("account_id" to accountId.first(), "participant_id" to gtv(signer.pubKey.data)))).asArray()
-            echo(authDescriptors.map { it.asDict() })
+            val signer = postchainClientConfig.signers.singleOrNull()
+                    ?: throw PrintMessage("A single keypair is required to use ft authentication", statusCode = 1)
+            val accountIds = client.query("ft4.get_accounts_by_participant_id", gtv(mapOf("id" to gtv(signer.pubKey.data)))).asArray()
+            echo(accountIds.map { it.toString() })
+            if (accountIds.isEmpty()) throw PrintMessage("No ft accounts found for pubkey ${signer.pubKey}", statusCode = 1)
+            val accountId = if (accountIds.size > 1) {
+                terminal.prompt("More than one account found, which one should we use: ${accountIds.map { it.asByteArray().toHex() }}", choices = accountIds.map { it.asByteArray().toHex() })
+                        ?.let { gtv(it.hexStringToByteArray()) }
+                        ?: throw Abort()
+            } else accountIds.first()
+            val authDescriptors = client
+                    .query(
+                            "ft4.get_account_auth_descriptors_by_participant_id",
+                            gtv(mapOf("account_id" to accountId, "participant_id" to gtv(signer.pubKey.data)))
+                    )
+                    .toList<AuthDescriptor>()
             val flags = client.query("ft4.get_auth_flags", gtv(mapOf("op_name" to gtv(opName)))).asArray().map { it.asString() }
-            val matchingDescriptor = authDescriptors.map { it.asDict() }.first { flags.any { flag -> it["args"]!!.asArray().first().asArray().map { it.asString() }.contains(flag) }}
-            echo(flags)
-            transactionBuilder.addOperation("ft4.ft_auth", accountId.first(), matchingDescriptor["id"]!!)
+            val matchingDescriptor = authDescriptors.firstOrNull { flags.any { flag -> it.containsFlag(flag) } }
+                    ?: throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
+            transactionBuilder.addOperation("ft4.ft_auth", accountIds.first(), gtv(matchingDescriptor.id))
         }
         val res = transactionBuilder
                 .addOperation(opName, *args.toTypedArray())
