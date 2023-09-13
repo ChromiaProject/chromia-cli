@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.mordant.terminal.Terminal
 import net.postchain.client.core.PostchainQuery
+import net.postchain.client.exception.ClientError
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
@@ -20,7 +21,11 @@ class FTAuthenticator(private val client: PostchainQuery, private val terminal: 
 
     private val blackListedVersions = listOf("0.1.0r")
     fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, accountIdOverride: String?) {
-        val version = client.query("ft4.get_version", gtv(mapOf())).asString()
+        val version = try {
+            client.query("ft4.get_version", gtv(mapOf())).asString()
+        } catch (e: ClientError) {
+            throw PrintMessage("Dapp is not FT compatible: ${e.errorMessage}", statusCode = 1)
+        }
         if (version in blackListedVersions) throw PrintMessage("FT version $version not supported", statusCode = 1)
         val accountId = findAccountId(pubKey, accountIdOverride)
         val authDescriptors = client.query(
@@ -48,7 +53,7 @@ class FTAuthenticator(private val client: PostchainQuery, private val terminal: 
             @Name("id") val id: WrappedByteArray,
             @Name("args") val args: Gtv,
             @Name("created") val created: Long,
-            @Name("auth_type") val authType: String, // Enum
+            @Name("auth_type") val authType: String,
             @Name("rules") @Nullable val rules: Gtv?
     ) {
         val flags by lazy { args.asArray().first().asArray().map { it.asString() } }

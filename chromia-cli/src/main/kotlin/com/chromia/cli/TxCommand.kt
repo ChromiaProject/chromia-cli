@@ -29,7 +29,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
     private val ftAuthOptions by object: OptionGroup("FT compatible dapps options") {
-        val ftAuth by option(help = "Adds ft4.ft_auth operation for ft-compatible dapps").flag()
+        val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
         val ftAccountId by option(help = "Explicitly specify which account to use")
     }
 
@@ -55,7 +55,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
         if (ftAuthOptions.ftAuth) {
             val authenticator = FTAuthenticator(client, terminal)
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
-                    ?: throw PrintMessage("A single keypair is required to use ft authentication", statusCode = 1))
+                    ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
             authenticator.addAuthenticationOperation(transactionBuilder, opName, signerPubkey, ftAuthOptions.ftAccountId)
         }
         val res = transactionBuilder
