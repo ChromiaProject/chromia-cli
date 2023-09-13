@@ -27,7 +27,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
-    private val ftAuth by option().flag()
+    private val ftAuth by option(help = "Adds ft4.ft_auth operation for ft-compatible dapps").flag()
 
     private val opName by argument(help = "name of the operation to execute.")
 
