@@ -20,12 +20,12 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.10.1</codegen.version>
-        <postchain.version>3.11.5</postchain.version>
-        <postchain.chromia.version>3.11.2</postchain.chromia.version>
-        <postchain.client.version>3.11.2</postchain.client.version>
-        <rell.version>0.13.1</rell.version>
-        <eif.version>0.2.0</eif.version>
-        <directory.chain.version>1.9.1</directory.chain.version>
+        <postchain.version>3.13.2</postchain.version>
+        <postchain.chromia.version>3.13.1</postchain.chromia.version>
+        <postchain.client.version>3.11.5</postchain.client.version>
+        <rell.version>0.13.2</rell.version>
+        <eif.version>0.2.2</eif.version>
+        <directory.chain.version>1.12.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

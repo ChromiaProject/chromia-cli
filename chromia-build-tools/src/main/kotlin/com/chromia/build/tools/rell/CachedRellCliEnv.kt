@@ -7,7 +7,7 @@ class CachedRellCliEnv(
         private val errorPrinter: (String) -> Unit = printer,
         private val cacheOutput: Boolean = false,
         private val cacheError: Boolean = false
-) : RellCliEnv() {
+) : RellCliEnv {
     val errorCache = mutableListOf<String>()
     val outputCache = mutableListOf<String>()
     override fun error(msg: String) = errorPrinter(msg).also { if (cacheError) errorCache.add(msg) }

@@ -49,7 +49,7 @@ internal class RellLibraryModelTest {
 
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo"), createFile(dir.toFile(), "lib/bar", "//Bar"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })
@@ -127,7 +127,7 @@ internal class RellLibraryModelTest {
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })
@@ -155,7 +155,7 @@ internal class RellLibraryModelTest {
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })

@@ -31,6 +31,6 @@ object NodeConfig {
              setProperty("fastsync.exit_delay", 0)
              overrides.forEach { setProperty(it.key, it.value) }
          }
-         return AppConfig(inMemoryConfig, true)
+         return AppConfig(inMemoryConfig)
      }
  }
