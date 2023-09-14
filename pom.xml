@@ -19,7 +19,7 @@
 
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.10.1</codegen.version>
+        <codegen.version>0.10.3</codegen.version>
         <postchain.version>3.13.2</postchain.version>
         <postchain.chromia.version>3.13.1</postchain.chromia.version>
         <postchain.client.version>3.11.5</postchain.client.version>
