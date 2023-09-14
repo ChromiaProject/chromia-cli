@@ -23,7 +23,7 @@ fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
-        option("--wipe", help = "If a database should be wiped before startup").flag()
+        option("--wipe", help = "If a database should be wiped before startup").flag("--no-wipe")
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
