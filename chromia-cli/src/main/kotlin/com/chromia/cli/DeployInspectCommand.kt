@@ -13,6 +13,8 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.defaultHttpHandler
@@ -37,24 +39,34 @@ class DeployInspectCommand(
     private val option by lazy {
         configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified")
     }
+    private val moduleNamesOnly by option("-l", "--list-modules", help = "List all module names").flag()
 
     override fun run() {
         try {
-            BlockchainAnalyzer(option.blockchainClient()).getAppStructure()
-                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
-                    .filterValues { !it.isEmpty() }
-                    .forEach { (name, module) ->
-                        echo("Module: $name")
-                        if (!module.queries.isNullOrEmpty()) {
-                            tableOfQueries(module.queries)
-                        }
-                        if (!module.operations.isNullOrEmpty()) {
-                            tableOfOperations(module.operations)
-                        }
-                        if (!module.objects.isNullOrEmpty()) {
-                            tableOfObjects(module.objects)
-                        }
+            val appStructure = BlockchainAnalyzer(option.blockchainClient()).getAppStructure()
+            if (moduleNamesOnly) {
+                echo(defaultTable {
+                    header { row("Module") }
+                    body {
+                        appStructure.keys.forEach { row(it) }
                     }
+                })
+            } else {
+                appStructure.filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
+                        .filterValues { !it.isEmpty() }
+                        .forEach { (name, module) ->
+                            echo("Module: $name")
+                            if (!module.queries.isNullOrEmpty()) {
+                                tableOfQueries(module.queries)
+                            }
+                            if (!module.operations.isNullOrEmpty()) {
+                                tableOfOperations(module.operations)
+                            }
+                            if (!module.objects.isNullOrEmpty()) {
+                                tableOfObjects(module.objects)
+                            }
+                        }
+            }
         } catch (e: ClientError) {
             echo("Blockchain not found ${option.brid.toShortHex()}")
         }
