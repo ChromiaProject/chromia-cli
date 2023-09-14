@@ -47,7 +47,7 @@ class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClient
     }
 
     override fun blockchainClient() =
-            ChromiaClientProvider(networkClient().config.failOverConfig, ClusterManagementImpl(networkClient()))
+            ChromiaClientProvider(ClusterManagementImpl(networkClient()), networkClient().config)
                     .blockchain(brid)
 }
 

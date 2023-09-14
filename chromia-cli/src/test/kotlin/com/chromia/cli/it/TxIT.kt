@@ -74,7 +74,7 @@ class TxIT {
         }
         assertThat(txRecorderModel.txList.size).isEqualTo(1)
         val gtx = Gtx.decode(txRecorderModel.txList.first())
-        assertThat(gtx.signatures.size).isEqualTo(0) // TODO: Should be 1 after upgrade of postchain-chromia
+        assertThat(gtx.signatures.size).isEqualTo(1)
         assertThat(gtx.gtxBody.operations.size).isEqualTo(1)
         val op = gtx.gtxBody.operations.first()
         assertThat(op.opName).isEqualTo("call_op")
