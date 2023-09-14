@@ -37,7 +37,7 @@ build:
   script:
     - mvn
       $MAVEN_CLI_OPTS
-      --activate-profiles docker,coverage
+      --activate-profiles ci,docker,coverage
       verify
 
 test-coverage-report:
@@ -57,7 +57,7 @@ deploy:
   script:
     - mvn
       $MAVEN_CLI_OPTS
-      --activate-profiles docker,docker-push
+      --activate-profiles ci,docker,docker-push
       -Drevision=$CI_COMMIT_TAG
       deploy
 
