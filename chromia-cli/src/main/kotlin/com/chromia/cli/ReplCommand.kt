@@ -43,7 +43,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
 
         val shellConfig = RellApiRunShell.Config.Builder()
                 .compileConfig(compileConfig)
-                .databaseUrl(if (useDB) localModel.databaseUrl else null)
+                .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
                 .historyFile(historyFile)
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
