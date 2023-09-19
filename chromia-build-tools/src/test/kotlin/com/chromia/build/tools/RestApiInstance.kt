@@ -1,5 +1,6 @@
 package com.chromia.build.tools
 
+import java.time.Clock
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.RestApi
 
@@ -10,7 +11,7 @@ object RestApiInstance {
     val apiUrl = "http://localhost:$apiPort"
 
     private fun getInstance(): RestApi {
-        if (restApi == null) restApi = RestApi(apiPort, "")
+        if (restApi == null) restApi = RestApi(apiPort, "", clock = Clock.systemUTC())
         return restApi!!
     }
 
