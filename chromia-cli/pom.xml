@@ -225,7 +225,6 @@
             <groupId>net.postchain</groupId>
             <artifactId>postchain-eif-core</artifactId>
             <version>${eif.version}</version>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>

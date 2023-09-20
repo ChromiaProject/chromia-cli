@@ -5,6 +5,7 @@ import com.chromia.cli.tools.launcher.CliLauncher
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
 import net.postchain.PostchainNode
+import net.postchain.eif.EifGTXModule
 import net.postchain.rell.base.utils.RellVersions
 
 fun main(args: Array<out String>) = CliLauncher("chr")
@@ -12,6 +13,7 @@ fun main(args: Array<out String>) = CliLauncher("chr")
             ${CliLauncher::class.java.`package`.implementationVersion}
             rell version ${RellVersions::class.java.`package`.implementationVersion ?: "(unknown)"}
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
+            EIF version ${EifGTXModule::class.java.`package`.implementationVersion ?: "(unknown)"}
         """.trimIndent())
         .subcommands(
                 CreateRellDappCommand(),
