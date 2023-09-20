@@ -15,7 +15,7 @@ import net.postchain.ebft.rest.contract.StateNodeStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtx.GtxQuery
 
-class TestModel(override val blockchainRid: BlockchainRid, override val chainIID: Long = 0) : Model {
+class TestModel(override val blockchainRid: BlockchainRid, override val chainIID: Long = 0, override val queryCacheTtlSeconds: Long = 0) : Model {
     override var live: Boolean = true
 
     override fun getBlock(height: Long, txHashesOnly: Boolean): BlockDetail? {
