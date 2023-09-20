@@ -15,6 +15,7 @@ class VersionIT {
         assertThat(lines[0]).contains("chr version ${System.getenv()["PROJECT_VERSION"]}")
         assertThat(lines[1]).contains("rell version")
         assertThat(lines[2]).contains("postchain version")
+        assertThat(lines[3]).contains("EIF version")
         assertThat(lines).none { it.contains("(unknown)") }
     }
 }
