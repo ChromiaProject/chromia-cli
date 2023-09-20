@@ -35,6 +35,8 @@ build:
     refs:
       - tags
   script:
+    - apt-get update
+    - apt-get -y install ssh
     - mvn
       $MAVEN_CLI_OPTS
       --activate-profiles ci,docker,coverage

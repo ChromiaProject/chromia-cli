@@ -1,0 +1,3 @@
+Host *
+    AddKeysToAgent yes
+    IdentityAgent /tmp/chr-test-ssh-socket
