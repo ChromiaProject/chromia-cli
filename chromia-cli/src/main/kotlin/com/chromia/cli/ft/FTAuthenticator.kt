@@ -42,6 +42,7 @@ class FTAuthenticator(private val client: PostchainQuery, private val terminal: 
     private fun findAccountId(pubKey: PubKey, accountId: String?): GtvByteArray {
         if (!accountId.isNullOrBlank()) return gtv(accountId.hexStringToByteArray())
         val accountIds = client.query("ft4.get_accounts_by_participant_id", gtv(mapOf("id" to gtv(pubKey.data)))).asArray()
+        if (accountIds.isEmpty()) throw PrintMessage("No accounts found for pubkey: $pubKey", statusCode = 1)
         return if (accountIds.size > 1) {
             terminal.prompt("More than one account found, which one should we use: ${accountIds.map { it.asByteArray().toHex() }}", choices = accountIds.map { it.asByteArray().toHex() })
                     ?.let { gtv(it.hexStringToByteArray()) }
