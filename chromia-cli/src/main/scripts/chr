@@ -19,6 +19,7 @@ done
 APP_HOME=$( cd "${APP_HOME:-./}.." && pwd -P ) || exit
 
 JAR=$(find "$APP_HOME/lib" -maxdepth 1 -regex '.*/chromia-cli-.[^/]*.jar')
-LOG_FOLDER="${TMPDIR-/tmp}/chromia"
+RESOLVED_TMP_DIR=${TMPDIR-/tmp}
+LOG_FOLDER="${RESOLVED_TMP_DIR%/}/chromia"
 
 exec ${RELL_JAVA:-java} -DCHR_LOG_FOLDER="$LOG_FOLDER" -cp "$JAR:$APP_HOME/lib/*" com.chromia.MainKt "$@"
