@@ -8,14 +8,14 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
+import mu.KotlinLogging
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.sql.SQLException
 import kotlin.system.exitProcess
-import mu.KotlinLogging
-import net.postchain.rell.api.base.RellCliException
-import net.postchain.rell.api.base.RellCliExitException
 
 open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
@@ -47,8 +47,9 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             is IOException -> "An I/O error occurred."
             else -> "An error occurred."
         }
-        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "logs"
-        val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}$commandName.log"
+
+        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "/usr/app/logs"
+        val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
         return "$humanFriendlyMessage ${formatExceptionMessage(exception)}$suffix"
     }
 
