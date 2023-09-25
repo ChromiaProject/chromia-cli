@@ -1,11 +1,14 @@
 package com.chromia.cli
 
 import assertk.assertThat
+import assertk.assertions.any
 import assertk.assertions.contains
+import com.chromia.cli.util.captureLog4jLoggerOutput
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import net.postchain.rell.base.sql.SqlConnectionLogger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -174,6 +177,57 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun testSqlLogging() {
+        with(File(testDir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+
+                struct module_args { name; }
+                entity foo { name; }
+
+                operation add_foo(name) { create foo(name); }
+                query get_foo(name) = foo @? { name };
+            """.trimIndent())
+        }
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                import ^.main.*;
+
+                function test_get_foo() {
+                  rell.test.tx().op(add_foo("bar")).run();
+                  assert_not_null(get_foo("bar"));
+                }
+            """.trimIndent())
+        }
+
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                test:
+                  modules:
+                    - test
+                  moduleArgs:
+                    main:
+                      name: foo
+            """.trimIndent())
+        }
+
+        val sqlLoggerOutput = captureLog4jLoggerOutput(SqlConnectionLogger::class.java) {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log"))
+        }
+
+        assertThat(sqlLoggerOutput).any {
+            it.contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
+        }
+        assertThat(sqlLoggerOutput).any {
+            it.contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ? ORDER BY A00."rowid"""")
+        }
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 

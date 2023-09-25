@@ -7,6 +7,7 @@ import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
 import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -35,6 +36,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
             .multiple()
     private val modules by modulesOption()
     private val settings by chromiaModelOption()
+    private val sqlLog by logSqlOption()
     private val tests by option(help = "test method pattern").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
@@ -114,6 +116,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .printTestCases(false)
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
+                .sqlLog(sqlLog)
                 .build()
     }
 
