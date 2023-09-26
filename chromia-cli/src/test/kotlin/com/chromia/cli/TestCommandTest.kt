@@ -13,8 +13,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import org.redundent.kotlin.xml.Node
+import org.redundent.kotlin.xml.TextElement
+import org.redundent.kotlin.xml.parse
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.test.assertEquals
 
 internal class TestCommandTest {
 
@@ -312,5 +317,57 @@ internal class TestCommandTest {
                 listOf("-s", settingsFile.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
         )
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
+    }
+
+    @Test
+    fun testTestReportSuccess() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        val testReport = parse(testDir.resolve("rell-tests.xml").toFile())
+        assertEquals("testsuite", testReport.nodeName)
+        assertEquals("Rell tests", testReport.attributes["name"])
+        val case = testReport.children.filterIsInstance<Node>().first()
+        assertEquals("testcase", case.nodeName)
+        assertEquals("test:test_a", case.attributes["name"])
+    }
+
+    @Test
+    fun testTestReportFailure() {
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_b() { assert_equals(1, 2); }
+            """.trimIndent())
+        }
+
+        assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(
+                    listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        }
+        val testReport = parse(testDir.resolve("rell-tests.xml").toFile())
+        assertEquals("testsuite", testReport.nodeName)
+        assertEquals("Rell tests", testReport.attributes["name"])
+        val case = testReport.children.filterIsInstance<Node>().first()
+        assertEquals("testcase", case.nodeName)
+        assertEquals("test:test_b", case.attributes["name"])
+        val failure = case.children.filterIsInstance<Node>().first()
+        assertEquals("failure", failure.nodeName)
+        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>", failure.attributes["message"])
+        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
+                "\tat test:test_b(test.rell:3)",
+                failure.children.filterIsInstance<TextElement>().first().text.trim())
+    }
+
+    @Test
+    fun testBlockchainTestReport() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        assertThat(testDir.resolve("hello-tests.xml").exists())
+    }
+
+    @Test
+    fun testModuleTestReport() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db", "--test-report-dir", testDir.toString()))
+        assertThat(testDir.resolve("test-tests.xml").exists())
     }
 }

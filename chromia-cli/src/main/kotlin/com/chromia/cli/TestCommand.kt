@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.build.tools.test.xmlTestReport
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
@@ -12,10 +13,12 @@ import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
 import net.postchain.gtv.Gtv
@@ -28,6 +31,8 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
+import java.io.File
+import java.nio.file.Files
 
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
@@ -41,6 +46,10 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
+    private val testReport by option(help = "Generate JUnit XML test reports")
+            .flag()
+    private val testReportDir by option(help = "JUnit XML test report directory")
+            .file(canBeDir = true, canBeFile = false, mustBeWritable = true).default(File("/usr/app"))
 
     override fun run() {
         try {
@@ -69,6 +78,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
+        if (testReport) {
+            Files.writeString(testReportDir.toPath().resolve("rell-tests.xml"), res.xmlTestReport())
+        }
         printResults(res)
     }
 
@@ -87,6 +99,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
         echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
+        if (testReport) {
+            Files.writeString(testReportDir.toPath().resolve("${blockchain}-tests.xml"), res.xmlTestReport())
+        }
         printResults(res)
     }
 
