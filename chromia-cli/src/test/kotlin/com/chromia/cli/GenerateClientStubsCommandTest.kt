@@ -8,9 +8,11 @@ import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
-import java.io.File
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 internal class GenerateClientStubsCommandTest {
 
@@ -133,5 +135,28 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/bar/main").listFiles()!!).hasSize(1)
         assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
 
+    }
+
+    @Test
+    fun unsupportedReturnTypeIsSkipped(@TempDir tempDir: Path) {
+
+        with(File(tempDir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query foo() = (123, x=4);
+            """.trimIndent())
+        }
+        with(File(tempDir.toFile(), "chromia.yml")) {
+            parentFile.mkdirs()
+            writeText("""
+            blockchains:
+                hello:
+                    module: main
+            """.trimIndent())
+        }
+
+        val res = command.parse(listOf("-s", "${tempDir.toAbsolutePath()}/chromia.yml", "--javascript"))
+        assertThat(res.stderr).contains("Skipping [main:foo] Query has unsupported mixed tuple return type: (integer,x:integer)")
     }
 }

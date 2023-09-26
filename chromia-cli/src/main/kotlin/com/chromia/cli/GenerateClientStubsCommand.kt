@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.tools.config.chromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.LanguageSupport
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
@@ -11,13 +12,13 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentSaver
 import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
+import java.io.File
 
 class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", help = "Generates client code for a rell dapp") {
     private val settings by chromiaModelOption()
@@ -36,7 +37,7 @@ class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", 
             .file(canBeFile = false)
 
     override fun run() {
-        val generator = CodeGenerator(languageOption.factory())
+        val generator = CodeGenerator(languageOption.factory(), CliktCliEnv(this))
         val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
         val sections = modules.flatMap { generator.createSections(settings.sourceDir, listOf(it)) }
         val documents = generator.constructDocuments(sections, true)
