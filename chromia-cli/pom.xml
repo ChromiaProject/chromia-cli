@@ -264,11 +264,6 @@
             <artifactId>system-stubs-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.redundent</groupId>
-            <artifactId>kotlin-xml-builder</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.bitcoinj</groupId>
