@@ -13,7 +13,6 @@ import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
@@ -33,6 +32,7 @@ import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
@@ -48,30 +48,34 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
             .flag("--no-db", default = true)
     private val testReport by option(help = "Generate JUnit XML test reports")
             .flag()
-    private val testReportDir by option(help = "JUnit XML test report directory")
-            .file(canBeDir = true, canBeFile = false, mustBeWritable = true).default(File("/usr/app"))
+    private val testReportDir by option(help = "JUnit XML test reports directory (defaults to \"build/reports\")")
+            .file(canBeDir = true, canBeFile = false)
 
     override fun run() {
+        val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
+        if (testReport) {
+            testReportPath.mkdirs()
+        }
         try {
             if (shouldRunBlockchainTests()) {
-                runBlockchainTests()
+                runBlockchainTests(testReportPath.toPath())
             }
             if (shouldRunUnitTests()) {
-                runUnitTests()
+                runUnitTests(testReportPath.toPath())
             }
         } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
     }
 
-    private fun runBlockchainTests() {
+    private fun runBlockchainTests(testReportPath: Path) {
         settings.model.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
-                .forEach { runTestsForChain(it.key) }
+                .forEach { runTestsForChain(it.key, testReportPath) }
     }
 
-    private fun runUnitTests() {
+    private fun runUnitTests(testReportPath: Path) {
         val testModules = modules ?: settings.model.test.modules
         val testModuleArgs = settings.model.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
@@ -79,7 +83,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         if (testReport) {
-            Files.writeString(testReportDir.toPath().resolve("rell-tests.xml"), res.xmlTestReport())
+            Files.writeString(testReportPath.resolve("rell-tests.xml"), res.xmlTestReport())
         }
         printResults(res)
     }
@@ -88,7 +92,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
 
-    private fun runTestsForChain(blockchain: String) {
+    private fun runTestsForChain(blockchain: String, testReportPath: Path) {
         val chainConfig = settings.model.blockchains[blockchain]
                 ?: throw CliktError("Blockchain '$blockchain' not found")
 
@@ -100,7 +104,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         if (testReport) {
-            Files.writeString(testReportDir.toPath().resolve("${blockchain}-tests.xml"), res.xmlTestReport())
+            Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport())
         }
         printResults(res)
     }
