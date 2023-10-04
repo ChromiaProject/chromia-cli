@@ -123,6 +123,10 @@
                             <args>
                                 <arg>chr</arg>
                             </args>
+                            <ports>
+                                <port>7740</port>
+                                <port>7750</port>
+                            </ports>
                             <appRoot>/usr/share/chr</appRoot>
                             <workingDirectory>/usr/app</workingDirectory>
                             <mainClass>${main.class}</mainClass>
