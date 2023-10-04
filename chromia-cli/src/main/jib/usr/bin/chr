@@ -1,7 +1,2 @@
 #! /bin/sh
-if [ "$CHROMIA_SERVICE" = true ]; then
-    while [ ! -e "$CHROMIA_PROJECT_SETTINGS" ]; do
-        sleep 1  # Adjust the sleep duration as needed
-    done
-fi
 exec java -cp @/usr/share/chr/jib-classpath-file @/usr/share/chr/jib-main-class-file "$@"

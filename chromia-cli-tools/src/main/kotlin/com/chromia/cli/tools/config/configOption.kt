@@ -35,7 +35,7 @@ open class ChromiaConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration 
 }
 
 open class ChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
-    private val modelFile: File by requiredChromiaModelOption(cliEnv)
+    val modelFile: File by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
     val sourceDir get() = model.compile.sourceFile(projectFolder)
@@ -43,7 +43,7 @@ open class ChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration P
 }
 
 open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
-    private val modelFile by chromiaModelOption()
+    private val modelFile by chromiaModelFileOption()
     private val resolvedModelFile by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile) }
     val projectFolder by lazy { resolvedModelFile?.parentFile }
     val model by lazy { resolvedModelFile?.let { parseModel(it) } }
@@ -64,23 +64,23 @@ open class ChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configura
 open class OptionalChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
     val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
-    private val modelFile by chromiaModelOption()
+    private val modelFile by chromiaModelFileOption()
     val model by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile)?.let { parseModel(it) } }
     val projectFolder by lazy { modelFile?.parentFile }
 }
 
-internal fun ParameterHolder.requiredChromiaModelOption(cliEnv: RellCliEnv) = chromiaModelOption()
+internal fun ParameterHolder.requiredChromiaModelOption(cliEnv: RellCliEnv) = chromiaModelFileOption()
         .defaultLazy {
             ChromiaConfigLoader(cliEnv).findModelFile(null) ?: throw PrintMessage("Project settings file not found")
         }
 
-internal fun ParameterHolder.chromiaModelOption() = option(
+fun ParameterHolder.chromiaModelFileOption() = option(
         "-s", "--settings",
         help = "Alternate path for project settings file",
         metavar = "SETTINGS",
         envvar = "CHROMIA_PROJECT_SETTINGS",
 )
-        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
+        .file(mustExist = false, canBeDir = false, mustBeReadable = true)
         .convert { it.absoluteFile }
 
 internal fun ParameterHolder.chromiaConfigOption() = option(
