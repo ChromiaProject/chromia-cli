@@ -33,7 +33,7 @@ class StartCommand : AbstractNodeCommand(help = """
     private val sqlLog by logSqlOption()
     private val wipe by wipeDatabaseOption()
     val cryptoSystem = Secp256K1CryptoSystem()
-    private val service by option(help = "Wait for resources to be availabe before starting (Useful for CI)").flag()
+    private val service by option(help = "Wait for resources to be availabe before starting (Useful for CI)", envvar = "CHROMIA_SERVICE").flag()
 
     override fun run() {
         startPostchainNode()
@@ -42,7 +42,6 @@ class StartCommand : AbstractNodeCommand(help = """
     private fun startPostchainNode() {
         if (service) {
             waitDb(100, 5, nodeConfig)
-            waitForFile(100, 5, settings.projectFolder)
         }
 
         val chainsToStart = mutableListOf<Long>()
