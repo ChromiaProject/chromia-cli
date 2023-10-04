@@ -203,6 +203,10 @@
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
+            <artifactId>postchain-server-cli</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
             <artifactId>chromia-client</artifactId>
         </dependency>
         <dependency>

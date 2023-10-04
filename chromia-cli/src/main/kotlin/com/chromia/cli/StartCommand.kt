@@ -4,6 +4,9 @@ import com.chromia.build.tools.compile.withSigner
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.wipeDatabaseOption
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
+import java.io.File
 import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.StorageInitializer
@@ -19,6 +22,7 @@ import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
 import net.postchain.rell.module.RellPostchainModuleEnvironment
+import net.postchain.server.cli.waitDb
 
 class StartCommand : AbstractNodeCommand(help = """
     Starts a test node
@@ -29,12 +33,18 @@ class StartCommand : AbstractNodeCommand(help = """
     private val sqlLog by logSqlOption()
     private val wipe by wipeDatabaseOption()
     val cryptoSystem = Secp256K1CryptoSystem()
+    private val service by option(help = "Wait for resources to be availabe before starting (Useful for CI)").flag()
 
     override fun run() {
         startPostchainNode()
     }
 
     private fun startPostchainNode() {
+        if (service) {
+            waitDb(100, 5, nodeConfig)
+            waitForFile(100, 5, settings.projectFolder)
+        }
+
         val chainsToStart = mutableListOf<Long>()
         val environment = RellPostchainModuleEnvironment(
                 sqlLog = sqlLog
@@ -79,6 +89,14 @@ class StartCommand : AbstractNodeCommand(help = """
             chainsToStart.forEach {
                 node.startBlockchain(it)
             }
+        }
+    }
+
+    private fun waitForFile(retryTimes: Int, retryInterval: Long, file: File) {
+        if (!file.exists()) {
+           if (retryTimes <= 0) throw PrintMessage("File ${file.absolutePath} does not exist")
+            Thread.sleep(retryInterval)
+            waitForFile(retryTimes - 1, retryInterval, file)
         }
     }
 }
