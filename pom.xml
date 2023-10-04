@@ -20,7 +20,7 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.10.5</codegen.version>
-        <postchain.version>3.13.5</postchain.version>
+        <postchain.version>3.13.10</postchain.version>
         <postchain.chromia.version>3.13.5</postchain.chromia.version>
         <postchain.client.version>3.11.5</postchain.client.version>
         <rell.version>0.13.2</rell.version>
@@ -44,6 +44,11 @@
     </properties>
 
     <repositories>
+        <repository>
+            <id>chromia-parent</id>
+            <name>Chromia parent GitLab Registry</name>
+            <url>https://gitlab.com/api/v4/projects/50818999/packages/maven</url>
+        </repository>
         <repository>
             <id>postchain-chromia</id>
             <url>https://gitlab.com/api/v4/projects/33481005/packages/maven</url>
