@@ -55,8 +55,8 @@ class DeployUpdateCommand(
     }
 
     private fun verifyConfiguration(chain: ChromiaCompileResult, client: PostchainClient) {
-        val blockchainRid = deployModel.chains[chain.name] ?:
-            throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
+        val blockchainRid = deployModel.chains[chain.name]
+                ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
         val compiledConfig = GtvMLEncoder.encodeXMLGtv(chain.config)
         val httpHandler = httpHandlerFactory(client.config)
@@ -67,17 +67,19 @@ class DeployUpdateCommand(
                 .body(compiledConfig)
 
         val result = httpHandler(request)
-        when(result.status) {
+        when (result.status) {
             Status.OK -> {
-                echo("Blockchain ${chain.name} vas successfully verified against deployed chain on network $target")
+                echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
             }
+
             Status.BAD_REQUEST, Status.NOT_FOUND -> {
                 echo(result.body.toString())
                 throw PrintMessage("Blockchain ${chain.name} cannot be updated on network $target. Code is not compatible with deployed version", 1)
             }
+
             else -> {
                 echo("Unexpected status code: ${result.status.code} \nBody: ${result.body} ")
-                throw PrintMessage("Blockchain ${chain.name} cannot be updated on network. Unexpected status code: ${result.status.code} \n" +
+                throw PrintMessage("Blockchain ${chain.name} can not be updated on network. Unexpected status code: ${result.status.code} \n" +
                         "Body: ${result.body}")
             }
         }
