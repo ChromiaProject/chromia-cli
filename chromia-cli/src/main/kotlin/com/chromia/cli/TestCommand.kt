@@ -20,6 +20,9 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -30,9 +33,6 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
@@ -83,7 +83,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         if (testReport) {
-            Files.writeString(testReportPath.resolve("rell-tests.xml"), res.xmlTestReport())
+            Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
         }
         printResults(res)
     }
@@ -104,7 +104,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         if (testReport) {
-            Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport())
+            Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
         }
         printResults(res)
     }
