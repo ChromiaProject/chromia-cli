@@ -3,6 +3,7 @@ package com.chromia.cli.util
 import java.time.Duration
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
+import net.postchain.client.core.TransactionInfo
 import net.postchain.client.core.TransactionResult
 import net.postchain.client.core.TxRid
 import net.postchain.client.transaction.TransactionBuilder
@@ -32,6 +33,9 @@ open class TestClient(
     override fun confirmationProof(txRid: TxRid) = TODO("Not yet implemented")
     override fun currentBlockHeight() = blockHeight()
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
+    override fun getTransactionInfo(txRid: TxRid): TransactionInfo = TODO("Not yet implemented")
+    override fun getTransactionsCount(): Long = TODO("Not yet implemented")
+    override fun getTransactionsInfo(limit: Long, beforeTime: Long, signer: String?): List<TransactionInfo> = TODO("Not yet implemented")
 
     override fun postTransaction(tx: Gtx): TransactionResult =
             testConfiguration.txResultFactory(testConfiguration.txs.size).also { testConfiguration.txs.add(tx) }
