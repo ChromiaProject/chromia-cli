@@ -8,6 +8,10 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.test.assertEquals
 import net.postchain.rell.base.sql.SqlConnectionLogger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,10 +20,6 @@ import org.junit.jupiter.api.io.TempDir
 import org.redundent.kotlin.xml.Node
 import org.redundent.kotlin.xml.TextElement
 import org.redundent.kotlin.xml.parse
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.exists
-import kotlin.test.assertEquals
 
 internal class TestCommandTest {
 
@@ -322,12 +322,16 @@ internal class TestCommandTest {
     @Test
     fun testTestReportSuccess() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
-        val testReport = parse(testDir.resolve("rell-tests.xml").toFile())
+        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
         assertEquals("testsuite", testReport.nodeName)
-        assertEquals("Rell tests", testReport.attributes["name"])
+        assertEquals("rell", testReport.attributes["name"])
+        assertEquals("0", testReport.attributes["failures"])
+        assertEquals("2", testReport.attributes["tests"])
+        assertEquals("3.0", testReport.attributes["version"])
         val case = testReport.children.filterIsInstance<Node>().first()
         assertEquals("testcase", case.nodeName)
-        assertEquals("test:test_a", case.attributes["name"])
+        assertEquals("test_a", case.attributes["name"])
+        assertEquals("test", case.attributes["classname"])
     }
 
     @Test
@@ -345,12 +349,14 @@ internal class TestCommandTest {
             TestCommand().context { terminal = testTerminal }.parse(
                     listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
         }
-        val testReport = parse(testDir.resolve("rell-tests.xml").toFile())
+        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
+        println(testReport)
         assertEquals("testsuite", testReport.nodeName)
-        assertEquals("Rell tests", testReport.attributes["name"])
+        assertEquals("rell", testReport.attributes["name"])
         val case = testReport.children.filterIsInstance<Node>().first()
         assertEquals("testcase", case.nodeName)
-        assertEquals("test:test_b", case.attributes["name"])
+        assertEquals("test_b", case.attributes["name"])
+        assertEquals("test", case.attributes["classname"])
         val failure = case.children.filterIsInstance<Node>().first()
         assertEquals("failure", failure.nodeName)
         assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>", failure.attributes["message"])
