@@ -136,27 +136,4 @@ internal class GenerateClientStubsCommandTest {
         assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
 
     }
-
-    @Test
-    fun unsupportedReturnTypeIsSkipped(@TempDir tempDir: Path) {
-
-        with(File(tempDir.toFile(), "src/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                module;
-                query foo() = (123, x=4);
-            """.trimIndent())
-        }
-        with(File(tempDir.toFile(), "chromia.yml")) {
-            parentFile.mkdirs()
-            writeText("""
-            blockchains:
-                hello:
-                    module: main
-            """.trimIndent())
-        }
-
-        val res = command.parse(listOf("-s", "${tempDir.toAbsolutePath()}/chromia.yml", "--javascript"))
-        assertThat(res.stderr).contains("Skipping [main:foo] Query has unsupported mixed tuple return type: (integer,x:integer)")
-    }
 }

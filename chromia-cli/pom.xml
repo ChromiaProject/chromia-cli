@@ -215,6 +215,10 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-mermaid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
             <artifactId>codegen-javascript</artifactId>
         </dependency>
         <dependency>

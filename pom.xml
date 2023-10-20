@@ -19,7 +19,7 @@
 
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.10.5</codegen.version>
+        <codegen.version>0.11.0</codegen.version>
         <postchain.version>3.13.11</postchain.version>
         <postchain.chromia.version>3.13.10</postchain.chromia.version>
         <postchain.client.version>3.11.5</postchain.client.version>
@@ -176,7 +176,8 @@
                     <version>3.1.2</version>
                     <configuration>
                         <environmentVariables>
-                            <DIST_EXECUTABLE>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin/chr
+                            <DIST_EXECUTABLE>
+                                ${project.build.directory}/${project.artifactId}-${project.version}-dist/bin/chr
                             </DIST_EXECUTABLE>
                             <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
                         </environmentVariables>
@@ -227,7 +228,9 @@
                         <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
                         <suppressionFiles>
-                            <suppressionFile>https://gitlab.com/chromaway/chromia-parent/-/raw/dev/common-dependencies-suppression.xml?ref_type=heads</suppressionFile>
+                            <suppressionFile>
+                                https://gitlab.com/chromaway/chromia-parent/-/raw/dev/common-dependencies-suppression.xml?ref_type=heads
+                            </suppressionFile>
                             <suppressionFile>dependencies-suppression.xml</suppressionFile>
                         </suppressionFiles>
                     </configuration>
@@ -358,6 +361,11 @@
             <dependency>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>codegen-kotlin</artifactId>
+                <version>${codegen.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>codegen-mermaid</artifactId>
                 <version>${codegen.version}</version>
             </dependency>
             <dependency>
