@@ -44,7 +44,7 @@ class DeployUpdateCommandTest {
     @Test
     fun successfulDeployment() {
         val config = TestConfiguration()
-        val res = DeployUpdateCommand({ TestClient(it, {0}, config) }, {  TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
         assertThat(config.txs.size).isEqualTo(1)
         val operations = config.txs.first().gtxBody.operations
         assertThat(operations.map { it.opName }).containsExactly("nop", "propose_configuration")
@@ -55,13 +55,13 @@ class DeployUpdateCommandTest {
     @Test // TODO: Should only work if chain is in system cluster
     fun successfulDeploymentOnHeight() {
         val config = TestConfiguration()
-        val res = DeployUpdateCommand({ TestClient(it, {0},config) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--height", "100"))
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--height", "100"))
         assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
     }
 
     @Test
     fun failDeploymentOnHeightWithMultipleChains() {
-        val res = DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed,hello", "--network", "test", "--height", "100"))
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed,hello", "--network", "test", "--height", "100"))
         assertThat(res.stderr).contains("Error: invalid value for --height: When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify")
     }
 
@@ -77,7 +77,7 @@ class DeployUpdateCommandTest {
         }
 
         val throwable = assertThrows<RellCliBasicException> {
-            DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -85,7 +85,7 @@ class DeployUpdateCommandTest {
     @Test
     fun deploymentMustExistToUpdate() {
         val throwable = assertThrows<PrintMessage> {
-            DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+            DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Blockchain hello cannot be updated since it has not been deployed to network test")
     }
@@ -93,23 +93,23 @@ class DeployUpdateCommandTest {
     @Test
     fun cannotUpdateInvalidConfigChange() {
         val throwable = assertThrows<PrintMessage> {
-            DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler(true) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler(true) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Blockchain deployed cannot be updated on network test. Code is not compatible with deployed version")
     }
 
     @Test
     fun verifyOnly() {
-        val res = DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--verify-only"))
-        assertThat(res.output).contains("Blockchain deployed vas successfully verified against deployed chain on network test")
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--verify-only"))
+        assertThat(res.output).contains("Blockchain deployed was successfully verified against deployed chain on network test")
         assertThat(res.output).doesNotContain("Blockchain deployed was successfully updated on network test")
     }
 
     @Test
     fun skipVerification() {
-        val res = DeployUpdateCommand({ TestClient(it, {0}) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--skip-verification"))
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--skip-verification"))
         assertThat(res.output).contains("Skipping verification of blockchain config")
-        assertThat(res.output).doesNotContain("Blockchain deployed vas successfully verified against deployed chain on network test")
+        assertThat(res.output).doesNotContain("Blockchain deployed was successfully verified against deployed chain on network test")
         assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
     }
 

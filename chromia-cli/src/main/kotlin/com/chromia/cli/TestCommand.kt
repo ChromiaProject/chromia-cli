@@ -127,7 +127,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
-                .databaseUrl(if (useDB) settings.model.databaseUrl else null)
+                .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
                 .stopOnError(settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter(printer)

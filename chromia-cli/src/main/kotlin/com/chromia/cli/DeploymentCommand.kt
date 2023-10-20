@@ -70,6 +70,10 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val chainsToDeploy = chainsToDeploy()
         val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
         val client = createClient()
+        if (client.config.signers.isEmpty()) {
+            throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or in the config.", statusCode = 1)
+        }
+
         beforeDeployment(compiledChains, client)
 
         var failure = false
@@ -79,7 +83,6 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                         .transactionBuilder()
                         .addNop()
                         .apply { addDeploymentOperation(client, client.config, chain) }
-                        .sign()
                         .post()
                 if (result.status == TransactionStatus.REJECTED) {
                     echo("Deployment of blockchain ${chain.name} failed: ${result.rejectReason ?: ""}", err = true)
