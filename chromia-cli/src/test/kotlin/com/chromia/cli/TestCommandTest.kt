@@ -17,8 +17,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import org.redundent.kotlin.xml.CDATAElement
 import org.redundent.kotlin.xml.Node
-import org.redundent.kotlin.xml.TextElement
 import org.redundent.kotlin.xml.parse
 
 internal class TestCommandTest {
@@ -361,7 +361,7 @@ internal class TestCommandTest {
         assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>", failure.attributes["message"])
         assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
                 "\tat test:test_b(test.rell:3)",
-                failure.children.filterIsInstance<TextElement>().first().text.trim())
+                failure.children.filterIsInstance<CDATAElement>().first().text.trim())
     }
 
     @Test
