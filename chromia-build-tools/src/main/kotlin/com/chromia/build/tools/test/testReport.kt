@@ -22,8 +22,7 @@ fun UnitTestRunnerResults.xmlTestReport(name: String): String =
                             attribute("message", message)
                             when (val exception = testCase.res.error) {
                                 is Rt_Exception -> {
-                                    - Rt_Utils.appendStackTrace(message, exception.info.stack)
-                                    //- "<![CDATA[${Rt_Utils.appendStackTrace(message, exception.info.stack)}]>"
+                                    cdata(Rt_Utils.appendStackTrace(message, exception.info.stack))
                                 }
                             }
                         }

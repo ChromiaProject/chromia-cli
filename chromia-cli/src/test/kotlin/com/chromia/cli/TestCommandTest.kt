@@ -350,7 +350,6 @@ internal class TestCommandTest {
                     listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
         }
         val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
-        println(testReport)
         assertEquals("testsuite", testReport.nodeName)
         assertEquals("rell", testReport.attributes["name"])
         val case = testReport.children.filterIsInstance<Node>().first()
