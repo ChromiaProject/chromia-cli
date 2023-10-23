@@ -63,7 +63,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                     }
                     .map { ChromiaCompileResult(it.key, it.value) }
 
-        }.sortedBy { it.name }
+        }
 
         return configsToAdd
     }
