@@ -1,10 +1,8 @@
 package com.chromia.cli
 
-import com.chromia.cli.tools.config.chromiaModelOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
-import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -19,19 +17,17 @@ import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.make_gtv_gson
 import net.postchain.gtv.yaml.GtvYaml
 import java.io.File
-import java.nio.file.Files
+import kotlin.io.path.listDirectoryEntries
 
 //Reference implementation from:
 // https://gitlab.com/chromaway/postchain-eif/-/blob/0.2.10/postchain-eif-core/src/main/kotlin/net/postchain/eif/cli/GenerateEventsConfigCommand.kt?ref_type=tags
 
-class GenerateEventsConfigCommand : CliktCommand(name = "generate-events-config", help = "Generate events config from JSON ABI") {
-    private val settings by chromiaModelOption()
-
+class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-config", help = "Generate solidity events that EIF will listen too") {
     private val abiSource by option("--abi", help = "Path to a JSON ABI file or a directory of JSON ABI files")
             .file(mustExist = true, mustBeReadable = true)
             .required()
 
-    private val eventNames by option("--events", help = "Names of the relevant events. Separate events with ','")
+    private val eventNames by option("--events", help = "Names of the relevant events (Comma separated)", metavar = "TEXT")
             .split(",")
             .required()
 
@@ -39,26 +35,25 @@ class GenerateEventsConfigCommand : CliktCommand(name = "generate-events-config"
             .file()
             .validate {
                 require(it.name.endsWith(fileFormat.name.lowercase()))
-                { "Unexpected format of target file found: ${it.name}, expected type: ${fileFormat.name.lowercase()}. " +
-                        "Change suffix or use --format option" }
+                {
+                    "Unexpected format of target file found: ${it.name}, expected type: ${fileFormat.name.lowercase()}. " +
+                            "Change suffix or use --format option"
+                }
             }
-
 
     private val fileFormat by option("--format", help = "Output file format").enum<FileFormat>()
             .default(FileFormat.YAML)
 
     override fun run() {
-        val targetFile = target ?: File(settings.targetDir, "events.${fileFormat.name.lowercase()}")
+        val targetFile = target ?: File("eif-events.${fileFormat.name.lowercase()}")
         if (targetFile.exists() && YesNoPrompt("Target file: $targetFile already exists. Do you want to overwrite its content?",
                         terminal, default = false
                 ).ask() != true) throw PrintMessage("Generation of events was aborted")
+
         val abiJson = readAbiSource()
-
-
-        echo("Generating events for $eventNames.")
         val eventsConfig = generate(abiJson, eventNames, fileFormat)
 
-        Files.createDirectories(targetFile.toPath().parent)
+        if (!targetFile.absoluteFile.parentFile.exists()) targetFile.absoluteFile.parentFile.mkdirs()
         targetFile.writeText(eventsConfig)
         echo("Events generated at: $targetFile")
     }
@@ -66,8 +61,8 @@ class GenerateEventsConfigCommand : CliktCommand(name = "generate-events-config"
 
     private fun readAbiSource(): String {
         return if (abiSource.isDirectory) {
-            abiSource.listFiles().joinToString(",", "[", "]") {
-                it.readText().trim().trim('[', ']')
+            abiSource.toPath().listDirectoryEntries("*.json").sortedDescending().joinToString(",", "[", "]") {
+                it.toFile().readText().trim().trim('[', ']')
             }
         } else {
             abiSource.readText()
@@ -79,6 +74,12 @@ class GenerateEventsConfigCommand : CliktCommand(name = "generate-events-config"
         val gtv = gson.fromJson(json, Gtv::class.java)
         val events = gtv.asArray()
                 .filter { it.asDict()["type"]!!.asString() == "event" && eventNames.contains(it.asDict()["name"]!!.asString()) }
+
+        val foundEvents = events.map { it.asDict()["name"]!!.asString() }
+        val skippedEvents = eventNames.filter { it !in foundEvents }
+
+        if (skippedEvents.isNotEmpty()) throw PrintMessage("Events: $skippedEvents not found in abi source: ${abiSource.toPath()}. Generation of events was aborted", 1)
+        echo("Generating events for: $foundEvents")
 
         return when (format) {
             FileFormat.XML -> GtvMLEncoder.encodeXMLGtv(gtv(events))
