@@ -7,7 +7,7 @@ import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.RellFunction
-import com.chromia.cli.util.RellObject
+import com.chromia.cli.util.RellStructure
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
@@ -62,8 +62,8 @@ class DeployInspectCommand(
                             if (!module.operations.isNullOrEmpty()) {
                                 tableOfOperations(module.operations)
                             }
-                            if (!module.objects.isNullOrEmpty()) {
-                                tableOfObjects(module.objects)
+                            if (!module.structures.isNullOrEmpty() && module.structures.containsKey("module_args")) {
+                                tableOfModuleArgs(module.structures)
                             }
                         }
             }
@@ -96,14 +96,19 @@ class DeployInspectCommand(
         })
     }
 
-    private fun tableOfObjects(objects: Map<String, RellObject>) {
+    private fun tableOfModuleArgs(objects: Map<String, RellStructure>) {
         echo(defaultTable {
-            header { row("Object", "Attribute", "Type", "Mutable") }
+            header { row("Module Args", "Attribute", "Type", "Mutable") }
             body {
-                objects.forEach { (objectName, objectDef) ->
-                    row(objectName)
-                    objectDef.attributes.forEach { (attribute, attributeType) ->
-                        row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else "No" })
+                objects.filter { it.key == "module_args" }.forEach { (_, objectDef) ->
+                    if (objectDef.isLegacy) {
+                        objectDef.legacyAttributes.forEach { (name, attributeType) ->
+                            row("", name, attributeType.type.toString(), attributeType.mutable.let { if (it) "Yes" else "No" })
+                        }
+                    } else {
+                        objectDef.attributes.forEach { (name, attributeType, mutable) ->
+                            row("", name, attributeType.type.toString(), mutable.let { if (it) "Yes" else "No" })
+                        }
                     }
                 }
             }
