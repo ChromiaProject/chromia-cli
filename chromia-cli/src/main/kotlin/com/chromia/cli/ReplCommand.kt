@@ -14,6 +14,8 @@ import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
+import net.postchain.rell.base.repl.ReplInputChannel
+import net.postchain.rell.base.repl.ReplInputChannelFactory
 
 
 class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
@@ -23,6 +25,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
+    private val command by option("-c", "--command", help = "Execute a single command", metavar = "COMMAND")
 
     override fun run() {
 
@@ -42,6 +45,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .build()
 
         val shellConfig = RellApiRunShell.Config.Builder()
+                .apply { if (!command.isNullOrBlank()) inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!))) }
                 .compileConfig(compileConfig)
                 .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
                 .historyFile(historyFile)
@@ -49,5 +53,12 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .sqlLog(sqlLog)
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
+    }
+
+    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>): ReplInputChannelFactory() {
+        override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
+            val commandIterator = commands.iterator()
+            override fun readLine(prompt: String) = if (commandIterator.hasNext()) commandIterator.next() else null
+        }
     }
 }
