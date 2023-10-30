@@ -8,7 +8,8 @@ class TestDataBuilder {
 
     private var content = """
         module;
-        query hello() = "Hi!";
+        object foo { name = "baloo"; }
+        query hello() = foo.name;
         operation call_op(value: integer) {} 
     """.trimIndent()
     private val sourceFiles = mutableMapOf<String, () -> String>("main.rell" to { content })
