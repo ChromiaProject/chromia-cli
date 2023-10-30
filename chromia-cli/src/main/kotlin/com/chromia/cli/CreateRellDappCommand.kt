@@ -1,21 +1,31 @@
 package com.chromia.cli
 
-import com.chromia.cli.model.RellVersion
+import com.chromia.cli.template.MinimalTemplateFactory
+import com.chromia.cli.template.PlainTemplateFactory
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import java.util.Scanner
 
-class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Generates a template project") {
+class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
+    Generates a template project
+    
+    Template projects:
+    ${"\u0085"}Minimal - Minimal working example including sample queries/operations and tests.
+    ${"\u0085"}Plain - A plain skeleton with empty main and test files.
+""".trimIndent()) {
     private val name by argument(help = "Dapp name").default("hello")
 
     private val baseDir by option("-d", "--base-dir", help = "Directory to generate template project in")
             .file(canBeFile = false)
             .default(File(System.getProperty("user.dir")))
+
+    private val template by option(help = "Project template").enum<TemplateProject>().default(TemplateProject.MINIMAL)
 
     override fun run() {
 
@@ -29,24 +39,14 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = "Ge
                 return
             }
         }
-        File(baseDir, "chromia.yml").writeText(
-                this::class.java.getResource("init/chromia.yml")!!.readText()
-                        .replace("hello", name)
-                        .replace("RELL_VERSION", RellVersion)
-                        .replace("RELL_SCHEMA", "schema_${name.replace("-", "_")}")
-        )
-        val sourceDir = File(baseDir, "src")
-        sourceDir.mkdir()
-        File(sourceDir, "main.rell").writeText(
-                this::class.java.getResource("init/src/main.rell")!!.readText()
-        )
-        val testDir = File(sourceDir, "test")
-        testDir.mkdir()
-        File(testDir, "arithmetic_test.rell").writeText(
-                this::class.java.getResource("init/src/test/arithmetic_test.rell")!!.readText()
-        )
-        File(testDir, "data_test.rell").writeText(
-                this::class.java.getResource("init/src/test/data_test.rell")!!.readText()
-        )
+        val factory = when (template) {
+            TemplateProject.PLAIN -> PlainTemplateFactory()
+            TemplateProject.MINIMAL -> MinimalTemplateFactory()
+        }
+        factory.createProjectFromTemplate(name, baseDir)
+    }
+    private enum class TemplateProject {
+        PLAIN,
+        MINIMAL,
     }
 }
