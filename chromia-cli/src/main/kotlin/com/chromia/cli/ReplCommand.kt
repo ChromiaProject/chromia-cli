@@ -63,6 +63,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .outputChannelFactory(CliktOutputChannelFactory())
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
+                .printIntroMessage(!command.isNullOrBlank())
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
@@ -77,6 +78,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private inner class CliktOutputChannelFactory: ReplOutputChannelFactory() {
         private var valueFormat = ReplValueFormat.ONE_ITEM_PER_LINE
         override fun createOutputChannel() = object: ReplOutputChannel {
+            override fun printInfo(msg: String) = echo(msg)
             override fun printCompilerError(code: String, msg: String) = echo(msg, err = true)
             override fun printCompilerMessage(message: C_Message) = echo(message)
             override fun printControl(code: String, msg: String) = echo(msg)
