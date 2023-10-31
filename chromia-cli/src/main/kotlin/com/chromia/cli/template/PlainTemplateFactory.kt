@@ -5,11 +5,12 @@ import java.io.File
 
 class PlainTemplateFactory: TemplateFactory {
     override fun createProjectFromTemplate(projectName: String, targetDir: File) {
+        val projectFileName = projectName.replace("-", "_")
         File(targetDir, "chromia.yml").writeText(
                 this::class.java.getResource("plain/chromia.yml")!!.readText()
                         .replace("hello", projectName)
                         .replace("RELL_VERSION", RellVersion)
-                        .replace("RELL_SCHEMA", "schema_${projectName.replace("-", "_")}")
+                        .replace("RELL_SCHEMA", "schema_$projectFileName")
         )
         val sourceDir = File(targetDir, "src")
         sourceDir.mkdir()
@@ -18,7 +19,7 @@ class PlainTemplateFactory: TemplateFactory {
         )
         val testDir = File(sourceDir, "test")
         testDir.mkdir()
-        File(testDir, "${projectName}_test.rell").writeText(
+        File(testDir, "${projectFileName}_test.rell").writeText(
                 this::class.java.getResource("plain/src/test/plain_test.rell")!!.readText()
         )
     }
