@@ -11,9 +11,20 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import com.google.common.base.Throwables
 import java.io.File
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
+import net.postchain.rell.base.compiler.base.utils.C_Message
+import net.postchain.rell.base.repl.ReplInputChannel
+import net.postchain.rell.base.repl.ReplInputChannelFactory
+import net.postchain.rell.base.repl.ReplOutputChannel
+import net.postchain.rell.base.repl.ReplOutputChannelFactory
+import net.postchain.rell.base.repl.ReplValueFormat
+import net.postchain.rell.base.repl.ReplValueFormatter
+import net.postchain.rell.base.runtime.Rt_Exception
+import net.postchain.rell.base.runtime.Rt_Value
+import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 
 class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
@@ -23,6 +34,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
+    private val command by option("-c", "--command", help = "Execute a single command", metavar = "COMMAND")
 
     override fun run() {
 
@@ -42,12 +54,38 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .build()
 
         val shellConfig = RellApiRunShell.Config.Builder()
+                .apply { if (!command.isNullOrBlank()) inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!))) }
                 .compileConfig(compileConfig)
                 .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
                 .historyFile(historyFile)
+                .outPrinter(::echo)
+                .logPrinter(::echo)
+                .outputChannelFactory(CliktOutputChannelFactory())
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
+    }
+
+    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>): ReplInputChannelFactory() {
+        override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
+            val commandIterator = commands.iterator()
+            override fun readLine(prompt: String) = if (commandIterator.hasNext()) commandIterator.next() else null
+        }
+    }
+
+    private inner class CliktOutputChannelFactory: ReplOutputChannelFactory() {
+        private var valueFormat = ReplValueFormat.ONE_ITEM_PER_LINE
+        override fun createOutputChannel() = object: ReplOutputChannel {
+            override fun printCompilerError(code: String, msg: String) = echo(msg, err = true)
+            override fun printCompilerMessage(message: C_Message) = echo(message)
+            override fun printControl(code: String, msg: String) = echo(msg)
+            override fun printPlatformRuntimeError(e: Throwable) = echo("Run-time error: " + Throwables.getStackTraceAsString(e).trim())
+            override fun printRuntimeError(e: Rt_Exception) = echo(Rt_Utils.appendStackTrace("Run-time error: ${e.message}", e.info.stack))
+            override fun printValue(value: Rt_Value) { ReplValueFormatter.format(value, valueFormat)?.let { echo(it) } }
+            override fun setValueFormat(format: ReplValueFormat) {
+                valueFormat = format
+            }
+        }
     }
 }
