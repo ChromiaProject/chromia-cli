@@ -24,7 +24,7 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     private val settings by optionalChromiaModelConfigOption()
     private val secret by secretOption()
-    private val explicitTarget by LocalDeploymentOption()
+    private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
