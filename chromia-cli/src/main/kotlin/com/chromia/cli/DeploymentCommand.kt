@@ -38,7 +38,8 @@ fun deployCommands() = DeploymentCommand().subcommands(
         DeployInspectCommand(),
         DeployUpdateCommand(),
         DeployResumeCommand(),
-        DeployPauseCommand()
+        DeployPauseCommand(),
+        DeployRemoveCommand()
 )
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
