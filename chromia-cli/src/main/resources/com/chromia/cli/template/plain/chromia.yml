@@ -1,5 +1,5 @@
 blockchains:
-  hello:
+  PROJECT_NAME:
     module: main
 compile:
   rellVersion: RELL_VERSION

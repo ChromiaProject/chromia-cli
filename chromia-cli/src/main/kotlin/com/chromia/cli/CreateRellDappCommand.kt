@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.cli.template.MinimalTemplateFactory
+import com.chromia.cli.template.PlainMultiTemplateFactory
 import com.chromia.cli.template.PlainTemplateFactory
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -18,6 +19,7 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
     Template projects:
     ${"\u0085"}Minimal - Minimal working example including sample queries/operations and tests.
     ${"\u0085"}Plain - A plain skeleton with empty main and test files.
+    ${"\u0085"}Plain-Multi - A plain skeleton with empty main and test files using multiple modules.
 """.trimIndent()) {
     private val name by argument(help = "Dapp name").default("hello")
 
@@ -25,7 +27,9 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
             .file(canBeFile = false)
             .default(File(System.getProperty("user.dir")))
 
-    private val template by option(help = "Project template").enum<TemplateProject>().default(TemplateProject.MINIMAL)
+    private val template by option(help = "Project template")
+            .enum<TemplateProject> { it.name.lowercase().replace("_", "-") }
+            .default(TemplateProject.MINIMAL)
 
     override fun run() {
 
@@ -41,12 +45,15 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
         }
         val factory = when (template) {
             TemplateProject.PLAIN -> PlainTemplateFactory()
+            TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory()
             TemplateProject.MINIMAL -> MinimalTemplateFactory()
         }
-        factory.createProjectFromTemplate(name, baseDir)
+        factory.createProjectFromTemplate(baseDir, name)
     }
+
     private enum class TemplateProject {
         PLAIN,
+        PLAIN_MULTI,
         MINIMAL,
     }
 }
