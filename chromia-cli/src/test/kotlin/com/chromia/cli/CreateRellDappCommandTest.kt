@@ -39,6 +39,21 @@ internal class CreateRellDappCommandTest {
     }
 
     @Test
+    fun plainMultiTemplate() {
+        CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain-multi my-dapp")
+        val configYmlFile = File(dir, "chromia.yml")
+        assertTrue(configYmlFile.exists())
+        assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
+        assertTrue(File(dir, "src/main.rell").exists())
+        assertTrue(File(dir, "src/development.rell").exists())
+        assertTrue(File(dir, "src/my_dapp_test/blockchain_my_dapp_test.rell").exists())
+        BuildCommand().test("-s ${configYmlFile.absolutePath}")
+        assertTrue(File(dir, "build/my-dapp.xml").exists())
+        TestCommand().test("-s ${configYmlFile.absolutePath}")
+        TestCommand().test("-s ${configYmlFile.absolutePath} -bc my-dapp")
+    }
+
+    @Test
     fun minimalTemplateCreatesNewFilesWithCustomName() {
         CreateRellDappCommand().test("-d ${dir!!.absolutePath} new-name")
         val configYmlFile = File(dir, "chromia.yml")
