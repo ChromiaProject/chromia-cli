@@ -3,6 +3,7 @@ package com.chromia.cli
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
 import com.chromia.cli.util.InitExtension
 import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.Test
@@ -45,5 +46,12 @@ class ReplCommandTest {
         val res = ReplCommand().test("-c '5+5'")
         assertThat(res.output).doesNotContain("Rell")
         assertThat(res.output).contains("10")
+    }
+
+    @Test
+    fun commandLineInputStatusCode() {
+        val res = ReplCommand().test("-c 'non_existing_entity @ {}'")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).contains("Unknown name: 'non_existing_entity'")
     }
 }
