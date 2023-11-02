@@ -20,7 +20,7 @@ import net.postchain.gtv.parse.GtvParser
 class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
 
     private val settings by optionalChromiaModelConfigOption()
-    private val explicitTarget by LocalDeploymentOption()
+    private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
 
     private val queryName by argument(help = "name of the query to make.")
