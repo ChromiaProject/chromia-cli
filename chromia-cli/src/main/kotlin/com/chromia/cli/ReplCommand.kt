@@ -7,6 +7,7 @@ import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.module
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -60,7 +61,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .historyFile(historyFile)
                 .outPrinter(::echo)
                 .logPrinter(::echo)
-                .outputChannelFactory(CliktOutputChannelFactory())
+                .outputChannelFactory(CliktOutputChannelFactory(!command.isNullOrBlank()))
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
                 .printIntroMessage(command.isNullOrBlank())
@@ -75,15 +76,23 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
         }
     }
 
-    private inner class CliktOutputChannelFactory: ReplOutputChannelFactory() {
+    private inner class CliktOutputChannelFactory(private val failOnError: Boolean): ReplOutputChannelFactory() {
         private var valueFormat = ReplValueFormat.ONE_ITEM_PER_LINE
         override fun createOutputChannel() = object: ReplOutputChannel {
             override fun printInfo(msg: String) = echo(msg)
-            override fun printCompilerError(code: String, msg: String) = echo(msg, err = true)
-            override fun printCompilerMessage(message: C_Message) = echo(message)
+            override fun printCompilerError(code: String, msg: String) = if (failOnError) throw PrintMessage(msg, 1) else echo(msg, err = true)
+            override fun printCompilerMessage(message: C_Message) = if (failOnError) throw PrintMessage(message.toString(), 1) else echo(message)
             override fun printControl(code: String, msg: String) = echo(msg)
-            override fun printPlatformRuntimeError(e: Throwable) = echo("Run-time error: " + Throwables.getStackTraceAsString(e).trim())
-            override fun printRuntimeError(e: Rt_Exception) = echo(Rt_Utils.appendStackTrace("Run-time error: ${e.message}", e.info.stack))
+            override fun printPlatformRuntimeError(e: Throwable)  {
+                val message = "Run-time error: " + Throwables.getStackTraceAsString(e).trim()
+                if (failOnError) throw PrintMessage(message, 1)
+                echo(message)
+            }
+            override fun printRuntimeError(e: Rt_Exception) {
+                val message = Rt_Utils.appendStackTrace("Run-time error: ${e.message}", e.info.stack)
+                if (failOnError) throw PrintMessage(message, 1)
+                echo(message)
+            }
             override fun printValue(value: Rt_Value) { ReplValueFormatter.format(value, valueFormat)?.let { echo(it) } }
             override fun setValueFormat(format: ReplValueFormat) {
                 valueFormat = format
