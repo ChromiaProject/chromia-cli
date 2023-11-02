@@ -4,11 +4,11 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 class DeployActionCommandTest {
 
@@ -59,5 +59,13 @@ class DeployActionCommandTest {
     fun parseResumeAttributeNetworkMissing() {
         val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
         assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
+    }
+
+    @Test
+    fun cannotRemoveNotDeployedBlockchain() {
+        val blockchain = "hello"
+        val network = "test"
+        val res = DeployRemoveCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", blockchain, "--network", network))
+        assertThat(res.stdout).contains("The action \"remove\" of Blockchain $blockchain cannot be done since it has not been deployed to network $network. Specify target blockchain rid in chromia.yml")
     }
 }
