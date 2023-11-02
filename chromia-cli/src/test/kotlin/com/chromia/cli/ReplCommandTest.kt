@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import com.chromia.cli.util.InitExtension
 import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.Test
@@ -42,6 +43,7 @@ class ReplCommandTest {
     @Test
     fun commandLineInput() {
         val res = ReplCommand().test("-c '5+5'")
+        assertThat(res.output).doesNotContain("Rell")
         assertThat(res.output).contains("10")
     }
 }

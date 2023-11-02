@@ -63,7 +63,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
                 .outputChannelFactory(CliktOutputChannelFactory())
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
-                .printIntroMessage(!command.isNullOrBlank())
+                .printIntroMessage(command.isNullOrBlank())
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
