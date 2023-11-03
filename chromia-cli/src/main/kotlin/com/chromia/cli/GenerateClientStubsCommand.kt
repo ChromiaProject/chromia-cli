@@ -68,7 +68,9 @@ class KotlinOption : KotlinCodeGeneratorConfig, LanguageOption("Kotlin") {
 
 class MermaidOption : MermaidCodeGeneratorConfig, LanguageOption("Mermaid") {
     private val mdx by option(help = "Surround with mdx tags").flag()
+    private val er by option("--entity-relation", help = "Presented as entity relation diagram or class diagram").flag("--class-diagram", default = true)
     override fun mdx() = mdx
+    override fun erDiagram() = er
     override fun factory() = MermaidDocumentFactory(this)
 }
 
