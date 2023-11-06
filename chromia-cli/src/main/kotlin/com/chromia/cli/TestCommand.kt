@@ -7,22 +7,23 @@ import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
+import com.chromia.cli.util.ConfigureLog4j
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -33,6 +34,9 @@ import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
@@ -50,8 +54,13 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
             .flag()
     private val testReportDir by option(help = "JUnit XML test reports directory (defaults to \"build/reports\")")
             .file(canBeDir = true, canBeFile = false)
+    private val logLevel by option()
+            .choice("trace", "debug", "info", "warn", "error", "off", "quite", metavar = "LOG_LEVEL")
+            .default("info")
+            .help("Set the log level")
 
     override fun run() {
+        ConfigureLog4j().configureLogLevel(logLevel)
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
         if (testReport) {
             testReportPath.mkdirs()

@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.build.tools.compile.withSigner
+import com.chromia.cli.util.ConfigureLog4j
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.wipeDatabaseOption
 import com.github.ajalt.clikt.core.PrintMessage
@@ -31,7 +32,7 @@ class StartCommand : AbstractNodeCommand(help = """
     val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
-        configureLogLevel()
+        ConfigureLog4j().configureLogLevel(logLevel)
         startPostchainNode()
     }
 

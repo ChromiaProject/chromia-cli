@@ -1,6 +1,7 @@
 package com.chromia.cli
 
 import com.chromia.build.tools.compile.withSigner
+import com.chromia.cli.util.ConfigureLog4j
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -28,7 +29,7 @@ class UpdateCommand(
     val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
-        configureLogLevel()
+        ConfigureLog4j().configureLogLevel(logLevel)
         val storage = StorageBuilder.buildStorage(nodeConfig, wipeDatabase = false)
 
         extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
