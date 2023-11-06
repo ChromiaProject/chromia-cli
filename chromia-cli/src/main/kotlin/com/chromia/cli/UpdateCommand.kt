@@ -28,6 +28,7 @@ class UpdateCommand(
     val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
+        configureLogLevel()
         val storage = StorageBuilder.buildStorage(nodeConfig, wipeDatabase = false)
 
         extractConfigs().toList().forEachIndexed { index, (_, gtv) ->

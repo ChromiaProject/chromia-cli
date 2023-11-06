@@ -31,6 +31,7 @@ class StartCommand : AbstractNodeCommand(help = """
     val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
+        configureLogLevel()
         startPostchainNode()
     }
 
