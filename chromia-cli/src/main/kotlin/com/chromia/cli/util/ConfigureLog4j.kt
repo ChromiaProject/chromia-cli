@@ -12,8 +12,6 @@ class ConfigureLog4j {
     fun configureLogLevel(logLevel: String) {
         val context = LoggerContext.getContext(false)
         val config = context.configuration
-        // TODO: figure out do we need to set log level on root logger or postchain only should be enough
-        // val rootConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME)
         val postchainConfig = config.getLoggerConfig("net.postchain")
 
         val level = Level.toLevel(logLevel, Level.INFO)
