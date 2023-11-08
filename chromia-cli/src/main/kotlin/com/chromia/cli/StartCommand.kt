@@ -40,12 +40,14 @@ class StartCommand : AbstractNodeCommand(help = """
                 sqlLog = sqlLog
         )
         RellPostchainModuleEnvironment.set(environment) {
+            echo("Starting node with pubkey: ${nodeConfig.pubKey}")
             val node = PostchainNode(nodeConfig, wipeDb = wipe)
 
-            extractConfigs().toList().forEachIndexed { index, (_, gtv) ->
+            extractConfigs().toList().forEachIndexed { index, (name, gtv) ->
                 val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
                 val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, ::sha256Digest)
                 val iid = index.toLong()
+                echo("Starting blockchain $name with brid $brid on id $iid")
                 chainsToStart.add(iid)
                 withLoggingContext(
                         NODE_PUBKEY_TAG to nodeConfig.pubKey,
