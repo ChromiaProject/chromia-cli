@@ -2,9 +2,6 @@ package com.chromia.build.tools.lib
 
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.RellLibraryModel
-import java.io.File
-import java.nio.file.Files
-import kotlin.io.path.notExists
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory
@@ -12,6 +9,10 @@ import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtv.merkleHash
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
+import java.io.File
+import java.nio.file.Files
+import kotlin.io.path.notExists
+import kotlin.streams.toList
 
 class LibraryVerifyer(private val env: RellCliEnv) {
     val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
