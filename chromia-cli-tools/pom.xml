@@ -55,6 +55,10 @@
             <artifactId>postchain-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-dilithium</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.chromia.cli</groupId>
             <artifactId>chromia-build-tools</artifactId>
         </dependency>

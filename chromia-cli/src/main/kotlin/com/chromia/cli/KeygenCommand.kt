@@ -12,6 +12,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.toHex
 import net.postchain.crypto.*
+import net.postchain.crypto.pqc.dilithium.DilithiumCryptoSystem
 import org.bitcoinj.crypto.MnemonicCode
 import java.io.File
 import java.io.FileOutputStream
