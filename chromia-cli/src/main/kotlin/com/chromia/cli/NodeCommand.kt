@@ -47,11 +47,12 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected fun extractConfigs(): Collection<ChromiaCompileResult> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val blockchainsToCompile = settings.model.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
-            ChromiaCompileApi.compile(CliktCliEnv(this), settings.model, settings.projectFolder, blockchainsToCompile)
+            ChromiaCompileApi.compile(CliktCliEnv(this), settings.model, settings.projectFolder, blockchainsToCompile, filterModules = true)
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
+                        //TODO remove GTV is no longer supported
                         if (it.extension == "gtv") {
                             it.inputStream().use { inputStream ->
                                 it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)
@@ -62,7 +63,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                     }
                     .map { ChromiaCompileResult(it.key, it.value) }
 
-        }.sortedBy { it.name }
+        }
 
         return configsToAdd
     }

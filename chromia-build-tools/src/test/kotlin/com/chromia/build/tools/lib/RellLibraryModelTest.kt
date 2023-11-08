@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 
-class RellLibraryModelTest {
+internal class RellLibraryModelTest {
     private lateinit var settingsFile: File
     private var fileMap = mutableMapOf<String, List<File>>()
 
@@ -34,7 +34,7 @@ class RellLibraryModelTest {
 
     @Test
     fun singleLibraryTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -49,7 +49,7 @@ class RellLibraryModelTest {
 
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo"), createFile(dir.toFile(), "lib/bar", "//Bar"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })
@@ -61,7 +61,7 @@ class RellLibraryModelTest {
 
     @Test
     fun unrecognizedFieldInRellLibraryModelTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -81,7 +81,7 @@ class RellLibraryModelTest {
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
     @Test
     fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -107,7 +107,7 @@ class RellLibraryModelTest {
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
         val fileMap = mutableMapOf<String, List<File>>()
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -127,7 +127,7 @@ class RellLibraryModelTest {
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
         fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })
@@ -139,7 +139,7 @@ class RellLibraryModelTest {
     @Test
     fun skipLibraryValidationTest(@TempDir dir: Path) {
         val fileMap = mutableMapOf<String, List<File>>()
-        settingsFile = File(dir.toFile(), "config.yml").apply {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   bc1:
@@ -155,7 +155,7 @@ class RellLibraryModelTest {
         val settings = parseModel(settingsFile)
         fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
 
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv() {
+        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
             override fun error(msg: String) = println(msg)
             override fun print(msg: String) = println(msg)
         })

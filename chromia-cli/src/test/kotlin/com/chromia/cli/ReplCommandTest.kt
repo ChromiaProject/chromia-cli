@@ -2,47 +2,56 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.ReplCommand
-import com.chromia.cli.util.CommandExtension
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.TerminalRecorder
+import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
+import com.chromia.cli.util.InitExtension
+import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
-import kotlin.test.assertFailsWith
 
 class ReplCommandTest {
-
-    private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(logger)
-
+    @JvmField
     @RegisterExtension
-    private val command = CommandExtension(ReplCommand().context { terminal = testTerminal })
+    val command = InitExtension()
     val dir get() = command.dir
 
     @Test
     fun testCanNotConnectToDb() {
         EnvironmentVariables("CHR_DB_URL", "jdbc:postgresql://invalidhost/postgres").execute {
-            assertFailsWith<PSQLException> {
-                command.parse(listOf("--module=main", "--use-db"))
+            assertThrows<PSQLException> {
+                ReplCommand().test("--module=main --use-db -s ${dir.absolutePath}/chromia.yml")
             }
         }
     }
 
     @Test
     fun testCanNotFindModuleWithoutSettings() {
-        val res = command.emptyParse(listOf("--module=main"))
+        val res = ReplCommand().test("--module=main")
         assertThat(res.output).contains("To find the module \"main\", specifying the settings file is required")
     }
 
     @Test
     fun testCanNotConnectToDbWithoutSettings() {
         EnvironmentVariables("CHR_DB_URL", "").execute {
-            val res = command.emptyParse(listOf("--use-db"))
+            val res = ReplCommand().test("--use-db")
             assertThat(res.stderr).contains("To correctly connect to the database, specifying the settings file is required")
         }
     }
 
+    @Test
+    fun commandLineInput() {
+        val res = ReplCommand().test("-c '5+5'")
+        assertThat(res.output).doesNotContain("Rell")
+        assertThat(res.output).contains("10")
+    }
+
+    @Test
+    fun commandLineInputStatusCode() {
+        val res = ReplCommand().test("-c 'non_existing_entity @ {}'")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).contains("Unknown name: 'non_existing_entity'")
+    }
 }

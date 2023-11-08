@@ -1,0 +1,28 @@
+package com.chromia.cli.template
+
+import com.chromia.cli.model.RellVersion
+import java.io.File
+
+abstract class AbstractTemplateFactory(private val folderName: String): TemplateFactory {
+
+    protected fun snakeCaseName(string: String) = string.replace("-", "_")
+
+    protected inner class FileBuilder(private val targetDir: File) {
+        fun createFile(sourceName: String, targetName: String = sourceName, transform: (String) -> String = { it }) {
+            with (File(targetDir, targetName)) {
+                if (!parentFile.exists()) parentFile.mkdirs()
+                val fileContent = AbstractTemplateFactory::class.java.getResource("$folderName/$sourceName")!!.readText()
+                writeText(transform(fileContent))
+            }
+        }
+
+        fun createChromiaConfig(projectName: String, transform: (String) -> String = { it }) {
+            createFile("chromia.yml") {
+                it.replace("PROJECT_NAME", projectName)
+                        .replace("RELL_VERSION", RellVersion)
+                        .replace("RELL_SCHEMA", "schema_${snakeCaseName(projectName)}")
+                        .let(transform)
+            }
+        }
+    }
+}

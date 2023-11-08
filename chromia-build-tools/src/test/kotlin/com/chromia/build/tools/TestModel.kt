@@ -1,6 +1,5 @@
-package com.chromia.cli.it
+package com.chromia.build.tools
 
-import com.google.gson.JsonElement
 import net.postchain.api.rest.BlockHeight
 import net.postchain.api.rest.TransactionsCount
 import net.postchain.api.rest.controller.Model
@@ -11,15 +10,13 @@ import net.postchain.common.BlockchainRid
 import net.postchain.core.BlockRid
 import net.postchain.core.TransactionInfoExt
 import net.postchain.core.block.BlockDetail
+import net.postchain.crypto.PubKey
 import net.postchain.ebft.rest.contract.StateNodeStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtx.GtxQuery
 
-class TestModelImpl(override val blockchainRid: BlockchainRid, override val chainIID: Long = 0) : Model {
+class TestModel(override val blockchainRid: BlockchainRid, override val chainIID: Long = 0, override val queryCacheTtlSeconds: Long = 0) : Model {
     override var live: Boolean = true
-    override fun debugQuery(subQuery: String?): JsonElement {
-        TODO("Not yet implemented")
-    }
 
     override fun getBlock(height: Long, txHashesOnly: Boolean): BlockDetail? {
         TODO("Not yet implemented")
@@ -66,6 +63,10 @@ class TestModelImpl(override val blockchainRid: BlockchainRid, override val chai
     }
 
     override fun getTransactionsInfo(beforeTime: Long, limit: Int): List<TransactionInfoExt> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getTransactionsInfoBySigner(beforeTime: Long, limit: Int, signer: PubKey): List<TransactionInfoExt> {
         TODO("Not yet implemented")
     }
 

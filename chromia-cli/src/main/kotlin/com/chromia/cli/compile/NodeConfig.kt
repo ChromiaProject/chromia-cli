@@ -10,7 +10,7 @@ import java.io.File
 
 object NodeConfig {
      fun getNodeConfig(nodeConfigFile: File): AppConfig {
-         return AppConfig.fromPropertiesFile(nodeConfigFile.absolutePath)
+         return AppConfig.fromPropertiesFile(File(nodeConfigFile.absolutePath))
      }
 
      fun getDefaultNodeConfig(config: ChromiaModel, overrides: Map<String, Any> = mapOf()): AppConfig {
@@ -31,6 +31,6 @@ object NodeConfig {
              setProperty("fastsync.exit_delay", 0)
              overrides.forEach { setProperty(it.key, it.value) }
          }
-         return AppConfig(inMemoryConfig, true)
+         return AppConfig(inMemoryConfig)
      }
  }

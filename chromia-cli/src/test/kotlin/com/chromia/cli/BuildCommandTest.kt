@@ -117,7 +117,7 @@ internal class BuildCommandTest {
 
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/${InstallDirTarget.SOURCE.target}/bar"), "")
         assertFailsWith<ValidationException> {
-            BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/config.yml")))
+            BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml")))
         }
         assertThat(logger.stderr()).all {
             contains("Should be: 11")
@@ -127,7 +127,7 @@ internal class BuildCommandTest {
 
     @Test
     fun whiteListedGtxModules() {
-        File(dir, "config.yml").writeText("""
+        File(dir, "chromia.yml").writeText("""
             blockchains:
               hello:
                 module: main

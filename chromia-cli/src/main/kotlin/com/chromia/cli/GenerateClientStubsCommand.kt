@@ -1,22 +1,29 @@
 package com.chromia.cli
 
 import com.chromia.cli.tools.config.chromiaModelOption
-import com.chromia.cli.util.LanguageSupport
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.groups.required
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import net.postchain.rell.codegen.CodeGenerator
+import net.postchain.rell.codegen.CodeGeneratorConfig
+import net.postchain.rell.codegen.MermaidCodeGeneratorConfig
+import net.postchain.rell.codegen.MermaidDocumentFactory
 import net.postchain.rell.codegen.document.DocumentFactory
 import net.postchain.rell.codegen.document.DocumentSaver
+import net.postchain.rell.codegen.javascript.JavascriptCodeGeneratorConfig
 import net.postchain.rell.codegen.javascript.JavascriptDocumentFactory
+import net.postchain.rell.codegen.kotlin.KotlinCodeGeneratorConfig
 import net.postchain.rell.codegen.kotlin.KotlinDocumentFactory
+import net.postchain.rell.codegen.typescript.TypescriptCodeGeneratorConfig
 import net.postchain.rell.codegen.typescript.TypescriptDocumentFactory
 
 class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", help = "Generates client code for a rell dapp") {
@@ -25,43 +32,52 @@ class GenerateClientStubsCommand : CliktCommand(name = "generate-client-stubs", 
     private val moduleName by option("--module",
             help = "Explicitly set which modules to generate code for. Separate modules with ','").split(",")
 
-    private val languageOption: LanguageOption by option(help = "Language to generate for")
-            .groupSwitch(
-                    KotlinOption().createOption(),
-                    TypescriptOption().createOption(),
-                    JavascriptOption().createOption()
-            ).required()
+    private val language by option(help = "Langage to generate for").groupSwitch(
+            "--kotlin" to KotlinOption(),
+            "--mermaid" to MermaidOption(),
+            "--typescript" to TypescriptOption(),
+            "--javascript" to JavascriptOption(),
+    ).required()
 
     private val target by option("--target", help = "Directory to generate template project in")
             .file(canBeFile = false)
 
     override fun run() {
-        val generator = CodeGenerator(languageOption.factory())
+        val generator = CodeGenerator(language.factory(), language, CliktCliEnv(this))
         val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
-        val sections = modules.flatMap { generator.createSections(settings.sourceDir, it) }
-        val documents = generator.constructDocuments(sections, true)
+        val sections = modules.flatMap { generator.createSections(settings.sourceDir, listOf(it)) }
+        val documents = generator.constructDocuments(sections)
         val targetFolder = target ?: File(settings.targetDir, "stubs")
         DocumentSaver(targetFolder).saveDocuments(documents)
         echo("Created files in $targetFolder: ${documents.keys}")
     }
 }
 
-sealed class LanguageOption(private val enum: LanguageSupport) : OptionGroup(
-        name = enum.name,
-        help = "Options for language ${enum.name}") {
-    fun createOption() = enum.flag() to this
+sealed class LanguageOption(language: String) : CodeGeneratorConfig, OptionGroup(
+        name = language,
+        help = "Options for language ${language.lowercase()}"
+) {
     abstract fun factory(): DocumentFactory
 }
 
-class KotlinOption : LanguageOption(LanguageSupport.Kotlin) {
+class KotlinOption : KotlinCodeGeneratorConfig, LanguageOption("Kotlin") {
     private val packageName by option("--package", help = "Name of package").required()
-    override fun factory() = KotlinDocumentFactory(packageName)
+    override fun packageName() = packageName
+    override fun factory() = KotlinDocumentFactory(this)
 }
 
-class TypescriptOption : LanguageOption(LanguageSupport.Typescript) {
+class MermaidOption : MermaidCodeGeneratorConfig, LanguageOption("Mermaid") {
+    private val mdx by option(help = "Surround with mdx tags").flag()
+    private val er by option("--entity-relation", help = "Presented as entity relation diagram or class diagram").flag("--class-diagram", default = true)
+    override fun mdx() = mdx
+    override fun erDiagram() = er
+    override fun factory() = MermaidDocumentFactory(this)
+}
+
+class TypescriptOption : TypescriptCodeGeneratorConfig, LanguageOption("Typescript") {
     override fun factory() = TypescriptDocumentFactory()
 }
 
-class JavascriptOption : LanguageOption(LanguageSupport.Javascript) {
+class JavascriptOption : JavascriptCodeGeneratorConfig, LanguageOption("Javascript") {
     override fun factory() = JavascriptDocumentFactory()
 }

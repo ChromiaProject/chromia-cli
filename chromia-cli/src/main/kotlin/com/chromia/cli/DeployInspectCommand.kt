@@ -2,18 +2,19 @@ package com.chromia.cli
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.ConfiguredDeploymentInfoOption
 import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.RellFunction
-import com.chromia.cli.util.RellObject
+import com.chromia.cli.util.RellStructure
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import de.m3y.kformat.Table
-import de.m3y.kformat.table
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.defaultHttpHandler
@@ -30,76 +31,87 @@ class DeployInspectCommand(
 ) {
 
     private val settings by optionalChromiaModelOption()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
+        settings.model ?: ChromiaModel()
+    }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")
     private val option by lazy {
         configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified")
     }
+    private val moduleNamesOnly by option("-l", "--list-modules", help = "List all module names").flag()
 
     override fun run() {
         try {
-            BlockchainAnalyzer(option.blockchainClient()).getAppStructure()
-                    .filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
-                    .filterValues { !it.isEmpty() }
-                    .forEach { (name, module) ->
-                        echo("Module: $name")
-                        if (!module.queries.isNullOrEmpty()) {
-                            tableOfQueries(module.queries)
-                        }
-                        if (!module.operations.isNullOrEmpty()) {
-                            tableOfOperations(module.operations)
-                        }
-                        if (!module.objects.isNullOrEmpty()) {
-                            tableOfObjects(module.objects)
-                        }
+            val appStructure = BlockchainAnalyzer(option.blockchainClient()).getAppStructure()
+            if (moduleNamesOnly) {
+                echo(defaultTable {
+                    header { row("Module") }
+                    body {
+                        appStructure.keys.forEach { row(it) }
                     }
+                })
+            } else {
+                appStructure.filter { moduleName -> moduleOption.isNullOrEmpty() || moduleName.key in moduleOption!! }
+                        .filterValues { !it.isEmpty() }
+                        .forEach { (name, module) ->
+                            echo("Module: $name")
+                            if (!module.queries.isNullOrEmpty()) {
+                                tableOfQueries(module.queries)
+                            }
+                            if (!module.operations.isNullOrEmpty()) {
+                                tableOfOperations(module.operations)
+                            }
+                            if (!module.structures.isNullOrEmpty() && module.structures.containsKey("module_args")) {
+                                tableOfModuleArgs(module.structures)
+                            }
+                        }
+            }
         } catch (e: ClientError) {
             echo("Blockchain not found ${option.brid.toShortHex()}")
         }
     }
 
     private fun tableOfQueries(queries: Map<String, RellFunction>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
+        echo(defaultTable {
+            header { row("Query", "Return type", "Parameters") }
+            body {
+                queries.forEach { (queryName, query) ->
+                    row(queryName,
+                            query.returnType?.toString() ?: "",
+                            query.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
+                }
             }
-            header("Query", "Return type", "Parameters")
-            queries.forEach { (queryName, query) ->
-                row(queryName,
-                        query.returnType?.toString() ?: "",
-                        query.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
-            }
-        }.render().also { echo(it) }
+        })
     }
 
     private fun tableOfOperations(operations: Map<String, RellFunction>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
-            }
-            header("Operation", "Parameters")
-            operations.forEach { (operationName, operation) ->
-                row(operationName, operation.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
-            }
-        }.render().also { echo(it) }
-    }
-
-    private fun tableOfObjects(objects: Map<String, RellObject>) {
-        table {
-            hints {
-                defaultAlignment = Table.Hints.Alignment.LEFT
-                borderStyle = Table.BorderStyle.SINGLE_LINE
-            }
-            header("Object", "Attribute", "Type", "Mutable")
-            objects.forEach { (objectName, objectDef) ->
-                row(objectName)
-                objectDef.attributes.forEach { (attribute, attributeType) ->
-                    row("", attribute, attributeType.type.toString(), attributeType.mutable.let { if (it == 1L) "Yes" else "No" })
+        echo(defaultTable {
+            header { row("Operation", "Parameters") }
+            body {
+                operations.forEach { (operationName, operation) ->
+                    row(operationName, operation.parameters.joinToString(", ") { "${it.name}: ${it.type}" })
                 }
             }
-        }.render().also { echo(it) }
+        })
+    }
+
+    private fun tableOfModuleArgs(objects: Map<String, RellStructure>) {
+        echo(defaultTable {
+            header { row("Module Args", "Attribute", "Type", "Mutable") }
+            body {
+                objects.filter { it.key == "module_args" }.forEach { (_, objectDef) ->
+                    if (objectDef.isLegacy) {
+                        objectDef.legacyAttributes.forEach { (name, attributeType) ->
+                            row("", name, attributeType.type.toString(), attributeType.mutable.let { if (it) "Yes" else "No" })
+                        }
+                    } else {
+                        objectDef.attributes.forEach { (name, attributeType, mutable) ->
+                            row("", name, attributeType.type.toString(), mutable.let { if (it) "Yes" else "No" })
+                        }
+                    }
+                }
+            }
+        })
     }
 }

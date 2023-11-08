@@ -5,23 +5,31 @@ import com.chromia.cli.tools.formatter.chromiaTheme
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
+import mu.KotlinLogging
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.sql.SQLException
 import kotlin.system.exitProcess
-import mu.KotlinLogging
-import net.postchain.rell.api.base.RellCliException
-import net.postchain.rell.api.base.RellCliExitException
 
 open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
 
     init {
         completionOption()
+        val detectedTerminal = Terminal()
         context {
-            terminal = Terminal(theme = chromiaTheme)
+            terminal = Terminal(theme = when (detectedTerminal.info.ansiLevel) {
+                AnsiLevel.NONE -> Theme.Plain
+                AnsiLevel.ANSI16 -> Theme.Plain
+                else -> chromiaTheme
+            }
+            )
             helpFormatter = { PanelHelpFormatter(it) }
         }
     }
@@ -39,7 +47,8 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             is IOException -> "An I/O error occurred."
             else -> "An error occurred."
         }
-        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "logs"
+
+        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "/usr/app/logs"
         val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
         return "$humanFriendlyMessage ${formatExceptionMessage(exception)}$suffix"
     }

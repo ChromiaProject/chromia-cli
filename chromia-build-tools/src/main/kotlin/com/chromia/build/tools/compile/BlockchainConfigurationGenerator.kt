@@ -23,7 +23,8 @@ internal class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
-        private val sourceDir: File) {
+        private val sourceDir: File,
+        private val filterModules: Boolean) {
 
     private val whiteListedGtxModules = listOf(
             "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
@@ -31,14 +32,13 @@ internal class BlockchainConfigurationGenerator(
             "net.postchain.d1.icmf.IcmfSenderGTXModule",
             "net.postchain.d1.icmf.IcmfReceiverGTXModule",
             "net.postchain.d1.iccf.IccfGTXModule",
-            "net.postchain.eif.EifGTXModule",
     )
 
     fun generate(): Collection<ChromiaCompileResult> {
         return blockchainModels.toList().map { generateConfiguration(it.first, it.second) }
     }
 
-    fun generateConfiguration(name: String, model: BlockchainModel): ChromiaCompileResult {
+    private fun generateConfiguration(name: String, model: BlockchainModel): ChromiaCompileResult {
         val gtvModel = generateGtv(model)
         val configholder = ChromiaCompileResult(name, gtvModel)
         validateGtvConfiguration(gtvModel)
@@ -47,22 +47,34 @@ internal class BlockchainConfigurationGenerator(
 
     private fun validateGtvConfiguration(configuration: Gtv) {
         try {
-            val gtvBuilder = GtvBuilder()
-            gtvBuilder.update(configuration)
-            val gtxModules = configuration["gtx"]?.get("modules")!!.asArray() // Not null since default values are added
-                    .filter { it.asString() !in whiteListedGtxModules }
-                    .map { GtvNode.decode(it) }
-                    .let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
-
-            gtvBuilder.update(gtxModules, "gtx", "modules")
-
+            val filteredConfiguration = filterModules(configuration)
             GTXBlockchainConfigurationFactory.validateConfiguration(
-                    withSigner(gtvBuilder.build(), "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()),
+                    withSigner(filteredConfiguration, "000000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray()),
                     BlockchainRid.ZERO_RID // dummy blockchain RID, works with Rell and all standard GTX modules, might not work properly with custom GTX modules
             )
         } catch (e: UserMistake) {
             throw ValidationException(e.message!!)
         }
+    }
+
+    private fun filterModules(configuration: Gtv): Gtv {
+
+        val configModules = configuration["gtx"]?.get("modules")!!.asArray() // Not null since default values are added
+        val intersect = configModules.intersect(whiteListedGtxModules)
+
+        if (intersect.isNotEmpty()) {
+            cliEnv.error("Warning filtering out modules from configuration;\n ${intersect.joinToString("\n")}")
+        }
+
+        val gtvBuilder = GtvBuilder()
+        gtvBuilder.update(configuration)
+        val gtxModules = configModules
+                .filter { it.asString() !in whiteListedGtxModules }
+                .map { GtvNode.decode(it) }
+                .let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
+
+        gtvBuilder.update(gtxModules, "gtx", "modules")
+        return gtvBuilder.build()
     }
 
     private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
@@ -83,8 +95,11 @@ internal class BlockchainConfigurationGenerator(
 
         blockchainModel.config.filterKeys { it != "modules" }
                 .forEach { (path, value) -> b.update(value, path) }
-
-        return b.build()
+        return if (filterModules) {
+            filterModules(b.build())
+        } else {
+            b.build()
+        }
     }
 
     private fun addDefault(b: GtvBuilder, blockchainModel: BlockchainModel) {

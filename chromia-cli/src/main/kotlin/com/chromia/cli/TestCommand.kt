@@ -1,5 +1,6 @@
 package com.chromia.cli
 
+import com.chromia.build.tools.test.xmlTestReport
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
@@ -7,6 +8,7 @@ import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
 import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -15,8 +17,12 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -35,38 +41,50 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
             .multiple()
     private val modules by modulesOption()
     private val settings by chromiaModelOption()
+    private val sqlLog by logSqlOption()
     private val tests by option(help = "test method pattern").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
+    private val testReport by option(help = "Generate JUnit XML test reports")
+            .flag()
+    private val testReportDir by option(help = "JUnit XML test reports directory (defaults to \"build/reports\")")
+            .file(canBeDir = true, canBeFile = false)
 
     override fun run() {
+        val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
+        if (testReport) {
+            testReportPath.mkdirs()
+        }
         try {
             if (shouldRunBlockchainTests()) {
-                runBlockchainTests()
+                runBlockchainTests(testReportPath.toPath())
             }
             if (shouldRunUnitTests()) {
-                runUnitTests()
+                runUnitTests(testReportPath.toPath())
             }
         } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
     }
 
-    private fun runBlockchainTests() {
+    private fun runBlockchainTests(testReportPath: Path) {
         settings.model.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
-                .forEach { runTestsForChain(it.key) }
+                .forEach { runTestsForChain(it.key, testReportPath) }
     }
 
-    private fun runUnitTests() {
+    private fun runUnitTests(testReportPath: Path) {
         val testModules = modules ?: settings.model.test.modules
         val testModuleArgs = settings.model.test.moduleArgs
         val testConf = createTestConfig(testModuleArgs)
 
         currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
+        if (testReport) {
+            Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
+        }
         printResults(res)
     }
 
@@ -74,7 +92,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
 
-    private fun runTestsForChain(blockchain: String) {
+    private fun runTestsForChain(blockchain: String, testReportPath: Path) {
         val chainConfig = settings.model.blockchains[blockchain]
                 ?: throw CliktError("Blockchain '$blockchain' not found")
 
@@ -85,6 +103,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
         echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
+        if (testReport) {
+            Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
+        }
         printResults(res)
     }
 
@@ -106,7 +127,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         return RellApiRunTests.Config.Builder()
                 .compileConfig(compileConf)
                 .testPatterns(tests)
-                .databaseUrl(if (useDB) settings.model.databaseUrl else null)
+                .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
                 .stopOnError(settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter(printer)
@@ -114,6 +135,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .printTestCases(false)
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
+                .sqlLog(sqlLog)
                 .build()
     }
 

@@ -12,19 +12,23 @@
         <module>chromia-cli</module>
         <module>chromia-cli-tools</module>
         <module>chromia-build-tools</module>
+        <module>coverage-report-aggregate</module>
     </modules>
 
     <name>Chromia Cli Parent</name>
 
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.9.7</codegen.version>
-        <postchain.version>3.11.7.3391-pqc</postchain.version>
-        <postchain.chromia.version>3.11.2</postchain.chromia.version>
-        <postchain.client.version>3.11.2</postchain.client.version>
-        <rell.version>0.13.1</rell.version>
-        <directory.chain.version>1.8.0</directory.chain.version>
+        <codegen.version>0.12.0</codegen.version>
+        <postchain.version>3.13.18</postchain.version>
+        <postchain.chromia.version>3.13.15.3801-pqc</postchain.chromia.version>
+        <postchain.client.version>3.11.6</postchain.client.version>
+        <rell.version>0.13.4</rell.version>
+        <eif.version>0.2.10</eif.version>
+        <directory.chain.version>1.12.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
+
+        <jgit.version>6.7.0.202309050840-r</jgit.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.8.21</kotlin.version>
@@ -40,6 +44,11 @@
     </properties>
 
     <repositories>
+        <repository>
+            <id>chromia-parent</id>
+            <name>Chromia parent GitLab Registry</name>
+            <url>https://gitlab.com/api/v4/projects/50818999/packages/maven</url>
+        </repository>
         <repository>
             <id>postchain-chromia</id>
             <url>https://gitlab.com/api/v4/projects/33481005/packages/maven</url>
@@ -65,6 +74,11 @@
             <url>https://gitlab.com/api/v4/projects/37660703/packages/maven</url>
         </repository>
         <repository>
+            <id>postchain-eif</id>
+            <name>Postchain EIF Gtx module Registry</name>
+            <url>https://gitlab.com/api/v4/projects/36768178/packages/maven</url>
+        </repository>
+        <repository>
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
@@ -83,6 +97,7 @@
     </distributionManagement>
 
     <build>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -151,7 +166,7 @@
                         <workingDirectory>${project.build.directory}/test</workingDirectory>
                         <excludes>
                             <exclude>**/*IT.java</exclude>
-                            <exclude>**/*Nightly.java</exclude>
+                            <exclude>**/*SlowIntegrationTest.java</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -161,8 +176,9 @@
                     <version>3.1.2</version>
                     <configuration>
                         <environmentVariables>
-                            <DIST_DIR>${project.build.directory}/${project.artifactId}-${project.version}-dist/bin
-                            </DIST_DIR>
+                            <DIST_EXECUTABLE>
+                                ${project.build.directory}/${project.artifactId}-${project.version}-dist/bin/chr
+                            </DIST_EXECUTABLE>
                             <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
                         </environmentVariables>
                     </configuration>
@@ -201,6 +217,23 @@
                     <groupId>com.google.cloud.tools</groupId>
                     <artifactId>jib-maven-plugin</artifactId>
                     <version>3.3.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>8.4.0</version>
+                    <configuration>
+                        <prettyPrint>true</prettyPrint>
+                        <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                        <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
+                        <suppressionFiles>
+                            <suppressionFile>
+                                https://gitlab.com/chromaway/chromia-parent/-/raw/dev/common-dependencies-suppression.xml?ref_type=heads
+                            </suppressionFile>
+                            <suppressionFile>dependencies-suppression.xml</suppressionFile>
+                        </suppressionFiles>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -280,6 +313,12 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.chromia.cli</groupId>
+                <artifactId>chromia-build-tools</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-api-gtx</artifactId>
                 <version>${rell.version}</version>
@@ -326,6 +365,11 @@
             </dependency>
             <dependency>
                 <groupId>net.postchain.rell</groupId>
+                <artifactId>codegen-mermaid</artifactId>
+                <version>${codegen.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
                 <artifactId>codegen-typescript</artifactId>
                 <version>${codegen.version}</version>
             </dependency>
@@ -347,12 +391,17 @@
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit</artifactId>
-                <version>6.6.0.202305301015-r</version>
+                <version>${jgit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
                 <artifactId>org.eclipse.jgit.ssh.apache</artifactId>
-                <version>6.6.0.202305301015-r</version>
+                <version>${jgit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit.ssh.apache.agent</artifactId>
+                <version>${jgit.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlinx</groupId>
@@ -372,7 +421,7 @@
             <dependency>
                 <groupId>com.github.ajalt.clikt</groupId>
                 <artifactId>clikt-jvm</artifactId>
-                <version>4.0.0</version>
+                <version>4.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -391,9 +440,9 @@
                 <version>4.34.0.4</version>
             </dependency>
             <dependency>
-                <groupId>de.m3y.kformat</groupId>
-                <artifactId>kformat</artifactId>
-                <version>0.9</version>
+                <groupId>org.redundent</groupId>
+                <artifactId>kotlin-xml-builder</artifactId>
+                <version>1.9.0</version>
             </dependency>
 
             <dependency>
@@ -406,7 +455,7 @@
             <dependency>
                 <groupId>org.bitcoinj</groupId>
                 <artifactId>bitcoinj-core</artifactId>
-                <version>0.16.1</version>
+                <version>0.16.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.bouncycastle</groupId>
@@ -448,6 +497,22 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>ci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-plugin</artifactId>
+                        <configuration>
+                            <args>
+                                <arg>-Werror</arg>
+                            </args>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>docker-arm</id>
             <activation>
@@ -511,7 +576,11 @@
                                             </platforms>
                                         </from>
                                         <to>
-                                            <image>${gitlab.registry}/${image.name}:${project.version}</image>
+                                            <image>${gitlab.registry}/${image.name}</image>
+                                            <tags>
+                                                <tag>latest</tag>
+                                                <tag>${project.version}</tag>
+                                            </tags>
                                             <auth>
                                                 <username>${env.CI_REGISTRY_USER}</username>
                                                 <password>${env.CI_REGISTRY_PASSWORD}</password>
@@ -523,6 +592,46 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
+            </build>
+        </profile>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.10</version>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-prepare-agent-integration</id>
+                                <goals>
+                                    <goal>prepare-agent-integration</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report-integration</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report-integration</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>

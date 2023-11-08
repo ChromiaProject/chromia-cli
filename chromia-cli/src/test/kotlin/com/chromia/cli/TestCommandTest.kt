@@ -1,17 +1,25 @@
 package com.chromia.cli
 
 import assertk.assertThat
+import assertk.assertions.any
 import assertk.assertions.contains
+import com.chromia.cli.util.captureLog4jLoggerOutput
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.exists
+import kotlin.test.assertEquals
+import net.postchain.rell.base.sql.SqlConnectionLogger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
+import org.redundent.kotlin.xml.CDATAElement
+import org.redundent.kotlin.xml.Node
+import org.redundent.kotlin.xml.parse
 
 internal class TestCommandTest {
 
@@ -42,7 +50,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        settingsFile = File(testDir.toFile(), "config.yml").apply {
+        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -103,7 +111,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleSelectiveTest() {
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -117,7 +125,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleAllTests() {
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -161,7 +169,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 test:
                   modules:
@@ -174,6 +182,57 @@ internal class TestCommandTest {
             """.trimIndent())
         }
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun testSqlLogging() {
+        with(File(testDir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+
+                struct module_args { name; }
+                entity foo { name; }
+
+                operation add_foo(name) { create foo(name); }
+                query get_foo(name) = foo @? { name };
+            """.trimIndent())
+        }
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                import ^.main.*;
+
+                function test_get_foo() {
+                  rell.test.tx().op(add_foo("bar")).run();
+                  assert_not_null(get_foo("bar"));
+                }
+            """.trimIndent())
+        }
+
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                test:
+                  modules:
+                    - test
+                  moduleArgs:
+                    main:
+                      name: foo
+            """.trimIndent())
+        }
+
+        val sqlLoggerOutput = captureLog4jLoggerOutput(SqlConnectionLogger::class.java) {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log"))
+        }
+
+        assertThat(sqlLoggerOutput).any {
+            it.contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
+        }
+        assertThat(sqlLoggerOutput).any {
+            it.contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ? ORDER BY A00."rowid"""")
+        }
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
@@ -230,7 +289,7 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
-        File(testDir.toFile(), "config.yml").apply {
+        File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   foo_chain_dev:
@@ -258,5 +317,62 @@ internal class TestCommandTest {
                 listOf("-s", settingsFile.absolutePath, "--use-db", "--blockchain", "foo_chain_dev")
         )
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 3 PASSED / 3 TOTAL")
+    }
+
+    @Test
+    fun testTestReportSuccess() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
+        assertEquals("testsuite", testReport.nodeName)
+        assertEquals("rell", testReport.attributes["name"])
+        assertEquals("0", testReport.attributes["failures"])
+        assertEquals("2", testReport.attributes["tests"])
+        assertEquals("3.0", testReport.attributes["version"])
+        val case = testReport.children.filterIsInstance<Node>().first()
+        assertEquals("testcase", case.nodeName)
+        assertEquals("test_a", case.attributes["name"])
+        assertEquals("test", case.attributes["classname"])
+    }
+
+    @Test
+    fun testTestReportFailure() {
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_b() { assert_equals(1, 2); }
+            """.trimIndent())
+        }
+
+        assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(
+                    listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        }
+        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
+        assertEquals("testsuite", testReport.nodeName)
+        assertEquals("rell", testReport.attributes["name"])
+        val case = testReport.children.filterIsInstance<Node>().first()
+        assertEquals("testcase", case.nodeName)
+        assertEquals("test_b", case.attributes["name"])
+        assertEquals("test", case.attributes["classname"])
+        val failure = case.children.filterIsInstance<Node>().first()
+        assertEquals("failure", failure.nodeName)
+        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>", failure.attributes["message"])
+        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
+                "\tat test:test_b(test.rell:3)",
+                failure.children.filterIsInstance<CDATAElement>().first().text.trim())
+    }
+
+    @Test
+    fun testBlockchainTestReport() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+        assertThat(testDir.resolve("hello-tests.xml").exists())
+    }
+
+    @Test
+    fun testModuleTestReport() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db", "--test-report-dir", testDir.toString()))
+        assertThat(testDir.resolve("test-tests.xml").exists())
     }
 }

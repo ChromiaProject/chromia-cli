@@ -1,61 +1,99 @@
 # README
 
 ### Dependencies
-To develop locally on the cli it is recommended to install [direnv](https://direnv.net)  to keep the packaging as close as possible to real.
+
+To develop locally on the cli it is recommended to install [direnv](https://direnv.net)  to keep the packaging as close
+as possible to real.
+
+### Running In Docker
+
+To be able to run chr as a docker container and get the logs, you must add the following parameters to the docker run.
+`--rm -v $(pwd):/usr/app`
+
+EX.
+
+```shell
+docker run --rm -v $(pwd):/usr/app registry.gitlab.com/chromaway/core-tools/chromia-cli/chr:<version> chr <commands>
+```
+
+This will add directory in working directory with logs if a command does not work containing the stacktrace
 
 ### Auto completion
-To enable auto-completion you need to run the following commands, these needs to run each time a new version of the cli is installed. 
+
+To enable auto-completion you need to run the following commands, these needs to run each time a new version of the cli
+is installed.
+
 ```shell
 chr --generate-completion=bash > ~/chr-completion.sh
 ```
+
 then
+
 ``` shell
 source ~/chr-completion.sh
 ```
 
 ### Introduction
-The Chromia-cli is a tool intended to make the development cycle and deployment of rell dapps simpler where all the needed 
+
+The Chromia-cli is a tool intended to make the development cycle and deployment of rell dapps simpler where all the
+needed
 functionality needed can be found in one cli.
 
 ### Prerequisites
+
 To be able to use the cli there are a few things that need to be in place.
 
-- To be able to test/run your dapp locally, you need to have a postgres accessible see [here](https://docs.chromia.com/getting-started/database-setup) 
-on how to set that up.
+- To be able to test/run your dapp locally, you need to have a postgres accessible
+  see [here](https://docs.chromia.com/getting-started/dev-setup/database-setup)
+  on how to set that up.
 - Java needs to be installed on the machine running the cli, the cli is compiled against Java 11.
 - The current version of the cli only supports unix based shells, (bash, zsh)
 
 ## Files
-### Secrets
-You can either use a secret file (.secret or some other name) that would look as followed containing your keypair.
+
+### Chromia configuration
+
+The files:
+
 ```
-privkey=
+~/.chromia/config
+./.chromia/config
+```
+
+are used to configure how the cli works. As noted, it can be set on global level or on local(project) level. This is
+where you store your keypair in the format:
+
+```properties
 pubkey=
+privkey=
 ```
-or make use of environment variables.
+
 ### Project Settings file
-The project settings file is where most of the configurations for your dapp is found, by default it is named `config.yml`
-but can be named to something else if you so desire. Following is an example of such a file, keep in mind that most of the 
-attributes have default values and do not need to be configured unless you want override the default behaviour. 
-You can use the bare-bones implementation from [Init](#init).
+
+The project settings file is where most of the configurations for your dapp is found, by default it is
+named `chromia.yml`
+but can be named to something else if you so desire. Following is an example of such a file, keep in mind that most of
+the
+attributes have default values and do not need to be configured unless you want override the default behaviour.
+You can use the bare-bones implementation using [chr create-rell-dapp](#create-rell-dapp).
 
 ```yaml
 # Blockchains will not default, this is where you add your chains
-blockchains: 
+blockchains:
   My_Rell_Project: #Name of the blockchain
     module: main # Entrypoint to the project
     config: # If you have any specific config settings that you want to include
       <config name>: <GTV Value>
     blockstrategy: # If you have any specific block strategies
-      <strategy name>: <GTV Value> 
-      
+      <strategy name>: <GTV Value>
+
   My_Rell_Project2: # This is all that is needed for a working blockchain 
     module: main2
 
 deployments:
   devnet1: #Deployment Target name
     brid: x"1212121212121212121212121212121212121212121212121212121212121212" # Target Brid
-    url: 
+    url:
       - http://localhost:7740 #Target URL
     container: foo # Container Id
     chains: # All of your deployed chains on this target, important that it is denoted with its genesis brid (Brid that is used on first deployment)
@@ -93,12 +131,15 @@ test: # Does not default
   modules: # List of the test modules in your project
     - test.arithmetic_test
     - otherFolder.data_test
-  moduleArgs: 
+  moduleArgs:
     test.temp: #module that should have a specific argument(s)
       <argument name>: <gtv Value>
 ```
-#### Anchoring
-It is possible to use anchoring as shown in the example where the tests are anchored to the definitions key. 
+
+#### Yaml Anchors
+
+It is possible to use anchoring as shown in the example where the tests are anchored to the definitions key.
+
 ```
 definitions:
   modules: &test
@@ -113,7 +154,10 @@ compile:
 test:
   modules: *test
 ```
-Inclusion is also possible with the use of `!include` tag 
+
+#### Include another yaml file
+
+Including another yaml file is possible using the `!include` tag
 
 ```yaml
 #test.yml
@@ -122,7 +166,7 @@ Inclusion is also possible with the use of `!include` tag
 ```
 
 ```yaml
-#config.yml
+#chromia.yml
 blockchains:
   hello:
     module: main
@@ -131,162 +175,232 @@ compile:
 test:
   modules: !include test.yml
 ```
+
 ## Commands
-All the following commands will make use of the example files generated by the Init command. Complementary information will be given 
-when the Project Settings file needs to be expanded.  
-### Init
-The init command is used to create a new hello world project, it creates a Project Settings file (`config.yml`), 
+
+All the following commands will make use of the example files generated by the Init command. Complementary information
+will be given
+when the Project Settings file needs to be expanded.
+
+### Create-Rell-Dapp
+
+The init command is used to create a new hello world project, it creates a Project Settings file (`chromia.yml`),
 a main module under `src/` (`main.rell`) and tests in  `src/test/` folder in your working directory.
 
 ``` shell
-chr init
+chr create-rell-dapp
 ```
+
 ``` shell
-|--config.yml
+|--chromia.yml
 |--_src
    |--main.rell
    |--_test
       |--arithmetic_test.rell
       |--data_test.rell
 ```
+
 ### test
-Runs all tests under the test attribute if in current working where config.yml exists 
+
+Runs all tests under the test attribute if in current working where chromia.yml exists
+
 ```shell
 chr test
 ```
+
 Runs all tests under the test attribute of selected file.
+
 ```shell
-chr test --settings config.yml
-```
-Runs a specific test module
-```shell
-chr test --settings config.yml --modules test.data_test
-```
-Runs all tests of specific blockchain(s)
-```shell
-chr test --settings config.yml --blockchain foo_chain --blockchain bar_chain
+chr test --settings chromia.yml
 ```
 
-### Repl 
+Runs a specific test module
+
+```shell
+chr test --settings chromia.yml --modules test.data_test
+```
+
+Runs all tests of specific blockchain(s)
+
+```shell
+chr test --settings chromia.yml --blockchain foo_chain --blockchain bar_chain
+```
+
+### Repl
+
 Repl is used to run specific methods in your rell code. can be good when troubleshooting
+
 ```
 chr repl --module main --entry hello_world
 ```
+
 ```
 chr repl --module main --entry set_name --args foo
 ```
-The `-a` or `--args` argument can be chained when you have multiple arguments to your method. So if the method `set_name`
+
+The `-a` or `--args` argument can be chained when you have multiple arguments to your method. So if the
+method `set_name`
 would have had 2 arguments
 it would look like this;
+
 ```
 chr repl --module main --entry set_name --args foo --args bar
 ```
-And the `--wipe` is used when you want to reset the database before execution. 
-### Build
-The build command creates a blockchain configuration for your dapp. The configuration is added under a `build/` in your source folder. 
-The configuration is exported as a xml and a bytearray representation. These can be used to distribute your dapp, start it and deploy it.
 
-If you are in the working directory where the `config.yml` presides. 
+And the `--wipe` is used when you want to reset the database before execution.
+
+### Build
+
+The build command creates a blockchain configuration for your dapp. The configuration is added under a `build/` in your
+source folder.
+The configuration is exported as a xml and a bytearray representation. These can be used to distribute your dapp, start
+it and deploy it.
+
+If you are in the working directory where the `chromia.yml` presides.
+
 ```shell
 chr build
 ```
-You can set a path for it or specify a different Project Settings file.  
+
+You can set a path for it or specify a different Project Settings file.
+
 ```shell
-chr build --settings config.yml
+chr build --settings chromia.yml
 ```
+
 If you want to see the Blockchain RID that is generated, you can use the flag `--show-brid`
 
-### Start
-Start command is used to start a node with you applications running on it. It will start all the blockchains under the 
+### Node Start
+
+Start command is used to start a test node with you applications running on it. It will start all the blockchains under
+the
 `blockchains` key in you Project Settings file.
 
-If you are in the working directory where the `config.yml` presides.
-```shell
-chr start
-```
-You can set a path for it or specify a different Project Settings file.
-```shell
-chr start --settings config.yml
-```
-If you instead want to start it from a build, you can refer to the blockchain config file.
-```shell
-chr start --blockchain-config build/hello.gtv
-chr start --blockchain-config build/hello.xml
-```
-The `--wipe` is used when you want to reset the database before execution, and the `-np` or `--node-properties` is used 
-if you want to override the default node settings. 
+If you are in the working directory where the `chromia.yml` presides.
 
-### Deploy
-Deploy command is used when you want to deploy the dapp to a network. Deploy command reads the `deployments` key in the 
+```shell
+chr node start
+```
+
+You can set a path for it or specify a different Project Settings file.
+
+```shell
+chr node start --settings chromia.yml
+```
+
+If you instead want to start it from a build, you can refer to the blockchain config file.
+
+```shell
+chr node start --blockchain-config build/hello.gtv
+chr node start --blockchain-config build/hello.xml
+```
+
+The `--wipe` is used when you want to reset the database before execution, and the `-np` or `--node-properties` is used
+if you want to override the default node settings.
+
+### Deployment create
+
+`chr deployment create`  is used to deploy a dapp to a network. Deploy command reads the `deployments` key in the
 Project Settings file.
-On the first deployment towards a target, the cli will prompt you with the chains config that you need to add to the 
+On the first deployment towards a target, the cli will prompt you with the chains config that you need to add to the
 Project Settings file. will look something like this;
 
 `Blockchain RID for chain hello on deployment devnet2 not set. Would you like to create a new deployment? Y / N`
-```yaml
 Add the following to your project settings file
+
+```yaml
 deployments:
   devnet2:
     chains:
       hello: x"63B36A15A8D1787EFED1E331F0E49D39C05874E7D29E5DC1FD7A484E990A8932"
 ```
-This will override any previous deployment to the network, that is why it is import to save the genesis brid prompted 
-after first deployment. If you want to override the state, ignore the chain config. When a deployment is 
+
+This will override any previous deployment to the network, that is why it is import to save the genesis brid prompted
+after first deployment. If you want to override the state, ignore the chain config. When a deployment is
 being conducted, a snapshot build will be created in the `build/` folder with a timestamp.
 
 To deploy you will run the following command.
-If you are in the working directory where the `config.yml` presides.
+If you are in the working directory where the `chromia.yml` presides.
+
 ```
-chr deploy --target devnet2 --secret .secret
+chr deployment create --target devnet2 --secret .secret
 ```
+
 You can set a path for it or specify a different Project Settings file.
+
 ```shell
-chr deploy --settings config.yml --target devnet2 --secret .secret
+chr deployment create --settings chromia.yml --target devnet2 --secret .secret
 ```
 
 If you have multiple chains and only want to deploy a specific one.
+
 ```shell
-chr deploy --settings config.yml --target devnet2 --blockchain hello --secret .secret
+chr deployment create --settings chromia.yml --target devnet2 --blockchain hello --secret .secret
 ```
+
 ### Query
-Query command is used to test and interact with a chain that is either local (Node) or deployed without the use of a client.
-You can set a path for it or specify a different Project Settings file with the use of `--settings` 
+
+Query command is used to test and interact with a chain that is either local (Node) or deployed without the use of a
+client.
+You can set a path for it or specify a different Project Settings file with the use of `--settings`
 and change between local and deployed chain target with the `--deployment, --local` flags, will default to `--local`
+
 #### Node
-The blockchain RID of the local node is printed in the sout, an example would look like; 
+
+The blockchain RID of the local node is printed in the sout, an example would look like;
 `Blockchain RID: FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC`
-If you are running the node on a different url then the default ` http://localhost:7740` you can use the `--api-url` to specify it.
+If you are running the node on a different url then the default ` http://localhost:7740` you can use the `--api-url` to
+specify it.
+
 ```shell
 chr query --blockchain-rid FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC hello_world
 ```
+
 If the query has an argument called `foo` then the query would look like the following for value `bar`.
+
 ```shell
 chr query --blockchain-rid FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC hello_world "{foo->bar}"
 ```
 
 #### Deployed
-Towards a deployed chain you can do the same commands but need to add a `--name` (Deployment target) and `--blockchain` (Name of the chain to query) 
+
+Towards a deployed chain you can do the same commands but need to add a `--name` (Deployment target)
+and `--blockchain` (Name of the chain to query)
 instead of the `--blockchain-rid`.
+
 ```shell
 chr query --deployment --name devnet2 --blockchain hello hello_world
 ```
+
 ### Tx
+
 Tx (Transaction) Command is used the same as the query, but need to be signed with your keypair.
 It is used to interact with either local (Node) or deployed without the use of a client.
 
-You can set a path for it or specify a different Project Settings file with the use of `--settings` and change between local 
-and deployed chain target with the `--deployment, --local` flags, will default to `--local`, use the flag `-a` or `--await` 
-to wait for response that the transaction is confirmed or rejected. To salt your transaction (If you need to do the same multiple times) use `-nop` flag.
+You can set a path for it or specify a different Project Settings file with the use of `--settings` and change between
+local
+and deployed chain target with the `--deployment, --local` flags, will default to `--local`, use the flag `-a`
+or `--await`
+to wait for response that the transaction is confirmed or rejected. To salt your transaction (If you need to do the same
+multiple times) use `-nop` flag.
+
 #### Node
+
 The blockchainRid of the local node is printed in the sout, an example would look like;
 `Blockchain RID: FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC`
-If you are running the node on a different url then the default ` http://localhost:7740` you can use the `--api-url` to specify it.
+If you are running the node on a different url then the default ` http://localhost:7740` you can use the `--api-url` to
+specify it.
+
 ```shell
 chr tx --blockchain-rid FC17B67D66F6F35A5D8B75ED3F83AE222FB8C8FCA241624F06285150F10C6BAC --secret .secret set_name "string:name->bob"
 ```
+
 #### Deployed
-Towards a deployed chain you can do the same commands but need to add a `--name` (Deployment target) and `--blockchain` (Name of the chain to query)
+
+Towards a deployed chain you can do the same commands but need to add a `--name` (Deployment target)
+and `--blockchain` (Name of the chain to query)
 instead of the `--blockchain-rid`.
+
 ```shell
 chr tx --deployment --name devnet2 --blockchain hello --secret .secret set_name "string:name->bob"
 ```

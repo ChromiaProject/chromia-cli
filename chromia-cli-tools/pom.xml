@@ -65,12 +65,10 @@
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>rell-api-base</artifactId>
-            <version>${rell.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
             <artifactId>clikt-jvm</artifactId>
-            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.microutils</groupId>

@@ -23,7 +23,7 @@ fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
 
 fun CliktCommand.wipeDatabaseOption() =
-        option("--wipe", help = "If a database should be wiped before startup").flag()
+        option("--wipe", help = "If a database should be wiped before startup").flag("--no-wipe")
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
@@ -38,3 +38,4 @@ fun CliktCommand.module() = option("-m", "--module", help = "Name of module", me
         .convert { R_ModuleName.of(it) }
 
 fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
+fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()

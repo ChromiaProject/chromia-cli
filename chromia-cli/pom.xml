@@ -113,16 +113,34 @@
                         <allowInsecureRegistries>false</allowInsecureRegistries>
                         <from>
                             <image>
-                                registry.gitlab.com/chromaway/core-tools/chromia-images/java17:1.0.2@sha256:756673c4f33a67b88dbc4ce0019137b13e9bd351cee804cfbbda3b9aa9a2cba2
+                                registry.gitlab.com/chromaway/core-tools/chromia-images/java17:1.1.2@sha256:c8cd42f7fba93b2682cb567660c92ddc90cd7641c0da72481a28764e9ff437d5
                             </image>
                         </from>
                         <container>
+                            <entrypoint>
+                                <args>/usr/bin/chr-entrypoint.sh</args>
+                            </entrypoint>
+                            <args>
+                                <arg>chr</arg>
+                            </args>
                             <appRoot>/usr/share/chr</appRoot>
                             <workingDirectory>/usr/app</workingDirectory>
                             <mainClass>${main.class}</mainClass>
                             <creationTime>${git.commit.time}</creationTime>
                             <filesModificationTime>${git.commit.time}</filesModificationTime>
                         </container>
+                        <extraDirectories>
+                            <permissions>
+                                <permission>
+                                    <file>/usr/bin/chr</file>
+                                    <mode>755</mode>
+                                </permission>
+                                <permission>
+                                    <file>/usr/bin/chr-entrypoint.sh</file>
+                                    <mode>755</mode>
+                                </permission>
+                            </permissions>
+                        </extraDirectories>
                         <containerizingMode>packaged</containerizingMode>
                     </configuration>
                     <executions>
@@ -148,6 +166,12 @@
         <dependency>
             <groupId>com.chromia.cli</groupId>
             <artifactId>chromia-build-tools</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chromia.cli</groupId>
+            <artifactId>chromia-build-tools</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.chromia.cli</groupId>
@@ -191,11 +215,20 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-mermaid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
             <artifactId>codegen-javascript</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>codegen</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-eif-core</artifactId>
+            <version>${eif.version}</version>
         </dependency>
 
         <dependency>
@@ -219,10 +252,6 @@
             <groupId>org.http4k</groupId>
             <artifactId>http4k-format-jackson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>de.m3y.kformat</groupId>
-            <artifactId>kformat</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -239,11 +268,15 @@
             <artifactId>system-stubs-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.bitcoinj</groupId>
             <artifactId>bitcoinj-core</artifactId>
-            <version>0.16.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>

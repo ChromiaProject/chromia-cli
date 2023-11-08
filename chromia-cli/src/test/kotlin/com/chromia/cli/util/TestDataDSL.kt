@@ -68,7 +68,7 @@ class ConfigBuilder {
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
         if (libs.isNotEmpty()) sb.append("\n$libs")
         if (test.isNotEmpty()) sb.append("\n$test")
-        File(target.toFile(), "config.yml").writeText(sb.toString())
+        File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }
 }
 

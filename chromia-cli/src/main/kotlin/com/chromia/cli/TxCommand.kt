@@ -1,14 +1,18 @@
 package com.chromia.cli
 
+import com.chromia.cli.ft.FTAuthenticator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
+import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
@@ -20,10 +24,14 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     private val settings by optionalChromiaModelConfigOption()
     private val secret by secretOption()
-    private val explicitTarget by LocalDeploymentOption()
+    private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
+    private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
+        val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
+        val ftAccountId by option(help = "Explicitly specify which account to use")
+    }
 
     private val opName by argument(help = "name of the operation to execute.")
 
@@ -41,8 +49,16 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val res = target.createClient(settings.config.get(target.url, target.brid, secret))
-                .transactionBuilder()
+        val postchainClientConfig = settings.config.get(target.url, target.brid, secret)
+        val client = target.createClient(postchainClientConfig)
+        val transactionBuilder = client.transactionBuilder()
+        if (ftAuthOptions.ftAuth) {
+            val authenticator = FTAuthenticator(client, terminal)
+            val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
+                    ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
+            authenticator.addAuthenticationOperation(transactionBuilder, opName, signerPubkey, ftAuthOptions.ftAccountId)
+        }
+        val res = transactionBuilder
                 .addOperation(opName, *args.toTypedArray())
                 .run {
                     if (nop) addNop()

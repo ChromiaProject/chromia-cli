@@ -1,6 +1,8 @@
 package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.blockchain.BridFetcher
+import com.chromia.cli.tools.config.ChromiaConfig
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -45,15 +47,31 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
     ).blockchain(config.blockchainRid)
 }
 
-class LocalDeploymentOption(private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Make query/tx towards a test node") {
+class LocalDeploymentOption(
+        private val config: () -> ChromiaConfig,
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Make query/tx towards a test node") {
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int().default(0)
-    private val apiUrl by option(help = "Target api url").default("http://localhost:7740")
+    private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)
 
-    override val url get() = apiUrl
-    override val brid get() = blockchainRid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
+    override val url
+        get() = if (apiUrl != DEFAULT_API_URL) {
+            apiUrl
+        } else {
+            config().getString("api.url") ?: apiUrl
+        }
 
-    private fun blockchainRidFromIid() = BridFinder(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).findBlockchainRid(cid)
+    override val brid
+        get(): BlockchainRid {
+            val resolvedBrid = blockchainRid ?: config().getString("brid")
+            return resolvedBrid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
+        }
+
+    private fun blockchainRidFromIid() = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).fetchBlockchainRid(cid)
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
+
+    companion object {
+        const val DEFAULT_API_URL = "http://localhost:7740"
+    }
 }

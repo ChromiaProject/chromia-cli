@@ -2,11 +2,14 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
+import com.chromia.cli.util.DeploymentTestDataCreator
+import com.chromia.cli.util.TestClient
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.testing.test
+import java.io.File
+import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliBasicException
 import org.http4k.core.HttpHandler
 import org.http4k.core.Response
@@ -18,8 +21,6 @@ import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.io.File
-import java.nio.file.Path
 
 
 class DeployCreateCommandTest {
@@ -35,7 +36,7 @@ class DeployCreateCommandTest {
     @BeforeEach
     fun setup() {
         DeploymentTestDataCreator.unitTestApp(testDir)
-        settingsFile = testDir.resolve("config.yml").toFile()
+        settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
 
@@ -56,12 +57,12 @@ class DeployCreateCommandTest {
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
-
+    
     @Test
     fun cannotDeployNotMatchingRellVersion() {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.11.0"))
         val throwable = assertThrows<RellDeployVersionException> {
-            DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+            DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")

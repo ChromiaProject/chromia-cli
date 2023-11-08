@@ -8,12 +8,12 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
+import net.postchain.client.core.TxRid
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.transaction.TransactionBuilder
-import net.postchain.common.BlockchainRid
-
 
 open class DeployActionCommand(
         private val action: BlockchainAction,
@@ -34,14 +34,19 @@ open class DeployActionCommand(
         }
     }
 
-    override fun beforeDeployment(deployedChains: Collection<String>) {
-        deployedChains.forEach { name ->
-            if (!deployModel.chains.containsKey(name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain $name cannot be done since it has not been deployed to network $target. Specify target blockchain rid in config.yml")
+    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+        compiledChains.forEach { chain ->
+            if (!deployModel.chains.containsKey(chain.name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain.name} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
         }
     }
-    
-    override fun afterDeployment(deployedChains: List<Pair<String, BlockchainRid>>) {}
+
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+        for ((chain, _) in deployTxs) {
+            echo("${action.name} of blockchain ${chain.name} was successful")
+        }
+    }
 }
 
 class DeployResumeCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container", clientProvider)
 class DeployPauseCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.pause, "Pauses a blockchain in a container", clientProvider)
+class DeployRemoveCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.remove, "Removes a blockchain in a container (This action is permanent)", clientProvider)
