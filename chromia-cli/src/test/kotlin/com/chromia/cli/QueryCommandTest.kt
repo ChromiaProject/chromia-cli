@@ -6,6 +6,7 @@ import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path
+import net.postchain.client.exception.ClientError
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -64,8 +65,10 @@ class QueryCommandTest {
                 api.url=$dummyApiUrl
             """.trimIndent())
         }
-        val res = QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
-        assertThat(res.stdout).contains(dummyApiUrl)
+        val res =  assertThrows<ClientError> {
+            QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
+        }
+        assertThat(res.message!!).contains(dummyApiUrl)
     }
 
     @Test
@@ -78,7 +81,9 @@ class QueryCommandTest {
             """.trimIndent())
         }
         val overrideApiUrl = "http://not_existing_host_from_command_line:7741"
-        val res = QueryCommand().test(listOf("--api-url", overrideApiUrl, "--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
-        assertThat(res.stdout).contains(overrideApiUrl)
+        val res =  assertThrows<ClientError> {
+            QueryCommand().test(listOf("--api-url", overrideApiUrl, "--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
+        }
+        assertThat(res.message!!).contains(overrideApiUrl)
     }
 }

@@ -17,6 +17,7 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.parse.GtvParser
 
 
@@ -64,6 +65,8 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
                     if (nop) addNop()
                     if (awaitConfirmation) postAwaitConfirmation() else post()
                 }
-        echo("transaction with rid ${res.txRid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
+        if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)
+            throw PrintMessage("Transaction Failed with code ${res.httpStatusCode}: ${res.rejectReason}", statusCode = 1)
+        echo("transaction with rid ${res.txRid.rid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
     }
 }

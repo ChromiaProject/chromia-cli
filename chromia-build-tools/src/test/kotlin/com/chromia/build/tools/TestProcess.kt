@@ -10,7 +10,7 @@ import java.io.InputStreamReader
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-class TestProcess private constructor(processBuilder: ProcessBuilder, startContition: String?, shouldFinish: Boolean, timeout: Duration, val verbose: Boolean) : AutoCloseable {
+class TestProcess private constructor(processBuilder: ProcessBuilder, startContition: String?, shouldFinish: Boolean, expectedExitCode: Int, timeout: Duration, val verbose: Boolean) : AutoCloseable {
 
     val process = processBuilder.start()
     val reader = BufferedReader(InputStreamReader(process.inputStream))
@@ -22,7 +22,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         }
         if (shouldFinish) {
             process.waitFor(timeout.seconds, TimeUnit.SECONDS)
-            assertThat(this).finishedSuccessfully()
+            assertThat(this).finished(expectedExitCode)
         }
     }
     override fun close() {
@@ -53,8 +53,8 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         assertThat(found).isTrue()
     }
 
-    private fun Assert<TestProcess>.finishedSuccessfully() = given { actual ->
-        if (actual.process.exitValue() == 0) {
+    private fun Assert<TestProcess>.finished(exitCode: Int) = given { actual ->
+        if (actual.process.exitValue() == exitCode) {
             if (verbose) actual.readLines().forEach { println(it) }
             return
         }
@@ -64,6 +64,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
     class Builder(vararg val args: String) {
         private var config: File? = null
         private var shouldFinish = true
+        private var exitCode = 0
         private var timeout = Duration.ofSeconds(10)
         private var startCondition: String? = null
         private var verbose = false
@@ -71,6 +72,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         fun setConfig(file: File) = apply { config = file }
         fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
+        fun exitCode(value: Int) = apply { exitCode = value }
         fun timeout(value: Duration) = apply { timeout = value }
         fun startCondition(condition: String) = apply { startCondition = condition }
         fun verbose() = apply { verbose = true }
@@ -92,7 +94,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
                         redirectErrorStream(true)
                         workingDir?.let { directory(it) }
                     }
-            return TestProcess(pb, startCondition, shouldFinish, timeout, verbose).use(onCompleted)
+            return TestProcess(pb, startCondition, shouldFinish, exitCode, timeout, verbose).use(onCompleted)
         }
     }
 }
