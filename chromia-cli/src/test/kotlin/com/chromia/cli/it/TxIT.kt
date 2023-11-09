@@ -11,9 +11,12 @@ import com.chromia.cli.util.testData
 import java.nio.file.Path
 import java.time.Duration
 import net.postchain.api.rest.controller.Model
+import net.postchain.api.rest.model.ApiStatus
+import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
@@ -33,6 +36,14 @@ class TxRecorderModel(val model: Model) : Model by model {
     }
 }
 
+class AlwaysFailingModel(val model: Model, val status: TransactionStatus): Model by model {
+    constructor(blockchainRid: BlockchainRid, status: TransactionStatus): this(TestModel(blockchainRid), status)
+
+
+    override fun postTransaction(tx: ByteArray) = Unit
+    override fun getStatus(txRID: TxRid) = ApiStatus(status)
+}
+
 class Ft4Model(val model: Model, val version: String, val responses: Map<String, Gtv> = mapOf()) : Model by model {
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
@@ -44,9 +55,12 @@ class Ft4Model(val model: Model, val version: String, val responses: Map<String,
 
 class TxIT {
 
+    companion object {
+        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
+    }
+
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
-        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
         testData(dir) {
             config {
                 deployments("""
@@ -85,7 +99,6 @@ class TxIT {
 
     @Test
     fun queryWithOldFtAuthFails(@TempDir dir: Path) {
-        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
         testData(dir) {
             secret()
         }
@@ -105,7 +118,6 @@ class TxIT {
 
     @Test
     fun queryWithFtAuth(@TempDir dir: Path) {
-        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
         testData(dir) {
             secret()
         }
@@ -128,7 +140,6 @@ class TxIT {
                 )
         )) {
             TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth")
-                    .verbose()
                     .setWorkingDir(dir.toFile())
                     .start()
 
@@ -137,6 +148,18 @@ class TxIT {
             assertThat(operations[0].opName).isEqualTo("ft4.ft_auth")
             assertThat(operations[0].args).containsExactly(gtv("1".repeat(64).hexStringToByteArray()), gtv("2".repeat(64).hexStringToByteArray()))
             assertThat(operations[1].opName).isEqualTo("call_op")
+        }
+    }
+
+    @Test
+    fun failingTxExitCode(@TempDir dir: Path) {
+        testData(dir)
+        withModel(AlwaysFailingModel(testBrid, TransactionStatus.REJECTED)) {
+            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--await")
+                    .exitCode(1)
+                    .setWorkingDir(dir.toFile())
+                    .start()
+
         }
     }
 }

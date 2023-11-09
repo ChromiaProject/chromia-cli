@@ -8,14 +8,15 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
-import mu.KotlinLogging
-import net.postchain.rell.api.base.RellCliException
-import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.sql.SQLException
 import kotlin.system.exitProcess
+import mu.KotlinLogging
+import net.postchain.client.exception.ClientError
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.base.RellCliExitException
 
 open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
@@ -66,6 +67,9 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
         try {
             main(args.asList())
         } catch (e: RellCliExitException) {
+            exitProcess(1)
+        } catch (e: ClientError) {
+            echo(e.message, err = true)
             exitProcess(1)
         } catch (e: RellCliException) {
             echo(e.message, err = true)
