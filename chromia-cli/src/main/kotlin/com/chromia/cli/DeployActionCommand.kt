@@ -42,7 +42,10 @@ open class DeployActionCommand(
 
     override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
         for ((chain, _) in deployTxs) {
-            echo("${action.name} of blockchain ${chain.name} was successful")
+            echo("${action.name} of blockchain \"${chain.name}\" was successful")
+            if (action == BlockchainAction.remove) {
+                echo("INFO: Clean up deployment \"${chain.name}\" from your config file under chains for network \"$target\", as it is no longer a valid deployment")
+            }
         }
     }
 }
