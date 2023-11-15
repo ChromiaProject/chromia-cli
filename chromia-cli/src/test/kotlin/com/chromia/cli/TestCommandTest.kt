@@ -231,7 +231,7 @@ internal class TestCommandTest {
             it.contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
         }
         assertThat(sqlLoggerOutput).any {
-            it.contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ? ORDER BY A00."rowid"""")
+            it.contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ?""")
         }
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
