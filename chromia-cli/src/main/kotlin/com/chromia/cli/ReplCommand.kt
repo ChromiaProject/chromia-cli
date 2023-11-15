@@ -36,6 +36,7 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
     private val command by option("-c", "--command", help = "Execute a single command", metavar = "COMMAND")
+    private val rawOutput by option("-r", "--raw-output", help = "Will print large object line by line and strings without quotes").flag()
 
     override fun run() {
 
@@ -69,15 +70,15 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
 
-    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>): ReplInputChannelFactory() {
+    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>): ReplInputChannelFactory {
         override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
             val commandIterator = commands.iterator()
             override fun readLine(prompt: String) = if (commandIterator.hasNext()) commandIterator.next() else null
         }
     }
 
-    private inner class CliktOutputChannelFactory(private val failOnError: Boolean): ReplOutputChannelFactory() {
-        private var valueFormat = ReplValueFormat.ONE_ITEM_PER_LINE
+    private inner class CliktOutputChannelFactory(private val failOnError: Boolean): ReplOutputChannelFactory {
+        private var valueFormat = if (rawOutput) ReplValueFormat.ONE_ITEM_PER_LINE else ReplValueFormat.GTV_STRING
         override fun createOutputChannel() = object: ReplOutputChannel {
             override fun printInfo(msg: String) = echo(msg)
             override fun printCompilerError(code: String, msg: String) = if (failOnError) throw PrintMessage(msg, 1) else echo(msg, err = true)

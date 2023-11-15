@@ -23,15 +23,16 @@ import com.github.ajalt.mordant.rendering.TextStyle
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.gtx.RellApiRunTests
 import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.Rt_Printer
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
+import net.postchain.rell.base.utils.UnitTestResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 
@@ -111,9 +112,6 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>,
                                  appModuleInTestsError: Boolean = false): RellApiRunTests.Config {
-        val printer = object : Rt_Printer {
-            override fun print(str: String) = echo(str)
-        }
         val compileConf = RellApiCompile.Config.Builder()
                 .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
@@ -130,8 +128,8 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
                 .stopOnError(settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
-                .logPrinter(printer)
-                .outPrinter(printer)
+                .logPrinter(::echo)
+                .outPrinter(::echo)
                 .printTestCases(false)
                 .onTestCaseStart { case -> case.print() }
                 .onTestCaseFinished { res -> res.print() }
@@ -155,9 +153,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun UnitTestCaseResult.print() {
         if (res.isOk) {
-            echo("${success(res.toString())}: $case")
+            echo("${success(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
         } else {
-            echo("${warning(res.toString())}: $case")
+            echo("${warning(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
         }
     }
 
@@ -186,8 +184,9 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         val nTests = results.getResults().size
         val nOk = okTests.size
         val nFailed = failedTests.size
+        val duration = results.getResults().fold(Duration.ZERO) { acc, res -> acc.plus(res.res.duration) }
 
-        echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL\n")
+        echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL (${UnitTestResult.durationToString(duration)})\n")
 
         if (nFailed == 0) {
             currentContext.terminal.success("***** OK *****")
