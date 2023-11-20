@@ -8,17 +8,36 @@ import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
-import java.nio.file.Path
 
 internal class GenerateClientStubsCommandTest {
 
     @RegisterExtension
     val command = CommandExtension(GenerateClientStubsCommand().context { })
     val dir get() = command.dir
+
+    @Test
+    fun errorMessageIncludeAllStubTargets() {
+        val exception = assertThrows<IllegalArgumentException> {
+            command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
+        }
+        assertThat(exception.message).isEqualTo("Missing language option: [--typescript, --javaScript, --mermaid, --kotlin]")
+    }
+
+
+    //TODO known bug were multiple languages can be chosen but only the last one is generated
+
+    @Disabled
+    @Test
+    fun errorMessageToManyStubTargets() {
+        assertThrows<IllegalArgumentException> {
+            command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml", "--kotlin", "--typescript"))
+        }
+    }
 
     @Test
     fun generateKotlin() {
