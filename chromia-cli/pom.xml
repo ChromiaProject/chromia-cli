@@ -52,7 +52,7 @@
                         </goals>
                         <configuration>
                             <packageName>com.chromia.directory1</packageName>
-                            <mainModule>version,proposal_blockchain</mainModule>
+                            <mainModule>version,proposal_blockchain,common.queries</mainModule>
                         </configuration>
                     </execution>
                 </executions>

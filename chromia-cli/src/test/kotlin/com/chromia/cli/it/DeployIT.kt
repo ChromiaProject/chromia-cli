@@ -1,12 +1,11 @@
 package com.chromia.cli.it
 
-import com.chromia.build.tools.TestModel
-import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
+import com.chromia.build.tools.TestModel
+import com.chromia.build.tools.TestProcess
+import com.chromia.cli.util.getContainerDataResult
 import com.chromia.cli.util.testData
-import java.io.File
-import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -18,6 +17,8 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {
@@ -31,6 +32,8 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
             "api_version" -> gtv(9)
             "find_blockchain_rid" -> gtv("039B9ED551D5BDCC52FF9418ED77FBA7D761B24B7D06596829771A6DEA50E613".hexStringToByteArray())
             "rell.get_rell_version" -> gtv("0.13.1")
+            "get_container_data" -> gtv(getContainerDataResult("name"))
+            "get_cluster_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
             else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }
