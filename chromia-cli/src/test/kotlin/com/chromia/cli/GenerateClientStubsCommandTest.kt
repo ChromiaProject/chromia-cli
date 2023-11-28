@@ -25,7 +25,7 @@ internal class GenerateClientStubsCommandTest {
         val exception = assertThrows<IllegalArgumentException> {
             command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
         }
-        assertThat(exception.message).isEqualTo("Missing language option: [--typescript, --javaScript, --mermaid, --kotlin]")
+        assertThat(exception.message).isEqualTo("Missing language option: [--typescript, --javascript, --mermaid, --kotlin]")
     }
 
 

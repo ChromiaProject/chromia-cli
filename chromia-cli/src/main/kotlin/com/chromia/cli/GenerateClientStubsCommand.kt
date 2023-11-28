@@ -84,7 +84,7 @@ class JavascriptOption : JavascriptCodeGeneratorConfig, LanguageOption(Supported
 
 enum class SupportedLanguages(val alias: String) {
     TYPESCRIPT("typescript"),
-    JAVASCRIPT("javaScript"),
+    JAVASCRIPT("javascript"),
     MERMAID("mermaid"),
     KOTLIN("kotlin"),
 }
