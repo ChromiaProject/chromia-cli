@@ -1,5 +1,8 @@
 package com.chromia.build.tools.compile
 
+import com.chromia.build.tools.icmf.InMemoryIcmfReceiverGtxModule
+import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastructureExtension
+import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import java.io.File
@@ -24,7 +27,8 @@ internal class BlockchainConfigurationGenerator(
         private val compileModel: CompileModel,
         private val blockchainModels: Map<String, BlockchainModel>,
         private val sourceDir: File,
-        private val filterModules: Boolean) {
+        private val filterModules: Boolean,
+        private val inMemoryIcmf: Boolean) {
 
     private val whiteListedGtxModules = listOf(
             "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
@@ -32,6 +36,15 @@ internal class BlockchainConfigurationGenerator(
             "net.postchain.d1.icmf.IcmfSenderGTXModule",
             "net.postchain.d1.icmf.IcmfReceiverGTXModule",
             "net.postchain.d1.iccf.IccfGTXModule",
+    )
+
+    private val inMemoryGtxModules = mapOf(
+            "net.postchain.d1.icmf.IcmfSenderGTXModule" to InMemoryIcmfSenderGtxModule::class.qualifiedName!!,
+            "net.postchain.d1.icmf.IcmfReceiverGTXModule" to InMemoryIcmfReceiverGtxModule::class.qualifiedName!!,
+    )
+
+    private val inMemorySyncInfraExt = mapOf(
+            "net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension" to InMemoryIcmfReceiverSynchronizationInfrastructureExtension::class.qualifiedName!!
     )
 
     fun generate(): Collection<ChromiaCompileResult> {
@@ -77,6 +90,29 @@ internal class BlockchainConfigurationGenerator(
         return gtvBuilder.build()
     }
 
+    private fun replaceInMemoryIcmf(configuration: Gtv): Gtv {
+        val gtvBuilder = GtvBuilder()
+        gtvBuilder.update(configuration)
+
+        val configModules = configuration["gtx"]?.get("modules")!!.asArray().map { it.asString() } // Not null since default values are added
+        if (configModules.intersect(inMemoryGtxModules.keys).isNotEmpty()) {
+            cliEnv.error("WARNING: Replacing Icmf GTX Module with in-memory version, all unprocessed messages will be lost upon node restart")
+            cliEnv.error("DO NOT RUN IN PRODUCTION")
+        }
+        configModules
+                .map { gtv(inMemoryGtxModules.getOrDefault(it, it)) }
+                .map { GtvNode.decode(it) }
+                .let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
+                .apply { gtvBuilder.update(this, "gtx", "modules") }
+
+        configuration["sync_ext"]?.asArray()
+                ?.map { gtv(inMemorySyncInfraExt.getOrDefault(it.asString(), it.asString())) }
+                ?.map { GtvNode.decode(it) }
+                ?.let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
+                ?.apply { gtvBuilder.update(this, "sync_ext") }
+        return gtvBuilder.build()
+    }
+
     private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
         val b = GtvBuilder()
         addDefault(b, blockchainModel)
@@ -95,11 +131,9 @@ internal class BlockchainConfigurationGenerator(
 
         blockchainModel.config.filterKeys { it != "modules" }
                 .forEach { (path, value) -> b.update(value, path) }
-        return if (filterModules) {
-            filterModules(b.build())
-        } else {
-            b.build()
-        }
+        return b.build()
+                .let { if (inMemoryIcmf) replaceInMemoryIcmf(it) else it }
+                .let { if (filterModules) filterModules(it) else it }
     }
 
     private fun addDefault(b: GtvBuilder, blockchainModel: BlockchainModel) {

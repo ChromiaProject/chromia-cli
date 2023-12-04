@@ -57,6 +57,10 @@ class ConfigBuilder {
     private var deployments = ""
     private var libs = ""
     private var test = ""
+    private var database = """
+        database:
+          schema: integration_test_schema
+    """.trimIndent()
 
     fun blockchains(init: String) {
         content = init
@@ -80,6 +84,7 @@ class ConfigBuilder {
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
         if (libs.isNotEmpty()) sb.append("\n$libs")
         if (test.isNotEmpty()) sb.append("\n$test")
+        sb.append("\n$database")
         File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }
 }

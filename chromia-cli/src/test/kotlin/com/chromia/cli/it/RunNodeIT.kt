@@ -46,4 +46,71 @@ class RunNodeIT {
                             .start()
                 }
     }
+
+    @Test
+    fun icmfMessageIsReceived(@TempDir dir: Path) {
+
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      sender:
+                        module: sender
+                        config:
+                          blockstrategy:
+                            maxblocktime: 1000
+                          gtx:
+                            modules:
+                              - "net.postchain.d1.icmf.IcmfSenderGTXModule"
+                      receiver:
+                        module: receiver
+                        config:
+                          icmf:
+                            receiver:
+                              local:
+                                - bc-rid: x""
+                                  topic: "L_msg"
+                          gtx:
+                            modules:
+                              - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
+                          sync_ext:
+                            - "net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension"
+                """.trimIndent())
+            }
+            addFile("sender.rell", """
+                module;
+                operation send_message(text) {
+                    op_context.emit_event("icmf_message", (topic = "L_msg", body = text.to_gtv()).to_gtv_pretty());
+                }
+            """.trimIndent())
+            addFile("receiver.rell", """
+                module;
+                entity msg {
+                  topic: text;
+                  msg: text;
+                }
+                operation __icmf_message(sender: byte_array, topic: text, body: gtv) {
+                    create msg(topic = topic, msg = text.from_gtv(body));
+                }
+                query get_messages() = msg @*{}($.to_struct());
+                operation dummy() {}
+            """.trimIndent())
+        }
+        TestProcess.Builder("node", "start", "--wipe")
+                .awaitCompletion(false)
+                .verbose()
+                // Wait for first chain to start
+                .startCondition("Blockchain has been started")
+                .setWorkingDir(dir.toFile())
+                .start {
+                    // Wait for second chain to start
+                    it.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
+                    // Send message
+                    TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted CONFIRMED").start()
+                    // Make sure a block gets built by making a dummy operation (We could also just wait maxBlockTime)
+                    TestProcess.Builder("tx", "--cid", "1", "dummy", "--await").startCondition("was posted CONFIRMED").start()
+                    // Verify that message was received
+                    TestProcess.Builder("query", "--cid", "1", "get_messages").startCondition("[{msg=\"Hello!\", topic=\"L_msg\"}]").start()
+                }
+    }
 }
