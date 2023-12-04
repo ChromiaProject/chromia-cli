@@ -8,8 +8,6 @@ import com.chromia.build.tools.RestApiInstance.withModel
 import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
-import java.nio.file.Path
-import java.time.Duration
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -24,6 +22,8 @@ import net.postchain.gtx.Gtx
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import java.time.Duration
 
 
 class TxRecorderModel(val model: Model) : Model by model {
@@ -36,8 +36,8 @@ class TxRecorderModel(val model: Model) : Model by model {
     }
 }
 
-class AlwaysFailingModel(val model: Model, val status: TransactionStatus): Model by model {
-    constructor(blockchainRid: BlockchainRid, status: TransactionStatus): this(TestModel(blockchainRid), status)
+class AlwaysFailingModel(val model: Model, val status: TransactionStatus) : Model by model {
+    constructor(blockchainRid: BlockchainRid, status: TransactionStatus) : this(TestModel(blockchainRid), status)
 
 
     override fun postTransaction(tx: ByteArray) = Unit
@@ -118,9 +118,10 @@ class TxIT {
 
     @Test
     fun queryWithFtAuth(@TempDir dir: Path) {
-        testData(dir) {
+        val testDataBuilder = testData(dir) {
             secret()
         }
+        val pubKey = testDataBuilder.secretKeyPair.pubKey
 
         val txRecorderModel = TxRecorderModel(testBrid)
         withModel(Ft4Model(
@@ -130,7 +131,7 @@ class TxIT {
                         "ft4.get_accounts_by_participant_id" to gtv(gtv("1".repeat(64).hexStringToByteArray())),
                         "ft4.get_account_auth_descriptors_by_participant_id" to gtv(gtv(mapOf(
                                 "id" to gtv("2".repeat(64).hexStringToByteArray()),
-                                "args" to gtv(gtv(gtv("A")), gtv(testBrid)),
+                                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                                 "created" to gtv(System.currentTimeMillis()),
                                 "auth_type" to gtv("A"),
                                 "rules" to GtvNull
