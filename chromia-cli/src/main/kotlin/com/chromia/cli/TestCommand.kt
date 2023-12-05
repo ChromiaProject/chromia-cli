@@ -1,6 +1,8 @@
 package com.chromia.cli
 
 import com.chromia.build.tools.test.xmlTestReport
+import com.chromia.cli.model.BlockchainModel
+import com.chromia.cli.model.TestModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
@@ -12,6 +14,7 @@ import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -38,12 +41,12 @@ import net.postchain.rell.base.utils.UnitTestRunnerResults
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
-    private val blockchains by blockchainOption(help = "Select which blockchain(s) to test", metavar = "BLOCKCHAIN")
+    private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s). Can only be a single chain if used together with -m", metavar = "BLOCKCHAIN")
             .multiple()
-    private val modules by modulesOption()
+    private val modules by modulesOption("Run tests in this module(s) only. Must be the part of the specified modules or its submodules. Comma delimited, will default to all modules either under each selected blockchain or test")
     private val settings by chromiaModelOption()
     private val sqlLog by logSqlOption()
-    private val tests by option(help = "test method pattern").split(",")
+    private val tests by option(help = "test method pattern", metavar = "").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
@@ -70,10 +73,15 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     private fun runBlockchainTests(testReportPath: Path) {
+        validateSingleModuleSelected()
+        blockchains.forEach { validateContainsModule(it) }
+
         settings.model.blockchains
                 .filter { it.value.test.modules.isNotEmpty() }
                 .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
-                .forEach { runTestsForChain(it.key, testReportPath) }
+                .forEach {
+                    runTestsForBlockchain(it.key, testReportPath)
+                }
     }
 
     private fun runUnitTests(testReportPath: Path) {
@@ -89,16 +97,36 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         printResults(res)
     }
 
-    private fun shouldRunUnitTests() = blockchains.isEmpty() || modules != null
+    private fun shouldRunUnitTests() = blockchains.isEmpty()
 
-    private fun shouldRunBlockchainTests() = modules == null || blockchains.isNotEmpty()
+    private fun shouldRunBlockchainTests() = blockchains.isNotEmpty()
 
-    private fun runTestsForChain(blockchain: String, testReportPath: Path) {
-        val chainConfig = settings.model.blockchains[blockchain]
+    private fun validateSingleModuleSelected() {
+        if (blockchains.size > 1 && !modules.isNullOrEmpty()) {
+            throw PrintMessage("Only one blockchain is allowed when specifying module", statusCode = 1)
+        }
+    }
+
+    private fun validateContainsModule(blockchain: String) {
+        val chainConfig = getBlockchainConfig(blockchain)
+        if (!modules.isNullOrEmpty()) {
+            modules!!.forEach { m ->
+                if (!chainConfig.test.modules.any { bcm -> m.startsWith(bcm) })
+                    throw PrintMessage("Test module \"$m\" is not defined under blockchain \"$blockchain\"", statusCode = 1)
+            }
+        }
+    }
+
+    private fun getBlockchainConfig(blockchain: String): BlockchainModel {
+        return settings.model.blockchains[blockchain]
                 ?: throw CliktError("Blockchain '$blockchain' not found")
+    }
+
+    private fun runTestsForBlockchain(blockchain: String, testReportPath: Path) {
+        val chainConfig = getBlockchainConfig(blockchain)
 
         val appModules = listOf(chainConfig.module)
-        val testModules = chainConfig.test.modules
+        val testModules = modules ?: chainConfig.test.modules
         val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
         val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
 

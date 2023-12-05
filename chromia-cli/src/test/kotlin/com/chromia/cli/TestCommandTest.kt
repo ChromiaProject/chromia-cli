@@ -97,9 +97,78 @@ internal class TestCommandTest {
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
     }
 
+
     @Test
     fun testBlockchain() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+    }
+
+    @Test
+    fun testBlockchainWithModuleSpecific() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "testDir.foo", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun testBlockchainWithDirSpecific() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "testDir", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+    }
+
+    @Test
+    fun testBlockchainWithModuleNotInScope() {
+        val throwable = assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "test,test2", "--no-db"))
+        }
+        assertThat(throwable.message!!).contains("Test module \"test\" is not defined under blockchain \"hello\"")
+    }
+
+    @Test
+    fun testMultipleBlockchainsWithModule() {
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+                    hello2:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+            """.trimIndent())
+        }
+
+        val throwable = assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-bc", "hello2", "-m", "testDir.foo", "--no-db"))
+        }
+
+        assertThat(throwable.message!!).contains("Only one blockchain is allowed when specifying module")
+    }
+
+    @Test
+    fun testMultipleBlockchainsWithoutModule() {
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+                    hello2:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+            """.trimIndent())
+        }
+
+
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-bc", "hello2", "--no-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
@@ -121,6 +190,32 @@ internal class TestCommandTest {
 
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--tests", "test_a", "--no-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun testUnitMultipleModules() {
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                test:
+                  modules:
+                    - testDir
+            """.trimIndent())
+        }
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "testDir.bar,testDir.foo", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+    }
+
+    @Test
+    fun testUnitMultipleModulesOnlyRunsTestsOnceWhenDuplicateInvocations() {
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                test:
+                  modules:
+                    - testDir
+            """.trimIndent())
+        }
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "testDir,testDir.foo", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
     @Test

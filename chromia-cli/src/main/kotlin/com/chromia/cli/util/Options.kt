@@ -30,7 +30,7 @@ fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, mustBeReadable = true)
 
-fun CliktCommand.modulesOption(help: String = "Select which modules to test, will default to tests in settings file (Comma separated)") =
+fun CliktCommand.modulesOption(help: String) =
         option("-m", "--modules", help = help, metavar = "MODULES")
                 .split(",")
 
