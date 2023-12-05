@@ -4,6 +4,11 @@ import com.chromia.build.tools.compile.withSigner
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.wipeDatabaseOption
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.options.option
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import kotlin.system.exitProcess
 import mu.withLoggingContext
 import net.postchain.PostchainNode
 import net.postchain.StorageInitializer
@@ -29,6 +34,7 @@ class StartCommand : AbstractNodeCommand(help = """
     private val sqlLog by logSqlOption()
     private val wipe by wipeDatabaseOption()
     val cryptoSystem = Secp256K1CryptoSystem()
+    private val script by option(help = "Script to run")
 
     override fun run() {
         startPostchainNode()
@@ -80,6 +86,17 @@ class StartCommand : AbstractNodeCommand(help = """
             }
             chainsToStart.forEach {
                 node.startBlockchain(it)
+            }
+            script?.let { s ->
+                val process = ProcessBuilder(s.split(" "))
+                        .directory(File("."))
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .start()
+                val reader = BufferedReader(InputStreamReader(process.inputStream))
+                while (process.isAlive) {
+                    reader.readLine()?.let { echo(it) }
+                }
+                exitProcess(process.waitFor())
             }
         }
     }
