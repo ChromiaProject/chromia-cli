@@ -2,28 +2,25 @@ package com.chromia.cli.it
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.build.tools.RestApiInstance
-import com.chromia.build.tools.TestModel
-import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
-import com.chromia.cli.model.ChromiaModel
+import com.chromia.build.tools.TestModel
+import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
-import java.io.File
-import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class SuccessfulDeploymentActionModel(val model: Model) : Model by model {
@@ -32,7 +29,10 @@ class SuccessfulDeploymentActionModel(val model: Model) : Model by model {
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
     override fun postTransaction(tx: ByteArray) {}
     override fun query(query: GtxQuery): Gtv {
-        return GtvNull
+        return when (query.name) {
+            "get_compressed_configuration_parts" -> GtvFactory.gtv(listOf())
+            else -> GtvNull
+        }
     }
 }
 

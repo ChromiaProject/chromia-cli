@@ -10,8 +10,17 @@ object DeploymentTestDataCreator {
             parentFile.mkdirs()
             writeText("""
                 module;
+                import a_file.*;
                 query hello() = "Hi!";
                 operation call_op(value: integer) {}
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "src/a_file.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query hello_a() = "Hi!";
+                operation call_op_a(value: integer) {}
             """.trimIndent())
         }
         with(File(dir.toFile(), "chromia.yml")) {

@@ -8,12 +8,10 @@ import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClient
-import com.chromia.cli.util.TestConfiguration
 import com.chromia.cli.util.TestClusterManagement
+import com.chromia.cli.util.TestConfiguration
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellCliBasicException
@@ -24,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
@@ -50,6 +50,7 @@ class DeployUpdateCommandTest {
         assertThat(operations.map { it.opName }).containsExactly("nop", "propose_configuration")
         assertThat(operations.last().args).containsAll(gtv("03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05".hexStringToByteArray()), gtv("0000000000000000000000000000000000000000000000000000000000000002".hexStringToByteArray()), gtv(""))
         assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
+        assertThat(testDir.resolve("build/deployed_compressed.xml").toFile().readText()).contains("<entry key=\"compressed_roots\">")
     }
 
     @Test // TODO: Should only work if chain is in system cluster
@@ -111,6 +112,14 @@ class DeployUpdateCommandTest {
         assertThat(res.output).contains("Skipping verification of blockchain config")
         assertThat(res.output).doesNotContain("Blockchain deployed was successfully verified against deployed chain on network test")
         assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
+    }
+
+    @Test
+    fun successfulDeploymentWithoutCompression() {
+        val config = TestConfiguration()
+        val res = DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--no-compression"))
+        assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
+        assertThat(testDir.resolve("build/deployed.xml").toFile().readText()).doesNotContain("<entry key=\"compressed_roots\">")
     }
 
     private fun testHttpHandler(invalidUpdate: Boolean = false): (Request) -> Response = {

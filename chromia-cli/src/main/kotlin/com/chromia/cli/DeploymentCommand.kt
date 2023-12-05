@@ -1,11 +1,14 @@
 package com.chromia.cli
 
+import com.chromia.build.tools.compile.BlockchainConfigurationWriter
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.cli.tools.config.BlockchainConfigurationCompressor
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.client
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.launcher.createAliases
+import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
@@ -16,6 +19,8 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
@@ -50,7 +55,15 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
             .validate { require(settings.model.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
             .validate { require(settings.model.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
+    private val noCompression by option("--no-compression", help = "If compression on rell sources should not be done").flag()
 
+    protected val client by lazy {
+        val client = createClient()
+        if (client.config.signers.isEmpty()) {
+            throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or in the config.", statusCode = 1)
+        }
+        client
+    }
 
     protected val deployModel by lazy {
         val deployModel = settings.model.deployments[target]
@@ -70,11 +83,6 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
         val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
-        val client = createClient()
-        if (client.config.signers.isEmpty()) {
-            throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or in the config.", statusCode = 1)
-        }
-
         beforeDeployment(compiledChains, client)
 
         var failure = false
@@ -83,7 +91,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client
                         .transactionBuilder()
                         .addNop()
-                        .apply { addDeploymentOperation(client, client.config, chain) }
+                        .apply { addDeploymentOperation(client, client.config, configToDeploy(chain)) }
                         .post()
                 if (result.status == TransactionStatus.REJECTED) {
                     echo("Deployment of blockchain ${chain.name} failed: ${result.rejectReason ?: ""}", err = true)
@@ -129,5 +137,15 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     private fun chainsToDeploy(): Collection<String> {
         return blockchain ?: settings.model.blockchains.keys
+    }
+
+    protected fun configToDeploy(chain: ChromiaCompileResult): ChromiaCompileResult {
+        return if (noCompression) {
+            chain
+        } else {
+            val configWithCompressionInfo = BlockchainConfigurationCompressor.compress(client, chain.config, client.apiVersion)
+            BlockchainConfigurationWriter.storeConfig(configWithCompressionInfo, "${chain.name}_compressed", settings.model.compile.targetFile(settings.projectFolder).toPath())
+            return ChromiaCompileResult(chain.name, configWithCompressionInfo)
+        }
     }
 }

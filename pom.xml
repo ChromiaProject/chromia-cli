@@ -25,7 +25,7 @@
         <postchain.client.version>3.11.6</postchain.client.version>
         <rell.version>0.13.5</rell.version>
         <eif.version>0.2.10</eif.version>
-        <directory.chain.version>1.12.0</directory.chain.version>
+        <directory.chain.version>1.28.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <jgit.version>6.7.0.202309050840-r</jgit.version>
@@ -452,6 +452,7 @@
                 <scope>test</scope>
             </dependency>
 
+            <!--TODO: See if we can remove this after the update of keygen-->
             <dependency>
                 <groupId>org.bitcoinj</groupId>
                 <artifactId>bitcoinj-core</artifactId>
@@ -633,6 +634,54 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>artifact</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>!local</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <inherited>false</inherited>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-scm-plugin</artifactId>
+                        <version>1.11.2</version>
+                        <executions>
+                            <execution>
+                                <id>d1-resources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>checkout</goal>
+                                </goals>
+                                <configuration>
+                                    <connectionUrl>scm:git:https://gitlab.com/chromaway/core/directory-chain.git
+                                    </connectionUrl>
+                                    <checkoutDirectory>${project.build.directory}/directory-chain
+                                    </checkoutDirectory>
+                                    <scmVersion>${directory.chain.version}</scmVersion>
+                                    <scmVersionType>tag</scmVersionType>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>local</id>
+            <activation>
+                <property>
+                    <name>local</name>
+                </property>
+            </activation>
+            <properties>
+                <directory.source>${project.basedir}/../../directory-chain/src</directory.source>
+            </properties>
         </profile>
     </profiles>
 

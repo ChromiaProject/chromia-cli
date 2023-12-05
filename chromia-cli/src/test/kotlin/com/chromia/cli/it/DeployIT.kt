@@ -34,6 +34,7 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
             "rell.get_rell_version" -> gtv("0.13.1")
             "get_container_data" -> gtv(getContainerDataResult("name"))
             "get_cluster_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
+            "get_compressed_configuration_parts" -> gtv(listOf())
             else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }

@@ -58,7 +58,7 @@ class DeployUpdateCommand(
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
-        val compiledConfig = GtvMLEncoder.encodeXMLGtv(chain.config)
+        val compiledConfig = GtvMLEncoder.encodeXMLGtv(configToDeploy(chain).config)
         val httpHandler = httpHandlerFactory(client.config)
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
 

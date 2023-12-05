@@ -52,10 +52,11 @@ open class TestClient(
     override fun transactionBuilder(signers: List<KeyPair>) = TODO("Not yet implemented")
 
     override fun query(name: String, args: Gtv): Gtv = when (name) {
-        "api_version" -> gtv(8)
+        "api_version" -> gtv(28)
         "find_blockchain_rid" -> gtv(BlockchainRid.ZERO_RID.data)
         "get_container_data" -> gtv(getContainerDataResult(args["name"].toString()))
         "get_cluster_api_urls" -> gtv(listOf(gtv("http://node1_url"), gtv("http://node2_url")))
+        "get_compressed_configuration_parts" -> gtv(listOf(args["configuration_part_hashes"]!![0]))
         else -> TODO("Not yet implemented")
     }
 }

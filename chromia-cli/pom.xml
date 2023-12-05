@@ -18,7 +18,7 @@
 
     <properties>
         <revision>dev</revision>
-        <directory.source>${project.build.directory}/directory-chain/src</directory.source>
+        <directory.source>${project.parent.build.directory}/directory-chain/src</directory.source>
 
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
 
@@ -295,51 +295,6 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>artifact</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-                <property>
-                    <name>!local</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-scm-plugin</artifactId>
-                        <version>1.11.2</version>
-                        <executions>
-                            <execution>
-                                <id>d1-resources</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>checkout</goal>
-                                </goals>
-                                <configuration>
-                                    <connectionUrl>scm:git:https://gitlab.com/chromaway/core/directory-chain.git
-                                    </connectionUrl>
-                                    <checkoutDirectory>${project.build.directory}/directory-chain</checkoutDirectory>
-                                    <scmVersion>${directory.chain.version}</scmVersion>
-                                    <scmVersionType>tag</scmVersionType>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>local</id>
-            <activation>
-                <property>
-                    <name>local</name>
-                </property>
-            </activation>
-            <properties>
-                <directory.source>${project.basedir}/../../directory-chain/src</directory.source>
-            </properties>
-        </profile>
         <profile>
             <id>docker</id>
             <build>

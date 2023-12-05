@@ -2,6 +2,7 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DeploymentTestDataCreator
@@ -21,6 +22,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.notExists
 
 
 class DeployCreateCommandTest {
@@ -28,7 +30,6 @@ class DeployCreateCommandTest {
 
     @TempDir
     private lateinit var testDir: Path
-
     private lateinit var settingsFile: File
     private lateinit var settings: ChromiaModel
     private lateinit var secret: File
@@ -53,7 +54,7 @@ class DeployCreateCommandTest {
         }
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body(settings.compile.rellVersion))
         val throwable = assertThrows<RellCliBasicException> {
-            DeployCreateCommand({ httpHandler }, mock()).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
+            DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "wrongConfig", "--network", "test"))
         }
         assertThat(throwable.message!!).contains("Bad module_args for module 'main': Decoding type 'text': expected STRING, actual DICT")
     }
@@ -78,5 +79,26 @@ class DeployCreateCommandTest {
     fun parseResumeAttributeNetworkMissing() {
         val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
         assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
+    }
+
+    @Test
+    fun compressionConfigGetsAddedToXmlConfig() {
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.12.0"))
+        DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test", "-y"))
+
+        val buildGtx = testDir.resolve("build/hello.xml").toFile().readText()
+        val buildGtxCompressed = testDir.resolve("build/hello_compressed.xml").toFile().readText()
+        assertThat(buildGtxCompressed).contains("<entry key=\"compressed_roots\">")
+        assertThat(buildGtxCompressed).doesNotContain("<entry key=\"a_file.rell\">")
+        assertThat(buildGtx).doesNotContain("<entry key=\"compressed_roots\">")
+        assertThat(buildGtx).contains("<entry key=\"a_file.rell\">")
+    }
+
+
+    @Test
+    fun noCompressionConfigGetsAddedToXmlConfig() {
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.12.0"))
+        DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test", "-y", "--no-compression"))
+        assertThat(testDir.resolve("build/hello_compressed.xml").notExists())
     }
 }
