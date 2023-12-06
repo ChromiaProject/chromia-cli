@@ -86,6 +86,13 @@ internal class TestCommandTest {
     }
 
     @Test
+    fun testRunningAllTests() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL") //Blockchain test
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL") //Unit test
+    }
+
+    @Test
     fun testFilter() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--tests", "test_a", "--no-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")

@@ -99,7 +99,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
     private fun shouldRunUnitTests() = blockchains.isEmpty()
 
-    private fun shouldRunBlockchainTests() = blockchains.isNotEmpty()
+    private fun shouldRunBlockchainTests() = modules == null || (modules!!.isNotEmpty() && blockchains.isNotEmpty())
 
     private fun validateSingleModuleSelected() {
         if (blockchains.size > 1 && !modules.isNullOrEmpty()) {
