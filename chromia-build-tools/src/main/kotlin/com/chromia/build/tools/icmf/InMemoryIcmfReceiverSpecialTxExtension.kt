@@ -1,5 +1,6 @@
 package com.chromia.build.tools.icmf
 
+import java.util.concurrent.ConcurrentHashMap
 import net.postchain.base.SpecialTransactionPosition
 import net.postchain.common.BlockchainRid
 import net.postchain.core.BlockEContext
@@ -10,12 +11,15 @@ import net.postchain.gtx.special.GTXSpecialTxExtension
 
 class InMemoryIcmfReceiverSpecialTxExtension: GTXSpecialTxExtension {
     lateinit var topics: List<String>
-    private val lastReadMessagePerTopic = mutableMapOf<String, Int>()
+    private val lastReadMessagePerTopic = ConcurrentHashMap<String, Int>()
     override fun createSpecialOperations(position: SpecialTransactionPosition, bctx: BlockEContext): List<OpData> {
         return topics.flatMap { topic ->
             val lastSeenMessageIndex = lastReadMessagePerTopic.getOrPut(topic) { 0 }
             val messages = InMemoryIcmfMessageQueue.getMessages( lastSeenMessageIndex, topic )
-            bctx.addAfterCommitHook { lastReadMessagePerTopic[topic] = lastSeenMessageIndex + messages.size }
+            val size = messages.size // To not get ConcurrentModificationException in after commit hook
+            bctx.addAfterCommitHook {
+                lastReadMessagePerTopic[topic] = lastSeenMessageIndex + size
+            }
             messages.map { msg -> msg.toOpData() }
         }
     }
