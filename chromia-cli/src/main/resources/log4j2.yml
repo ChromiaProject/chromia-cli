@@ -1,7 +1,7 @@
 Properties:
   Property:
     - name: logpattern
-      value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+      value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS}%replace{%notEmpty{ [%notEmpty{bc-rid=%.-2X{blockchainRID}:%.4X{blockchainRID}}%notEmpty{, chain-id=%X{chainIID}}%notEmpty{, block-rid=%.-2X{blockRID}:%.4X{blockRID}}]}}{\\[, }{[} - [%t] %c{1} %msg%n"
 
 Appenders:
   Console:
@@ -36,3 +36,7 @@ Loggers:
         - ref: ConsoleAppender
         - ref: LogToRollingFile
           level: warn
+    - name: net.postchain.gtv.merkle
+      level: error
+    - name: net.postchain.network.peer.DefaultPeerCommunicationManager
+      level: info
