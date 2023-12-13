@@ -12,8 +12,8 @@ Appenders:
 
   RollingFile:
     name: LogToRollingFile
-    fileName: ${sys:CHR_LOG_FOLDER:-logs}/chromia-cli.log
-    filePattern: "${sys:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
+    fileName: ${env:CHR_LOG_FOLDER:-logs}/chromia-cli.log
+    filePattern: "${env:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
     createOnDemand: true
     PatternLayout:
       pattern: ${logpattern}
@@ -25,12 +25,12 @@ Appenders:
 
 Loggers:
   Root:
-    level: ${sys:CHR_LOG_LEVEL:-warn}
+    level: warn
     AppenderRef:
       - ref: LogToRollingFile
   Logger:
     - name: net.postchain
-      level: ${sys:CHR_LOG_LEVEL:-info}
+      level: ${env:CHR_LOG_LEVEL:-info}
       additivity: false
       AppenderRef:
         - ref: ConsoleAppender
