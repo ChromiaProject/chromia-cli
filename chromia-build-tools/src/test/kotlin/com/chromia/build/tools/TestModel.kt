@@ -1,6 +1,7 @@
 package com.chromia.build.tools
 
 import net.postchain.api.rest.BlockHeight
+import net.postchain.api.rest.BlockchainNodeState
 import net.postchain.api.rest.TransactionsCount
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
@@ -27,6 +28,10 @@ class TestModel(override val blockchainRid: BlockchainRid, override val chainIID
     }
 
     override fun getBlockchainConfiguration(height: Long): ByteArray? {
+        TODO("Not yet implemented")
+    }
+
+    override fun getBlockchainNodeState(): BlockchainNodeState {
         TODO("Not yet implemented")
     }
 
