@@ -1,0 +1,473 @@
+{
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "ChromiaModel",
+  "description": "Chromia Model",
+  "additionalProperties": false,
+  "required": [
+    "blockchains"
+  ],
+  "properties": {
+    "definitions": {
+      "type": [
+        "object",
+        "array"
+      ],
+      "description": "Any additional properties you want to reference elsewhere"
+    },
+    "blockchains": {
+      "type": "object",
+      "description": "Configuration properties for a blockchain",
+      "additionalProperties": {
+        "$ref": "#/$defs/blockchain"
+      }
+    },
+    "test": {
+      "type": "object",
+      "description": "Configuration for unit tests",
+      "additionalProperties": false,
+      "properties": {
+        "modules": {
+          "$ref": "#/$defs/testModules"
+        },
+        "moduleArgs": {
+          "$ref": "#/$defs/moduleArgs"
+        },
+        "failOnError": {
+          "type": "boolean",
+          "description": "Fail build on first test error or not"
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "description": "Database options",
+      "additionalProperties": false,
+      "required": [
+        "schema"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Database hostname (default: localhost)"
+        },
+        "database": {
+          "type": "string",
+          "description": "Database name (default: postchain)"
+        },
+        "username": {
+          "type": "string",
+          "description": "Database username (default: postchain)"
+        },
+        "password": {
+          "type": "string",
+          "description": "Database password (default: postchain)"
+        },
+        "schema": {
+          "type": "string",
+          "description": "Database schema"
+        },
+        "driver": {
+          "type": "string",
+          "description": "Database driver"
+        },
+        "logSqlErrors": {
+          "type": "boolean",
+          "description": "Log any sql error to console"
+        }
+      }
+    },
+    "libs": {
+      "type": "object",
+      "description": "Library definitions",
+      "additionalProperties": {
+        "$ref": "#/$defs/library"
+      }
+    },
+    "compile": {
+      "type": "object",
+      "description": "Compilation options",
+      "additionalProperties": false,
+      "properties": {
+        "rellVersion": {
+          "type": "string",
+          "description": "Version of rell to use"
+        },
+        "source": {
+          "type": "string",
+          "description": "Path to sources root"
+        },
+        "target": {
+          "type": "string",
+          "description": "Path to compilation target folder"
+        },
+        "deprecatedError": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fail build if deprecated features are used"
+        },
+        "quite": {
+          "type": "boolean",
+          "default": true,
+          "descriptioin": "Hide intermediary compilation output"
+        }
+      }
+    },
+    "deployments": {
+      "type": "object",
+      "description": "Deployment targets",
+      "additionalProperties": {
+        "$ref": "#/$defs/deployment"
+      }
+    }
+  },
+  "$defs": {
+    "blockchain": {
+      "type": "object",
+      "required": [
+        "module"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "module": {
+          "type": "string",
+          "default": "main",
+          "description": "Entrypoint module for blockchain"
+        },
+        "moduleArgs": {
+          "$ref": "#/$defs/moduleArgs"
+        },
+        "test": {
+          "$ref": "#/$defs/blockchainTest"
+        },
+        "config": {
+          "$ref": "#/$defs/blockchainConfig"
+        }
+      }
+    },
+    "testModules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Test root modules"
+    },
+    "blockchainTest": {
+      "type": "object",
+      "description": "Blockchain test properties",
+      "additionalProperties": false,
+      "properties": {
+        "modules": {
+          "$ref": "#/$defs/testModules"
+        },
+        "moduleArgs": {
+          "$ref": "#/$defs/moduleArgs"
+        }
+      }
+    },
+    "moduleArgs": {
+      "type": "object",
+      "description": "Module arguments",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "blockchainConfig": {
+      "type": "object",
+      "description": "Additional blockchain configuration properties",
+      "additionalProperties": true,
+      "properties": {
+        "icmf": {
+          "$ref": "#/$defs/icmf"
+        },
+        "gtx": {
+          "$ref": "#/$defs/gtx"
+        },
+        "revolt": {
+          "$ref": "#/$defs/revolt"
+        },
+        "blockstrategy": {
+          "$ref": "#/$defs/blockstrategy"
+        },
+        "sync": {
+          "type": "string",
+          "description": "Synchronization Infrastructure (Do not change)"
+        },
+        "sync_ext": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Synchronization Insfrastructure extension (ex when using ICMF)"
+        },
+        "configurationfactory": {
+          "type": "string",
+          "description": "Configuration factory implementation"
+        },
+        "txqueuecapacity": {
+          "type": "number",
+          "default": 2500,
+          "description": "Maximum size of the transaction queue"
+        },
+        "historic_brid": {
+          "type": "string",
+          "pattern": "x\"[a-fA-F0-9]+\""
+        },
+        "dependencies": {
+          "type": "object"
+        },
+        "config_consensus_strategy": {
+          "type": "string",
+          "description": "Configuration consensus strategy"
+        },
+        "query_cache_ttl_seconds": {
+          "type": "number",
+          "default": 0,
+          "description": "How long a query response can be cached, in seconds. 0 means no caching."
+        },
+        "max_block_future_time": {
+          "type": "number",
+          "default": 10000,
+          "description": "How long time in the future a block timestamp can be, compared to current time, in milliseconds. -1 means disabled check."
+        }
+      }
+    },
+    "library": {
+      "type": "object",
+      "description": "Library definition",
+      "additionalProperties": false,
+      "required": [
+        "registry",
+        "path"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string",
+          "description": "Registry url (https or ssh)"
+        },
+        "tagOrBranch": {
+          "type": "string",
+          "description": "Optionally specifies the git tag or branch of the library"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path to the library module in the repo"
+        },
+        "insecure": {
+          "type": "boolean",
+          "default": false,
+          "description": "Will not verify the rid if true"
+        },
+        "rid": {
+          "type": "string",
+          "description": "Hash of the library"
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "required": [
+        "brid",
+        "url"
+      ],
+      "description": "Deployment target",
+      "additionalProperties": false,
+      "properties": {
+        "brid": {
+          "type": "string",
+          "pattern": "^x\"[a-fA-F0-9]+\"$",
+          "description": "Blockchain Rid for target networks management chain"
+        },
+        "container": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Container id"
+        },
+        "url": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Url(s) to nodes in the system cluster of network"
+        },
+        "chains": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^x\"[a-fA-F0-9]+\"$",
+            "description": "BlockchainRid"
+          },
+          "description": "Map of deployed blockchains with with their Blockchain Rids on this network"
+        }
+      }
+    },
+    "icmf": {
+      "type": "object",
+      "properties": {
+        "receiver": {
+          "type": "object",
+          "properties": {
+            "local": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "topic"
+                ],
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "pattern": "^[GL]_",
+                    "description": "Topic for the message to receive"
+                  },
+                  "brid": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "x\"[a-fA-F0-9]+\"",
+                    "description": "Blockchain RID for sender blockchain"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gtx": {
+      "type": "object",
+      "description": "Gtx configuration overrides",
+      "additionalProperties": false,
+      "properties": {
+        "max_transaction_size": {
+          "type": "integer",
+          "default": 26214400,
+          "description": "Maximum size of transactions in bytes"
+        },
+        "modules": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Additional GTX Modules"
+        },
+        "sqlmodules": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "GTX SQL modules"
+        },
+        "allowoverrides": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow operations and queries with the same name to be overridden by another GTX module."
+        }
+      }
+    },
+    "revolt": {
+      "type": "object",
+      "description": "Revolt configuration",
+      "properties": {
+        "timeout": {
+          "type": "integer",
+          "default": 10000,
+          "description": "The default revolt timeout in milliseconds"
+        },
+        "exponential_delay_initial": {
+          "type": "integer",
+          "default": 1000,
+          "description": "The initial delay of revolt timeout in milliseconds"
+        },
+        "exponential_delay_power_base": {
+          "type": "string",
+          "default": "1.2",
+          "description": "Power base of the exponential increase of the revolt timeout per round"
+        },
+        "exponential_delay_max": {
+          "type": "integer",
+          "default": 600000,
+          "description": "Maximum possible revolt timeout in milliseconds"
+        },
+        "fast_revolt_status_timeout": {
+          "type": "integer",
+          "default": -1,
+          "description": "Timeout in milliseconds since last received status message before considering a node disconnected and revolting immediately. -1 to disable this functionality"
+        },
+        "revolt_when_should_build_block": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only start counting revolt timeout after we ourselves consider it possible to actually build a block"
+        }
+      }
+    },
+    "blockstrategy": {
+      "type": "object",
+      "description": "Block building strategy configuration",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Block strategy, name of class implementing net.postchain.core.block.BlockBuildingStrategy"
+        },
+        "maxblocksize": {
+          "type": "integer",
+          "default": 27262976,
+          "description": "Maximum size of a block in bytes"
+        },
+        "maxblocktransactions": {
+          "type": "integer",
+          "default": 100,
+          "description": "Maximum transactions per block"
+        },
+        "mininterblockinterval": {
+          "type": "integer",
+          "default": 25,
+          "description": "Smallest time interval between blocks in milliseconds"
+        },
+        "maxblocktime": {
+          "type": "integer",
+          "default": 30000,
+          "description": "Maximum time to wait before starting to build a block in milliseconds. Will be an empty block if transaction queue is empty."
+        },
+        "maxtxdelay": {
+          "type": "integer",
+          "default": 1000,
+          "description": "Maximum time to wait before starting to build a block after the first transaction was received, in milliseconds"
+        },
+        "minbackofftime": {
+          "type": "integer",
+          "default": 20,
+          "description": "Minimum back-off time before retrying a failed block, in milliseconds"
+        },
+        "maxbackofftime": {
+          "type": "integer",
+          "default": 2000,
+          "description": "Maximum back-off time before retrying a failed block, in milliseconds"
+        },
+        "maxspecialendtransactionsize": {
+          "type": "integer",
+          "default": 1024,
+          "description": "Maximum size of special end transaction, in bytes"
+        },
+        "preemptiveblockbuilding": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable preemptive block building"
+        }
+      }
+    }
+  }
+}
