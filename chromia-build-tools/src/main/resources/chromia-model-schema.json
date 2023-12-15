@@ -110,6 +110,10 @@
           "type": "boolean",
           "default": true,
           "descriptioin": "Hide intermediary compilation output"
+        },
+        "library": {
+          "type": "boolean",
+          "description": "Set to true if this repository defines a library. Only hash is computed when building and no blockchain configuration is created."
         }
       }
     },

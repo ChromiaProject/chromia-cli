@@ -4,6 +4,7 @@ import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.RellLibraryModel
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.isDirectory
 import kotlin.io.path.notExists
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
@@ -14,7 +15,7 @@ import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
 
 class LibraryVerifyer(private val env: RellCliEnv) {
-    val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
+    private val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
 
     fun verifyLibs(source: File, libs: Map<String, RellLibraryModel>) {
         libs.forEach { (name, rellLibrary) ->
@@ -36,11 +37,7 @@ class LibraryVerifyer(private val env: RellCliEnv) {
             return false
         }
 
-        val srcGtv = GtvFactory.gtv(
-                RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(files.filter { it.isFile }.sortedBy { it.path }.map { GtvFactory.gtv(it.readText()) })
-        )
-
-        val calculatedRid = WrappedByteArray(srcGtv.merkleHash(hashCalculator))
+        val calculatedRid = calculateHash(files)
         if (calculatedRid != model.rid) {
             if (!quiet) {
                 env.error("""
@@ -52,5 +49,22 @@ class LibraryVerifyer(private val env: RellCliEnv) {
             }
         }
         return calculatedRid == model.rid
+    }
+
+    fun calculateLibraryHashes(sourceFolder: File) {
+        val libraryFolder = sourceFolder.toPath().resolve(InstallDirTarget.SOURCE.target)
+        Files.walk(libraryFolder, 1, ).filter { it.isDirectory() && it != libraryFolder }.forEach { lib ->
+            env.print("library: ${lib.fileName}")
+            env.print(calculateHash(Files.walk(lib).map { it.toFile() }.toList()).toHex())
+        }
+    }
+
+    private fun calculateHash(files: List<File>): WrappedByteArray {
+        val srcGtv = GtvFactory.gtv(
+                RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(files.filter { it.isFile }.sortedBy { it.path }.map { GtvFactory.gtv(it.readText()) })
+        )
+
+        val calculatedRid = WrappedByteArray(srcGtv.merkleHash(hashCalculator))
+        return calculatedRid
     }
 }
