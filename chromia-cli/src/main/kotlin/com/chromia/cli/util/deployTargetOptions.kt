@@ -51,7 +51,7 @@ class LocalDeploymentOption(
         private val config: () -> ChromiaConfig,
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Make query/tx towards a test node") {
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
-    private val cid by option(help = "Target Blockchain IID").int().default(0)
+    private val cid by option(help = "Target Blockchain IID").int()
     private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)
 
     override val url
@@ -62,12 +62,19 @@ class LocalDeploymentOption(
         }
 
     override val brid
+        // 1. explicit brid
+        // 2. explicit cid
+        // 3. config (local/global)
+        // 4. cid = 0
         get(): BlockchainRid {
-            val resolvedBrid = blockchainRid ?: config().getString("brid")
-            return resolvedBrid?.let { BlockchainRid.buildFromHex(it) } ?: blockchainRidFromIid()
+            if (blockchainRid != null) return BlockchainRid.buildFromHex(blockchainRid!!)
+            if (cid != null) return blockchainRidFromIid(cid!!)
+            val bridFromConfig = config().getString("brid")
+            if (!bridFromConfig.isNullOrBlank()) return BlockchainRid.buildFromHex(bridFromConfig)
+            return blockchainRidFromIid(0)
         }
 
-    private fun blockchainRidFromIid() = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).fetchBlockchainRid(cid)
+    private fun blockchainRidFromIid(cid: Int) = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).fetchBlockchainRid(cid)
 
     override fun createClient(config: PostchainClientConfig) = PostchainClientImpl(config)
 
