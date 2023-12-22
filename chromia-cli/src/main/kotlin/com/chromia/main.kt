@@ -25,6 +25,7 @@ fun main(args: Array<out String>) = CliLauncher("chr")
             rell version ${RellVersions::class.java.`package`.implementationVersion ?: "(unknown)"}
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
             EIF version ${EifGTXModule::class.java.`package`.implementationVersion ?: "(unknown)"}
+            Java version ${System.getProperty("java.version")}
         """.trimIndent())
         .subcommands(
                 CreateRellDappCommand(),
