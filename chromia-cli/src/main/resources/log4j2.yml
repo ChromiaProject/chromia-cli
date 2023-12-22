@@ -12,8 +12,8 @@ Appenders:
 
   RollingFile:
     name: LogToRollingFile
-    fileName: ${env:CHR_LOG_FOLDER:-logs}/chromia-cli.log
-    filePattern: "${env:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
+    fileName: ${sys:CHR_LOG_FOLDER:-logs}/chromia-cli.log
+    filePattern: "${sys:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
     createOnDemand: true
     PatternLayout:
       pattern: ${logpattern}
