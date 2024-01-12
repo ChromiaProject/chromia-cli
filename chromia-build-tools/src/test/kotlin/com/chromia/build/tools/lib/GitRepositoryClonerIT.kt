@@ -12,7 +12,7 @@ import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 import kotlin.io.path.exists
 
-class GitRepositoryClonerTest {
+class GitRepositoryClonerIT {
 
     @Test
     fun clonePublicHttpsRepository(@TempDir testDir: Path) {
