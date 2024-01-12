@@ -7,11 +7,29 @@ import com.chromia.cli.tools.mordant.TableBuilderInstance
 
 fun jsonTable(init: TableBuilder.() -> Unit): String {
     val tableBuilder = TableBuilderInstance().apply(init)
-    val table: List<Map<String, String>> = tableBuilder.bodySection.rows.withIndex().map { row ->
-        row.value.cells.withIndex().associate { cell ->
-            (tableBuilder.headerSection.rows[0].cells[cell.index].content as CellContent.TextContent).text to
-                    (cell.value.content as CellContent.TextContent).text
+    return if (tableBuilder.headerSection.rows.size > 0) {
+        val headers: List<String> = tableBuilder.headerSection.rows[0].cells.map { (it.content as CellContent.TextContent).text }
+        val rows: List<List<String>> = tableBuilder.bodySection.rows.map { row ->
+            row.cells.map { cell ->
+                (cell.content as CellContent.TextContent).text
+            }
         }
+        jsonTable(headers, rows)
+    } else {
+        json(tableBuilder.bodySection.rows.associate { row ->
+            fixKey((row.cells[0].content as CellContent.TextContent).text) to
+                    (row.cells[1].content as CellContent.TextContent).text
+        })
     }
-    return GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(table)
 }
+
+fun jsonTable(headers: List<String>, rows: List<List<String>>): String = json(
+        rows.map { row ->
+            row.withIndex().associate { cell ->
+                fixKey(headers[cell.index]) to cell.value
+            }
+        })
+
+private fun fixKey(key: String) = key.replace(' ', '_').replace(":", "")
+
+private fun json(data: Any) = GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(data)
