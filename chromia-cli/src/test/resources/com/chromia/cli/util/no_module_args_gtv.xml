@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dict>
+    <entry key="modules">
+        <dict>
+            <entry key="main">
+                <dict>
+                    <entry key="entities">
+                        <dict>
+                            <entry key="house">
+                                <dict>
+                                    <entry key="attributes">
+                                        <array>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>street</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>main:street</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>number</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>number_of_rooms</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>number_of_floors</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>floor_area</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="indexes">
+                                        <array>
+                                            <dict>
+                                                <entry key="attributes">
+                                                    <array>
+                                                        <string>street</string>
+                                                    </array>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="keys">
+                                        <array>
+                                            <dict>
+                                                <entry key="attributes">
+                                                    <array>
+                                                        <string>street</string>
+                                                        <string>number</string>
+                                                    </array>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="log">
+                                        <int>0</int>
+                                    </entry>
+                                    <entry key="mount">
+                                        <string>house</string>
+                                    </entry>
+                                </dict>
+                            </entry>
+                            <entry key="my_entity">
+                                <dict>
+                                    <entry key="attributes">
+                                        <array>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>my_key</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>my_index</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>1</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>my_mutable</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>my_immutable</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="indexes">
+                                        <array>
+                                            <dict>
+                                                <entry key="attributes">
+                                                    <array>
+                                                        <string>my_index</string>
+                                                    </array>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="keys">
+                                        <array>
+                                            <dict>
+                                                <entry key="attributes">
+                                                    <array>
+                                                        <string>my_key</string>
+                                                    </array>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="log">
+                                        <int>0</int>
+                                    </entry>
+                                    <entry key="mount">
+                                        <string>my_entity</string>
+                                    </entry>
+                                </dict>
+                            </entry>
+                            <entry key="street">
+                                <dict>
+                                    <entry key="attributes">
+                                        <array>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>address</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="indexes">
+                                        <array/>
+                                    </entry>
+                                    <entry key="keys">
+                                        <array>
+                                            <dict>
+                                                <entry key="attributes">
+                                                    <array>
+                                                        <string>address</string>
+                                                    </array>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="log">
+                                        <int>0</int>
+                                    </entry>
+                                    <entry key="mount">
+                                        <string>street</string>
+                                    </entry>
+                                </dict>
+                            </entry>
+                        </dict>
+                    </entry>
+                    <entry key="functions">
+                        <dict>
+                            <entry key="a">
+                                <dict>
+                                    <entry key="parameters">
+                                        <array/>
+                                    </entry>
+                                    <entry key="type">
+                                        <string>unit</string>
+                                    </entry>
+                                </dict>
+                            </entry>
+                            <entry key="foo">
+                                <dict>
+                                    <entry key="parameters">
+                                        <array/>
+                                    </entry>
+                                    <entry key="type">
+                                        <dict>
+                                            <entry key="type">
+                                                <string>list</string>
+                                            </entry>
+                                            <entry key="value">
+                                                <string>integer</string>
+                                            </entry>
+                                        </dict>
+                                    </entry>
+                                </dict>
+                            </entry>
+                            <entry key="is_mansion">
+                                <dict>
+                                    <entry key="parameters">
+                                        <array>
+                                            <dict>
+                                                <entry key="name">
+                                                    <string>house</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>main:house_info</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                    <entry key="type">
+                                        <string>boolean</string>
+                                    </entry>
+                                </dict>
+                            </entry>
+                        </dict>
+                    </entry>
+                    <entry key="name">
+                        <string>main</string>
+                    </entry>
+                    <entry key="operations">
+                        <dict>
+                            <entry key="create_house">
+                                <dict>
+                                    <entry key="mount">
+                                        <string>create_house</string>
+                                    </entry>
+                                    <entry key="parameters">
+                                        <array>
+                                            <dict>
+                                                <entry key="name">
+                                                    <string>owner</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="name">
+                                                    <string>address</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>text</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                </dict>
+                            </entry>
+                            <entry key="mutable_op">
+                                <dict>
+                                    <entry key="mount">
+                                        <string>mutable_op</string>
+                                    </entry>
+                                    <entry key="parameters">
+                                        <array/>
+                                    </entry>
+                                </dict>
+                            </entry>
+                        </dict>
+                    </entry>
+                    <entry key="structs">
+                        <dict>
+                            <entry key="house_info">
+                                <dict>
+                                    <entry key="attributes">
+                                        <array>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>number_of_rooms</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>number_of_floors</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                            <dict>
+                                                <entry key="mutable">
+                                                    <int>0</int>
+                                                </entry>
+                                                <entry key="name">
+                                                    <string>floor_area</string>
+                                                </entry>
+                                                <entry key="type">
+                                                    <string>integer</string>
+                                                </entry>
+                                            </dict>
+                                        </array>
+                                    </entry>
+                                </dict>
+                            </entry>
+                        </dict>
+                    </entry>
+                </dict>
+            </entry>
+        </dict>
+    </entry>
+</dict>

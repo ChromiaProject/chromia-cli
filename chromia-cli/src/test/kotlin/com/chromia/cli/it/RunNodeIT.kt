@@ -110,7 +110,7 @@ class RunNodeIT {
                     // Make sure a block gets built by making a dummy operation (We could also just wait maxBlockTime)
                     TestProcess.Builder("tx", "--cid", "1", "dummy", "--await").startCondition("was posted CONFIRMED").start()
                     // Verify that message was received
-                    TestProcess.Builder("query", "--cid", "1", "get_messages").startCondition("[{msg=\"Hello!\", topic=\"L_msg\"}]").start()
+                    TestProcess.Builder("query", "--cid", "1", "get_messages").startCondition("""[["msg": "Hello!", "topic": "L_msg"]]""").start()
                 }
     }
 }

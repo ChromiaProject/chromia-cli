@@ -18,6 +18,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.common.tx.TransactionStatus
+import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
 
@@ -38,14 +39,21 @@ class TxCommand : CliktCommand(help = "Make a transaction") {
 
     private val args by argument(help = "arguments to pass to the operation.", helpTags = mapOf(
             "integer" to "123",
+            "big_integer" to "1234L",
             "string" to "foo, \"bar\"",
             "bytearray" to "will be encoded using the rell notation x\"<myByteArray>\" and will initially be interpreted as a hex-string.",
             "array" to "[foo,123]",
-            "dict" to "{key1=value1,key2=value2}"
+            "dict" to """["key1":value1,"key2":value2]"""
     ))
             .multiple()
             .transformAll { args ->
-                args.map { GtvParser.parse(it) }
+                args.map {
+                    try {
+                        GtvParser.parse(it)
+                    } catch (e: IllegalArgumentException) {
+                        GtvString(it)
+                    }
+                }
             }
 
     override fun run() {

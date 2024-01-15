@@ -2,19 +2,23 @@ package com.chromia.cli
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isEqualTo
 import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
 import net.postchain.client.exception.ClientError
+import net.postchain.devtools.IntegrationTestSetup
+import net.postchain.devtools.utils.configuration.BlockchainSetup
+import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
-
-class QueryCommandTest {
-
+class QueryCommandTest : IntegrationTestSetup() {
     @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
@@ -22,11 +26,18 @@ class QueryCommandTest {
     private val dummyApiUrl = "http://not_existing_host:7740"
     private val dummyBrid = "CF66169BF4D8D4F618D39A09F7C06B55EF5F4E1296BD934649295A69F7925D2C"
     private val chromiaConfigFile = ".chromia/config"
+
+    private fun createTestNode(config: String) {
+        val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())
+        val setup = SystemSetupFactory.buildSystemSetup(listOf(BlockchainSetup.buildFromGtv(0, gtvConfig)))
+        setup.needRestApi = true
+        createNodesFromSystemSetup(setup, true)
+    }
+
     @BeforeEach
     fun setup() {
         testData(testDir)
         settingsFile = testDir.resolve("chromia.yml").toFile()
-
     }
 
     @Test
@@ -86,4 +97,43 @@ class QueryCommandTest {
         }
         assertThat(res.message!!).contains(overrideApiUrl)
     }
+
+    @Test
+    fun arguments(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                struct my_struct { name; }
+                query test_query(foo: integer, bar: text, baz: text, my_struct, n: integer?): integer {
+                    require(foo == 17);
+                    require(bar == "hello");
+                    require(baz == "Hello, world=5");
+                    require(my_struct.name == "what ever");
+                    require(n == null);
+                    return 4711;
+                }    
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "chromia.yml")) {
+            writeText("""
+                blockchains:
+                  a:
+                    module: main
+                    config:
+                      signers:
+                        - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+                      blockstrategy:
+                        name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+
+                database:
+                  schema: txcommandtest0_0
+            """.trimIndent())
+        }
+        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
+        createTestNode("${dir.absolutePathString()}/build/a.xml")
+        val res = QueryCommand().test(listOf("test_query", "foo=17", "bar=hello", "baz=\"Hello, world=5\"", "my_struct=[\"name\":\"what ever\"]", "n=null"))
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.stdout).isEqualTo("4711\n")
+   }
 }
