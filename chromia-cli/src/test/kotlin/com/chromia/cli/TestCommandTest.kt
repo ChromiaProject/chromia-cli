@@ -4,8 +4,10 @@ import assertk.assertThat
 import assertk.assertions.any
 import assertk.assertions.contains
 import com.chromia.cli.util.captureLog4jLoggerOutput
+import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import java.io.File
@@ -476,5 +478,75 @@ internal class TestCommandTest {
     fun testModuleTestReport() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db", "--test-report-dir", testDir.toString()))
         assertThat(testDir.resolve("test-tests.xml").exists())
+    }
+
+    @Test
+    fun testIccfDoesNothing() {
+        testData(testDir) {
+            config {
+                blockchains(
+                        """
+                           blockchains:
+                                hello:
+                                    module: main
+                                    test:
+                                        modules:
+                                            - testDir
+                                    config:
+                                        gtx:
+                                            modules:
+                                                - net.postchain.d1.iccf.IccfGTXModule
+                        """.trimIndent()
+                )
+            }
+            addFile("testDir/foo.rell", """
+                @test module;
+                
+                function test_iccf_success() {
+                    rell.test.tx()
+                        .op(gtx_operation(name = "iccf_proof", args = [x"AAAA".to_gtv(), x"AB12".to_gtv(), x"".to_gtv()]).to_test_op())
+                        .run();
+                }
+
+            """.trimIndent())
+        }
+        val res = TestCommand().test("-s ${settingsFile.absolutePath}")
+        assertThat(res.output).contains("OK: testDir.foo:test_iccf_success")
+    }
+
+    @Test
+    fun testIccfDoesNotWorkOnUnitTest() {
+        testData(testDir) {
+            config {
+                blockchains(
+                        """
+                           blockchains:
+                                hello:
+                                    module: main
+                                    config:
+                                        gtx:
+                                            modules:
+                                                - net.postchain.d1.iccf.IccfGTXModule
+                        """.trimIndent()
+                )
+                test("""
+                    test:
+                        modules:
+                          - test
+                """.trimIndent())
+            }
+            addFile("test.rell", """
+                @test module;
+                
+                function test_iccf_success() {
+                    rell.test.tx()
+                        .op(gtx_operation(name = "iccf_proof", args = [x"AAAA".to_gtv(), x"AB12".to_gtv(), x"".to_gtv()]).to_test_op())
+                        .run();
+                }
+
+            """.trimIndent())
+        }
+        val res = TestCommand().test("-s ${settingsFile.absolutePath}")
+        assertThat(res.output).contains("Unknown operation: iccf_proof")
     }
 }

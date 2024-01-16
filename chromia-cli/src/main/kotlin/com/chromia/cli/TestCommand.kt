@@ -2,13 +2,13 @@ package com.chromia.cli
 
 import com.chromia.build.tools.test.xmlTestReport
 import com.chromia.cli.model.BlockchainModel
-import com.chromia.cli.model.TestModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
+import com.chromia.cli.util.DummyIccfGtxModule
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
@@ -127,8 +127,10 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
         val appModules = listOf(chainConfig.module)
         val testModules = modules ?: chainConfig.test.modules
+        val additionalModules = chainConfig.config["gtx"]?.get("modules")?.asArray()?.map { it.asString() }
+
         val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
-        val testConf = createTestConfig(testModuleArgs, appModuleInTestsError = true)
+        val testConf = createTestConfig(testModuleArgs, additionalModules, appModuleInTestsError = true)
 
         echo("Running tests for chain: $blockchain")
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
@@ -138,13 +140,18 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
         printResults(res)
     }
 
-    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>,
+    private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>, additionalGtxModules: List<String>? = null,
                                  appModuleInTestsError: Boolean = false): RellApiRunTests.Config {
         val compileConf = RellApiCompile.Config.Builder()
                 .moduleArgs(testModuleArgs)
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
                 .appModuleInTestsError(appModuleInTestsError)
+                .apply { additionalGtxModules?.let {
+                    additionalGtxModules(it.map {
+                        if (it == "net.postchain.d1.iccf.IccfGTXModule") DummyIccfGtxModule::class.qualifiedName!! else it
+                    })
+                } }
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
                 .version(settings.model.compile.langVersion)

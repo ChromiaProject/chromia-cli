@@ -1,5 +1,6 @@
 package com.chromia.build.tools.compile
 
+import com.chromia.build.tools.iccf.SingleNodeIccfGtxModule
 import com.chromia.build.tools.icmf.InMemoryIcmfReceiverGtxModule
 import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastructureExtension
 import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
@@ -41,6 +42,7 @@ internal class BlockchainConfigurationGenerator(
     private val inMemoryGtxModules = mapOf(
             "net.postchain.d1.icmf.IcmfSenderGTXModule" to InMemoryIcmfSenderGtxModule::class.qualifiedName!!,
             "net.postchain.d1.icmf.IcmfReceiverGTXModule" to InMemoryIcmfReceiverGtxModule::class.qualifiedName!!,
+            "net.postchain.d1.iccf.IccfGTXModule" to SingleNodeIccfGtxModule::class.qualifiedName!!,
     )
 
     private val inMemorySyncInfraExt = mapOf(
@@ -96,7 +98,7 @@ internal class BlockchainConfigurationGenerator(
 
         val configModules = configuration["gtx"]?.get("modules")!!.asArray().map { it.asString() } // Not null since default values are added
         if (configModules.intersect(inMemoryGtxModules.keys).isNotEmpty()) {
-            cliEnv.error("WARNING: Replacing Icmf GTX Module with in-memory version, all unprocessed messages will be lost upon node restart")
+            cliEnv.error("WARNING: Replacing GTX Module with in-memory version, all unprocessed messages will be lost upon node restart")
             cliEnv.error("DO NOT RUN IN PRODUCTION")
         }
         configModules
