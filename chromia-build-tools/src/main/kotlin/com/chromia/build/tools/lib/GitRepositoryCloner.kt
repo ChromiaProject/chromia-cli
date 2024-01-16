@@ -1,5 +1,6 @@
 package com.chromia.build.tools.lib
 
+import java.io.File
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import org.eclipse.jgit.internal.transport.sshd.agent.connector.Factory
@@ -7,9 +8,8 @@ import org.eclipse.jgit.lib.TextProgressMonitor
 import org.eclipse.jgit.transport.SshSessionFactory
 import org.eclipse.jgit.transport.sshd.SshdSessionFactoryBuilder
 import org.eclipse.jgit.util.FS
-import java.io.File
 
-class GitRepositoryCloner(val sshDir: File? = null) : RepositoryCloner {
+class GitRepositoryCloner(val sshDir: File? = null, val quiet: Boolean = false) : RepositoryCloner {
 
     override fun clone(registry: String, target: File, tagOrBranch: String?) {
         try {
@@ -20,7 +20,7 @@ class GitRepositoryCloner(val sshDir: File? = null) : RepositoryCloner {
                     .setDirectory(target)
                     .setURI(registry)
                     .setTimeout(60)
-                    .setProgressMonitor(TextProgressMonitor())
+                    .apply { if (!quiet) setProgressMonitor(TextProgressMonitor()) }
                     .call()
         } catch (e: InvalidRemoteException) {
             target.deleteRecursively()
