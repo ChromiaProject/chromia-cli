@@ -401,6 +401,10 @@ internal class TestCommandTest {
                     moduleArgs:
                       development:
                         age: 100
+                    config:
+                        gtx:
+                            modules:
+                                - non.existing.module.should.be.FineGTXmodule # This could for example be ICMF which only works at runtime
                     test:
                       modules:
                         - moduleA.test

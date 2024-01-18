@@ -8,7 +8,7 @@ import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
-import com.chromia.cli.util.DummyIccfGtxModule
+import com.chromia.cli.util.addWhitelistedGTXModules
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
@@ -147,11 +147,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .cliEnv(CliktCliEnv(this))
                 .includeTestSubModules(true)
                 .appModuleInTestsError(appModuleInTestsError)
-                .apply { additionalGtxModules?.let {
-                    additionalGtxModules(it.map {
-                        if (it == "net.postchain.d1.iccf.IccfGTXModule") DummyIccfGtxModule::class.qualifiedName!! else it
-                    })
-                } }
+                .addWhitelistedGTXModules(additionalGtxModules)
                 .moduleArgsMissingError(true)
                 .mountConflictError(true)
                 .version(settings.model.compile.langVersion)
