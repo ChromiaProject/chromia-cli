@@ -65,7 +65,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         private var config: File? = null
         private var shouldFinish = true
         private var exitCode = 0
-        private var timeout = Duration.ofSeconds(10)
+        private var timeout = Duration.ofSeconds(30)
         private var startCondition: String? = null
         private var verbose = false
         private var workingDir: File? = null

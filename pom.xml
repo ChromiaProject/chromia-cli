@@ -179,6 +179,8 @@
                             <DIST_EXECUTABLE>
                                 ${project.build.directory}/${project.artifactId}-${project.version}-dist/bin/chr
                             </DIST_EXECUTABLE>
+                            <!--suppress UnresolvedMavenProperty -->
+                            <JAVA_ARGS>${argLine}</JAVA_ARGS>
                             <PROJECT_VERSION>${project.version}</PROJECT_VERSION>
                         </environmentVariables>
                     </configuration>
@@ -603,6 +605,11 @@
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
                         <version>0.8.10</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/chromia/directory1/**</exclude>
+                            </excludes>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>default-prepare-agent</id>

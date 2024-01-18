@@ -6,6 +6,8 @@ import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.getContainerDataResult
 import com.chromia.cli.util.testData
+import java.io.File
+import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -17,8 +19,6 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {

@@ -98,7 +98,6 @@ class RunNodeIT {
         }
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
-                .verbose()
                 // Wait for first chain to start
                 .startCondition("Blockchain has been started")
                 .setWorkingDir(dir.toFile())
