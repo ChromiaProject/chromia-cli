@@ -1,13 +1,14 @@
 package com.chromia.cli.util
 
-import net.postchain.crypto.KeyPair
 import java.io.File
 import java.nio.file.Path
+import net.postchain.crypto.KeyPair
 
 class TestDataBuilder {
 
     private var content = """
         module;
+        struct module_args { name = "Baloo"; }
         query hello() = "Hi!";
         operation call_op(value: integer) {} 
     """.trimIndent()

@@ -37,6 +37,16 @@ class RunNodeIT {
                     process.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
 
                     TestProcess.Builder("query", "new_query").startCondition("1").start()
+                }
+        // Restarting the node should be fine
+        TestProcess.Builder("node", "start")
+                .awaitCompletion(false)
+                .startCondition("Blockchain has been started")
+                .verbose()
+                .setWorkingDir(dir.toFile())
+                .start {
+                    // Same blockchain was started
+                    TestProcess.Builder("query", "new_query").startCondition("1").start()
 
                     // Fail to update using configuration that already exists
                     testData(dir)
@@ -45,6 +55,7 @@ class RunNodeIT {
                             .startCondition("Blockchain configuration already exists in database, cannot update")
                             .start()
                 }
+
     }
 
     @Test

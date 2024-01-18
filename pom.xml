@@ -607,7 +607,12 @@
                         <version>0.8.10</version>
                         <configuration>
                             <excludes>
+                                <!-- Generated sources -->
                                 <exclude>com/chromia/directory1/**</exclude>
+                                <!-- Inner classes of ReplCommand (Dummy OutputCannelFactory -->
+                                <exclude>com/chromia/cli/ReplCommand$*</exclude>
+                                <!-- Copied from mordant -->
+                                <exclude>com/chromia/cli/tools/mordant/*</exclude>
                             </excludes>
                         </configuration>
                         <executions>
