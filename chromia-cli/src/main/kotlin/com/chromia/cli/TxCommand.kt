@@ -1,6 +1,6 @@
 package com.chromia.cli
 
-import com.chromia.cli.ft.FTAuthenticator
+import com.chromia.cli.ft.FTAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -25,9 +25,9 @@ import net.postchain.client.core.TxRid
 import net.postchain.client.defaultHttpHandler
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.gtv.GtvString
 import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
 
@@ -97,7 +97,7 @@ class TxCommand : CliktCommand(help = """
             listOf(GtvFactory.decodeGtv(tx)) + args
         } else args
         if (ftAuthOptions.ftAuth) {
-            val authenticator = FTAuthenticator(client, terminal)
+            val authenticator = FTAuth.createFTAuthenticator(client, terminal)
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
             authenticator.addAuthenticationOperation(transactionBuilder, opName, signerPubkey, ftAuthOptions.ftAccountId)

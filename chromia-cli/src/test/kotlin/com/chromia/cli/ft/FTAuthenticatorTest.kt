@@ -20,19 +20,31 @@ class FTAuthenticatorTest {
 
     @Test
     fun incompatibleDappTest() {
-        val authenticator = FTAuthenticator(
+        assertThrows<CliktError> {
+            FTAuth.createFTAuthenticator(
                 { query, _ -> if (query == "ft4.get_version") throw ClientError("", null, "Query not found", null) else GtvNull },
                 Terminal())
-        assertThrows<CliktError> {
-            authenticator.addAuthenticationOperation(mock(), "my_op", PubKey("11".repeat(32).hexStringToByteArray()), null)
         }
     }
 
     @Test
-    fun validAuthDescriptor() {
+    fun validV1AuthDescriptor() {
         val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
-        val authenticator = FTAuthenticator(
-                { query, _ -> queryResponse(pubKey, listOf("A"), query) },
+        val authenticator = FTAuth.createFTAuthenticator(
+                { query, _ -> queryResponseV1(pubKey, listOf("A"), query) },
+                Terminal()
+
+        )
+        assertDoesNotThrow {
+            authenticator.addAuthenticationOperation(mock(), "my_op", pubKey, null)
+        }
+    }
+
+    @Test
+    fun validV2AuthDescriptor() {
+        val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
+        val authenticator = FTAuth.createFTAuthenticator(
+                { query, _ -> queryResponseV2(pubKey, listOf("A"), query) },
                 Terminal()
 
         )
@@ -45,8 +57,8 @@ class FTAuthenticatorTest {
     fun authDescriptorMissingOneFlag() {
         val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
 
-        val authenticator = FTAuthenticator(
-                { query, _ -> queryResponse(pubKey, listOf("A", "B"), query) },
+        val authenticator = FTAuth.createFTAuthenticator(
+                { query, _ -> queryResponseV1(pubKey, listOf("A", "B"), query) },
                 Terminal()
 
         )
@@ -56,12 +68,12 @@ class FTAuthenticatorTest {
         assertThat(throwable.message).isEqualTo("No valid account descriptor found. Operation my_op requires the flag(s): [A, B], while the flag(s) of the auth descriptor is: [A]")
     }
 
-    private fun queryResponse(pubKey: PubKey, flags: List<String>, query: String): Gtv {
+    private fun queryResponseV1(pubKey: PubKey, flags: List<String>, query: String): Gtv {
         return when (query) {
-            "ft4.get_version" -> gtv("0.2.0")
+            "ft4.get_version" -> gtv("0.1.1")
             "ft4.get_accounts_by_participant_id" -> gtv(listOf(gtv("2".repeat(64).hexStringToByteArray())))
             "ft4.get_account_auth_descriptors_by_participant_id" -> gtv(gtv(mapOf(
-                    "id" to gtv("3".repeat(64).hexStringToByteArray()),
+                    "id" to gtv("4".repeat(64).hexStringToByteArray()),
                     "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                     "created" to gtv(System.currentTimeMillis()),
                     "auth_type" to gtv("A"),
@@ -72,4 +84,22 @@ class FTAuthenticatorTest {
             else -> GtvNull
         }
     }
+}
+
+private fun queryResponseV2(pubKey: PubKey, flags: List<String>, query: String): Gtv {
+    return when (query) {
+        "ft4.get_version" -> gtv("0.2.0")
+        "ft4.get_accounts_by_signer" -> gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray()))))))
+        "ft4.get_account_auth_descriptors_by_signer" -> gtv(mapOf("data" to gtv(gtv(mapOf(
+                "id" to gtv("5".repeat(64).hexStringToByteArray()),
+                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                "created" to gtv(System.currentTimeMillis()),
+                "auth_type" to gtv("A"),
+                "rules" to GtvNull
+        )))))
+
+        "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })
+        else -> GtvNull
+    }
+
 }

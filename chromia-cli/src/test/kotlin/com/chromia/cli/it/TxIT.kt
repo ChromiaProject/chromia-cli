@@ -8,6 +8,8 @@ import com.chromia.build.tools.RestApiInstance.withModel
 import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.testData
+import java.nio.file.Path
+import java.time.Duration
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -22,8 +24,6 @@ import net.postchain.gtx.Gtx
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-import java.time.Duration
 
 
 class TxRecorderModel(val model: Model) : Model by model {
@@ -117,7 +117,7 @@ class TxIT {
     }
 
     @Test
-    fun queryWithFtAuth(@TempDir dir: Path) {
+    fun queryWithFtAuthV1(@TempDir dir: Path) {
         val testDataBuilder = testData(dir) {
             secret()
         }
@@ -148,6 +148,43 @@ class TxIT {
             val operations = gtx.gtxBody.operations
             assertThat(operations[0].opName).isEqualTo("ft4.ft_auth")
             assertThat(operations[0].args).containsExactly(gtv("1".repeat(64).hexStringToByteArray()), gtv("2".repeat(64).hexStringToByteArray()))
+            assertThat(operations[1].opName).isEqualTo("call_op")
+        }
+    }
+
+
+    @Test
+    fun queryWithFtAuthV2(@TempDir dir: Path) {
+        val testDataBuilder = testData(dir) {
+            secret()
+        }
+        val pubKey = testDataBuilder.secretKeyPair.pubKey
+
+        val txRecorderModel = TxRecorderModel(testBrid)
+        withModel(Ft4Model(
+                txRecorderModel,
+                "0.2.0",
+                mapOf(
+                        "ft4.get_accounts_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))),
+                        "ft4.get_account_auth_descriptors_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf(
+                                "id" to gtv("4".repeat(64).hexStringToByteArray()),
+                                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                                "created" to gtv(System.currentTimeMillis()),
+                                "auth_type" to gtv("A"),
+                                "rules" to GtvNull
+                        ))))),
+                        "ft4.get_auth_flags" to gtv(gtv("A"))
+                )
+        )) {
+            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth")
+                    .setWorkingDir(dir.toFile())
+                    .verbose()
+                    .start()
+
+            val gtx = Gtx.decode(txRecorderModel.txList.single())
+            val operations = gtx.gtxBody.operations
+            assertThat(operations[0].opName).isEqualTo("ft4.ft_auth")
+            assertThat(operations[0].args).containsExactly(gtv("3".repeat(64).hexStringToByteArray()), gtv("4".repeat(64).hexStringToByteArray()))
             assertThat(operations[1].opName).isEqualTo("call_op")
         }
     }
