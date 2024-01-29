@@ -10,6 +10,7 @@ class PlainTemplateFactory : AbstractTemplateFactory("plain") {
         val projectFileName = snakeCaseName(projectName)
         with(FileBuilder(targetDir)) {
             createChromiaConfig(projectName)
+            createGitIgnore()
             createFile("src/main.rell")
             createFile("src/test/plain_test.rell", "src/test/${projectFileName}_test.rell")
         }

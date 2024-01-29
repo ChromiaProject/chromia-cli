@@ -66,7 +66,7 @@ class InstallCommandTest {
         assertFailsWith<LibraryInstallException> {
             File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
-                hello:
+                my_rell_dapp:
                   module: main
             libs:
                 fooFail:
@@ -163,7 +163,7 @@ class InstallCommandTest {
     fun wrongRegistryTest() {
         File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
-              hello:
+              my_rell_dapp:
                 module: main
             libs:
                 wrongRegistry:
@@ -183,7 +183,7 @@ class InstallCommandTest {
     fun nonRellFilesTest() {
         File(testDir.toFile(), "chromia.yml").writeText("""
             blockchains:
-              hello:
+              my_rell_dapp:
                 module: main
             libs:
                 emptyRegistry:

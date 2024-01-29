@@ -27,43 +27,43 @@ class DeployActionCommandTest {
 
     @Test
     fun cannotPauseNotDeployedBlockchain() {
-        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
-        assertThat(res.output).contains("The action \"pause\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
+        assertThat(res.output).contains("The action \"pause\" of Blockchain my_rell_dapp cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
     }
 
     @Test
     fun parsePauseAttributeChainMissing() {
-        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing chain", "--network", "test"))
-        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing chain] does not exist")
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing_chain", "--network", "test"))
+        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing_chain] does not exist")
     }
 
     @Test
     fun parsePauseAttributeNetworkMissing() {
-        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
-        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
+        val res = DeployPauseCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "missing_network"))
+        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing_network] does not exist")
     }
 
     @Test
     fun cannotResumeNotDeployedBlockchain() {
-        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
-        assertThat(res.output).contains("The action \"resume\" of Blockchain hello cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
+        assertThat(res.output).contains("The action \"resume\" of Blockchain my_rell_dapp cannot be done since it has not been deployed to network test. Specify target blockchain rid in chromia.yml")
     }
 
     @Test
     fun parseResumeAttributeChainMissing() {
-        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing chain", "--network", "test"))
-        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing chain] does not exist")
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "missing_chain", "--network", "test"))
+        assertThat(res.stderr).contains("Error: invalid value for --blockchain: Specified blockchain(s) [missing_chain] does not exist")
     }
 
     @Test
     fun parseResumeAttributeNetworkMissing() {
-        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "missing Network"))
-        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing Network] does not exist")
+        val res = DeployResumeCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "missing_network"))
+        assertThat(res.stderr).contains("Error: invalid value for --network: Specified target [missing_network] does not exist")
     }
 
     @Test
     fun cannotRemoveNotDeployedBlockchain() {
-        val blockchain = "hello"
+        val blockchain = "my_rell_dapp"
         val network = "test"
         val res = DeployRemoveCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", blockchain, "--network", network))
         assertThat(res.stdout).contains("The action \"remove\" of Blockchain $blockchain cannot be done since it has not been deployed to network $network. Specify target blockchain rid in chromia.yml")

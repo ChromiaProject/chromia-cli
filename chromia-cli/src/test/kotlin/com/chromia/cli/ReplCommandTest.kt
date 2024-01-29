@@ -16,7 +16,7 @@ class ReplCommandTest {
     @JvmField
     @RegisterExtension
     val command = InitExtension()
-    val dir get() = command.dir
+    val dir get() = command.projectDir
 
     @Test
     fun testCanNotConnectToDb() {

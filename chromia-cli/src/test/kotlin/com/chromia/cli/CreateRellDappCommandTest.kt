@@ -5,10 +5,10 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.model.RellVersion
 import com.github.ajalt.clikt.testing.test
-import java.io.File
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 internal class CreateRellDappCommandTest {
     @TempDir
@@ -18,37 +18,46 @@ internal class CreateRellDappCommandTest {
     @Test
     fun minimalTemplate() {
         CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
-        val configYmlFile = File(dir, "chromia.yml")
+        val projectDir = File(dir, "my-rell-dapp")
+        val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
+        val ignoreFile = File(projectDir, ".gitignore")
+        assertTrue(ignoreFile.exists())
         assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
-        assertTrue(File(dir, "src/main.rell").exists())
+        assertTrue(File(projectDir, "src/main.rell").exists())
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
         TestCommand().test("-s ${configYmlFile.absolutePath}")
-        assertTrue(File(dir, "build/hello.xml").exists())
+        assertTrue(File(projectDir, "build/my-rell-dapp.xml").exists())
     }
 
     @Test
     fun plainTemplate() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain")
-        val configYmlFile = File(dir, "chromia.yml")
+        CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain plain")
+        val projectDir = File(dir, "plain")
+        val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
+        val ignoreFile = File(projectDir, ".gitignore")
+        assertTrue(ignoreFile.exists())
         assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
-        assertTrue(File(dir, "src/main.rell").exists())
+        assertTrue(File(projectDir, "src/main.rell").exists())
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
-        assertTrue(File(dir, "build/hello.xml").exists())
+        assertTrue(File(projectDir, "build/plain.xml").exists())
     }
 
     @Test
     fun plainMultiTemplate() {
         CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain-multi my-dapp")
-        val configYmlFile = File(dir, "chromia.yml")
+        val projectDir = File(dir, "my-dapp")
+        val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
+        val ignoreFile = File(projectDir, ".gitignore")
+        assertTrue(ignoreFile.exists())
         assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
-        assertTrue(File(dir, "src/main.rell").exists())
-        assertTrue(File(dir, "src/development.rell").exists())
-        assertTrue(File(dir, "src/my_dapp_test/blockchain_my_dapp_test.rell").exists())
+        assertTrue(File(projectDir, "src/main.rell").exists())
+        assertTrue(File(projectDir, "src/development.rell").exists())
+        assertTrue(File(projectDir, "src/my_dapp_test/blockchain_my_dapp_test.rell").exists())
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
-        assertTrue(File(dir, "build/my-dapp.xml").exists())
+        assertTrue(File(projectDir, "build/my-dapp.xml").exists())
         TestCommand().test("-s ${configYmlFile.absolutePath}")
         TestCommand().test("-s ${configYmlFile.absolutePath} -bc my-dapp")
     }
@@ -56,8 +65,9 @@ internal class CreateRellDappCommandTest {
     @Test
     fun minimalTemplateCreatesNewFilesWithCustomName() {
         CreateRellDappCommand().test("-d ${dir!!.absolutePath} new-name")
-        val configYmlFile = File(dir, "chromia.yml")
-        assertTrue(File(dir, "src/main.rell").exists())
+        val projectDir = File(dir, "new-name")
+        val configYmlFile = File(projectDir, "chromia.yml")
+        assertTrue(File(projectDir, "src/main.rell").exists())
         assertThat(configYmlFile.readText()).all {
             contains("""
         blockchains:
@@ -67,6 +77,13 @@ internal class CreateRellDappCommandTest {
             contains("schema: schema_new_name")
         }
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
-        assertTrue(File(dir, "build/new-name.xml").exists())
+        assertTrue(File(projectDir, "build/new-name.xml").exists())
+    }
+
+    @Test
+    fun alreadyExistingPackageInDirectory() {
+        CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
+        val output = CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
+        assertThat(output.stdout).contains("There already exist a directory called \"my-rell-dapp\" in the working directory, aborting.")
     }
 }

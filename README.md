@@ -147,7 +147,7 @@ definitions:
     - test.data_test
 
 blockchains:
-  hello:
+  my_rell_dapp:
     module: main
 compile:
   rellVersion: 0.10.10
@@ -168,7 +168,7 @@ Including another yaml file is possible using the `!include` tag
 ```yaml
 #chromia.yml
 blockchains:
-  hello:
+  my_rell_dapp:
     module: main
 compile:
   rellVersion: 0.10.10
@@ -190,6 +190,8 @@ a main module under `src/` (`main.rell`) and tests in  `src/test/` folder in you
 ``` shell
 chr create-rell-dapp
 ```
+
+Will create a new project with default name my-rell-dapp and inside the project, the structure will look as follows:
 
 ``` shell
 |--chromia.yml
@@ -291,8 +293,7 @@ chr node start --settings chromia.yml
 If you instead want to start it from a build, you can refer to the blockchain config file.
 
 ```shell
-chr node start --blockchain-config build/hello.gtv
-chr node start --blockchain-config build/hello.xml
+chr node start --blockchain-config build/my_rell_dapp.xml
 ```
 
 The `--wipe` is used when you want to reset the database before execution, and the `-np` or `--node-properties` is used
@@ -305,14 +306,14 @@ Project Settings file.
 On the first deployment towards a target, the cli will prompt you with the chains config that you need to add to the
 Project Settings file. will look something like this;
 
-`Blockchain RID for chain hello on deployment devnet2 not set. Would you like to create a new deployment? Y / N`
+`Blockchain RID for chain my_rell_dapp on deployment devnet2 not set. Would you like to create a new deployment? Y / N`
 Add the following to your project settings file
 
 ```yaml
 deployments:
   devnet2:
     chains:
-      hello: x"63B36A15A8D1787EFED1E331F0E49D39C05874E7D29E5DC1FD7A484E990A8932"
+      my_rell_dapp: x"63B36A15A8D1787EFED1E331F0E49D39C05874E7D29E5DC1FD7A484E990A8932"
 ```
 
 This will override any previous deployment to the network, that is why it is import to save the genesis brid prompted
@@ -335,7 +336,7 @@ chr deployment create --settings chromia.yml --target devnet2 --secret .secret
 If you have multiple chains and only want to deploy a specific one.
 
 ```shell
-chr deployment create --settings chromia.yml --target devnet2 --blockchain hello --secret .secret
+chr deployment create --settings chromia.yml --target devnet2 --blockchain my_rell_dapp --secret .secret
 ```
 
 ### Query
@@ -369,7 +370,7 @@ and `--blockchain` (Name of the chain to query)
 instead of the `--blockchain-rid`.
 
 ```shell
-chr query --deployment --name devnet2 --blockchain hello hello_world
+chr query --deployment --name devnet2 --blockchain my_rell_dapp hello_world
 ```
 
 ### Tx

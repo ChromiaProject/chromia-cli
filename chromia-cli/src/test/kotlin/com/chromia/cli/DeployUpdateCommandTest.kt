@@ -86,9 +86,9 @@ class DeployUpdateCommandTest {
     @Test
     fun deploymentMustExistToUpdate() {
         val throwable = assertThrows<PrintMessage> {
-            DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "hello", "--network", "test"))
+            DeployUpdateCommand({ TestClient(it, { 0 }) }, { TestClusterManagement() }, { testHttpHandler() }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
         }
-        assertThat(throwable.message!!).contains("Blockchain hello cannot be updated since it has not been deployed to network test")
+        assertThat(throwable.message!!).contains("Blockchain my_rell_dapp cannot be updated since it has not been deployed to network test")
     }
 
     @Test

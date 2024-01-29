@@ -4,6 +4,7 @@ import com.chromia.cli.template.MinimalTemplateFactory
 import com.chromia.cli.template.PlainMultiTemplateFactory
 import com.chromia.cli.template.PlainTemplateFactory
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
@@ -11,7 +12,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
-import java.util.Scanner
 
 class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
     Generates a template project
@@ -21,7 +21,8 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
     ${"\u0085"}Plain - A plain skeleton with empty main and test files.
     ${"\u0085"}Plain-Multi - A plain skeleton with empty main and test files using multiple modules.
 """.trimIndent()) {
-    private val name by argument(help = "Dapp name").default("hello")
+    private val projectName by argument(help = "Dapp name", name = "name").default("my-rell-dapp")
+
 
     private val baseDir by option("-d", "--base-dir", help = "Directory to generate template project in")
             .file(canBeFile = false)
@@ -33,22 +34,23 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
 
     override fun run() {
 
-        if (!baseDir.exists()) baseDir.mkdirs()
-        if (File(baseDir, "chromia.yml").exists()) {
-            echo("A chromia.yml file exists in the working directory. Would you like to write over it? (All file content will be lost) Type DELETE to proceed with the deletion")
-            val resp = Scanner(System.`in`).nextLine().equals("DELETE", false)
-            if (resp) {
-                File(baseDir, "chromia.yml").delete()
-            } else {
-                return
-            }
+        if (projectName.contains(" ")) {
+            throw PrintMessage("The project name can not contain blank spaces", statusCode = 1)
         }
+
+        val projectDir = baseDir.resolve(projectName)
+
+        if (projectDir.exists()) {
+            throw PrintMessage("There already exist a directory called \"$projectName\" in the working directory, aborting.", statusCode = 1)
+        }
+
+        projectDir.mkdirs()
         val factory = when (template) {
             TemplateProject.PLAIN -> PlainTemplateFactory()
             TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory()
             TemplateProject.MINIMAL -> MinimalTemplateFactory()
         }
-        factory.createProjectFromTemplate(baseDir, name)
+        factory.createProjectFromTemplate(projectDir, projectName)
     }
 
     private enum class TemplateProject {

@@ -3,13 +3,13 @@ package com.chromia.cli.template
 import com.chromia.cli.model.RellVersion
 import java.io.File
 
-abstract class AbstractTemplateFactory(private val folderName: String): TemplateFactory {
+abstract class AbstractTemplateFactory(private val folderName: String) : TemplateFactory {
 
     protected fun snakeCaseName(string: String) = string.replace("-", "_")
 
     protected inner class FileBuilder(private val targetDir: File) {
         fun createFile(sourceName: String, targetName: String = sourceName, transform: (String) -> String = { it }) {
-            with (File(targetDir, targetName)) {
+            with(File(targetDir, targetName)) {
                 if (!parentFile.exists()) parentFile.mkdirs()
                 val fileContent = AbstractTemplateFactory::class.java.getResource("$folderName/$sourceName")!!.readText()
                 writeText(transform(fileContent))
@@ -22,6 +22,14 @@ abstract class AbstractTemplateFactory(private val folderName: String): Template
                         .replace("RELL_VERSION", RellVersion)
                         .replace("RELL_SCHEMA", "schema_${snakeCaseName(projectName)}")
                         .let(transform)
+            }
+        }
+
+        fun createGitIgnore() {
+            val sourceName = ".gitignore"
+            with(File(targetDir, sourceName)) {
+                val fileContent = AbstractTemplateFactory::class.java.getResource(sourceName)!!.readText()
+                writeText(fileContent)
             }
         }
     }

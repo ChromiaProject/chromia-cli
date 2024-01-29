@@ -9,6 +9,7 @@ class MinimalTemplateFactory : AbstractTemplateFactory("minimal") {
     override fun createProjectFromTemplate(targetDir: File, projectName: String) {
         with(FileBuilder(targetDir)) {
             createChromiaConfig(projectName)
+            createGitIgnore()
             createFile("src/main.rell")
             createFile("src/test/arithmetic_test.rell")
             createFile("src/test/data_test.rell")

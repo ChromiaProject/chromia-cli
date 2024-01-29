@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 class CommandExtension(private val command: CliktCommand) : BeforeEachCallback, AfterEachCallback {
 
     private val init = InitExtension()
-    val dir get() = init.dir
+    val dir get() = init.projectDir
 
     override fun beforeEach(p0: ExtensionContext) {
         init.beforeEach(p0)
@@ -19,6 +19,5 @@ class CommandExtension(private val command: CliktCommand) : BeforeEachCallback, 
         init.afterEach(p0)
     }
 
-    fun parse(argv: List<String> = listOf()) = command.test(listOf("--settings", init.dir.absolutePath.plus("/chromia.yml")) + argv)
-    fun emptyParse(argv: List<String> = listOf()) = command.test(argv)
+    fun parse(argv: List<String> = listOf()) = command.test(listOf("--settings", init.projectDir.absolutePath.plus("/chromia.yml")) + argv)
 }

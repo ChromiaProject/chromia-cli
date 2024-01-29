@@ -26,7 +26,7 @@ object DeploymentTestDataCreator {
         with(File(dir.toFile(), "chromia.yml")) {
             writeText("""
                 blockchains:
-                  hello:
+                  my_rell_dapp:
                     module: main
                     config:
                       blockstrategy:
