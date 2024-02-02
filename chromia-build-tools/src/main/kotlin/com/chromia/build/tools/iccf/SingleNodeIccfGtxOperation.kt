@@ -36,7 +36,7 @@ class SingleNodeIccfGtxOperation(context: SingleNodeIccfGtxModule.Config, opData
     override fun apply(ctx: TxEContext) = true
 
     override fun checkCorrectness() {
-        require(data.args.size == 3);
+        require(data.args.size == 3 || data.args.size == 6);
         val (_, sourceTxHash, sourceTxConfirmationProof, sourceBlockRid) = getSourceInfo(data.args)
         verifyWitnessesAndMerkleProofTree(sourceTxConfirmationProof, sourceBlockRid, sourceTxHash)
     }

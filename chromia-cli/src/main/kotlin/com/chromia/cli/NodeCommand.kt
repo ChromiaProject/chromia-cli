@@ -3,6 +3,7 @@ package com.chromia.cli
 import com.chromia.build.tools.compile.ChromiaCompileApi
 import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.compile.NodeConfig
+import com.chromia.cli.d1.ManagementChainFactory
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.launcher.createAliases
@@ -12,6 +13,7 @@ import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.associate
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -43,6 +45,13 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     private val overrides by option("-p", help = "Override any property value (usage: -p key=value)", metavar = "KEY=VALUE").associate()
     private val nodeConfigFile by nodePropertiesOption()
     protected val nodeConfig by lazy { nodeConfigFile ?: NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
+    private val directoryChainMock by option(
+            help = """
+                Adds a blockchain on ID 0 that responds to the cluster management api and anchoring api.
+                Used together with integration tests involving frontend clients. 
+                Can be used with node discovery features, ICCF and cross-chain transfers using the FT-protocol
+            """.trimIndent()
+    ).flag()
 
     protected fun extractConfigs(): Collection<ChromiaCompileResult> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
@@ -65,6 +74,8 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
         }
 
-        return configsToAdd
+        return if (directoryChainMock) {
+            listOf(ChromiaCompileResult("directory-chain", ManagementChainFactory.createManagementChain()) ) + configsToAdd
+        } else configsToAdd
     }
 }
