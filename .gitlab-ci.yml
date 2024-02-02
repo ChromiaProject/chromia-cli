@@ -106,7 +106,7 @@ trigger-apt-repo-release:
     TOOL: chr
   script: |
     curl -L \
-      --user $JENKINS_USER:$JENKINS_USER_TOKEN \
+      --user "$JENKINS_USER:$JENKINS_USER_TOKEN" \
       --form TOOL=$TOOL \
       --form VERSION=$VERSION \
       --request POST \
@@ -124,7 +124,7 @@ update-docs:
   before_script:
     - !reference [ .git-setup, script ]
   script: |
-    apk update && apk add docker curl
+    apk update && apk add docker curl bash
     git clone https://x-token-auth:$BITBUCKET_CI_TOKEN@bitbucket.org/chromawallet/chromia-docs.git docs-repo
     cd docs-repo
     bash generate-chromia-cli-docs.sh
