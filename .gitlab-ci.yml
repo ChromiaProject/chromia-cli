@@ -86,31 +86,31 @@ deploy:
       -Drevision=$CI_COMMIT_TAG
       source:jar deploy
 
-trigger-homebrew-release:
-  stage: release
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
-  variables:
-    VERSION: $CI_COMMIT_TAG
-    FORMULA: chr
-  trigger:
-    project: chromaway/core-tools/homebrew-chromia
-    strategy: depend
+# trigger-homebrew-release:
+#   stage: release
+#   rules:
+#     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+#   variables:
+#     VERSION: $CI_COMMIT_TAG
+#     FORMULA: chr
+#   trigger:
+#     project: chromaway/core-tools/homebrew-chromia
+#     strategy: depend
 
-trigger-apt-repo-release:
-  stage: release
-  rules:
-    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
-  variables:
-    VERSION: $CI_COMMIT_TAG
-    TOOL: chr
-  script: |
-    curl -L \
-      --user "$JENKINS_USER:$JENKINS_USER_TOKEN" \
-      --form TOOL=$TOOL \
-      --form VERSION=$VERSION \
-      --request POST \
-      https://jenkins.infra.chromia.dev/job/apt-repository-chromia/buildWithParameters?token=$JENKINS_APT_JOB_TOKEN
+# trigger-apt-repo-release:
+#   stage: release
+#   rules:
+#     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+#   variables:
+#     VERSION: $CI_COMMIT_TAG
+#     TOOL: chr
+#   script: |
+#     curl -L \
+#       --user "$JENKINS_USER:$JENKINS_USER_TOKEN" \
+#       --form TOOL=$TOOL \
+#       --form VERSION=$VERSION \
+#       --request POST \
+#       https://jenkins.infra.chromia.dev/job/apt-repository-chromia/buildWithParameters?token=$JENKINS_APT_JOB_TOKEN
 
 update-docs:
   stage: release
@@ -124,15 +124,22 @@ update-docs:
   before_script:
     - !reference [ .git-setup, script ]
   script: |
+    GIT_EMAIL=`git config user.email`
+    GIT_NAME=`git config user.name`
+
     apk update && apk add docker curl bash
     git clone https://x-token-auth:$BITBUCKET_CI_TOKEN@bitbucket.org/chromawallet/chromia-docs.git docs-repo
     cd docs-repo
     bash generate-chromia-cli-docs.sh
     
     # Check if there are changes
-    if [[ $(git status --porcelain) ]]; then
+    if [ `git status --porcelain | wc -l` -gt 0 ]; then
         # Commit and push the changes
         branch=chr-version-$VERSION
+
+        git config user.email $GIT_EMAIL
+        git config user.name $GIT_NAME
+
         git checkout -b $branch
         git add .
         git commit -m "Update chromia-cli docs to version $VERSION"
