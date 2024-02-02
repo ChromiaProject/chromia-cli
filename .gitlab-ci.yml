@@ -86,31 +86,31 @@ deploy:
       -Drevision=$CI_COMMIT_TAG
       source:jar deploy
 
-# trigger-homebrew-release:
-#   stage: release
-#   rules:
-#     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
-#   variables:
-#     VERSION: $CI_COMMIT_TAG
-#     FORMULA: chr
-#   trigger:
-#     project: chromaway/core-tools/homebrew-chromia
-#     strategy: depend
+trigger-homebrew-release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  variables:
+    VERSION: $CI_COMMIT_TAG
+    FORMULA: chr
+  trigger:
+    project: chromaway/core-tools/homebrew-chromia
+    strategy: depend
 
-# trigger-apt-repo-release:
-#   stage: release
-#   rules:
-#     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
-#   variables:
-#     VERSION: $CI_COMMIT_TAG
-#     TOOL: chr
-#   script: |
-#     curl -L \
-#       --user "$JENKINS_USER:$JENKINS_USER_TOKEN" \
-#       --form TOOL=$TOOL \
-#       --form VERSION=$VERSION \
-#       --request POST \
-#       https://jenkins.infra.chromia.dev/job/apt-repository-chromia/buildWithParameters?token=$JENKINS_APT_JOB_TOKEN
+trigger-apt-repo-release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  variables:
+    VERSION: $CI_COMMIT_TAG
+    TOOL: chr
+  script: |
+    curl -L \
+      --user "$JENKINS_USER:$JENKINS_USER_TOKEN" \
+      --form TOOL=$TOOL \
+      --form VERSION=$VERSION \
+      --request POST \
+      https://jenkins.infra.chromia.dev/job/apt-repository-chromia/buildWithParameters?token=$JENKINS_APT_JOB_TOKEN
 
 update-docs:
   stage: release
