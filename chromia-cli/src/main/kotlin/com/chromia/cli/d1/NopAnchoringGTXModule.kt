@@ -1,9 +1,11 @@
 package com.chromia.cli.d1
 
+import com.chromia.build.tools.iccf.SingleNodeIccfGtxModule
 import com.chromia.cli.d1.NopAnchoringOperation.Companion.ANCHOR_BLOCK_HEADER
 import com.chromia.directory1.anchoring_chain_common.AnchorBlock
 import com.chromia.directory1.anchoring_chain_common.AnchoringTxWithOpIndex
 import net.postchain.PostchainContext
+import net.postchain.base.BaseBlockHeader
 import net.postchain.base.data.PostgreSQLDatabaseAccess
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.NotFound
@@ -14,12 +16,13 @@ import net.postchain.core.BlockchainConfiguration
 import net.postchain.core.EContext
 import net.postchain.core.block.BlockQueries
 import net.postchain.core.block.BlockQueriesProvider
+import net.postchain.crypto.CryptoSystem
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.mapper.GtvObjectMapper
+import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtx.PostchainContextAware
 import net.postchain.gtx.SimpleGTXModule
-import com.chromia.build.tools.iccf.SingleNodeIccfGtxModule
 
 /**
  * GTXModule which responds to the anchoring api.
@@ -82,14 +85,17 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
 
     override fun initializeContext(configuration: BlockchainConfiguration, postchainContext: PostchainContext) {
         blockQueriesProvider = postchainContext.blockQueriesProvider
+        cryptoSystem = postchainContext.cryptoSystem
     }
 
     companion object {
         lateinit var blockQueriesProvider: BlockQueriesProvider
+        lateinit var cryptoSystem: CryptoSystem
         private val db = PostgreSQLDatabaseAccess()
 
         private fun getBlockAtHeight(bq: BlockQueries, height: Long, brid: BlockchainRid): GtvDictionary {
             val block = bq.getBlockAtHeight(height).get()!!
+            val decodedHeader = BaseBlockHeader(block.header.rawData, GtvMerkleHashCalculator(cryptoSystem))
             val aBlock = AnchorBlock(
                     transaction = RowId(0), // Rell entity rowid (not used)
                     blockchainRid = brid.wData,
@@ -97,7 +103,8 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
                     blockHeader = block.header.rawData.wrap(),
                     blockRid = block.header.blockRID.wrap(),
                     witness = block.witness.getRawData().wrap(),
-                    anchoringTxOpIndex = 0,
+                    timestamp = decodedHeader.timestamp,
+                    anchoringTxOpIndex = 0
             )
             return GtvObjectMapper.toGtvDictionary(aBlock)
         }
