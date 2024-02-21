@@ -32,6 +32,9 @@ class DeployInfoCommandTest {
 
         val settings = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  ok:
+                    module: main
                 deployments:
                   test:
                     url: "localhost:7740"

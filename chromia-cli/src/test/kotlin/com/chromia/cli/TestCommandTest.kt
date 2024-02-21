@@ -191,6 +191,9 @@ internal class TestCommandTest {
     fun testSubModuleSelectiveTest() {
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - testDir
@@ -205,6 +208,9 @@ internal class TestCommandTest {
     fun testUnitMultipleModules() {
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - testDir
@@ -218,6 +224,9 @@ internal class TestCommandTest {
     fun testUnitMultipleModulesOnlyRunsTestsOnceWhenDuplicateInvocations() {
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - testDir
@@ -231,6 +240,9 @@ internal class TestCommandTest {
     fun testSubModuleAllTests() {
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - testDir
@@ -275,6 +287,9 @@ internal class TestCommandTest {
 
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - test
@@ -318,6 +333,9 @@ internal class TestCommandTest {
 
         File(testDir.toFile(), "chromia.yml").apply {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 test:
                   modules:
                     - test

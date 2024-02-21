@@ -3,8 +3,8 @@ package com.chromia.build.tools.lib
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isTrue
+import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.parseModel
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import java.io.File
 import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliEnv
@@ -74,8 +74,8 @@ internal class RellLibraryModelTest {
                       some_unexpected_field: 123 
             """.trimIndent())
         }
-        val throwable = assertThrows<UnrecognizedPropertyException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("Unrecognized field \"some_unexpected_field\"")
+        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+        assertThat(throwable.message!!).contains("some_unexpected_field")
     }
 
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs

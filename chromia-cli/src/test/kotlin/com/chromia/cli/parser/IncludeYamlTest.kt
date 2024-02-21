@@ -1,7 +1,6 @@
 package com.chromia.cli.parser
 
 import assertk.assertThat
-import net.postchain.gtv.yaml.GtvYaml
 import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -23,10 +22,8 @@ internal class IncludeYamlTest {
                 b: !include a.yml
             """.trimIndent())
         }
-        val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
-        assertThat(res["b"] is Map<*, *>)
-        @Suppress("UNCHECKED_CAST")
-        assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
+        val res = loadAnchor(File(dir.toFile(), "b.yml"))
+        assertThat((res["b"] as Map<*, *>)["a"]!! as Int).isEqualTo(13)
     }
 
     @Test
@@ -41,10 +38,8 @@ internal class IncludeYamlTest {
                 b: !include a.yml
             """.trimIndent())
         }
-        val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
-        assertThat(res["b"] is List<*>)
-        @Suppress("UNCHECKED_CAST")
-        assertThat((res["b"] as List<Int>).first()).isEqualTo(13)
+        val res = loadAnchor(File(dir.toFile(), "b.yml"))
+        assertThat((res["b"] as List<*>)[0] as Int).isEqualTo(13)
     }
 
     @Test
@@ -59,10 +54,8 @@ internal class IncludeYamlTest {
                 b: !include ${dir.absolutePathString()}/a.yml
             """.trimIndent())
         }
-        val res = GtvYaml().loadAnchor<Map<String, Any>>(File(dir.toFile(), "b.yml"))
-        assertThat(res["b"] is Map<*, *>)
-        @Suppress("UNCHECKED_CAST")
-        assertThat((res["b"] as Map<String, Int>)["a"]).isEqualTo(13)
+        val res = loadAnchor(File(dir.toFile(), "b.yml"))
+        assertThat((res["b"] as Map<*, *>)["a"]!! as Int).isEqualTo(13)
     }
 
     @Test
@@ -77,7 +70,7 @@ internal class IncludeYamlTest {
                 b: !include ${dir.absolutePathString()}/a.yml#a
             """.trimIndent())
         }
-        val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "b.yml"))
-        assertThat(res["b"]).isEqualTo(13)
+        val res = loadAnchor(File(dir.toFile(), "b.yml"))
+        assertThat(res["b"]!! as Int).isEqualTo(13)
     }
 }

@@ -67,100 +67,100 @@ class EIFEIFGenerateEventsConfigCommandTest {
     }
 
     val expectedGtvYamlDepositedERC20AndTransferEvent = """
-            ---
-              - anonymous: 0
-                inputs:
-                  - indexed: 1
-                    internalType: address
-                    name: sender
-                    type: address
-                  - indexed: 1
-                    internalType: contract IERC20Upgradeable
-                    name: token
-                    type: address
-                  - indexed: 1
-                    internalType: bytes32
-                    name: ft3_account_id
-                    type: bytes32
-                  - indexed: 0
-                    internalType: uint256
-                    name: networkId
-                    type: uint256
-                  - indexed: 0
-                    internalType: uint256
-                    name: amount
-                    type: uint256
-                  - indexed: 0
-                    internalType: string
-                    name: name
-                    type: string
-                  - indexed: 0
-                    internalType: string
-                    name: symbol
-                    type: string
-                  - indexed: 0
-                    internalType: uint8
-                    name: decimals
-                    type: uint8
-                name: DepositedERC20
-                type: event
-              - anonymous: 0
-                inputs:
-                  - indexed: 1
-                    internalType: address
-                    name: from
-                    type: address
-                  - indexed: 1
-                    internalType: address
-                    name: to
-                    type: address
-                  - indexed: 0
-                    internalType: uint256
-                    name: value
-                    type: uint256
-                name: Transfer
-                type: event
+          ---
+          - anonymous: 0
+            inputs:
+            - indexed: 1
+              internalType: address
+              name: sender
+              type: address
+            - indexed: 1
+              internalType: contract IERC20Upgradeable
+              name: token
+              type: address
+            - indexed: 1
+              internalType: bytes32
+              name: ft3_account_id
+              type: bytes32
+            - indexed: 0
+              internalType: uint256
+              name: networkId
+              type: uint256
+            - indexed: 0
+              internalType: uint256
+              name: amount
+              type: uint256
+            - indexed: 0
+              internalType: string
+              name: name
+              type: string
+            - indexed: 0
+              internalType: string
+              name: symbol
+              type: string
+            - indexed: 0
+              internalType: uint8
+              name: decimals
+              type: uint8
+            name: DepositedERC20
+            type: event
+          - anonymous: 0
+            inputs:
+            - indexed: 1
+              internalType: address
+              name: from
+              type: address
+            - indexed: 1
+              internalType: address
+              name: to
+              type: address
+            - indexed: 0
+              internalType: uint256
+              name: value
+              type: uint256
+            name: Transfer
+            type: event
 
     """.trimIndent()
 
     val expectedGtvYamlDepositedERC20Event = """
-            ---
-              - anonymous: 0
-                inputs:
-                  - indexed: 1
-                    internalType: address
-                    name: sender
-                    type: address
-                  - indexed: 1
-                    internalType: contract IERC20Upgradeable
-                    name: token
-                    type: address
-                  - indexed: 1
-                    internalType: bytes32
-                    name: ft3_account_id
-                    type: bytes32
-                  - indexed: 0
-                    internalType: uint256
-                    name: networkId
-                    type: uint256
-                  - indexed: 0
-                    internalType: uint256
-                    name: amount
-                    type: uint256
-                  - indexed: 0
-                    internalType: string
-                    name: name
-                    type: string
-                  - indexed: 0
-                    internalType: string
-                    name: symbol
-                    type: string
-                  - indexed: 0
-                    internalType: uint8
-                    name: decimals
-                    type: uint8
-                name: DepositedERC20
-                type: event
+          ---
+          - anonymous: 0
+            inputs:
+            - indexed: 1
+              internalType: address
+              name: sender
+              type: address
+            - indexed: 1
+              internalType: contract IERC20Upgradeable
+              name: token
+              type: address
+            - indexed: 1
+              internalType: bytes32
+              name: ft3_account_id
+              type: bytes32
+            - indexed: 0
+              internalType: uint256
+              name: networkId
+              type: uint256
+            - indexed: 0
+              internalType: uint256
+              name: amount
+              type: uint256
+            - indexed: 0
+              internalType: string
+              name: name
+              type: string
+            - indexed: 0
+              internalType: string
+              name: symbol
+              type: string
+            - indexed: 0
+              internalType: uint8
+              name: decimals
+              type: uint8
+            name: DepositedERC20
+            type: event
 
         """.trimIndent()
 }

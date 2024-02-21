@@ -13,4 +13,14 @@ data class CompileModel(
     val langVersion get() = R_LangVersion.of(rellVersion)
     fun sourceFile(parent: File) = File(parent, source)
     fun targetFile(parent: File) = File(parent, target)
+
+    companion object {
+        fun load(data: Map<String, Any>) = CompileModel(
+                rellVersion = data["rellVersion"]?.let { it as String } ?: RellVersion,
+                source = data["source"]?.let { it as String } ?: "src",
+                target = data["target"]?.let { it as String } ?: "build",
+                deprecatedError = data["deprecatedError"]?.let { it as Boolean } ?: false,
+                quiet = data["quiet"]?.let { it as Boolean } ?: true
+        )
+    }
 }

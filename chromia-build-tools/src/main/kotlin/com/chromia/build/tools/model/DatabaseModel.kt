@@ -17,4 +17,16 @@ data class DatabaseModel(
     val dbSchema get() = System.getenv("CHR_DB_SCHEMA") ?: schema
 
     val url get() = "$dbUrl?user=$dbUser&password=$dbPassword"
+
+    companion object {
+        fun load(data: Map<String, Any>) = DatabaseModel(
+                host = data["host"]?.let { it as String } ?: "localhost",
+                database = data["database"]?.let { it as String } ?: "postchain",
+                username = data["username"]?.let { it as String } ?: "postchain",
+                password = data["password"]?.let { it as String } ?: "postchain",
+                schema = data["schema"]?.let { it as String } ?: "rell_dapp",
+                driver = data["driver"]?.let { it as String } ?: "org.postgresql.Driver",
+                logSqlErrors = data["logSqlErrors"]?.let { it as Boolean } ?: false,
+        )
+    }
 }

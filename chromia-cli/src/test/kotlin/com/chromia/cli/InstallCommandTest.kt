@@ -37,6 +37,9 @@ class InstallCommandTest {
     fun setup() {
         with(File(testDir.toFile(), "chromia.yml")) {
             writeText("""
+                blockchains: 
+                  main:
+                    module: main
                 libs:
                     foo:
                       registry: http://foo.com
