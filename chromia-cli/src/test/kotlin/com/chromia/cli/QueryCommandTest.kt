@@ -76,7 +76,7 @@ class QueryCommandTest : IntegrationTestSetup() {
                 api.url=$dummyApiUrl
             """.trimIndent())
         }
-        val res =  assertThrows<ClientError> {
+        val res = assertThrows<ClientError> {
             QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
         }
         assertThat(res.message!!).contains(dummyApiUrl)
@@ -92,7 +92,7 @@ class QueryCommandTest : IntegrationTestSetup() {
             """.trimIndent())
         }
         val overrideApiUrl = "http://not_existing_host_from_command_line:7741"
-        val res =  assertThrows<ClientError> {
+        val res = assertThrows<ClientError> {
             QueryCommand().test(listOf("--api-url", overrideApiUrl, "--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
         }
         assertThat(res.message!!).contains(overrideApiUrl)
@@ -135,5 +135,5 @@ class QueryCommandTest : IntegrationTestSetup() {
         val res = QueryCommand().test(listOf("test_query", "foo=17", "bar=hello", "baz=\"Hello, world=5\"", "my_struct=[\"name\":\"what ever\"]", "n=null"))
         assertThat(res.statusCode).isEqualTo(0)
         assertThat(res.stdout).isEqualTo("4711\n")
-   }
+    }
 }

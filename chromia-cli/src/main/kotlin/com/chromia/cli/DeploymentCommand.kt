@@ -44,7 +44,8 @@ fun deployCommands() = DeploymentCommand().subcommands(
         DeployUpdateCommand(),
         DeployResumeCommand(),
         DeployPauseCommand(),
-        DeployRemoveCommand()
+        DeployRemoveCommand(),
+        DeployInspectLeaseCommand()
 )
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
@@ -88,6 +89,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         var failure = false
         val txs = buildList {
             for (chain in compiledChains) {
+
                 val result = client
                         .transactionBuilder()
                         .addNop()

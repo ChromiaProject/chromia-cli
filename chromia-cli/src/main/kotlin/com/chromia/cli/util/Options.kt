@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.rell.base.model.R_ModuleName
 
@@ -27,6 +28,12 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
+fun ParameterHolder.publicKeyOption() = option("-pk", "--pubkey", help = "Set public key explicitly")
+        .validate {
+            require(it.matches(Regex("[0-9A-Fa-f]+"))) { "Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f." }
+            require(it.length % 2 == 0) { "The public key must be a hex string with even length. Length was: ${it.length}" }
+        }
+
 fun CliktCommand.secretOption() =
         option(help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, mustBeReadable = true)
 
@@ -39,3 +46,7 @@ fun CliktCommand.module() = option("-m", "--module", help = "Name of module", me
 
 fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
 fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()
+
+fun ParameterHolder.targetUrlOption() = option(help = "Target url")
+
+fun ParameterHolder.containerIdOption() = option("-cid", "--container-id", help = "Set container id explicitly")

@@ -16,7 +16,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
     val reader = BufferedReader(InputStreamReader(process.inputStream))
 
     init {
-        if (verbose) println("Starting command " +  processBuilder.command().subList(1, processBuilder.command().size))
+        if (verbose) println("Starting command " + processBuilder.command().subList(1, processBuilder.command().size))
         if (!startContition.isNullOrBlank()) {
             waitUntil(startContition, timeout)
         }
@@ -25,6 +25,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
             assertThat(this).finished(expectedExitCode)
         }
     }
+
     override fun close() {
         process.destroy()
         process.waitFor(2, TimeUnit.SECONDS)
@@ -93,6 +94,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
                     .apply {
                         redirectErrorStream(true)
                         workingDir?.let { directory(it) }
+                        environment()["COLUMNS"] = "150"
                     }
             return TestProcess(pb, startCondition, shouldFinish, exitCode, timeout, verbose).use(onCompleted)
         }

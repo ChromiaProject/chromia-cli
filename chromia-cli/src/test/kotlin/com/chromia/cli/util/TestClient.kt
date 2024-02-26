@@ -57,6 +57,9 @@ open class TestClient(
         "get_container_data" -> gtv(getContainerDataResult(args["name"].toString()))
         "get_cluster_api_urls" -> gtv(listOf(gtv("http://node1_url"), gtv("http://node2_url")))
         "get_compressed_configuration_parts" -> gtv(listOf(args["configuration_part_hashes"]!![0]))
+        "get_leases_by_account" -> gtv(listOf(gtv(getLeaseData()), gtv(getLeaseData())))
+        "get_lease_by_container_name" -> gtv(getLeaseData())
+        "get_economy_chain_rid" -> gtv(BlockchainRid.ZERO_RID.data)
         else -> TODO("Not yet implemented")
     }
 }
@@ -70,5 +73,17 @@ fun getContainerDataResult(name: String): Map<String, GtvPrimitive> {
             "proposed_by_pubkey" to gtv(pubkey),
             "proposed_by_name" to gtv("proposed_by_name"),
             "system" to gtv(false)
+    )
+}
+
+fun getLeaseData(): Map<String, GtvPrimitive> {
+    return mapOf(
+            "container_name" to gtv("Container Name"),
+            "cluster_name" to gtv("Cluster Name"),
+            "container_units" to gtv(1),
+            "extra_storage_gib" to gtv(1),
+            "expire_time_millis" to gtv(50),
+            "expired" to gtv(false),
+            "auto_renew" to gtv(false),
     )
 }

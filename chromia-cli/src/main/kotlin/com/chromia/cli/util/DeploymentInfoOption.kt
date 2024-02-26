@@ -26,7 +26,7 @@ sealed class DeploymentInfoOption(name: String, help: String? = null) : OptionGr
     abstract fun blockchainClient(): PostchainClient
 }
 
-class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val settings: () -> ChromiaModel) : DeploymentInfoOption("Configured", help = "Information about a deployed blockchain") {
+class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val settings: () -> ChromiaModel) : DeploymentInfoOption("Chromia Configuration", help = "Use connection configured under deployment from chromia.yml") {
     private val target by deployTargetOption().required().validate {
         val deployment = settings().deployments[it]
         require(deployment != null) { "Deployment $it not found" }
@@ -51,7 +51,7 @@ class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClient
                     .blockchain(brid)
 }
 
-class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) : DeploymentInfoOption("Manual", help = "Information about a deployed blockchain that is not in the settings file") {
+class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) : DeploymentInfoOption("Manual", help = "Set connection parameters manually") {
     private val blockchainRid by blockchainRidOption("Target Blockchain RID").required()
     private val url by option(help = "Target url").multiple().validate { it.isNotEmpty() }
 
