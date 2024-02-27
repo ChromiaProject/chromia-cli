@@ -11,6 +11,7 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import assertk.assertions.startsWith
 import com.chromia.build.tools.TestProcess
+import com.chromia.cli.INITILIZED_LOG
 import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.cli.util.testData
 import com.chromia.directory1.anchoring_chain_common.getAnchoringTransactionForBlockRid
@@ -44,7 +45,7 @@ class DirectoryChainMockIT {
         testData(dir)
         TestProcess.Builder("node", "start", "--directory-chain-mock", "--wipe")
                 .awaitCompletion(false)
-                .startCondition("Blockchain has been started")
+                .startCondition(INITILIZED_LOG)
                 .verbose()
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {

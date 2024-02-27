@@ -20,6 +20,8 @@ import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
 import net.postchain.rell.module.RellPostchainModuleEnvironment
 
+const val INITILIZED_LOG = "Node is initialized"
+
 class StartCommand : AbstractNodeCommand(help = """
     Starts a test node
     
@@ -81,6 +83,7 @@ class StartCommand : AbstractNodeCommand(help = """
             chainsToStart.forEach {
                 node.startBlockchain(it)
             }
+            echo(INITILIZED_LOG)
         }
     }
 }

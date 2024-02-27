@@ -1,6 +1,7 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
+import com.chromia.cli.INITILIZED_LOG
 import com.chromia.cli.util.testData
 import java.io.File
 import java.nio.file.Path
@@ -14,10 +15,9 @@ class RunNodeIT {
         testData(dir)
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
-                .startCondition("Blockchain has been started")
+                .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start { process ->
-
                     TestProcess.Builder("query", "hello").startCondition("Hi!").start()
                     TestProcess.Builder("tx", "call_op", "1").startCondition("was posted WAITING: OK").start()
 
@@ -41,8 +41,7 @@ class RunNodeIT {
         // Restarting the node should be fine
         TestProcess.Builder("node", "start")
                 .awaitCompletion(false)
-                .startCondition("Blockchain has been started")
-                .verbose()
+                .startCondition(INITILIZED_LOG)
                 .setWorkingDir(dir.toFile())
                 .start {
                     // Same blockchain was started
@@ -109,12 +108,9 @@ class RunNodeIT {
         }
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
-                // Wait for first chain to start
-                .startCondition("Blockchain has been started")
+                .startCondition(INITILIZED_LOG)
                 .setWorkingDir(dir.toFile())
                 .start {
-                    // Wait for second chain to start
-                    it.waitUntil("Blockchain has been started", Duration.ofSeconds(30))
                     // Send message
                     TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted CONFIRMED").start()
                     // Make sure a block gets built by making a dummy operation (We could also just wait maxBlockTime)

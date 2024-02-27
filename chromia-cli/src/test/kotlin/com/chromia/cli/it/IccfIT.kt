@@ -1,6 +1,7 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
+import com.chromia.cli.INITILIZED_LOG
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import net.postchain.client.config.PostchainClientConfig
@@ -47,7 +48,7 @@ class IccfIT {
         }
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
-                .startCondition("Blockchain has been started")
+                .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
                     TestProcess.Builder("tx", "--cid", "0", "op_to_confirm", "Secret message", "--await").verbose().startCondition("was posted CONFIRMED").start()
