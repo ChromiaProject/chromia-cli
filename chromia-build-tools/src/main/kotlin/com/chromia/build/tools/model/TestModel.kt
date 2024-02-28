@@ -1,6 +1,6 @@
 package com.chromia.cli.model
 
-import com.chromia.cli.parser.listMapAndPrimitivesToGtv
+import net.postchain.gtv.listMapAndPrimitivesToGtv
 import net.postchain.gtv.Gtv
 
 data class TestModel(

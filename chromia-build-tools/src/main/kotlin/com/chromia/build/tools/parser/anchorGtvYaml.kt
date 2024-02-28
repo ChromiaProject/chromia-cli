@@ -2,10 +2,6 @@ package com.chromia.cli.parser
 
 import com.chromia.build.tools.compile.ValidationException
 import net.postchain.common.hexStringToByteArray
-import net.postchain.common.types.WrappedByteArray
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.GtvNull
 import net.postchain.gtv.yaml.BIG_INTEGER_FORMAT
 import net.postchain.gtv.yaml.BIG_INTEGER_START
 import net.postchain.gtv.yaml.BIG_INTEGER_TAG
@@ -25,7 +21,6 @@ import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import java.io.File
-import java.math.BigInteger
 
 val INCLUDE_TAG = Tag("!include")
 
@@ -98,25 +93,4 @@ fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
     }
 
     return loaded
-}
-
-/**
- * Recursively convert a structure of `List<Any?>`, `Map<String, Any?>` and primitives to `Gtv`.
- *
- * `null` is converted to `GtvNull`.
- *
- * @throws IllegalArgumentException if an unsupported type is encountered
- */
-fun listMapAndPrimitivesToGtv(obj: Any?): Gtv = when (obj) {
-    is List<*> -> GtvFactory.gtv(obj.map { listMapAndPrimitivesToGtv(it) })
-    is Map<*, *> -> GtvFactory.gtv(obj.map { (it.key as String) to listMapAndPrimitivesToGtv(it.value) }.toMap())
-    is Boolean -> GtvFactory.gtv(obj)
-    is Int -> GtvFactory.gtv(obj.toLong())
-    is Long -> GtvFactory.gtv(obj)
-    is BigInteger -> GtvFactory.gtv(obj)
-    is ByteArray -> GtvFactory.gtv(obj)
-    is WrappedByteArray -> GtvFactory.gtv(obj)
-    is String -> GtvFactory.gtv(obj)
-    null -> GtvNull
-    else -> throw IllegalArgumentException("Cannot convert object of type ${obj::class.simpleName} to GTV")
 }
