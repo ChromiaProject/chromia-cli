@@ -3,11 +3,11 @@ package com.chromia.cli.it
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.INITILIZED_LOG
 import com.chromia.cli.util.testData
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 
 class RunNodeIT {
     @Test
@@ -118,5 +118,28 @@ class RunNodeIT {
                     // Verify that message was received
                     TestProcess.Builder("query", "--cid", "1", "get_messages").startCondition("""[["msg": "Hello!", "topic": "L_msg"]]""").start()
                 }
+    }
+
+    @Test
+    fun startNodeWithNonWhitelistedGtxModuleFails(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: main
+                        config:
+                          gtx:
+                            modules:
+                              - "net.postchain.eif.transaction.TransactionSubmitterGTXModule"
+                """.trimIndent())
+            }
+        }
+
+        TestProcess.Builder("node", "start", "--wipe")
+                .setWorkingDir(dir.toFile())
+                .awaitCompletion(false)
+                .startCondition("An error occurred. Could not find Gtx module: net.postchain.eif.transaction.TransactionSubmitterGTXModule")
+                .start()
     }
 }

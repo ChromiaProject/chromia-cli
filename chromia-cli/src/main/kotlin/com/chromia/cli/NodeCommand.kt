@@ -56,7 +56,15 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected fun extractConfigs(): Collection<ChromiaCompileResult> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val blockchainsToCompile = settings.model.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
-            ChromiaCompileApi.compile(CliktCliEnv(this), settings.model, settings.projectFolder, blockchainsToCompile, filterModules = true, inMemoryIcmf = true)
+            ChromiaCompileApi.compile(
+                    cliEnv = CliktCliEnv(this),
+                    model = settings.model,
+                    projectFolder = settings.projectFolder,
+                    blockchains = blockchainsToCompile,
+                    filterModules = true,
+                    inMemoryIcmf = true,
+                    validateGtv = true
+            )
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
@@ -75,7 +83,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
         }
 
         return if (directoryChainMock) {
-            listOf(ChromiaCompileResult("directory-chain", ManagementChainFactory.createManagementChain()) ) + configsToAdd
+            listOf(ChromiaCompileResult("directory-chain", ManagementChainFactory.createManagementChain())) + configsToAdd
         } else configsToAdd
     }
 }

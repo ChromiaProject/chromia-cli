@@ -6,7 +6,6 @@ import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastru
 import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
-import java.io.File
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -22,6 +21,7 @@ import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.module.RellPostchainModuleFactory
+import java.io.File
 
 internal class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
@@ -29,7 +29,8 @@ internal class BlockchainConfigurationGenerator(
         private val blockchainModels: Map<String, BlockchainModel>,
         private val sourceDir: File,
         private val filterModules: Boolean,
-        private val inMemoryIcmf: Boolean) {
+        private val inMemoryIcmf: Boolean,
+        private val validateGtv: Boolean) {
 
     private val whiteListedGtxModules = listOf(
             "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
@@ -55,8 +56,10 @@ internal class BlockchainConfigurationGenerator(
 
     private fun generateConfiguration(name: String, model: BlockchainModel): ChromiaCompileResult {
         val gtvModel = generateGtv(model)
+        if (validateGtv) {
+            validateGtvConfiguration(gtvModel)
+        }
         val configholder = ChromiaCompileResult(name, gtvModel)
-        validateGtvConfiguration(gtvModel)
         return configholder
     }
 
@@ -69,6 +72,8 @@ internal class BlockchainConfigurationGenerator(
             )
         } catch (e: UserMistake) {
             throw ValidationException(e.message!!)
+        } catch (e: ClassNotFoundException) {
+            throw ValidationException("Could not find Gtx module: ${e.message!!}")
         }
     }
 

@@ -83,7 +83,13 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
-        val compiledChains = ChromiaCompileApi.compile(CliktCliEnv(this@AbstractDeploymentCommand), settings.model, settings.projectFolder, chainsToDeploy)
+        val compiledChains = ChromiaCompileApi.compile(
+                cliEnv = CliktCliEnv(this@AbstractDeploymentCommand),
+                model = settings.model,
+                projectFolder = settings.projectFolder,
+                blockchains = chainsToDeploy,
+                validateGtv = true
+        )
         beforeDeployment(compiledChains, client)
 
         var failure = false
