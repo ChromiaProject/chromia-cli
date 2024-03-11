@@ -1,5 +1,6 @@
 package com.chromia.cli.model
 
+import com.chromia.build.tools.model.ensureType
 import java.io.File
 import net.postchain.rell.base.model.R_LangVersion
 
@@ -16,11 +17,12 @@ data class CompileModel(
 
     companion object {
         fun load(data: Map<String, Any>) = CompileModel(
-                rellVersion = data["rellVersion"]?.let { it as String } ?: RellVersion,
-                source = data["source"]?.let { it as String } ?: "src",
-                target = data["target"]?.let { it as String } ?: "build",
-                deprecatedError = data["deprecatedError"]?.let { it as Boolean } ?: false,
-                quiet = data["quiet"]?.let { it as Boolean } ?: true
+                rellVersion = ensureType<String?>(data["rellVersion"], "compile", "rellVersion") ?: RellVersion,
+                source = ensureType<String?>(data["source"], "compile", "source") ?: "src",
+                target = ensureType<String?>(data["target"], "compile", "target") ?: "build",
+                deprecatedError = ensureType<Boolean?>(data["deprecatedError"], "compile", "deprecatedError")
+                        ?: false,
+                quiet = ensureType<Boolean?>(data["quiet"], "compile", "quiet") ?: true
         )
     }
 }

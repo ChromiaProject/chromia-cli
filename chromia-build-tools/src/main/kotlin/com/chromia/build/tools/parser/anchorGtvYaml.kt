@@ -10,6 +10,7 @@ import net.postchain.gtv.yaml.BYTE_ARRAY_START
 import net.postchain.gtv.yaml.BYTE_ARRAY_TAG
 import net.postchain.gtv.yaml.GtvRepresenter
 import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.output.BasicErrorEntry
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.AbstractConstruct
@@ -88,9 +89,20 @@ fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
                 .replace("""!bytearray """, "")
         val validationResult = it.validateBasic(json)
         if (!validationResult.valid) {
-            throw ValidationException(validationResult.errors!!.joinToString(", ") { e -> e.error })
+            throw ValidationException(constructErrorMessage(validationResult.errors!!, src))
         }
     }
 
     return loaded
+}
+
+fun constructErrorMessage(errors: List<BasicErrorEntry>, src: File): String {
+    val errorMessageFilterStrings = listOf("A subschema had errors", "Constant schema \"false\"", "Constant schema \"true\"")
+    val filteredErrors = errors.filter { it.error !in errorMessageFilterStrings }
+    return "Following errors found in ${src.name}:\n" + filteredErrors.joinToString("\n") { e -> e.error + constructLocationInfo(e) }
+}
+
+fun constructLocationInfo(e: BasicErrorEntry): String {
+
+    return " (location: ${e.instanceLocation.removePrefix("#/").replace("/", "->")})"
 }

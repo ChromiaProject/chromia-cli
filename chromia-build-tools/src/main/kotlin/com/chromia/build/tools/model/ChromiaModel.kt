@@ -15,10 +15,13 @@ data class ChromiaModel(
         fun load(data: Map<String, Any>) = ChromiaModel(
                 database = data["database"]?.let { DatabaseModel.load(it as Map<String, Any>) } ?: DatabaseModel(),
                 compile = data["compile"]?.let { CompileModel.load(it as Map<String, Any>) } ?: CompileModel(),
-                blockchains = (data["blockchains"] as Map<String, Any>?)?.mapValues { BlockchainModel.load(it.value as Map<String, Any>) } ?: mapOf(),
-                deployments = (data["deployments"] as Map<String, Any>?)?.mapValues { DeploymentModel.load(it.value as Map<String, Any>) } ?: mapOf(),
+                blockchains = (data["blockchains"] as Map<String, Any>?)?.mapValues { BlockchainModel.load(it.value as Map<String, Any>, it.key) }
+                        ?: mapOf(),
+                deployments = (data["deployments"] as Map<String, Any>?)?.mapValues { DeploymentModel.load(it.value as Map<String, Any>, it.key) }
+                        ?: mapOf(),
                 test = data["test"]?.let { TestModel.load(it as Map<String, Any>) } ?: TestModel(),
-                libs = (data["libs"] as Map<String, Any>?)?.mapValues { RellLibraryModel.load(it.value as Map<String, Any>) } ?: mapOf(),
+                libs = (data["libs"] as Map<String, Any>?)?.mapValues { RellLibraryModel.load(it.value as Map<String, Any>, it.key) }
+                        ?: mapOf(),
         )
 
         val schema = JSONSchema.parse(

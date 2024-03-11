@@ -262,6 +262,7 @@
         },
         "rid": {
           "type": "string",
+          "pattern": "^x\"[a-fA-F0-9]+\"$",
           "description": "Hash of the library"
         }
       }

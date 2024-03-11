@@ -1,5 +1,6 @@
 package com.chromia.cli.model
 
+import com.chromia.build.tools.model.ensureType
 import net.postchain.gtv.listMapAndPrimitivesToGtv
 import net.postchain.common.BlockchainRid
 import net.postchain.common.types.WrappedByteArray
@@ -15,21 +16,25 @@ data class DeploymentModel(
         val chains: Map<String, BlockchainRid> = mapOf()
 ) {
     val blockchainRid: BlockchainRid = BlockchainRid(brid)
-    val urls: List<String> get() {
-        return when (url) {
-            is GtvString -> listOf(url.asString())
-            is GtvArray -> url.asArray().map { it.asString() }
-            else -> throw IllegalArgumentException("deployment url must be either a single string or an array")
+    val urls: List<String>
+        get() {
+            return when (url) {
+                is GtvString -> listOf(url.asString())
+                is GtvArray -> url.asArray().map { it.asString() }
+                else -> throw IllegalArgumentException("deployment url must be either a single string or an array")
+            }
         }
-    }
 
     companion object {
         @Suppress("UNCHECKED_CAST")
-        fun load(data: Map<String, Any>) = DeploymentModel(
-                brid = (data["brid"] as ByteArray).wrap(),
-                container = data["container"]?.let { it as String },
+        fun load(data: Map<String, Any>, additionalProperty: String) = DeploymentModel(
+                brid = ensureType<ByteArray>(data["brid"], "deployments", additionalProperty, "brid").wrap(),
+                container = ensureType<String?>(data["container"], "deployments", additionalProperty, "container"),
                 url = listMapAndPrimitivesToGtv(data["url"]),
-                chains = (data["chains"] as Map<String, ByteArray>?)?.mapValues { BlockchainRid(it.value) } ?: mapOf(),
+                chains = ensureType<Map<String, ByteArray>?>(data["chains"], "deployments", additionalProperty, "chains")
+                        ?.mapValues {
+                            BlockchainRid(it.value)
+                        } ?: mapOf(),
         )
     }
 }

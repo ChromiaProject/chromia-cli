@@ -1,5 +1,7 @@
 package com.chromia.cli.model
 
+import com.chromia.build.tools.model.ensureType
+
 data class DatabaseModel(
         private val host: String = "localhost",
         private val database: String = "postchain",
@@ -9,7 +11,8 @@ data class DatabaseModel(
         val driver: String = "org.postgresql.Driver",
         val logSqlErrors: Boolean = false,
 ) {
-    val dbUrl get() =
+    val dbUrl
+        get() =
             System.getenv("CHR_DB_URL") ?: "jdbc:postgresql://$host/$database"
 
     val dbUser get() = System.getenv("CHR_DB_USER") ?: username
@@ -20,13 +23,13 @@ data class DatabaseModel(
 
     companion object {
         fun load(data: Map<String, Any>) = DatabaseModel(
-                host = data["host"]?.let { it as String } ?: "localhost",
-                database = data["database"]?.let { it as String } ?: "postchain",
-                username = data["username"]?.let { it as String } ?: "postchain",
-                password = data["password"]?.let { it as String } ?: "postchain",
-                schema = data["schema"]?.let { it as String } ?: "rell_dapp",
-                driver = data["driver"]?.let { it as String } ?: "org.postgresql.Driver",
-                logSqlErrors = data["logSqlErrors"]?.let { it as Boolean } ?: false,
+                host = ensureType<String?>(data["host"], "database", "host") ?: "localhost",
+                database = ensureType<String?>(data["database"], "database", "database") ?: "postchain",
+                username = ensureType<String?>(data["username"], "database", "username") ?: "postchain",
+                password = ensureType<String?>(data["password"], "database", "password") ?: "postchain",
+                schema = ensureType<String?>(data["schema"], "database", "schema") ?: "rell_dapp",
+                driver = ensureType<String?>(data["driver"], "database", "driver") ?: "org.postgresql.Driver",
+                logSqlErrors = ensureType<Boolean?>(data["logSqlErrors"], "database", "logSqlErrors") ?: false,
         )
     }
 }

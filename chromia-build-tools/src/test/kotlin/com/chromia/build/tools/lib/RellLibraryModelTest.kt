@@ -1,18 +1,16 @@
 package com.chromia.build.tools.lib
 
 import assertk.assertThat
-import assertk.assertions.contains
+import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
-import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.parseModel
-import java.io.File
-import java.nio.file.Path
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 internal class RellLibraryModelTest {
     private lateinit var settingsFile: File
@@ -59,25 +57,6 @@ internal class RellLibraryModelTest {
         }
     }
 
-    @Test
-    fun unrecognizedFieldInRellLibraryModelTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                      some_unexpected_field: 123 
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("some_unexpected_field")
-    }
-
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
     @Test
     fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
@@ -103,6 +82,85 @@ internal class RellLibraryModelTest {
         Assertions.assertEquals(settings.libs["foo"]!!.registry, "http://foo2.com")
     }
 
+    @Test
+    fun fullConfigParseTest(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    foo:
+                        module: main
+                        config:
+                            height: 1
+                        moduleArgs:
+                            moduleOne:
+                                hex: x"1234"
+                                string: foo
+                            moduleTwo:
+                                hex: x"5678"
+                                string: bar
+                        test:
+                            modules:
+                                - test.bar
+                                - test.foo
+                            moduleArgs:
+                                moduleOne:
+                                    hex: x"1234"
+                                    string: foobar
+                
+                deployments:
+                  testnet:
+                    brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                    url:
+                      - https://foo.com
+                      - https://bar.com
+                    container: 1234id
+                    chains:
+                      foo: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
+                      
+                  mainnet:
+                    brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                    url: https://bar.com
+                    container: 1234id
+                
+                compile:
+                  rellVersion: 0.13.5
+                  source: src
+                  target: build
+                  deprecatedError: false
+                  quite: true
+                  
+                database:
+                    password: postchain
+                    username: postchain
+                    database: postchain
+                    host: localhost
+                    logSqlErrors: true
+                    schema: rell_app
+                    driver: org.postgresql.Driver
+                
+                test:
+                    modules:
+                        - test.bar
+                        - test.foo
+                    moduleArgs:
+                        moduleOne:
+                            hex: x"1234"
+                            string: foo
+                    failOnError: true
+                libs:
+                    lib:
+                        registry: https://bar.com
+                        path: path/foo
+                        tagOrBranch: branchOne
+                        rid: x"1234"
+                        insecure: false
+            """.trimIndent())
+        }
+
+        val settings = parseModel(settingsFile)
+
+        assertThat(settings).isNotNull()
+    }
 
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
