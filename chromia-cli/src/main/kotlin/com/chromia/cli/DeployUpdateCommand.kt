@@ -41,6 +41,7 @@ class DeployUpdateCommand(
     private val skipVerification by option("--skip-verification", help = "Skip verification of blockchain config before sending update transaction").flag()
 
     override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+        validateRellVersion(client, httpHandlerFactory)
         if (skipVerification) {
             echo("Skipping verification of blockchain config")
             return

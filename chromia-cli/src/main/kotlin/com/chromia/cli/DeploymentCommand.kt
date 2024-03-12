@@ -12,6 +12,10 @@ import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
+import com.chromia.cli.versionfinder.Http4kRellVersionFinder
+import com.chromia.cli.versionfinder.RellDeployVersionException
+import com.chromia.directory1.common.queries.getClusterApiUrls
+import com.chromia.directory1.common.queries.getContainerData
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.NoOpCliktCommand
@@ -29,8 +33,10 @@ import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.core.TxRid
+import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.tx.TransactionStatus
+import org.http4k.core.HttpHandler
 import java.time.Instant
 
 class DeploymentCommand : NoOpCliktCommand(help = "Create and maintain deployments") {
@@ -77,7 +83,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 .let { clientProvider.createClient(it) }
     }
 
-    protected fun createClientConfig(): PostchainClientConfig {
+    private fun createClientConfig(): PostchainClientConfig {
         return settings.model.client(settings.config, secret = secret, network = target, blockchain = null)
     }
 
@@ -154,6 +160,22 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
             val configWithCompressionInfo = BlockchainConfigurationCompressor.compress(client, chain.config, client.apiVersion)
             BlockchainConfigurationWriter.storeConfig(configWithCompressionInfo, "${chain.name}_compressed", settings.model.compile.targetFile(settings.projectFolder).toPath())
             return ChromiaCompileResult(chain.name, configWithCompressionInfo)
+        }
+    }
+
+    protected fun validateRellVersion(client: PostchainClient, httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) {
+        val httpClient = httpHandlerFactory(createClientConfig())
+        val rellVersionController = Http4kRellVersionFinder(httpClient)
+
+        val clusterName = client.getContainerData(deployModel.container!!).name
+        val clusterNodeUrls = client.getClusterApiUrls(clusterName)
+
+        val targetVersions = clusterNodeUrls.map {
+            rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid)
+        }
+
+        if (targetVersions.any { it < settings.model.compile.langVersion }) {
+            throw RellDeployVersionException(settings.model.compile.rellVersion, targetVersions.min())
         }
     }
 }

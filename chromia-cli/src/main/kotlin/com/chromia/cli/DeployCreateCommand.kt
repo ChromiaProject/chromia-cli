@@ -6,10 +6,6 @@ import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.pubkey
-import com.chromia.cli.versionfinder.Http4kRellVersionFinder
-import com.chromia.cli.versionfinder.RellDeployVersionException
-import com.chromia.directory1.common.queries.getClusterApiUrls
-import com.chromia.directory1.common.queries.getContainerData
 import com.chromia.directory1.proposal_blockchain.findBlockchainRid
 import com.chromia.directory1.version.apiVersion
 import com.github.ajalt.clikt.core.PrintMessage
@@ -24,7 +20,6 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.core.TxRid
 import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.client.request.Endpoint
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.common.BlockchainRid
@@ -40,30 +35,13 @@ class DeployCreateCommand(
 
     override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
 
-        validateRellVersion(client)
+        validateRellVersion(client, httpHandlerFactory)
 
         compiledChains.forEach { chain ->
             if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain ${chain.name} is already deployed to network $target")
             if (!confirm && YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
                             terminal, default = false
                     ).ask() != true) throw PrintMessage("Deployment was aborted")
-        }
-    }
-
-
-    private fun validateRellVersion(client: PostchainClient) {
-        val httpClient = httpHandlerFactory(createClientConfig())
-        val rellVersionController = Http4kRellVersionFinder(httpClient)
-
-        val clusterName = client.getContainerData(deployModel.container!!).name
-        val clusterNodeUrls = client.getClusterApiUrls(clusterName)
-
-        val targetVersions = clusterNodeUrls.map {
-            rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid)
-        }
-
-        if (targetVersions.any { it < settings.model.compile.langVersion }) {
-            throw RellDeployVersionException(settings.model.compile.rellVersion, targetVersions.min())
         }
     }
 

@@ -10,6 +10,7 @@ import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.util.TestConfiguration
+import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
 import net.postchain.common.hexStringToByteArray
@@ -27,7 +28,6 @@ import java.nio.file.Path
 
 
 class DeployUpdateCommandTest {
-
     @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
@@ -122,9 +122,23 @@ class DeployUpdateCommandTest {
         assertThat(testDir.resolve("build/deployed.xml").toFile().readText()).doesNotContain("<entry key=\"compressed_roots\">")
     }
 
-    private fun testHttpHandler(invalidUpdate: Boolean = false): (Request) -> Response = {
-        assertThat(it.uri.host).contains("myhost")
-        if (invalidUpdate) Response(Status.BAD_REQUEST).body("{\n\"error\": \"Invalid configuration\"\n}")
-        else Response(Status.OK).body("{}")
+    @Test
+    fun cannotUpdateNotMatchingRellVersion() {
+        val config = TestConfiguration()
+        val throwable = assertThrows<RellDeployVersionException> {
+            DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler(rellVersion = "0.11.0") }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+        }
+        assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
+                "The deployment is aborted.")
+    }
+
+    private fun testHttpHandler(invalidUpdate: Boolean = false, rellVersion: String = "0.12.0"): (Request) -> Response = {
+        if (it.uri.toString().contains("get_rell_version")) {
+            Response(Status.OK, "").body(rellVersion)
+        } else {
+            assertThat(it.uri.host).contains("myhost")
+            if (invalidUpdate) Response(Status.BAD_REQUEST).body("{\n\"error\": \"Invalid configuration\"\n}")
+            else Response(Status.OK).body("{}")
+        }
     }
 }
