@@ -235,10 +235,11 @@ internal class RellLibraryModelTest {
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 definitions: 
-                    bar: &anc foo
+                    bar: &anc_bar
+                        foo: hello
                 blockchains:
                   bc1:
-                    module: *anc 
+                    module: *anc_bar
             """.trimIndent())
         }
         val model = parseModel(settingsFile)
