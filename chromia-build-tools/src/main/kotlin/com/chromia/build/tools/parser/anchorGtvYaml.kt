@@ -1,6 +1,7 @@
 package com.chromia.cli.parser
 
 import com.chromia.build.tools.compile.ValidationException
+import com.chromia.build.tools.parser.TestAnchor
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.yaml.BIG_INTEGER_FORMAT
 import net.postchain.gtv.yaml.BIG_INTEGER_START
@@ -21,6 +22,7 @@ import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_TAG
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.serializer.NumberAnchorGenerator
 import java.io.File
 
 val INCLUDE_TAG = Tag("!include")
@@ -80,9 +82,10 @@ fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
             defaultFlowStyle = DumperOptions.FlowStyle.FLOW
             defaultScalarStyle = DumperOptions.ScalarStyle.DOUBLE_QUOTED
             width = Int.MAX_VALUE
+            //anchorGenerator = TestAnchor() //this is where the indexes is set
         })
 
-        val json = jsonDumper.dump(loaded.toMap())
+        val json = jsonDumper.dump(loaded)
                 .replace("""!!null "null"""", "null")
                 .replace("""!!bool "true"""", "true")
                 .replace("""!!bool "false"""", "false")
