@@ -1,6 +1,7 @@
 package com.chromia.build.tools.lib
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.cli.model.parseModel
@@ -127,7 +128,7 @@ internal class RellLibraryModelTest {
                   source: src
                   target: build
                   deprecatedError: false
-                  quite: true
+                  quiet: true
                   
                 database:
                     password: postchain
@@ -220,5 +221,27 @@ internal class RellLibraryModelTest {
         settings.libs.forEach {
             assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
         }
+    }
+
+    @Test
+    fun `Can parse the real world examples of config files`() {
+        settingsFile = File(this.javaClass.classLoader.getResource("realWorldConfigs/d1.yml")!!.file)
+        //TODO make more comprehensive tests
+        parseModel(settingsFile)
+    }
+
+    @Test
+    fun `Anchors and references resolves correct`(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                definitions: 
+                    bar: &anc foo
+                blockchains:
+                  bc1:
+                    module: *anc 
+            """.trimIndent())
+        }
+        val model = parseModel(settingsFile)
+        assertThat(model.blockchains["bc1"]!!.module).isEqualTo("foo")
     }
 }

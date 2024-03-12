@@ -2,6 +2,7 @@ package com.chromia.cli.parser
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import net.postchain.gtv.yaml.GtvYaml
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
@@ -16,8 +17,8 @@ class EvnSubYamlTest {
             with(File(dir.toFile(), "a.yml")) {
                 writeText("a: \${MY_A}")
             }
-            val res = loadAnchor(File(dir.toFile(), "a.yml"))
-            assertThat(res["a"]!! as String).isEqualTo("foo")
+            val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
+            assertThat(res["a"]).isEqualTo("foo")
         }
     }
 
@@ -27,17 +28,18 @@ class EvnSubYamlTest {
             with(File(dir.toFile(), "a.yml")) {
                 writeText("a: \${MY_A}")
             }
-            val res = loadAnchor(File(dir.toFile(), "a.yml"))
-            assertThat(res["a"]!! as String).isEqualTo("1")
+            val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "a.yml"))
+            @Suppress("CAST_NEVER_SUCCEEDS")
+            assertThat(res["a"] as String).isEqualTo("1")
         }
     }
 
     @Test
     fun `Dollar sign can be escaped and not interpreted as env var`(@TempDir dir: Path) {
-            with(File(dir.toFile(), "a.yml")) {
-                writeText("a: \"\$escaped\$\"")
-            }
-            val res = loadAnchor(File(dir.toFile(), "a.yml"))
-            assertThat(res["a"]!! as String).isEqualTo("\$escaped\$")
+        with(File(dir.toFile(), "a.yml")) {
+            writeText("a: \"\$escaped\$\"")
+        }
+        val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
+        assertThat(res["a"]).isEqualTo("\$escaped\$")
     }
 }

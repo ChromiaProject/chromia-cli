@@ -1,8 +1,8 @@
 package com.chromia.cli.model
 
-import net.pwall.json.schema.JSONSchema
 
 data class ChromiaModel(
+        private val definitions: Any = Any(),
         private val database: DatabaseModel = DatabaseModel(),
         val compile: CompileModel = CompileModel(),
         val blockchains: Map<String, BlockchainModel> = mapOf(),
@@ -24,9 +24,9 @@ data class ChromiaModel(
                         ?: mapOf(),
         )
 
-        val schema = JSONSchema.parse(
-                this::class.java.getResourceAsStream("/chromia-model-schema.json")!!.readAllBytes().toString(Charsets.UTF_8)
-        )
+//        val schema = JSONSchema.parse(
+//                this::class.java.getResourceAsStream("/chromia-model-schema.json")!!.readAllBytes().toString(Charsets.UTF_8)
+//        )
     }
 
     val logSqlErrors get() = database.logSqlErrors

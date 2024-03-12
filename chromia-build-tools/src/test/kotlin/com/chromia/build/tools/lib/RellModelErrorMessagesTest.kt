@@ -10,239 +10,240 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 
-internal class RellModelErrorMessagesTest {
-    private lateinit var settingsFile: File
-
-    @Test
-    fun `unrecognized field in rell model test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                      some_unexpected_field: 123
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'foo' found but was invalid (location: libs->foo)
-            Additional property 'some_unexpected_field' found but was invalid (location: libs->foo->some_unexpected_field)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `invalid indent in rell model test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-              bc1:
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Unable to parse file chromia.yml due to unexpected value at line: 1, column: 0
-                bc1:
-                ^
-        """.trimIndent())
-    }
-
-    @Test
-    fun `missing required property in rell model test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                    bc1:
-                        invalidName: main
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'bc1' found but was invalid (location: blockchains->bc1)
-            Required property "module" not found (location: blockchains->bc1)
-            Additional property 'invalidName' found but was invalid (location: blockchains->bc1->invalidName)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type of additional property`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                    - bc1:
-                        module: main
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Incorrect type, expected object (location: blockchains)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type byteArray for registry in library model expecting string test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: x"1234"
-                      path: lib 
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: libs->foo->registry)")
-    }
-
-    @Test
-    fun `incorrect type byteArray for tagOrBranch in library model expecting optional string test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      tagOrBranch: x"1234"
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: libs->foo->tagOrBranch)")
-    }
-
-    @Test
-    fun `incorrect type string for rid in library model expecting optional byteArray test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5 
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'foo' found but was invalid (location: libs->foo)
-            String doesn't match pattern ^x"[a-fA-F0-9]+"${'$'} - "615175A2847D739 ... 2A7E3C3E7032DB5" (location: libs->foo->rid)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type string for rid in deployment model expecting byteArray test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                deployments:
-                    foo:
-                      url: "http://foo.com"
-                      brid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5 
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'foo' found but was invalid (location: deployments->foo)
-            String doesn't match pattern ^x"[a-fA-F0-9]+"${'$'} - "615175A2847D739 ... 2A7E3C3E7032DB5" (location: deployments->foo->brid)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type non hex string for chains in deployment model expecting byteArray test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                    bc1:
-                        module: main
-                deployments:
-                    foo:
-                        url: "http://foo.com"
-                        brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                        chains:
-                            bc1: 1234
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'foo' found but was invalid (location: deployments->foo)
-            Additional property 'bc1' found but was invalid (location: deployments->foo->chains->bc1)
-            Incorrect type, expected string (location: deployments->foo->chains->bc1)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type string for insecure in library model boolean test`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      insecure: 123 
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'foo' found but was invalid (location: libs->foo)
-            Incorrect type, expected boolean (location: libs->foo->insecure)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type byteArray for test module expecting list of Strings`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                test:
-                  modules: x"1234"
-                        
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Incorrect type, expected array (location: test->modules)
-        """.trimIndent())
-    }
-
-    @Test
-    fun `incorrect type byteArray for database host expecting option string`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                    bc1:
-                        module: main
-                database:
-                    schema: rell_dapp
-                    host: x"1234"
-                        
-            """.trimIndent())
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
-        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: database->host)")
-    }
-}
+//TODO add tests when the anchring feature is back
+//internal class RellModelErrorMessagesTest {
+//    private lateinit var settingsFile: File
+//
+//    @Test
+//    fun `unrecognized field in rell model test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                libs:
+//                    foo:
+//                      registry: http://foo.com
+//                      path: lib
+//                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+//                      some_unexpected_field: 123
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'foo' found but was invalid (location: libs->foo)
+//            Additional property 'some_unexpected_field' found but was invalid (location: libs->foo->some_unexpected_field)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `invalid indent in rell model test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//              bc1:
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Unable to parse file chromia.yml due to unexpected value at line: 1, column: 0
+//                bc1:
+//                ^
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `missing required property in rell model test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                    bc1:
+//                        invalidName: main
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'bc1' found but was invalid (location: blockchains->bc1)
+//            Required property "module" not found (location: blockchains->bc1)
+//            Additional property 'invalidName' found but was invalid (location: blockchains->bc1->invalidName)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type of additional property`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                    - bc1:
+//                        module: main
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Incorrect type, expected object (location: blockchains)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type byteArray for registry in library model expecting string test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                libs:
+//                    foo:
+//                      registry: x"1234"
+//                      path: lib
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: libs->foo->registry)")
+//    }
+//
+//    @Test
+//    fun `incorrect type byteArray for tagOrBranch in library model expecting optional string test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                libs:
+//                    foo:
+//                      registry: http://foo.com
+//                      path: lib
+//                      tagOrBranch: x"1234"
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: libs->foo->tagOrBranch)")
+//    }
+//
+//    @Test
+//    fun `incorrect type string for rid in library model expecting optional byteArray test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                libs:
+//                    foo:
+//                      registry: http://foo.com
+//                      path: lib
+//                      rid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'foo' found but was invalid (location: libs->foo)
+//            String doesn't match pattern ^x"[a-fA-F0-9]+"${'$'} - "615175A2847D739 ... 2A7E3C3E7032DB5" (location: libs->foo->rid)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type string for rid in deployment model expecting byteArray test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                deployments:
+//                    foo:
+//                      url: "http://foo.com"
+//                      brid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'foo' found but was invalid (location: deployments->foo)
+//            String doesn't match pattern ^x"[a-fA-F0-9]+"${'$'} - "615175A2847D739 ... 2A7E3C3E7032DB5" (location: deployments->foo->brid)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type non hex string for chains in deployment model expecting byteArray test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                    bc1:
+//                        module: main
+//                deployments:
+//                    foo:
+//                        url: "http://foo.com"
+//                        brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+//                        chains:
+//                            bc1: 1234
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'foo' found but was invalid (location: deployments->foo)
+//            Additional property 'bc1' found but was invalid (location: deployments->foo->chains->bc1)
+//            Incorrect type, expected string (location: deployments->foo->chains->bc1)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type string for insecure in library model boolean test`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                libs:
+//                    foo:
+//                      registry: http://foo.com
+//                      path: lib
+//                      insecure: 123
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Additional property 'foo' found but was invalid (location: libs->foo)
+//            Incorrect type, expected boolean (location: libs->foo->insecure)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type byteArray for test module expecting list of Strings`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                  bc1:
+//                    module: main
+//                test:
+//                  modules: x"1234"
+//
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("""
+//            Following errors found in chromia.yml:
+//            Incorrect type, expected array (location: test->modules)
+//        """.trimIndent())
+//    }
+//
+//    @Test
+//    fun `incorrect type byteArray for database host expecting option string`(@TempDir dir: Path) {
+//        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+//            writeText("""
+//                blockchains:
+//                    bc1:
+//                        module: main
+//                database:
+//                    schema: rell_dapp
+//                    host: x"1234"
+//
+//            """.trimIndent())
+//        }
+//        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+//        assertThat(throwable.message!!).contains("Incorrect type, expected String (location: database->host)")
+//    }
+//}

@@ -1,19 +1,21 @@
 package com.chromia.cli.parser
 
-import com.chromia.build.tools.compile.ValidationException
-import net.postchain.common.hexStringToByteArray
-import net.postchain.gtv.yaml.BIG_INTEGER_FORMAT
-import net.postchain.gtv.yaml.BIG_INTEGER_START
-import net.postchain.gtv.yaml.BIG_INTEGER_TAG
-import net.postchain.gtv.yaml.BYTE_ARRAY_FORMAT
-import net.postchain.gtv.yaml.BYTE_ARRAY_START
-import net.postchain.gtv.yaml.BYTE_ARRAY_TAG
-import net.postchain.gtv.yaml.GtvRepresenter
-import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.BasicErrorEntry
-import org.yaml.snakeyaml.DumperOptions
+import com.chromia.build.tools.parser.BigIntegerDeserializer
+import com.chromia.build.tools.parser.BigIntegerSerializer
+import com.chromia.build.tools.parser.ByteArrayDeserializer
+import com.chromia.build.tools.parser.ByteArraySerializer
+import com.chromia.build.tools.parser.GtvDeserializer
+import com.chromia.build.tools.parser.GtvSerializer
+import com.chromia.build.tools.parser.WrappedByteArrayDeserializer
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import net.postchain.common.types.WrappedByteArray
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.yaml.GtvYaml
 import org.yaml.snakeyaml.Yaml
-import org.yaml.snakeyaml.constructor.AbstractConstruct
 import org.yaml.snakeyaml.constructor.Construct
 import org.yaml.snakeyaml.env.EnvScalarConstructor
 import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_FORMAT
@@ -22,14 +24,12 @@ import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import java.io.File
+import java.math.BigInteger
 
-val INCLUDE_TAG = Tag("!include")
 
-class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
+class ConstructorIncludeSupport(val rootFile: File) : EnvScalarConstructor() {
     init {
-        yamlConstructors[INCLUDE_TAG] = IncludeConstructor()
-        yamlConstructors[BIG_INTEGER_TAG] = ConstructBigInteger()
-        yamlConstructors[BYTE_ARRAY_TAG] = ConstructByteArray()
+        yamlConstructors[Tag("!include")] = IncludeConstructor()
     }
 
     private inner class IncludeConstructor : Construct {
@@ -54,55 +54,37 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
 
         override fun construct2ndStep(p0: Node?, p1: Any?) = Unit
     }
-
-    private inner class ConstructBigInteger : AbstractConstruct() {
-        override fun construct(node: Node): Any = constructScalar(node as ScalarNode).dropLast(1).toBigInteger()
-    }
-
-    private inner class ConstructByteArray : AbstractConstruct() {
-        override fun construct(node: Node): Any = constructScalar(node as ScalarNode).drop(2).dropLast(1).hexStringToByteArray()
-    }
 }
 
-fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
-    val yaml = Yaml(ChromiaConstructor(src))
+inline fun <reified T> GtvYaml.loadAnchor(src: File): T {
+    val yaml = Yaml(ConstructorIncludeSupport(src))
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
-    yaml.addImplicitResolver(BIG_INTEGER_TAG, BIG_INTEGER_FORMAT, BIG_INTEGER_START)
-    yaml.addImplicitResolver(BYTE_ARRAY_TAG, BYTE_ARRAY_FORMAT, BYTE_ARRAY_START)
 
-    val loaded = src.inputStream().use {
-        yaml.load<Map<String, Any>>(it)
+    return src.inputStream().use { it ->
+        ObjectMapper()
+                .registerKotlinModule()
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(yaml.load(it))
+                .let { MapperClass().load<T>(it) }
     }
-    schema?.let {
-        val jsonDumper = Yaml(ChromiaConstructor(src), GtvRepresenter(), DumperOptions().apply {
-            defaultFlowStyle = DumperOptions.FlowStyle.FLOW
-            defaultScalarStyle = DumperOptions.ScalarStyle.DOUBLE_QUOTED
-            width = Int.MAX_VALUE
-        })
-
-        val json = jsonDumper.dump(loaded)
-                .replace("""!!null "null"""", "null")
-                .replace("""!!bool "true"""", "true")
-                .replace("""!!bool "false"""", "false")
-                .replace("""!!int "([+-]?[0-9]+)"""".toRegex(), "$1")
-                .replace("""!biginteger """, "")
-                .replace("""!bytearray """, "")
-        val validationResult = it.validateBasic(json)
-        if (!validationResult.valid) {
-            throw ValidationException(constructErrorMessage(validationResult.errors!!, src))
-        }
-    }
-
-    return loaded
 }
 
-fun constructErrorMessage(errors: List<BasicErrorEntry>, src: File): String {
-    val errorMessageFilterStrings = listOf("A subschema had errors", "Constant schema \"false\"", "Constant schema \"true\"")
-    val filteredErrors = errors.filter { it.error !in errorMessageFilterStrings }
-    return "Following errors found in ${src.name}:\n" + filteredErrors.joinToString("\n") { e -> e.error + constructLocationInfo(e) }
-}
 
-fun constructLocationInfo(e: BasicErrorEntry): String {
+class MapperClass(init: ObjectMapper.() -> Unit = {}) {
+    val mapper: ObjectMapper = ObjectMapper(YAMLFactory()
+            .enable(YAMLGenerator.Feature.INDENT_ARRAYS_WITH_INDICATOR)
+            .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES))
+            .registerKotlinModule()
+            .registerModule(SimpleModule().apply {
+                addSerializer(Gtv::class.java, GtvSerializer())
+                addSerializer(ByteArray::class.java, ByteArraySerializer())
+                addSerializer(BigInteger::class.java, BigIntegerSerializer())
+                addDeserializer(Gtv::class.java, GtvDeserializer())
+                addDeserializer(ByteArray::class.java, ByteArrayDeserializer())
+                addDeserializer(WrappedByteArray::class.java, WrappedByteArrayDeserializer())
+                addDeserializer(BigInteger::class.java, BigIntegerDeserializer())
+            })
+            .also(init)
 
-    return " (location: ${e.instanceLocation.removePrefix("#/").replace("/", "->")})"
+    inline fun <reified T> load(content: String): T = mapper.readValue(content, T::class.java)
 }
