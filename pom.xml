@@ -28,7 +28,7 @@
         <directory.chain.version>1.35.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
-        <jgit.version>6.7.0.202309050840-r</jgit.version>
+        <jgit.version>6.9.0.202403050737-r</jgit.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.8.21</kotlin.version>
