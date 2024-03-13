@@ -10,6 +10,7 @@ import net.postchain.gtv.yaml.BYTE_ARRAY_FORMAT
 import net.postchain.gtv.yaml.BYTE_ARRAY_START
 import net.postchain.gtv.yaml.BYTE_ARRAY_TAG
 import net.postchain.gtv.yaml.GtvRepresenter
+import net.postchain.gtv.yaml.GtvResolver
 import net.pwall.json.schema.JSONSchema
 import net.pwall.json.schema.output.BasicErrorEntry
 import org.yaml.snakeyaml.DumperOptions
@@ -22,6 +23,7 @@ import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_TAG
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.representer.Representer
 import org.yaml.snakeyaml.serializer.NumberAnchorGenerator
 import java.io.File
 
@@ -68,10 +70,8 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
 
 fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
     val baseConstructor = ChromiaConstructor(src)
-    val yaml = Yaml(baseConstructor)
+    val yaml = Yaml(baseConstructor, Representer(DumperOptions()), DumperOptions(), GtvResolver())
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
-    yaml.addImplicitResolver(BIG_INTEGER_TAG, BIG_INTEGER_FORMAT, BIG_INTEGER_START)
-    yaml.addImplicitResolver(BYTE_ARRAY_TAG, BYTE_ARRAY_FORMAT, BYTE_ARRAY_START)
 
     val loaded = src.inputStream().use {
         yaml.load<Map<String, Any>>(it)

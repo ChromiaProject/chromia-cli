@@ -5,6 +5,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.cli.model.parseModel
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -235,14 +236,16 @@ internal class RellLibraryModelTest {
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 definitions: 
-                    bar: &anc_bar
-                        foo: hello
+                  bar: &anc_bar
+                    foo: hello
                 blockchains:
                   bc1:
-                    module: *anc_bar
+                    module: module1
+                    moduleArgs: 
+                      arg: *anc_bar
             """.trimIndent())
         }
         val model = parseModel(settingsFile)
-        assertThat(model.blockchains["bc1"]!!.module).isEqualTo("foo")
+        assertThat(model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]).isEqualTo(gtv("hello"))
     }
 }
