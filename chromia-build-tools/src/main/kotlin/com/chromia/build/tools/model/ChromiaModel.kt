@@ -1,7 +1,7 @@
 package com.chromia.cli.model
 
-import net.pwall.json.schema.JSONSchema
-
+import net.jimblackler.jsonschemafriend.Schema
+import net.jimblackler.jsonschemafriend.SchemaStore
 
 data class ChromiaModel(
         private val definitions: Any = Any(),
@@ -26,9 +26,9 @@ data class ChromiaModel(
                         ?: mapOf(),
         )
 
-        val schema = JSONSchema.parse(
-                this::class.java.getResourceAsStream("/chromia-model-schema.json")!!.readAllBytes().toString(Charsets.UTF_8)
-        )
+        private val schemaStore = SchemaStore()
+
+        val schema: Schema = schemaStore.loadSchema(this::class.java.getResourceAsStream("/chromia-model-schema.json"))
     }
 
     val logSqlErrors get() = database.logSqlErrors

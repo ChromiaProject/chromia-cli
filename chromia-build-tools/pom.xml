@@ -96,8 +96,9 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.pwall.json</groupId>
-            <artifactId>json-kotlin-schema</artifactId>
+            <groupId>net.jimblackler.jsonschemafriend</groupId>
+            <artifactId>core</artifactId>
+            <version>0.12.3</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>

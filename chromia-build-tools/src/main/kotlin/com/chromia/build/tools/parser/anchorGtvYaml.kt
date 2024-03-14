@@ -1,18 +1,13 @@
 package com.chromia.cli.parser
 
 import com.chromia.build.tools.compile.ValidationException
-import com.chromia.build.tools.parser.TestAnchor
+import net.jimblackler.jsonschemafriend.Schema
+import net.jimblackler.jsonschemafriend.ValidationError
+import net.jimblackler.jsonschemafriend.Validator
 import net.postchain.common.hexStringToByteArray
-import net.postchain.gtv.yaml.BIG_INTEGER_FORMAT
-import net.postchain.gtv.yaml.BIG_INTEGER_START
 import net.postchain.gtv.yaml.BIG_INTEGER_TAG
-import net.postchain.gtv.yaml.BYTE_ARRAY_FORMAT
-import net.postchain.gtv.yaml.BYTE_ARRAY_START
 import net.postchain.gtv.yaml.BYTE_ARRAY_TAG
-import net.postchain.gtv.yaml.GtvRepresenter
 import net.postchain.gtv.yaml.GtvResolver
-import net.pwall.json.schema.JSONSchema
-import net.pwall.json.schema.output.BasicErrorEntry
 import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.constructor.AbstractConstruct
@@ -24,7 +19,6 @@ import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.representer.Representer
-import org.yaml.snakeyaml.serializer.NumberAnchorGenerator
 import java.io.File
 
 val INCLUDE_TAG = Tag("!include")
@@ -45,7 +39,7 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
             return parseSubFile(File(path), sub)
         }
 
-        fun parseSubFile(file: File, sub: String) = file.inputStream().use {
+        fun parseSubFile(file: File, sub: String): Any = file.inputStream().use {
             val result = yaml.load<Any>(it)
             if (sub.isNotBlank()) {
                 require(result is Map<*, *>) { "File ${file.path} must be a dict to be able to extract a sub field" }
@@ -68,48 +62,23 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
     }
 }
 
-fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
-    val baseConstructor = ChromiaConstructor(src)
-    val yaml = Yaml(baseConstructor, Representer(DumperOptions()), DumperOptions(), GtvResolver())
+fun loadAnchor(src: File, schema: Schema? = null): Map<String, Any> {
+    val yaml = Yaml(ChromiaConstructor(src), Representer(DumperOptions()), DumperOptions(), GtvResolver())
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
 
     val loaded = src.inputStream().use {
         yaml.load<Map<String, Any>>(it)
     }
-    println(loaded)
+
     schema?.let {
-        val jsonDumper = Yaml(GtvRepresenter(), DumperOptions().apply {
-            defaultFlowStyle = DumperOptions.FlowStyle.FLOW
-            defaultScalarStyle = DumperOptions.ScalarStyle.DOUBLE_QUOTED
-            width = Int.MAX_VALUE
-            //anchorGenerator = TestAnchor() //this is where the indexes is set
-        })
-
-        val json = jsonDumper.dump(loaded)
-                .replace("""!!null "null"""", "null")
-                .replace("""!!bool "true"""", "true")
-                .replace("""!!bool "false"""", "false")
-                .replace("""!!int "([+-]?[0-9]+)"""".toRegex(), "$1")
-                .replace("""!biginteger """, "")
-                .replace("""!bytearray """, "")
-
-        println(json)
-        val validationResult = it.validateBasic(json)
-        if (!validationResult.valid) {
-            throw ValidationException(constructErrorMessage(validationResult.errors!!, src))
+        val validator = Validator()
+        validator.validate(it, loaded) { error ->
+            throw ValidationException(constructErrorMessage(error, src))
         }
     }
 
     return loaded
 }
 
-fun constructErrorMessage(errors: List<BasicErrorEntry>, src: File): String {
-    val errorMessageFilterStrings = listOf("A subschema had errors", "Constant schema \"false\"", "Constant schema \"true\"")
-    val filteredErrors = errors.filter { it.error !in errorMessageFilterStrings }
-    return "Following errors found in ${src.name}:\n" + filteredErrors.joinToString("\n") { e -> e.error + constructLocationInfo(e) }
-}
-
-fun constructLocationInfo(e: BasicErrorEntry): String {
-
-    return " (location: ${e.instanceLocation.removePrefix("#/").replace("/", "->")})"
-}
+fun constructErrorMessage(error: ValidationError, src: File): String =
+        "Following errors found in ${src.name}:\n" + error.toString()
