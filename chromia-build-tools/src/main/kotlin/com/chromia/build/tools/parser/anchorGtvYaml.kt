@@ -1,21 +1,17 @@
 package com.chromia.cli.parser
 
-import com.chromia.build.tools.parser.BigIntegerDeserializer
-import com.chromia.build.tools.parser.BigIntegerSerializer
-import com.chromia.build.tools.parser.ByteArrayDeserializer
-import com.chromia.build.tools.parser.ByteArraySerializer
-import com.chromia.build.tools.parser.GtvDeserializer
-import com.chromia.build.tools.parser.GtvSerializer
-import com.chromia.build.tools.parser.WrappedByteArrayDeserializer
+import com.chromia.build.tools.compile.ValidationException
+import com.chromia.build.tools.parser.mapByteArraysToHexString
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import net.postchain.common.types.WrappedByteArray
-import net.postchain.gtv.Gtv
-import net.postchain.gtv.yaml.GtvYaml
+import net.postchain.common.hexStringToByteArray
+import net.postchain.gtv.yaml.BIG_INTEGER_TAG
+import net.postchain.gtv.yaml.BYTE_ARRAY_TAG
+import net.postchain.gtv.yaml.GtvResolver
+import net.pwall.json.schema.JSONSchema
+import net.pwall.json.schema.output.BasicErrorEntry
+import org.yaml.snakeyaml.DumperOptions
 import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.constructor.AbstractConstruct
 import org.yaml.snakeyaml.constructor.Construct
 import org.yaml.snakeyaml.env.EnvScalarConstructor
 import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_FORMAT
@@ -23,13 +19,16 @@ import org.yaml.snakeyaml.env.EnvScalarConstructor.ENV_TAG
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.representer.Representer
 import java.io.File
-import java.math.BigInteger
 
+val INCLUDE_TAG = Tag("!include")
 
-class ConstructorIncludeSupport(val rootFile: File) : EnvScalarConstructor() {
+class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
     init {
-        yamlConstructors[Tag("!include")] = IncludeConstructor()
+        yamlConstructors[INCLUDE_TAG] = IncludeConstructor()
+        yamlConstructors[BIG_INTEGER_TAG] = ConstructBigInteger()
+        yamlConstructors[BYTE_ARRAY_TAG] = ConstructByteArray()
     }
 
     private inner class IncludeConstructor : Construct {
@@ -41,7 +40,7 @@ class ConstructorIncludeSupport(val rootFile: File) : EnvScalarConstructor() {
             return parseSubFile(File(path), sub)
         }
 
-        fun parseSubFile(file: File, sub: String) = file.inputStream().use {
+        private fun parseSubFile(file: File, sub: String) = file.inputStream().use {
             val result = yaml.load<Any>(it)
             if (sub.isNotBlank()) {
                 require(result is Map<*, *>) { "File ${file.path} must be a dict to be able to extract a sub field" }
@@ -54,37 +53,44 @@ class ConstructorIncludeSupport(val rootFile: File) : EnvScalarConstructor() {
 
         override fun construct2ndStep(p0: Node?, p1: Any?) = Unit
     }
-}
 
-inline fun <reified T> GtvYaml.loadAnchor(src: File): T {
-    val yaml = Yaml(ConstructorIncludeSupport(src))
-    yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
+    private inner class ConstructBigInteger : AbstractConstruct() {
+        override fun construct(node: Node): Any = constructScalar(node as ScalarNode).dropLast(1).toBigInteger()
+    }
 
-    return src.inputStream().use { it ->
-        ObjectMapper()
-                .registerKotlinModule()
-                .writerWithDefaultPrettyPrinter()
-                .writeValueAsString(yaml.load(it))
-                .let { MapperClass().load<T>(it) }
+    private inner class ConstructByteArray : AbstractConstruct() {
+        override fun construct(node: Node): Any = constructScalar(node as ScalarNode).drop(2).dropLast(1).hexStringToByteArray()
     }
 }
 
+fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
+    val baseConstructor = ChromiaConstructor(src)
+    val yaml = Yaml(baseConstructor, Representer(DumperOptions()), DumperOptions(), GtvResolver())
+    yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
 
-class MapperClass(init: ObjectMapper.() -> Unit = {}) {
-    val mapper: ObjectMapper = ObjectMapper(YAMLFactory()
-            .enable(YAMLGenerator.Feature.INDENT_ARRAYS_WITH_INDICATOR)
-            .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES))
-            .registerKotlinModule()
-            .registerModule(SimpleModule().apply {
-                addSerializer(Gtv::class.java, GtvSerializer())
-                addSerializer(ByteArray::class.java, ByteArraySerializer())
-                addSerializer(BigInteger::class.java, BigIntegerSerializer())
-                addDeserializer(Gtv::class.java, GtvDeserializer())
-                addDeserializer(ByteArray::class.java, ByteArrayDeserializer())
-                addDeserializer(WrappedByteArray::class.java, WrappedByteArrayDeserializer())
-                addDeserializer(BigInteger::class.java, BigIntegerDeserializer())
-            })
-            .also(init)
+    val loaded = src.inputStream().use {
+        yaml.load<Map<String, Any>>(it)
+    }
+    schema?.let {
+        val objectMapper = ObjectMapper()
+        val formattedLoaded = mapByteArraysToHexString(loaded)
+        val json = objectMapper.writeValueAsString(formattedLoaded)
 
-    inline fun <reified T> load(content: String): T = mapper.readValue(content, T::class.java)
+        val validationResult = it.validateBasic(json)
+        if (!validationResult.valid) {
+            throw ValidationException(constructErrorMessage(validationResult.errors!!, src))
+        }
+    }
+
+    return loaded
+}
+
+fun constructErrorMessage(errors: List<BasicErrorEntry>, src: File): String {
+    val errorMessageFilterStrings = listOf("A subschema had errors", "Constant schema \"false\"", "Constant schema \"true\"")
+    val filteredErrors = errors.filter { it.error !in errorMessageFilterStrings }
+    return "Following errors found in ${src.name}:\n" + filteredErrors.joinToString("\n") { e -> e.error + constructLocationInfo(e) }
+}
+
+fun constructLocationInfo(e: BasicErrorEntry): String {
+    return " (location: ${e.instanceLocation.removePrefix("#/").replace("/", "->")})"
 }

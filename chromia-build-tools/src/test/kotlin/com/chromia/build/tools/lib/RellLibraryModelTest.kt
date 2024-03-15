@@ -5,6 +5,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.cli.model.parseModel
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
@@ -235,13 +236,59 @@ internal class RellLibraryModelTest {
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 definitions: 
-                    bar: &anc foo
+                  bar: &anc_bar
+                    foo: hello
                 blockchains:
                   bc1:
-                    module: *anc 
+                    module: module1
+                    moduleArgs: 
+                      arg: *anc_bar
             """.trimIndent())
         }
         val model = parseModel(settingsFile)
-        assertThat(model.blockchains["bc1"]!!.module).isEqualTo("foo")
+        assertThat(model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]).isEqualTo(gtv("hello"))
+    }
+
+    @Test
+    fun `list of byte array are validated and parsed`(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: module1
+                    moduleArgs:
+                        arg:
+                            foo:
+                                - x"1234"
+                                - x"5678"              
+            """.trimIndent())
+        }
+        val model = parseModel(settingsFile)
+        val byteArrays = model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]
+        assertThat(byteArrays?.get(0).toString()).isEqualTo("x\"1234\"")
+        assertThat(byteArrays?.get(1).toString()).isEqualTo("x\"5678\"")
+    }
+
+    @Test
+    fun `nested list of byte array are validated and parsed`(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: module1
+                    moduleArgs:
+                        arg:
+                            foo:
+                                -
+                                    - x"1234"
+                                    - x"5678"
+                                - x"2468"
+            """.trimIndent())
+        }
+        val model = parseModel(settingsFile)
+        val byteArrays = model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]
+        assertThat(byteArrays?.get(0)!![0].toString()).isEqualTo("x\"1234\"")
+        assertThat(byteArrays[0][1].toString()).isEqualTo("x\"5678\"")
+        assertThat(byteArrays[1].toString()).isEqualTo("x\"2468\"")
     }
 }

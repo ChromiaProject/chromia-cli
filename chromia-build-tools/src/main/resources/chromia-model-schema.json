@@ -106,10 +106,10 @@
           "default": false,
           "description": "Fail build if deprecated features are used"
         },
-        "quite": {
+        "quiet": {
           "type": "boolean",
           "default": true,
-          "descriptioin": "Hide intermediary compilation output"
+          "description": "Hide intermediary compilation output"
         }
       }
     },

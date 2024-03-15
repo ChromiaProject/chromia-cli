@@ -17,7 +17,7 @@ class EvnSubYamlTest {
             with(File(dir.toFile(), "a.yml")) {
                 writeText("a: \${MY_A}")
             }
-            val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
+            val res = loadAnchor(File(dir.toFile(), "a.yml"))
             assertThat(res["a"]).isEqualTo("foo")
         }
     }
@@ -28,8 +28,7 @@ class EvnSubYamlTest {
             with(File(dir.toFile(), "a.yml")) {
                 writeText("a: \${MY_A}")
             }
-            val res = GtvYaml().loadAnchor<Map<String, Int>>(File(dir.toFile(), "a.yml"))
-            @Suppress("CAST_NEVER_SUCCEEDS")
+            val res = loadAnchor(File(dir.toFile(), "a.yml"))
             assertThat(res["a"] as String).isEqualTo("1")
         }
     }
@@ -39,7 +38,7 @@ class EvnSubYamlTest {
         with(File(dir.toFile(), "a.yml")) {
             writeText("a: \"\$escaped\$\"")
         }
-        val res = GtvYaml().loadAnchor<Map<String, String>>(File(dir.toFile(), "a.yml"))
+        val res = loadAnchor(File(dir.toFile(), "a.yml"))
         assertThat(res["a"]).isEqualTo("\$escaped\$")
     }
 }
