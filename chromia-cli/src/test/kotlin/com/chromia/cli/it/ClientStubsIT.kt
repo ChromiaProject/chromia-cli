@@ -8,9 +8,9 @@ import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
-class CodegenIT {
+class ClientStubsIT {
     @Test
-    fun startNode(@TempDir dir: Path) {
+    fun generateKotlinClientStubs(@TempDir dir: Path) {
         testData(dir)
         TestProcess.Builder("generate-client-stubs", "--kotlin", "--package", "com.example")
                 .setConfig(dir.resolve("chromia.yml").toFile())

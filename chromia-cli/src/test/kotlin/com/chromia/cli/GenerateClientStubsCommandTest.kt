@@ -8,11 +8,11 @@ import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.context
+import java.io.File
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
 
 internal class GenerateClientStubsCommandTest {
 
@@ -22,10 +22,9 @@ internal class GenerateClientStubsCommandTest {
 
     @Test
     fun errorMessageIncludeAllStubTargets() {
-        val exception = assertThrows<IllegalArgumentException> {
-            command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
-        }
-        assertThat(exception.message).isEqualTo("Missing language option: [--typescript, --javascript, --mermaid, --kotlin]")
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output.trim()).isEqualTo("Missing language option: [--typescript, --javascript, --kotlin]")
     }
 
 

@@ -2,7 +2,7 @@ package com.chromia
 
 import com.chromia.cli.BuildCommand
 import com.chromia.cli.CreateRellDappCommand
-import com.chromia.cli.GenerateClientStubsCommand
+import com.chromia.cli.GenerateCommand.Companion.generateCommands
 import com.chromia.cli.InstallCommand
 import com.chromia.cli.KeygenCommand
 import com.chromia.cli.QueryCommand
@@ -30,7 +30,7 @@ fun main(args: Array<out String>) = CliLauncher("chr")
         .subcommands(
                 CreateRellDappCommand(),
                 TestCommand(),
-                GenerateClientStubsCommand(),
+                generateCommands(),
                 ReplCommand(),
                 nodeCommands(),
                 deployCommands(),
