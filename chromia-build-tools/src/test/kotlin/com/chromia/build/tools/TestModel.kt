@@ -1,6 +1,7 @@
 package com.chromia.build.tools
 
 import net.postchain.api.rest.BlockHeight
+import net.postchain.api.rest.BlockSignature
 import net.postchain.api.rest.BlockchainNodeState
 import net.postchain.api.rest.TransactionsCount
 import net.postchain.api.rest.controller.Model
@@ -18,6 +19,9 @@ import net.postchain.gtx.GtxQuery
 
 class TestModel(override val blockchainRid: BlockchainRid, override val chainIID: Long = 0, override val queryCacheTtlSeconds: Long = 0) : Model {
     override var live: Boolean = true
+    override fun confirmBlock(blockRID: BlockRid): BlockSignature? {
+        TODO("Not yet implemented")
+    }
 
     override fun getBlock(height: Long, txHashesOnly: Boolean): BlockDetail? {
         TODO("Not yet implemented")
