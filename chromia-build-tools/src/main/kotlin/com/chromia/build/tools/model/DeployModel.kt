@@ -1,13 +1,13 @@
 package com.chromia.cli.model
 
 import com.chromia.build.tools.model.ensureType
-import net.postchain.gtv.listMapAndPrimitivesToGtv
 import net.postchain.common.BlockchainRid
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.common.wrap
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvString
+import net.postchain.gtv.listMapAndPrimitivesToGtv
 
 data class DeploymentModel(
         private val brid: WrappedByteArray,
@@ -26,7 +26,6 @@ data class DeploymentModel(
         }
 
     companion object {
-        @Suppress("UNCHECKED_CAST")
         fun load(data: Map<String, Any>, additionalProperty: String) = DeploymentModel(
                 brid = ensureType<ByteArray>(data["brid"], "deployments", additionalProperty, "brid").wrap(),
                 container = ensureType<String?>(data["container"], "deployments", additionalProperty, "container"),

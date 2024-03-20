@@ -1,5 +1,7 @@
 package com.chromia.cli.model
 
+import com.chromia.build.tools.model.ensureNamedObject
+import com.chromia.build.tools.model.ensureObject
 import net.pwall.json.schema.JSONSchema
 
 
@@ -13,17 +15,13 @@ data class ChromiaModel(
         val libs: Map<String, RellLibraryModel> = mapOf(),
 ) {
     companion object {
-        @Suppress("UNCHECKED_CAST")
         fun load(data: Map<String, Any>) = ChromiaModel(
-                database = data["database"]?.let { DatabaseModel.load(it as Map<String, Any>) } ?: DatabaseModel(),
-                compile = data["compile"]?.let { CompileModel.load(it as Map<String, Any>) } ?: CompileModel(),
-                blockchains = (data["blockchains"] as Map<String, Any>?)?.mapValues { BlockchainModel.load(it.value as Map<String, Any>, it.key) }
-                        ?: mapOf(),
-                deployments = (data["deployments"] as Map<String, Any>?)?.mapValues { DeploymentModel.load(it.value as Map<String, Any>, it.key) }
-                        ?: mapOf(),
-                test = data["test"]?.let { TestModel.load(it as Map<String, Any>) } ?: TestModel(),
-                libs = (data["libs"] as Map<String, Any>?)?.mapValues { RellLibraryModel.load(it.value as Map<String, Any>, it.key) }
-                        ?: mapOf(),
+                database = ensureObject<DatabaseModel>(data["database"], DatabaseModel::load, DatabaseModel()),
+                compile = ensureObject<CompileModel>(data["compile"], CompileModel::load, CompileModel()),
+                blockchains = ensureNamedObject<BlockchainModel>(data["blockchains"], BlockchainModel::load),
+                deployments = ensureNamedObject<DeploymentModel>(data["deployments"], DeploymentModel::load),
+                test = ensureObject<TestModel>(data["test"], TestModel::load, TestModel()),
+                libs = ensureNamedObject<RellLibraryModel>(data["libs"], RellLibraryModel::load),
         )
 
         val schema = JSONSchema.parse(
