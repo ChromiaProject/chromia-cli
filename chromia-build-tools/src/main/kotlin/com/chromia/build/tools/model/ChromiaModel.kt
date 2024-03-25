@@ -13,6 +13,7 @@ data class ChromiaModel(
         val deployments: Map<String, DeploymentModel> = mapOf(),
         val test: TestModel = TestModel(),
         val libs: Map<String, RellLibraryModel> = mapOf(),
+        val docs: DocsModel = DocsModel(),
 ) {
     companion object {
         fun load(data: Map<String, Any>) = ChromiaModel(
@@ -22,6 +23,7 @@ data class ChromiaModel(
                 deployments = ensureNamedObject<DeploymentModel>(data["deployments"], DeploymentModel::load),
                 test = ensureObject<TestModel>(data["test"], TestModel::load, TestModel()),
                 libs = ensureNamedObject<RellLibraryModel>(data["libs"], RellLibraryModel::load),
+                docs = ensureObject<DocsModel>(data["docs"], DocsModel::load, DocsModel()),
         )
 
         val schema = JSONSchema.parse(

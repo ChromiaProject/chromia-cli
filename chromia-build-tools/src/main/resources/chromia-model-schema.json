@@ -119,6 +119,45 @@
       "additionalProperties": {
         "$ref": "#/$defs/deployment"
       }
+    },
+    "docs": {
+      "type": "object",
+      "description": "Documentation options",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title for generated documentation site"
+        },
+        "customStyleSheets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional css stylesheets to include"
+        },
+        "customAssets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional image assets to include"
+        },
+        "additionalContent": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional markdown documentation files to include"
+        },
+        "footerMessage": {
+          "type": "string",
+          "description": "Message shown in the footer"
+        }
+      }
     }
   },
   "$defs": {

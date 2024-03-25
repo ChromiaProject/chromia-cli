@@ -48,6 +48,7 @@ open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configu
     val projectFolder by lazy { resolvedModelFile?.parentFile }
     val model by lazy { resolvedModelFile?.let { parseModel(it) } }
     val sourceDir get() = model?.compile?.sourceFile(projectFolder!!)
+    val targetDir get() = model?.compile?.targetFile(projectFolder!!)
 }
 
 

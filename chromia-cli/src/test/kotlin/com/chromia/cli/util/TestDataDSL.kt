@@ -1,8 +1,8 @@
 package com.chromia.cli.util
 
+import net.postchain.crypto.KeyPair
 import java.io.File
 import java.nio.file.Path
-import net.postchain.crypto.KeyPair
 
 class TestDataBuilder {
 
@@ -58,6 +58,7 @@ class ConfigBuilder {
     private var deployments = ""
     private var libs = ""
     private var test = ""
+    private var docs = ""
     private var database = """
         database:
           schema: integration_test_schema
@@ -79,12 +80,17 @@ class ConfigBuilder {
         test = init
     }
 
+    fun docs(init: String) {
+        docs = init
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
         if (libs.isNotEmpty()) sb.append("\n$libs")
         if (test.isNotEmpty()) sb.append("\n$test")
+        if (docs.isNotEmpty()) sb.append("\n$docs")
         sb.append("\n$database")
         File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }

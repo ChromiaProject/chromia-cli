@@ -235,6 +235,11 @@
             <artifactId>postchain-eif-core</artifactId>
             <version>${eif.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.chromia.rell.dokka</groupId>
+            <artifactId>rell-dokka-plugin</artifactId>
+            <version>${rell.dokka.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>

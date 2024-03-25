@@ -1,7 +1,10 @@
 package com.chromia.build.tools.model
 
+import assertk.all
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.model.parseModel
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvBigInteger
@@ -10,6 +13,7 @@ import net.postchain.gtv.GtvInteger
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.GtvString
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.math.BigInteger
@@ -62,5 +66,53 @@ internal class ChromiaModelTest {
 
         val settings = parseModel(settingsFile)
         assertThat(settings.blockchains.toList().map { it.first }).isEqualTo(listOf("chainB", "chainA"))
+    }
+
+    @Test
+    fun `docs title is required`(@TempDir dir: Path) {
+        val settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                     chainB:
+                         module: first
+                docs:
+                    not_correct_property: my_faulty_config
+            """.trimIndent())
+        }
+        val res = assertThrows<ValidationException> { parseModel(settingsFile) }
+
+        assertThat(res.message!!).all {
+            contains("Additional property 'not_correct_property' found but was invalid")
+            contains("Required property \"title\" not found")
+        }
+    }
+
+    @Test
+    fun `docs properties validates type of input`(@TempDir dir: Path) {
+        val settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                     chainB:
+                         module: first
+                docs:
+                    title: 2
+                    customStyleSheets:
+                      - 2
+                    customAssets:
+                      - 2
+                    additionalContent:
+                      - 2
+                    footerMessage: 2
+            """.trimIndent())
+        }
+        val res = assertThrows<ValidationException> { parseModel(settingsFile) }
+
+        assertThat(res.message!!).all {
+            contains("Incorrect type, expected string (location: docs->title)")
+            contains("Incorrect type, expected string (location: docs->customStyleSheets->0)")
+            contains("Incorrect type, expected string (location: docs->customAssets->0)")
+            contains("Incorrect type, expected string (location: docs->additionalContent->0)")
+            contains("Incorrect type, expected string (location: docs->footerMessage)")
+        }
     }
 }

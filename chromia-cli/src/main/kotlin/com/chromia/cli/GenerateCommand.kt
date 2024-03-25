@@ -11,6 +11,7 @@ class GenerateCommand: NoOpCliktCommand(help = "Generate client stubs and docume
         fun generateCommands() = GenerateCommand().subcommands(
                 GenerateClientStubsCommand(),
                 GenerateMermaidGraphCommand(),
+                GenerateDocsSiteCommand(),
         )
     }
 }
