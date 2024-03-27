@@ -1,2 +1,2 @@
 #! /bin/sh
-exec java -cp @/usr/share/chr/jib-classpath-file @/usr/share/chr/jib-main-class-file "$@"
+exec java -Duser.language=en -Duser.country=US -cp @/usr/share/chr/jib-classpath-file @/usr/share/chr/jib-main-class-file "$@"
