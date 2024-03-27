@@ -69,6 +69,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         private var timeout = Duration.ofSeconds(30)
         private var startCondition: String? = null
         private var verbose = false
+        private val env = mutableMapOf<String, String>()
         private var workingDir: File? = null
         fun setConfig(file: File) = apply { config = file }
         fun setWorkingDir(file: File) = apply { workingDir = file }
@@ -77,6 +78,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
         fun timeout(value: Duration) = apply { timeout = value }
         fun startCondition(condition: String) = apply { startCondition = condition }
         fun verbose() = apply { verbose = true }
+        fun env(vararg envvars: Pair<String, String>) = apply { env.putAll(envvars) }
 
 
         fun start() = start {}
@@ -95,6 +97,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startConti
                         redirectErrorStream(true)
                         workingDir?.let { directory(it) }
                         environment()["COLUMNS"] = "150"
+                        env.forEach { (k, v) -> environment()[k] = v }
                     }
             return TestProcess(pb, startCondition, shouldFinish, exitCode, timeout, verbose).use(onCompleted)
         }
