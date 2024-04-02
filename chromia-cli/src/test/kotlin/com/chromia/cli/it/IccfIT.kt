@@ -1,7 +1,7 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.INITILIZED_LOG
+import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.cli.util.testData
 import java.nio.file.Path
 import net.postchain.client.config.PostchainClientConfig

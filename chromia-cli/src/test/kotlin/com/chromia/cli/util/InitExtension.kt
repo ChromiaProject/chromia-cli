@@ -1,6 +1,5 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.CreateRellDappCommand
 import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtensionContext

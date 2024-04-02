@@ -1,7 +1,7 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.INITILIZED_LOG
+import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.cli.util.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

@@ -1,17 +1,17 @@
 package com.chromia
 
-import com.chromia.cli.BuildCommand
-import com.chromia.cli.CreateRellDappCommand
-import com.chromia.cli.GenerateCommand.Companion.generateCommands
-import com.chromia.cli.InstallCommand
-import com.chromia.cli.KeygenCommand
-import com.chromia.cli.QueryCommand
-import com.chromia.cli.ReplCommand
-import com.chromia.cli.TestCommand
-import com.chromia.cli.TxCommand
-import com.chromia.cli.deployCommands
-import com.chromia.cli.eifCommands
-import com.chromia.cli.nodeCommands
+import com.chromia.cli.command.BuildCommand
+import com.chromia.cli.command.CreateRellDappCommand
+import com.chromia.cli.command.InstallCommand
+import com.chromia.cli.command.KeygenCommand
+import com.chromia.cli.command.QueryCommand
+import com.chromia.cli.command.ReplCommand
+import com.chromia.cli.command.TestCommand
+import com.chromia.cli.command.TxCommand
+import com.chromia.cli.command.deployment.DeploymentCommand
+import com.chromia.cli.command.eif.EifCommand
+import com.chromia.cli.command.generate.GenerateCommand
+import com.chromia.cli.command.node.NodeCommand
 import com.chromia.cli.tools.launcher.CliLauncher
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
@@ -28,17 +28,17 @@ fun main(args: Array<out String>) = CliLauncher("chr")
             Java version ${System.getProperty("java.version")}
         """.trimIndent())
         .subcommands(
-                CreateRellDappCommand(),
-                TestCommand(),
-                generateCommands(),
-                ReplCommand(),
-                nodeCommands(),
-                deployCommands(),
                 BuildCommand(),
-                QueryCommand(),
-                TxCommand(),
-                KeygenCommand(),
+                CreateRellDappCommand(),
+                DeploymentCommand.commands(),
+                EifCommand.commands(),
+                GenerateCommand.commands(),
                 InstallCommand(),
-                eifCommands()
+                KeygenCommand(),
+                NodeCommand.commands(),
+                QueryCommand(),
+                ReplCommand(),
+                TestCommand(),
+                TxCommand(),
         )
         .catchingAllExceptionsMain(args)
