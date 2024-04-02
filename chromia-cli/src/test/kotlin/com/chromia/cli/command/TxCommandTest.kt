@@ -5,15 +5,15 @@ import assertk.assertions.contains
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
 import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 class TxCommandTest : IntegrationTestSetup() {
     private val logger = TerminalRecorder()
@@ -58,7 +58,7 @@ class TxCommandTest : IntegrationTestSetup() {
         createTestNode("${dir.absolutePathString()}/build/a.xml")
         TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
                 "test_op", "foobar", "\"Hello, world!\"", "[\"foo bar\"]", "null",
-                "-brid", "B59D412FC6D3C78F0941F117B8495FB78AD1D2C1711FD1DA5612E1A5BF5BFCB4"))
+                "-brid", "0304E8C28F36B15B0EF780BD8F2F016F08125CE52EF0DC976BB619DFF0B2E122"))
 
         assertThat(logger.output()).contains("CONFIRMED")
     }

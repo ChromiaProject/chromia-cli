@@ -128,11 +128,11 @@ class DeployUpdateCommandTest {
         val throwable = assertThrows<RellDeployVersionException> {
             DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler(rellVersion = "0.11.0") }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
         }
-        assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
+        assertThat(throwable.message!!).contains("The local compile version 0.13.5 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")
     }
 
-    private fun testHttpHandler(invalidUpdate: Boolean = false, rellVersion: String = "0.12.0"): (Request) -> Response = {
+    private fun testHttpHandler(invalidUpdate: Boolean = false, rellVersion: String = "0.13.5"): (Request) -> Response = {
         if (it.uri.toString().contains("get_rell_version")) {
             Response(Status.OK, "").body(rellVersion)
         } else {

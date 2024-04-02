@@ -6,6 +6,8 @@ import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.util.getContainerDataResult
 import com.chromia.cli.util.testData
+import java.io.File
+import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -17,8 +19,6 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
 
 
 class SuccessfulDeploymentModel(val model: Model) : Model by model {
@@ -30,8 +30,8 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "api_version" -> gtv(9)
-            "find_blockchain_rid" -> gtv("039B9ED551D5BDCC52FF9418ED77FBA7D761B24B7D06596829771A6DEA50E613".hexStringToByteArray())
-            "rell.get_rell_version" -> gtv("0.13.1")
+            "find_blockchain_rid" -> gtv("4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC".hexStringToByteArray())
+            "rell.get_rell_version" -> gtv("0.13.5")
             "get_container_data" -> gtv(getContainerDataResult("name"))
             "get_cluster_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
             "get_compressed_configuration_parts" -> gtv(listOf())

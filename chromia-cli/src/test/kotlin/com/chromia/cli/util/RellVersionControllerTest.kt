@@ -22,9 +22,9 @@ class RellVersionControllerTest {
 
     @Test
     fun getTargetVersion200Status() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.12.0"))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
         val res = Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32)))
-        assertEquals(res, R_LangVersion.of("0.12.0"))
+        assertEquals(res, R_LangVersion.of("0.13.5"))
     }
 
     @Test

@@ -16,7 +16,7 @@ class DeployInspectIT {
                 .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start{
-                    val brid = "F0820C8D5757B179FC78E580F8A73A00DE19DFABDA491F92CA21F15B8DECB742"
+                    val brid = "4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC"
                     TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", brid).startCondition("Module: main").start()
                     TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", brid, "-l").startCondition("main").start()
 

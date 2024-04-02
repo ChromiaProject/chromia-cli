@@ -65,7 +65,7 @@ class DeployCreateCommandTest {
         val throwable = assertThrows<RellDeployVersionException> {
             DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
         }
-        assertThat(throwable.message!!).contains("The local compile version 0.12.0 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
+        assertThat(throwable.message!!).contains("The local compile version 0.13.5 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")
     }
 
@@ -83,7 +83,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun compressionConfigGetsAddedToXmlConfig() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.12.0"))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
         DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y"))
 
         val buildGtx = testDir.resolve("build/my_rell_dapp.xml").toFile().readText()
@@ -97,7 +97,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun noCompressionConfigGetsAddedToXmlConfig() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.12.0"))
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
         DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--no-compression"))
         assertThat(testDir.resolve("build/my_rell_dapp_compressed.xml").notExists())
     }
