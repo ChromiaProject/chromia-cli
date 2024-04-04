@@ -3,6 +3,7 @@ package com.chromia.cli.command
 import assertk.assertThat
 import assertk.assertions.any
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import com.chromia.cli.util.captureLog4jLoggerOutput
 import com.chromia.cli.util.testData
 import com.github.ajalt.clikt.core.CliktError
@@ -371,9 +372,151 @@ internal class TestCommandTest {
         }
 
         assertThrows<CliktError> {
-            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db"))
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error"))
         }
         assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun failingTestStopOnError() {
+        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+                test:
+                  modules:
+                    - test
+                  failOnError: true
+            """.trimIndent())
+        }
+
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_b() { assert_equals(1, 2); }
+                function test_a() {}
+            """.trimIndent())
+        }
+
+        assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db"))
+        }
+        assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 0 PASSED / 1 TOTAL")
+    }
+
+    @Test
+    fun testFailingTestContinuesWithGlobalOverride() {
+        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+                        test:
+                            modules:
+                                - testDir
+                test:
+                  modules:
+                    - test
+                  failOnError: true
+            """.trimIndent())
+        }
+
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_b() { assert_equals(1, 2); }
+                function test_a() {}
+            """.trimIndent())
+        }
+
+        assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error=false"))
+        }
+        assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun failingTestStopOnErrorFlag() {
+        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+
+            with(File(testDir.toFile(), "src/test.rell")) {
+                parentFile.mkdirs()
+                writeText("""
+                @test module;
+
+                function test_b() { assert_equals(1, 2); }
+                function test_a() {}
+            """.trimIndent())
+            }
+
+            assertThrows<CliktError> {
+                TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error"))
+            }
+            assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 0 PASSED / 1 TOTAL")
+        }
+    }
+
+    @Test
+    fun testBlockchainTestScopeFailOnErrorStopsGlobally() {
+        with(File(testDir.toFile(), "src/development.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+            """.trimIndent())
+        }
+        with(File(testDir.toFile(), "src/production.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+            """.trimIndent())
+        }
+        with(File(testDir.toFile(), "src/moduleA/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_c() {assert_equals(1, 2);}
+            """.trimIndent())
+        }
+        with(File(testDir.toFile(), "src/moduleB/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+                
+                function test_b() {}
+                function test_a() {}
+            """.trimIndent())
+        }
+        File(testDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  a:
+                    module: development
+                    test:
+                      modules:
+                        - moduleA.test
+                  b:
+                    module: production
+                    test:
+                      modules:
+                        - moduleB.test
+            """.trimIndent())
+        }
+        assertThrows<CliktError> {
+            TestCommand().context { terminal = testTerminal }.parse(
+                    listOf("-s", settingsFile.absolutePath, "--blockchain", "a", "--blockchain", "b", "--fail-on-error=true")
+            )
+        }
+        assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 0 PASSED / 1 TOTAL")
+        assertThat(logger.output()).doesNotContain("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
     }
 
     @Test

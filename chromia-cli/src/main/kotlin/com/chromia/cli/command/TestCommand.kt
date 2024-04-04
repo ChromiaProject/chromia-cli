@@ -19,7 +19,9 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.optionalValueLazy
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
@@ -54,6 +56,10 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
             .flag()
     private val testReportDir by option(help = "JUnit XML test reports directory (defaults to \"build/reports\")")
             .file(canBeDir = true, canBeFile = false)
+
+    private val failOnError by option(help = "Sets test execution to stop on error and override any \"failOnError\" settings for tests that are in the scope being executed")
+            .boolean()
+            .optionalValueLazy { true }
 
     override fun run() {
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
@@ -157,7 +163,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .compileConfig(compileConf)
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
-                .stopOnError(settings.model.test.failOnError)
+                .stopOnError(failOnError ?: settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter(::echo)
                 .outPrinter(::echo)
