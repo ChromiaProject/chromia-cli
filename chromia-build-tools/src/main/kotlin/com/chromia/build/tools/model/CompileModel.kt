@@ -22,7 +22,7 @@ data class CompileModel(
                 target = ensureType<String?>(data["target"], "compile", "target") ?: "build",
                 deprecatedError = ensureType<Boolean?>(data["deprecatedError"], "compile", "deprecatedError")
                         ?: false,
-                quiet = ensureType<Boolean?>(data["quiet"], "compile", "quiet") ?: true
+                quiet = ensureType<Boolean?>(data["quiet"], "compile", "quiet") ?: false
         )
     }
 }
