@@ -24,7 +24,7 @@
         <postchain.chromia.version>3.15.0</postchain.chromia.version>
         <postchain.client.version>3.12.1</postchain.client.version>
         <rell.version>0.13.10</rell.version>
-        <rell.dokka.version>0.1.1</rell.dokka.version>
+        <rell.dokka.version>0.1.2</rell.dokka.version>
         <eif.version>0.2.14</eif.version>
         <directory.chain.version>1.35.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
