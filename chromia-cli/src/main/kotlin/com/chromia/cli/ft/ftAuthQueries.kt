@@ -27,8 +27,8 @@ class FTAuth01Query(private val client: PostchainQuery) : FTAuthQuery, Postchain
             ).asArray().map { it.asByteArray() }.toList()
 }
 
-// Valid for versions 0.2.0 ->
-class FTAuth02Query(private val client: PostchainQuery) : FTAuthQuery, PostchainQuery by client {
+// Valid for versions 0.2.0 -> 0.3.1
+open class FTAuth02Query(private val client: PostchainQuery) : FTAuthQuery, PostchainQuery by client {
     override fun findAuthDescriptorQuery(accountId: GtvByteArray, pubKey: PubKey) =
             client.query(
                     "ft4.get_account_auth_descriptors_by_signer",
@@ -40,4 +40,14 @@ class FTAuth02Query(private val client: PostchainQuery) : FTAuthQuery, Postchain
                     "ft4.get_accounts_by_signer",
                     GtvFactory.gtv(mapOf("id" to GtvFactory.gtv(pubKey.data), "page_size" to GtvFactory.gtv(100), "page_cursor" to GtvNull))
             ).asDict()["data"]!!.asArray().map { it.asDict()["id"]!!.asByteArray() }
+}
+
+
+// Valid for versions 0.4.0 ->
+class FTAuth04Query(private val client: PostchainQuery) : FTAuth02Query(client) {
+    override fun findAuthDescriptorQuery(accountId: GtvByteArray, pubKey: PubKey) =
+            client.query(
+                    "ft4.get_account_auth_descriptors_by_signer",
+                    GtvFactory.gtv(mapOf("account_id" to accountId, "signer" to GtvFactory.gtv(pubKey.data)))
+            )
 }

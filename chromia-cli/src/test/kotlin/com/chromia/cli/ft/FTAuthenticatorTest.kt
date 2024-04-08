@@ -54,6 +54,19 @@ class FTAuthenticatorTest {
     }
 
     @Test
+    fun validV4AuthDescriptor() {
+        val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
+        val authenticator = FTAuth.createFTAuthenticator(
+                { query, _ -> queryResponseV4(pubKey, listOf("A"), query) },
+                Terminal()
+
+        )
+        assertDoesNotThrow {
+            authenticator.addAuthenticationOperation(mock(), "my_op", pubKey, null)
+        }
+    }
+
+    @Test
     fun authDescriptorMissingOneFlag() {
         val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
 
@@ -101,5 +114,21 @@ private fun queryResponseV2(pubKey: PubKey, flags: List<String>, query: String):
         "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })
         else -> GtvNull
     }
+}
 
+private fun queryResponseV4(pubKey: PubKey, flags: List<String>, query: String): Gtv {
+    return when (query) {
+        "ft4.get_version" -> gtv("0.4.0")
+        "ft4.get_accounts_by_signer" -> gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray()))))))
+        "ft4.get_account_auth_descriptors_by_signer" -> gtv(gtv(mapOf(
+                "id" to gtv("5".repeat(64).hexStringToByteArray()),
+                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                "created" to gtv(System.currentTimeMillis()),
+                "auth_type" to gtv("A"),
+                "rules" to GtvNull
+        )))
+
+        "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })
+        else -> GtvNull
+    }
 }

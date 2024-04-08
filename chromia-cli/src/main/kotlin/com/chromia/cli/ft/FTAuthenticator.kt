@@ -32,8 +32,10 @@ interface FTAuth {
                 version == "0.1.0r" -> throw PrintMessage("FT version $version not supported", statusCode = 1)
                 // 0.1.*
                 version.matches(Regex("^0\\.1\\.(0|[1-9]\\d*).*")) -> FTAuthenticator(FTAuth01Query(client), terminal)
-                // > 0.2.0
-                else -> FTAuthenticator(FTAuth02Query(client), terminal)
+                // 0.2.* -> 0.3.*
+                version.matches(Regex("^0\\.[2-3]\\.(0|[1-9]\\d*).*")) -> FTAuthenticator(FTAuth02Query(client), terminal)
+                // > 0.4.0
+                else -> FTAuthenticator(FTAuth04Query(client), terminal)
             }
         }
     }
