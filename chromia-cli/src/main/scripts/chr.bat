@@ -65,9 +65,14 @@ goto fail
 
 set CLASSPATH=%APP_HOME%\lib\*
 
+@rem TODO Jline explicit version is needed due to shading in dokka plugin with conflicting version with rell,
+@rem should be fixed in dokka plugin then removed here
+for %%F in ("%APP_HOME%\lib\jline-*.jar") do (
+    set JLINE_JAR=%%F
+)
 
 @rem Execute chr
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CHR_OPTS%  -classpath "%CLASSPATH%" com.chromia.MainKt %*
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CHR_OPTS%  -classpath "%JLINE_JAR%;%CLASSPATH%" com.chromia.MainKt %*
 
 :end
 @rem End local scope for the variables with windows NT shell
