@@ -70,31 +70,36 @@ class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
 
-    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>): ReplInputChannelFactory {
+    private class IteratorCommandInputChannelFactory(val commands: Iterable<String>) : ReplInputChannelFactory {
         override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
             val commandIterator = commands.iterator()
             override fun readLine(prompt: String) = if (commandIterator.hasNext()) commandIterator.next() else null
         }
     }
 
-    private inner class CliktOutputChannelFactory(private val failOnError: Boolean): ReplOutputChannelFactory {
+    private inner class CliktOutputChannelFactory(private val failOnError: Boolean) : ReplOutputChannelFactory {
         private var valueFormat = if (rawOutput) ReplValueFormat.ONE_ITEM_PER_LINE else ReplValueFormat.GTV_STRING
-        override fun createOutputChannel() = object: ReplOutputChannel {
+        override fun createOutputChannel() = object : ReplOutputChannel {
             override fun printInfo(msg: String) = echo(msg)
             override fun printCompilerError(code: String, msg: String) = if (failOnError) throw PrintMessage(msg, 1) else echo(msg, err = true)
             override fun printCompilerMessage(message: C_Message) = if (failOnError) throw PrintMessage(message.toString(), 1) else echo(message)
             override fun printControl(code: String, msg: String) = echo(msg)
-            override fun printPlatformRuntimeError(e: Throwable)  {
+            override fun printPlatformRuntimeError(e: Throwable) {
                 val message = "Run-time error: " + Throwables.getStackTraceAsString(e).trim()
                 if (failOnError) throw PrintMessage(message, 1)
                 echo(message)
             }
+
             override fun printRuntimeError(e: Rt_Exception) {
                 val message = Rt_Utils.appendStackTrace("Run-time error: ${e.message}", e.info.stack)
                 if (failOnError) throw PrintMessage(message, 1)
                 echo(message)
             }
-            override fun printValue(value: Rt_Value) { ReplValueFormatter.format(value, valueFormat)?.let { echo(it) } }
+
+            override fun printValue(value: Rt_Value) {
+                ReplValueFormatter.format(value, valueFormat)?.let { echo(it) }
+            }
+
             override fun setValueFormat(format: ReplValueFormat) {
                 valueFormat = format
             }

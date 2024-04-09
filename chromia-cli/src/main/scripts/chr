@@ -19,7 +19,9 @@ done
 APP_HOME=$( cd "${APP_HOME:-./}.." && pwd -P ) || exit
 
 JAR=$(find "$APP_HOME/lib" -maxdepth 1 -type f -print | grep -E '/chromia-cli-(dev|[0-9]+\.[0-9]+\.[0-9]+)\.jar$')
+#TODO Jline explicit version is needed due to shading in dokka plugin with conflicting version with rell, should be fixed in dokka plugin then removed here
+JLINE_JAR=$(find "$APP_HOME/lib" -maxdepth 1 -type f -print | grep -E '/jline-([0-9]+\.[0-9]+\.[0-9]+)\.jar$')
 RESOLVED_TMP_DIR=${TMPDIR-/tmp}
 LOG_FOLDER="${RESOLVED_TMP_DIR%/}/chromia"
 
-exec ${RELL_JAVA:-java} ${JAVA_ARGS:-} -Duser.language=en -Duser.country=US -DCHR_LOG_FOLDER="$LOG_FOLDER" -cp "$JAR:$APP_HOME/lib/*" com.chromia.MainKt "$@"
+exec ${RELL_JAVA:-java} ${JAVA_ARGS:-} -Duser.language=en -Duser.country=US -DCHR_LOG_FOLDER="$LOG_FOLDER" -cp "$JAR:$JLINE_JAR:$APP_HOME/lib/*" com.chromia.MainKt "$@"

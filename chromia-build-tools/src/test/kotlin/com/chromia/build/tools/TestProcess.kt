@@ -10,15 +10,15 @@ import java.io.InputStreamReader
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-class TestProcess private constructor(processBuilder: ProcessBuilder, startContition: String?, shouldFinish: Boolean, expectedExitCode: Int, timeout: Duration, val verbose: Boolean) : AutoCloseable {
+class TestProcess private constructor(processBuilder: ProcessBuilder, startCondition: String?, shouldFinish: Boolean, expectedExitCode: Int, timeout: Duration, val verbose: Boolean) : AutoCloseable {
 
     val process = processBuilder.start()
     val reader = BufferedReader(InputStreamReader(process.inputStream))
 
     init {
         if (verbose) println("Starting command " + processBuilder.command().subList(1, processBuilder.command().size))
-        if (!startContition.isNullOrBlank()) {
-            waitUntil(startContition, timeout)
+        if (!startCondition.isNullOrBlank()) {
+            waitUntil(startCondition, timeout)
         }
         if (shouldFinish) {
             process.waitFor(timeout.seconds, TimeUnit.SECONDS)
