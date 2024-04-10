@@ -11,7 +11,9 @@ import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
+import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.Http4kRellVersionFinder
+import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.directory1.common.queries.getClusterApiUrls
 import com.chromia.directory1.common.queries.getContainerData
@@ -149,11 +151,22 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val httpClient = httpHandlerFactory(createClientConfig())
         val rellVersionController = Http4kRellVersionFinder(httpClient)
 
-        val clusterName = client.getContainerData(deployModel.container!!).name
+        val clusterName = client.getContainerData(deployModel.container!!).cluster
         val clusterNodeUrls = client.getClusterApiUrls(clusterName)
 
-        val targetVersions = clusterNodeUrls.map {
-            rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid)
+        val targetVersions = clusterNodeUrls.mapNotNull {
+            try {
+                rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid)
+            } catch (e: CanNotFindBlockchainException) {
+                throw e
+            } catch (e: RuntimeException) {
+                echo(e.message)
+                null
+            }
+        }
+
+        if (targetVersions.isEmpty()) {
+            throw NoNodeRunningContainerException(deployModel.container!!)
         }
 
         if (targetVersions.any { it < settings.model.compile.langVersion }) {

@@ -7,6 +7,8 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClient
+import com.chromia.cli.versionfinder.CanNotFindBlockchainException
+import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.testing.test
 import java.io.File
@@ -67,6 +69,24 @@ class DeployCreateCommandTest {
         }
         assertThat(throwable.message!!).contains("The local compile version 0.13.5 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                 "The deployment is aborted.")
+    }
+
+    @Test
+    fun cannotDeployIfNodeIsUnresponsive() {
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.BAD_GATEWAY, "").body(""))
+        val throwable = assertThrows<NoNodeRunningContainerException> {
+            DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
+        }
+        assertThat(throwable.message!!).contains("No nodes found running the container \"foo\"")
+    }
+
+    @Test
+    fun cannotDeployIfBridIsNotFound() {
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.NOT_FOUND, "").body(""))
+        val throwable = assertThrows<CanNotFindBlockchainException> {
+            DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
+        }
+        assertThat(throwable.message!!).contains("Can not find blockchain with blockchainRID: 0000000000000000000000000000000000000000000000000000000000000001 on node http://node1_url")
     }
 
     @Test

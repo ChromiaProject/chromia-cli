@@ -21,7 +21,7 @@ class Http4kRellVersionFinder(private val httpHandler: HttpHandler) : RellVersio
         val versionLens = Body.auto<String>().toLens()
         return when (result.status) {
             Status.OK -> R_LangVersion.of(versionLens(result))
-            Status.NOT_FOUND -> throw RuntimeException("Can not find blockchain with blockchainRID: $brid")
+            Status.NOT_FOUND -> throw CanNotFindBlockchainException(brid, endpoint)
             else -> {
                 throw RuntimeException("Unknown status ${result.status} for request ${request.uri}")
             }
