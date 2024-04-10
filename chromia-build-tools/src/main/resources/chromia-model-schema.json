@@ -110,6 +110,11 @@
           "type": "boolean",
           "default": true,
           "description": "Hide intermediary compilation output"
+        },
+        "strictGtvConversion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use strict gtv conversion to not allow transformation of types in arguments call. Recommended to use default value"
         }
       }
     },

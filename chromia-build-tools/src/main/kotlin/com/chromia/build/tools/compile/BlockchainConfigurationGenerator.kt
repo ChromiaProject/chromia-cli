@@ -6,6 +6,7 @@ import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastru
 import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
+import com.chromia.cli.model.MinimalRellVersionStrictGtv
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -158,5 +159,9 @@ internal class BlockchainConfigurationGenerator(
             modulesGtv.add(it)
         }
         b.update(gtv(modulesGtv), "gtx", "modules")
+
+        if (compileModel.langVersion >= MinimalRellVersionStrictGtv) {
+            b.update(gtv(compileModel.strictGtvConversion), "gtx", "rell", "strictGtvConversion")
+        }
     }
 }

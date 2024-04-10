@@ -142,4 +142,66 @@ class RunNodeIT {
                 .startCondition("An error occurred. Could not find Gtx module: net.postchain.UnknownGTXModule")
                 .start()
     }
+
+    @Test
+    fun startNodeWithGtxStrictConfigurationTrue(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: strictmode
+                    compile:
+                      strictGtvConversion: true
+                      rellVersion: 0.13.9
+                """.trimIndent())
+            }
+            addFile("strictmode.rell", """
+                module;
+                operation strict_gtv(arg: integer) {
+                    val a = 2;
+                }
+            """.trimIndent())
+        }
+
+        TestProcess.Builder("node", "start", "--wipe")
+                .setWorkingDir(dir.toFile())
+                .awaitCompletion(false)
+                .startCondition(INITILIZED_LOG)
+                .start {
+                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").exitCode(1).start { process ->
+                        process.waitUntil("Decoding type 'integer': expected INTEGER, actual BIGINTEGER", Duration.ofSeconds(5))
+                    }
+                }
+    }
+
+    @Test
+    fun startNodeWithGtxStrictConfigurationFalse(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: strictmode
+                    compile:
+                      strictGtvConversion: false
+                      rellVersion: 0.13.9
+                """.trimIndent())
+            }
+            addFile("strictmode.rell", """
+                module;
+                operation strict_gtv(arg: integer) {
+                    val a = 2;
+                }
+            """.trimIndent())
+        }
+
+        TestProcess.Builder("node", "start", "--wipe")
+                .setWorkingDir(dir.toFile())
+                .awaitCompletion(false)
+                .startCondition(INITILIZED_LOG)
+                .start {
+                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted CONFIRMED").start()
+                }
+    }
 }
