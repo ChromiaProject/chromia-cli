@@ -40,7 +40,7 @@ class BuildIT {
                         config:
                           gtx:
                             modules:
-                              - "net.postchain.eif.transaction.TransactionSubmitterGTXModule"
+                              - "net.postchain.UnknownGTXModule"
                 """.trimIndent())
             }
         }

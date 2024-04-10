@@ -22,7 +22,7 @@ import kotlin.io.path.listDirectoryEntries
 //Reference implementation from:
 // https://gitlab.com/chromaway/postchain-eif/-/blob/0.2.10/postchain-eif-core/src/main/kotlin/net/postchain/eif/cli/GenerateEventsConfigCommand.kt?ref_type=tags
 
-class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-config", help = "Generate solidity events that EIF will listen too") {
+class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-config", help = "Generate solidity events that EIF will listen to") {
     private val abiSource by option("--abi", help = "Path to a JSON ABI file or a directory of JSON ABI files")
             .file(mustExist = true, mustBeReadable = true)
             .required()

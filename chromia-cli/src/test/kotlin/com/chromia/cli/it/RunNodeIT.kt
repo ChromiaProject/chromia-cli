@@ -131,7 +131,7 @@ class RunNodeIT {
                         config:
                           gtx:
                             modules:
-                              - "net.postchain.eif.transaction.TransactionSubmitterGTXModule"
+                              - "net.postchain.UnknownGTXModule"
                 """.trimIndent())
             }
         }
@@ -139,7 +139,7 @@ class RunNodeIT {
         TestProcess.Builder("node", "start", "--wipe")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
-                .startCondition("An error occurred. Could not find Gtx module: net.postchain.eif.transaction.TransactionSubmitterGTXModule")
+                .startCondition("An error occurred. Could not find Gtx module: net.postchain.UnknownGTXModule")
                 .start()
     }
 }

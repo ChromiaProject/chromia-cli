@@ -66,7 +66,7 @@ class DeployIT {
                         config:
                           gtx:
                             modules:
-                              - "net.postchain.eif.transaction.TransactionSubmitterGTXModule"
+                              - "net.postchain.UnknownGTXModule"
                 """.trimIndent())
             }
         }
@@ -76,7 +76,7 @@ class DeployIT {
         TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .exitCode(3)
-                .startCondition("An error occurred. Could not find Gtx module: net.postchain.eif.transaction.TransactionSubmitterGTXModule")
+                .startCondition("An error occurred. Could not find Gtx module: net.postchain.UnknownGTXModule")
                 .start()
     }
 
