@@ -1,8 +1,8 @@
 package com.chromia.cli.model
 
 import com.chromia.build.tools.model.ensureType
-import net.postchain.gtv.listMapAndPrimitivesToGtv
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.listMapAndPrimitivesToGtv
 
 data class BlockchainModel(
         val module: String,

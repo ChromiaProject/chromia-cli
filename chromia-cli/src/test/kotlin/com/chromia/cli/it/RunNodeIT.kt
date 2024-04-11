@@ -78,7 +78,7 @@ class RunNodeIT {
                           icmf:
                             receiver:
                               local:
-                                - bc-rid: x""
+                                - brid: null
                                   topic: "L_msg"
                           gtx:
                             modules:

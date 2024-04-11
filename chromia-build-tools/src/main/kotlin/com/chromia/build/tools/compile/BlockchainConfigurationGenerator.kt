@@ -121,6 +121,24 @@ internal class BlockchainConfigurationGenerator(
         return gtvBuilder.build()
     }
 
+    private fun renameIcmfBrid(configuration: Gtv): Gtv {
+        val gtvBuilder = GtvBuilder()
+        gtvBuilder.update(configuration)
+
+        configuration["icmf"]?.get("receiver")?.get("local")?.asArray()
+                ?.map { it.asDict().toMutableMap() }
+                ?.map(::renameBridKeyName)
+                ?.map { GtvNode.decode(gtv(it)) }
+                ?.let { GtvArrayNode(it, GtvArrayMerge.REPLACE) }
+                ?.apply { gtvBuilder.update(this, "icmf", "receiver", "local") }
+
+        return gtvBuilder.build()
+    }
+
+    private fun renameBridKeyName(localReceiver: MutableMap<String, Gtv>) = localReceiver.also {
+        it.remove("brid")?.let { brid -> it["bc-rid"] = brid }
+    }
+
     private fun generateGtv(blockchainModel: BlockchainModel): Gtv {
         val b = GtvBuilder()
         addDefault(b, blockchainModel)
@@ -140,6 +158,7 @@ internal class BlockchainConfigurationGenerator(
         blockchainModel.config.filterKeys { it != "modules" }
                 .forEach { (path, value) -> b.update(value, path) }
         return b.build()
+                .let { renameIcmfBrid(it) }
                 .let { if (inMemoryIcmf) replaceInMemoryIcmf(it) else it }
                 .let { if (filterModules) filterModules(it) else it }
     }
