@@ -142,6 +142,7 @@ update-docs:
     git clone https://x-token-auth:$BITBUCKET_CI_TOKEN@bitbucket.org/chromawallet/chromia-docs.git docs-repo
     cd docs-repo
     bash generate-chromia-cli-docs.sh
+    bash generate-rell-docs.sh
     
     # Check if there are changes
     if [ `git status --porcelain | wc -l` -gt 0 ]; then
