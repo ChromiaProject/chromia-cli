@@ -158,9 +158,7 @@ class RunNodeIT {
             }
             addFile("strictmode.rell", """
                 module;
-                operation strict_gtv(arg: integer) {
-                    val a = 2;
-                }
+                operation strict_gtv(arg: integer) {}
             """.trimIndent())
         }
 
@@ -190,9 +188,35 @@ class RunNodeIT {
             }
             addFile("strictmode.rell", """
                 module;
-                operation strict_gtv(arg: integer) {
-                    val a = 2;
+                operation strict_gtv(arg: integer) {}
+            """.trimIndent())
+        }
+
+        TestProcess.Builder("node", "start", "--wipe")
+                .setWorkingDir(dir.toFile())
+                .awaitCompletion(false)
+                .startCondition(INITILIZED_LOG)
+                .start {
+                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted CONFIRMED").start()
                 }
+    }
+
+    @Test
+    fun typeConversionDefaultNonStrictBehaviour(@TempDir dir: Path) {
+        // This test will fail when we set default rell version >=0.13.9
+        // Test could probably be removed then, and we can update startNodeWithGtxStrictConfigurationTrue and
+        // startNodeWithGtxStrictConfigurationFalse to capture default / non-default behaviour
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: strictmode
+                """.trimIndent())
+            }
+            addFile("strictmode.rell", """
+                module;
+                operation strict_gtv(arg: integer) {}
             """.trimIndent())
         }
 

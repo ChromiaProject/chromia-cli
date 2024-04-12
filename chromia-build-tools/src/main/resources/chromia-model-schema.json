@@ -114,7 +114,7 @@
         "strictGtvConversion": {
           "type": "boolean",
           "default": true,
-          "description": "Use strict gtv conversion to not allow transformation of types in arguments call. Recommended to use default value"
+          "description": "Use strict gtv conversion to not allow transformation of gtv types when parsing operation arguments. It is recommended to leave this to true (default)."
         }
       }
     },
