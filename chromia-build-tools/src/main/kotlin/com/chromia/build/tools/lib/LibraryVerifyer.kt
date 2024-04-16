@@ -37,7 +37,7 @@ class LibraryVerifyer(private val env: RellCliEnv) {
         }
 
         val srcGtv = GtvFactory.gtv(
-                RellGtxConfigConstants.RELL_SOURCES_KEY to GtvFactory.gtv(files.filter { it.isFile }.sortedBy { it.path }.map { GtvFactory.gtv(it.readText()) })
+                RellGtxConfigConstants.SOURCES_KEY to GtvFactory.gtv(files.filter { it.isFile }.sortedBy { it.path }.map { GtvFactory.gtv(it.readText()) })
         )
 
         val calculatedRid = WrappedByteArray(srcGtv.merkleHash(hashCalculator))
