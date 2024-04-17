@@ -2,6 +2,7 @@ package com.chromia.api
 
 import com.chromia.api.impl.compileGtv
 import com.chromia.api.result.BlockchainConfiguration
+import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.model.ChromiaModel
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.api.base.RellCliEnv
@@ -21,4 +22,13 @@ object ChromiaCompileApi {
     @ExperimentalApi
     fun verify(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path)
             : WrappedByteArray = com.chromia.api.impl.verify(cliEnv, model, projectDir)
+}
+
+object ChromiaLibrariesApi {
+    /**
+     * Installs libraries to src/lib folder.
+     */
+    @ExperimentalApi("May want to remove RepositoryCloner parameter from this api")
+    fun install(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, repositoryCloner: RepositoryCloner)
+        = com.chromia.api.impl.install(cliEnv, repositoryCloner, projectDir, model)
 }

@@ -7,3 +7,8 @@ fun ChromiaModel.filterBlockchains(blockchains: Collection<String>): ChromiaMode
     if (!this.blockchains.keys.containsAll(blockchains)) throw ValidationException("Cannot compile blockchains $blockchains. Configured chains are ${this.blockchains.keys}")
     return copy(blockchains = this.blockchains.filter { it.key in blockchains })
 }
+
+fun ChromiaModel.filterLibraries(libraries: List<String>?): ChromiaModel {
+    if (libraries != null && !this.libs.keys.containsAll(libraries)) throw ValidationException("Cannot filter libraries $libraries. Configured libraries are ${libs.keys}")
+    return copy(libs = libs.filter { libraries == null || it.key in libraries })
+}
