@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.exists
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File

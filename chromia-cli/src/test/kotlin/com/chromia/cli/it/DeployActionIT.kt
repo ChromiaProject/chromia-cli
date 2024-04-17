@@ -6,7 +6,7 @@ import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
 import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid

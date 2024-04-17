@@ -1,6 +1,6 @@
 package com.chromia.cli.command.deployment
 
-import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation
@@ -23,7 +23,7 @@ sealed class DeployActionCommand(
 
     private val description by option(help = "Description on why the blockchain is being acted on").default("")
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration) {
         blockchain?.map {
             proposeBlockchainActionOperation(
                     clientConfig.pubkey.data,
@@ -34,13 +34,13 @@ sealed class DeployActionCommand(
         }
     }
 
-    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+    override fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient) {
         compiledChains.forEach { chain ->
             if (!deployModel.chains.containsKey(chain.name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain.name} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
         }
     }
 
-    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>) {
         for ((chain, _) in deployTxs) {
             echo("${action.name} of blockchain \"${chain.name}\" was successful")
             if (action == BlockchainAction.remove) {

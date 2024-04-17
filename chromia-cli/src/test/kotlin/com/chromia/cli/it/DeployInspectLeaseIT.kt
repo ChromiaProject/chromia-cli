@@ -3,7 +3,7 @@ package com.chromia.cli.it
 import com.chromia.build.tools.RestApiInstance
 import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import net.postchain.api.rest.controller.Model
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray

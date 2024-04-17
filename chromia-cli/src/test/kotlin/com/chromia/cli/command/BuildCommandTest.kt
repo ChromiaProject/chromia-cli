@@ -13,7 +13,7 @@ import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal

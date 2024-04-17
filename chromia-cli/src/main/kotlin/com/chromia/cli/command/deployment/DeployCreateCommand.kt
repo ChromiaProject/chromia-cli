@@ -1,6 +1,6 @@
 package com.chromia.cli.command.deployment
 
-import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
@@ -33,7 +33,7 @@ class DeployCreateCommand(
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
     private val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
-    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+    override fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient) {
 
         validateRellVersion(client, httpHandlerFactory)
 
@@ -45,7 +45,7 @@ class DeployCreateCommand(
         }
     }
 
-    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>) {
         val apiVersion = client.apiVersion()
 
         val deployedChains = buildList {
@@ -73,7 +73,7 @@ class DeployCreateCommand(
             """.trimIndent())
     }
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration) {
         BlockchainOperations(client.apiVersion, this)
                 .newBlockchainOperation(clientConfig.pubkey.data, configHolder.configByteArray, configHolder.name, deployModel.container!!)
     }

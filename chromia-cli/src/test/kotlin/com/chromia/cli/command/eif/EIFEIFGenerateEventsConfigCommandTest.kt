@@ -1,6 +1,6 @@
 package com.chromia.cli.command.eif
 
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path

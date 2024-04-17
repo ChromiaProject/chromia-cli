@@ -1,6 +1,6 @@
 package com.chromia.cli.command
 
-import com.chromia.build.tools.compile.ChromiaCompileApi
+import com.chromia.api.ChromiaCompileApi
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.tools.launcher.createAliases
@@ -12,6 +12,7 @@ class BuildCommand : CliktCommand(help = "Build an application and create a bloc
     override fun aliases() = createAliases()
 
     override fun run() {
-        ChromiaCompileApi.compile(cliEnv(), settings.model, settings.projectFolder)
+        ChromiaCompileApi.build(cliEnv(), settings.model, settings.projectFolder.toPath())
+                .forEach { it.save(settings.targetDir.toPath()) }
     }
 }

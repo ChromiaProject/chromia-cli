@@ -3,7 +3,7 @@ package com.chromia.cli.it
 import assertk.assertThat
 import assertk.assertions.exists
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

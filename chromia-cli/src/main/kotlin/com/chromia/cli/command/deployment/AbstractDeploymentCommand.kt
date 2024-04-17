@@ -1,8 +1,9 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.api.ChromiaCompileApi
+import com.chromia.api.filterBlockchains
+import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter
-import com.chromia.build.tools.compile.ChromiaCompileApi
-import com.chromia.build.tools.compile.ChromiaCompileResult
 import com.chromia.cli.tools.config.BlockchainConfigurationCompressor
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.client
@@ -10,6 +11,7 @@ import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
+import com.chromia.cli.util.filterGtxModules
 import com.chromia.cli.util.secretOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.Http4kRellVersionFinder
@@ -73,13 +75,10 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     final override fun run() {
         val chainsToDeploy = chainsToDeploy()
-        val compiledChains = ChromiaCompileApi.compile(
-                cliEnv = CliktCliEnv(this@AbstractDeploymentCommand),
-                model = settings.model,
-                projectFolder = settings.projectFolder,
-                blockchains = chainsToDeploy,
-                validateGtv = true
-        )
+        val cliEnv = CliktCliEnv(this@AbstractDeploymentCommand)
+        val compiledChains = ChromiaCompileApi.build(cliEnv,
+                settings.model.filterBlockchains(chainsToDeploy), settings.projectFolder.toPath())
+                .onEach { it.filterGtxModules(cliEnv).validate() }
         beforeDeployment(compiledChains, client)
 
         var failure = false
@@ -105,7 +104,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 val result = client.awaitConfirmation(tx, client.config.statusPollCount, client.config.statusPollInterval)
                 when (result.status) {
                     TransactionStatus.CONFIRMED -> {
-                        chain.save(settings.targetDir, "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
+                        chain.save(settings.targetDir.toPath(), "${target}_${chain.name}_${Instant.now().toEpochMilli()}")
                         add(chain to tx)
                     }
 
@@ -127,23 +126,23 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         }
     }
 
-    abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult)
+    abstract fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration)
 
-    abstract fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient)
+    abstract fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient)
 
-    abstract fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>)
+    abstract fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>)
 
     private fun chainsToDeploy(): Collection<String> {
         return blockchain ?: settings.model.blockchains.keys
     }
 
-    protected fun configToDeploy(chain: ChromiaCompileResult): ChromiaCompileResult {
+    protected fun configToDeploy(chain: BlockchainConfiguration): BlockchainConfiguration {
         return if (noCompression) {
             chain
         } else {
             val configWithCompressionInfo = BlockchainConfigurationCompressor.compress(client, chain.config, client.apiVersion)
             BlockchainConfigurationWriter.storeConfig(configWithCompressionInfo, "${chain.name}_compressed", settings.model.compile.targetFile(settings.projectFolder).toPath())
-            return ChromiaCompileResult(chain.name, configWithCompressionInfo)
+            return BlockchainConfiguration(chain.name, configWithCompressionInfo)
         }
     }
 

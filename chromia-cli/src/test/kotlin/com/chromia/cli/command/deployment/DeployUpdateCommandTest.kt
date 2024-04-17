@@ -25,6 +25,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.test.assertNotNull
 
 
 class DeployUpdateCommandTest {
@@ -119,7 +122,9 @@ class DeployUpdateCommandTest {
         val config = TestConfiguration()
         val res = DeployUpdateCommand({ TestClient(it, { 0 }, config) }, { TestClusterManagement() }, { testHttpHandler() }).test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--no-compression"))
         assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
-        assertThat(testDir.resolve("build/deployed.xml").toFile().readText()).doesNotContain("<entry key=\"compressed_roots\">")
+        val buildGtx = testDir.resolve("build").listDirectoryEntries().find { it.name.startsWith("test_deployed") }?.toFile()?.readText()
+        assertNotNull(buildGtx)
+        assertThat(buildGtx).doesNotContain("<entry key=\"compressed_roots\">")
     }
 
     @Test

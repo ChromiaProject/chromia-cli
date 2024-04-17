@@ -1,11 +1,17 @@
 package com.chromia.cli.command.node
 
-import com.chromia.build.tools.compile.ChromiaCompileApi
-import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.api.ChromiaCompileApi
+import com.chromia.api.filterBlockchains
+import com.chromia.api.result.BlockchainConfiguration
+import com.chromia.build.tools.iccf.SingleNodeIccfGtxModule
+import com.chromia.build.tools.icmf.InMemoryIcmfReceiverGtxModule
+import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastructureExtension
+import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.d1.ManagementChainFactory
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
+import com.chromia.cli.util.filterGtxModules
 import com.chromia.cli.util.nodePropertiesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -15,6 +21,8 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.gtv.GtvDecoder
+import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.gtv.gtvml.GtvMLParser
 
 abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
@@ -40,18 +48,10 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
             """.trimIndent()
     ).flag()
 
-    protected fun extractConfigs(): Collection<ChromiaCompileResult> {
+    protected fun extractConfigs(): Collection<BlockchainConfiguration> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val blockchainsToCompile = settings.model.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
-            ChromiaCompileApi.compile(
-                    cliEnv = CliktCliEnv(this),
-                    model = settings.model,
-                    projectFolder = settings.projectFolder,
-                    blockchains = blockchainsToCompile,
-                    filterModules = true,
-                    inMemoryIcmf = true,
-                    validateGtv = true
-            )
+            ChromiaCompileApi.build(CliktCliEnv(this), settings.model.filterBlockchains(blockchainsToCompile), settings.projectFolder.toPath())
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
@@ -65,12 +65,58 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
                             it.nameWithoutExtension to GtvMLParser.parseGtvML(it.readText())
                         }
                     }
-                    .map { ChromiaCompileResult(it.key, it.value) }
+                    .map { BlockchainConfiguration(it.key, it.value) }
 
         }
 
-        return if (directoryChainMock) {
-            listOf(ChromiaCompileResult("directory-chain", ManagementChainFactory.createManagementChain())) + configsToAdd
-        } else configsToAdd
+        return configsToAdd
+                .let { if (directoryChainMock) addDirectoryChain(it) else it }
+                .map { replaceInMemoryIcmf(it) }
+                .map { it.filterGtxModules(CliktCliEnv(this)) }
+                .onEach { it.validate() }
+    }
+
+    private fun addDirectoryChain(chains: List<BlockchainConfiguration>): List<BlockchainConfiguration> {
+        return buildList {
+            add(BlockchainConfiguration("directory-chain", ManagementChainFactory.createManagementChain()))
+            addAll(chains)
+        }
+    }
+
+    private fun replaceInMemoryIcmf(configuration: BlockchainConfiguration): BlockchainConfiguration {
+        val cliEnv = CliktCliEnv(this)
+        val gtvBuilder = GtvBuilder()
+        gtvBuilder.update(configuration.config)
+
+        val configModules = configuration.config["gtx"]?.get("modules")!!.asArray().map { it.asString() } // Not null since default values are added
+        if (configModules.intersect(inMemoryGtxModules.keys).isNotEmpty()) {
+            cliEnv.error("WARNING: Replacing GTX Module with in-memory version, all unprocessed messages will be lost upon node restart")
+            cliEnv.error("DO NOT RUN IN PRODUCTION")
+        }
+        configModules
+                .map { GtvFactory.gtv(inMemoryGtxModules.getOrDefault(it, it)) }
+                .map { GtvBuilder.GtvNode.decode(it) }
+                .let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
+                .apply { gtvBuilder.update(this, "gtx", "modules") }
+
+        configuration.config["sync_ext"]?.asArray()
+                ?.map { GtvFactory.gtv(inMemorySyncInfraExt.getOrDefault(it.asString(), it.asString())) }
+                ?.map { GtvBuilder.GtvNode.decode(it) }
+                ?.let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
+                ?.apply { gtvBuilder.update(this, "sync_ext") }
+        return BlockchainConfiguration(configuration.name, gtvBuilder.build())
+    }
+
+    companion object {
+
+        private val inMemoryGtxModules = mapOf(
+                "net.postchain.d1.icmf.IcmfSenderGTXModule" to InMemoryIcmfSenderGtxModule::class.qualifiedName!!,
+                "net.postchain.d1.icmf.IcmfReceiverGTXModule" to InMemoryIcmfReceiverGtxModule::class.qualifiedName!!,
+                "net.postchain.d1.iccf.IccfGTXModule" to SingleNodeIccfGtxModule::class.qualifiedName!!,
+        )
+
+        private val inMemorySyncInfraExt = mapOf(
+                "net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension" to InMemoryIcmfReceiverSynchronizationInfrastructureExtension::class.qualifiedName!!
+        )
     }
 }

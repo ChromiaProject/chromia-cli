@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.build.tools
 
 import net.postchain.crypto.KeyPair
 import java.io.File

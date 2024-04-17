@@ -3,12 +3,12 @@ package com.chromia.build.tools.compile
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory
 
-fun withSigner(gtvConfig: Gtv, signer: ByteArray) =
+fun withSigner(gtvConfig: Gtv, vararg signer: ByteArray) =
         if (gtvConfig["signers"] != null) {
             gtvConfig
         } else {
             GtvFactory.gtv(
                     *gtvConfig.asDict().toList().toTypedArray(),
-                    "signers" to GtvFactory.gtv(listOf(GtvFactory.gtv(signer)))
+                    "signers" to GtvFactory.gtv(signer.map { GtvFactory.gtv(it) })
             )
         }

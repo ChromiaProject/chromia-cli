@@ -12,13 +12,14 @@ import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtv.merkleHash
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
+import java.nio.file.Path
 
 class LibraryVerifyer(private val env: RellCliEnv) {
     val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
 
-    fun verifyLibs(source: File, libs: Map<String, RellLibraryModel>) {
+    fun verifyLibs(source: Path, libs: Map<String, RellLibraryModel>) {
         libs.forEach { (name, rellLibrary) ->
-            val libraryLocation = source.toPath().resolve(InstallDirTarget.SOURCE.target).resolve(name)
+            val libraryLocation = source.resolve(InstallDirTarget.SOURCE.target).resolve(name)
             if (libraryLocation.notExists()) throw ValidationException("Library $name is not installed, install before building")
             val files = Files.walk(libraryLocation).map { it.toFile() }.toList()
             if (!verifyLib(rellLibrary, name, files)) throw ValidationException("Failed validation of library $name")

@@ -5,7 +5,7 @@ import assertk.assertions.any
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import com.chromia.cli.util.captureLog4jLoggerOutput
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test

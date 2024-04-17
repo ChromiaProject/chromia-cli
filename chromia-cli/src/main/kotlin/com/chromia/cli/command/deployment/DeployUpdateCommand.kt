@@ -1,6 +1,6 @@
 package com.chromia.cli.command.deployment
 
-import com.chromia.build.tools.compile.ChromiaCompileResult
+import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.cli.compatibility.BlockchainOperations
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
@@ -40,7 +40,7 @@ class DeployUpdateCommand(
     private val verifyOnly by option("--verify-only", help = "Verifies blockchain config without sending update transaction").flag()
     private val skipVerification by option("--skip-verification", help = "Skip verification of blockchain config before sending update transaction").flag()
 
-    override fun beforeDeployment(compiledChains: Collection<ChromiaCompileResult>, client: PostchainClient) {
+    override fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient) {
         validateRellVersion(client, httpHandlerFactory)
         if (skipVerification) {
             echo("Skipping verification of blockchain config")
@@ -49,13 +49,13 @@ class DeployUpdateCommand(
         compiledChains.forEach { chain -> verifyConfiguration(chain, client) }
     }
 
-    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<ChromiaCompileResult, TxRid>>) {
+    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>) {
         for ((chain, _) in deployTxs) {
             echo("Blockchain ${chain.name} was successfully updated on network $target")
         }
     }
 
-    private fun verifyConfiguration(chain: ChromiaCompileResult, client: PostchainClient) {
+    private fun verifyConfiguration(chain: BlockchainConfiguration, client: PostchainClient) {
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
@@ -87,7 +87,7 @@ class DeployUpdateCommand(
         if (verifyOnly) throw PrintMessage("Verification only, skipping sending updates", 0)
     }
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: ChromiaCompileResult) {
+    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration) {
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
         val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
         val blockchainRid = deployModel.chains[configHolder.name]!!

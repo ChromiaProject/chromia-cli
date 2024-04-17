@@ -1,31 +1,33 @@
 package com.chromia.build.tools.compile
 
+import com.chromia.api.filterBlockchains
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
-import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.model.ChromiaModel
 import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
 
+@Deprecated("Use the new api instead", replaceWith = ReplaceWith("ChromiaCompileApi", imports = arrayOf("com.chromia.api.ChromiaCompileApi")))
 object ChromiaCompileApi {
+    @Deprecated("Use the new api instead")
     fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File): Collection<ChromiaCompileResult> {
+        @Suppress("DEPRECATION")
         return compile(cliEnv, model, projectFolder, model.blockchains.keys)
     }
 
+    @Deprecated("Use the new api instead")
     fun compile(
             cliEnv: RellCliEnv,
             model: ChromiaModel,
             projectFolder: File,
             blockchains: Collection<String>,
+            @Suppress("UNUSED_PARAMETER")
             filterModules: Boolean = false,
+            @Suppress("UNUSED_PARAMETER")
             inMemoryIcmf: Boolean = false,
+            @Suppress("UNUSED_PARAMETER")
             validateGtv: Boolean = false
     ): Collection<ChromiaCompileResult> {
-        val libraryVerifyer = LibraryVerifyer(cliEnv)
-        libraryVerifyer.verifyLibs(model.compile.sourceFile(projectFolder), model.libs)
-
-        if (!model.blockchains.keys.containsAll(blockchains)) throw ValidationException("Cannot compile blockchains $blockchains. Configured chains are ${model.blockchains.keys}")
-        return BlockchainConfigurationGenerator(cliEnv, model.compile, model.blockchains.filter { blockchains.contains(it.key) }, projectFolder, filterModules, inMemoryIcmf, validateGtv)
-                .generate()
+        return com.chromia.api.ChromiaCompileApi.build(cliEnv, model.filterBlockchains(blockchains), projectFolder.toPath()).map { ChromiaCompileResult(it.name, it.config) }
                 .onEach { (name, gtv) -> storeConfig(gtv, name, model.compile.targetFile(projectFolder).toPath()) }
     }
 }

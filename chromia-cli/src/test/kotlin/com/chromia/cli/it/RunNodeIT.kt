@@ -2,7 +2,7 @@ package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
 import com.chromia.cli.command.node.INITILIZED_LOG
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -68,6 +68,7 @@ class RunNodeIT {
                         module: sender
                         config:
                           blockstrategy:
+                            mininterblockinterval: 25
                             maxblocktime: 1000
                           gtx:
                             modules:

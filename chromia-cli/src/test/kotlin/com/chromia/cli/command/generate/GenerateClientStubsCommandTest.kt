@@ -6,7 +6,7 @@ import assertk.assertions.containsAll
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
-import com.chromia.cli.util.testData
+import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
 import java.io.File
 import org.junit.jupiter.api.Disabled

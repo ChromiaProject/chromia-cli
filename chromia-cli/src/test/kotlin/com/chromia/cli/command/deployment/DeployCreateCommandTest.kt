@@ -25,6 +25,10 @@ import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.nio.file.Files
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.test.assertNotNull
 
 
 class DeployCreateCommandTest {
@@ -106,7 +110,8 @@ class DeployCreateCommandTest {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
         DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y"))
 
-        val buildGtx = testDir.resolve("build/my_rell_dapp.xml").toFile().readText()
+        val buildGtx = testDir.resolve("build").listDirectoryEntries().find { it.name.startsWith("test_my_rell_dapp") }?.toFile()?.readText()
+        assertNotNull(buildGtx)
         val buildGtxCompressed = testDir.resolve("build/my_rell_dapp_compressed.xml").toFile().readText()
         assertThat(buildGtxCompressed).contains("<entry key=\"compressed_roots\">")
         assertThat(buildGtxCompressed).doesNotContain("<entry key=\"a_file.rell\">")
