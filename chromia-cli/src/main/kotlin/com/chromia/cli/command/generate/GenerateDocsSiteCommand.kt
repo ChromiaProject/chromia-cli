@@ -1,6 +1,8 @@
 package com.chromia.cli.command.generate
 
+import com.chromia.api.ChromiaGenerateApi
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.rell.dokka.RellDokkaGenerator
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import com.github.ajalt.clikt.core.CliktCommand
@@ -11,7 +13,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
 
 class GenerateDocsSiteCommand : CliktCommand(
         name = "docs-site",
@@ -20,7 +21,6 @@ class GenerateDocsSiteCommand : CliktCommand(
         """.trimIndent()
 ) {
     private val settings by optionalChromiaModelOption()
-    private val docsModel by lazy { settings.model!!.docs }
 
     private val system by option(hidden = true).flag()
     private val systemIncludes by option("-si", "--system-include", hidden = true)
@@ -35,24 +35,15 @@ class GenerateDocsSiteCommand : CliktCommand(
     override fun run() {
         require(system || settings.model != null) { "Project settings file not found" }
         require(!system || target != null) { "Please specify target folder when generating system docs" }
-        val targetFolder = target ?: File(settings.targetDir!!, "site")
-
-        val builder = configBuilder()
-                .targetFolder(targetFolder)
-        RellDokkaGenerator(builder).generate()
-        echo("Documentation generated at $targetFolder")
+        if (system) return generateSystemDocs()
+        ChromiaGenerateApi.docsSite(CliktCliEnv(this), settings.model!!, settings.projectFolder!!.toPath(), target?.toPath())
     }
 
-    private fun configBuilder() = when (system) {
-        true -> RellDokkaPluginConfigurationBuilder.SYSTEM.includes(systemIncludes)
-        else -> RellDokkaPluginConfigurationBuilder(
-                title = docsModel.title,
-                modules = settings.model!!.blockchains.values.map { it.module },
-                projectRoot = settings.sourceDir!!
-        )
-                .customStyleSheets(docsModel.customStyleSheets)
-                .customAssets(docsModel.customAssets)
-                .includes(docsModel.additionalContentFiles)
-                .footerMessage(docsModel.footerMessage)
+    private fun generateSystemDocs() {
+        RellDokkaPluginConfigurationBuilder.SYSTEM
+                .includes(systemIncludes)
+                .targetFolder(target!!)
+                .apply { RellDokkaGenerator(this).generate() }
+        echo("Documentation generated at $target")
     }
 }

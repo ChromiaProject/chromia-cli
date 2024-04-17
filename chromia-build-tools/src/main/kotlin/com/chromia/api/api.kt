@@ -32,3 +32,11 @@ object ChromiaLibrariesApi {
     fun install(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, repositoryCloner: RepositoryCloner)
         = com.chromia.api.impl.install(cliEnv, repositoryCloner, projectDir, model)
 }
+
+object ChromiaGenerateApi {
+    /**
+     * Generates a documentation website
+     */
+    @JvmOverloads fun docsSite(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, targetDir: Path? = null)
+        = com.chromia.api.impl.docsSite(cliEnv, model, projectDir, targetDir ?:  model.compile.targetFile(projectDir.toFile()).toPath().resolve("site"))
+}

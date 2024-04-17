@@ -88,6 +88,11 @@
             <artifactId>codegen</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.chromia.rell.dokka</groupId>
+            <artifactId>rell-dokka-plugin</artifactId>
+            <version>${rell.dokka.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
         </dependency>
