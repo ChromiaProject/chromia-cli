@@ -1,5 +1,6 @@
 package com.chromia.cli.command.generate
 
+import com.chromia.api.ChromiaGenerateApi
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.github.ajalt.clikt.core.CliktCommand
@@ -7,11 +8,8 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
-import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.CodeGeneratorConfig
 import net.postchain.rell.codegen.document.DocumentFactory
-import net.postchain.rell.codegen.document.DocumentSaver
 
 abstract class AbstractCodeGeneratorCommand(name: String, help: String): CliktCommand(name = name, help = help) {
     private val settings by chromiaModelOption()
@@ -25,12 +23,14 @@ abstract class AbstractCodeGeneratorCommand(name: String, help: String): CliktCo
     abstract val defaultTargetFolder: String
 
     final override fun run() {
-        val generator = CodeGenerator(factory(), codeGeneratorConfig(), CliktCliEnv(this))
-        val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
-        val sections = modules.flatMap { generator.createSections(settings.sourceDir, listOf(it)) }
-        val documents = generator.constructDocuments(sections)
-        val targetFolder = target ?: File(settings.targetDir, defaultTargetFolder)
-        DocumentSaver(targetFolder).saveDocuments(documents)
-        echo("Created files in $targetFolder: ${documents.keys}")
+        ChromiaGenerateApi.generate(
+                CliktCliEnv(this),
+                settings.model,
+                settings.projectFolder.toPath(),
+                factory(),
+                codeGeneratorConfig(),
+                target?.toPath(),
+                moduleName
+        )
     }
 }

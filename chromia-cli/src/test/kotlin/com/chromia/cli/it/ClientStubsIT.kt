@@ -15,7 +15,7 @@ class ClientStubsIT {
         TestProcess.Builder("generate-client-stubs", "--kotlin", "--package", "com.example")
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
-                    assertThat(dir.resolve("build/stubs/main/main.kt")).exists()
+                    assertThat(dir.resolve("build/generated/main/main.kt")).exists()
                 }
     }
 }

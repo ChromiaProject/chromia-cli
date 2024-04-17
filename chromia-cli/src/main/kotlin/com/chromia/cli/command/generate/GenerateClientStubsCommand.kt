@@ -32,6 +32,7 @@ sealed class LanguageOption(language: SupportedLanguages) : CodeGeneratorConfig,
         help = "Options for language ${language.alias}"
 ) {
     abstract fun factory(): DocumentFactory
+
 }
 
 class KotlinOption : KotlinCodeGeneratorConfig, LanguageOption(SupportedLanguages.KOTLIN) {

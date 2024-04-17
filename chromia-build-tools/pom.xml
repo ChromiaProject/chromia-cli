@@ -88,6 +88,22 @@
             <artifactId>codegen</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-mermaid</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-typescript</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-javascript</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.chromia.rell.dokka</groupId>
             <artifactId>rell-dokka-plugin</artifactId>
             <version>${rell.dokka.version}</version>
@@ -125,5 +141,6 @@
             <groupId>org.bitcoinj</groupId>
             <artifactId>bitcoinj-core</artifactId>
         </dependency>
+
     </dependencies>
 </project>

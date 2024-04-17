@@ -6,6 +6,8 @@ import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.model.ChromiaModel
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.api.base.RellCliEnv
+import net.postchain.rell.codegen.CodeGeneratorConfig
+import net.postchain.rell.codegen.document.DocumentFactory
 import java.nio.file.Path
 
 object ChromiaCompileApi {
@@ -37,6 +39,10 @@ object ChromiaGenerateApi {
     /**
      * Generates a documentation website
      */
-    @JvmOverloads fun docsSite(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, targetDir: Path? = null)
+    @JvmOverloads fun docsSite(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, targetDir: Path? = null): Unit
         = com.chromia.api.impl.docsSite(cliEnv, model, projectDir, targetDir ?:  model.compile.targetFile(projectDir.toFile()).toPath().resolve("site"))
+
+    @ExperimentalApi
+    @JvmOverloads fun generate(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, factory: DocumentFactory, config: CodeGeneratorConfig, targetDir: Path? = null, modules: List<String>? = null) : Unit
+        = com.chromia.api.impl.generate(cliEnv, model, projectDir, targetDir ?: model.compile.targetFile(projectDir.toFile()).toPath().resolve("generated"), factory, config, modules)
 }

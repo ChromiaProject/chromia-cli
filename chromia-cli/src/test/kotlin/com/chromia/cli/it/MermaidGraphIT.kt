@@ -18,7 +18,7 @@ class MermaidGraphIT {
         TestProcess.Builder("generate", "graph", "-m", "main")
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
-                    val graph = dir.resolve("build/mermaid/rell.mmd")
+                    val graph = dir.resolve("build/graph/rell.mmd")
                     assertThat(graph).exists()
                     assertThat(graph.toFile().readText()).startsWith("\nerDiagram")
                 }
