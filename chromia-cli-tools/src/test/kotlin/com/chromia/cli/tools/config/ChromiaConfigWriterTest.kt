@@ -4,6 +4,7 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isFalse
+import com.chromia.build.tools.config.ChromiaConfigWriter
 import java.io.File
 import java.nio.file.Path
 import net.postchain.common.BlockchainRid
@@ -19,9 +20,11 @@ class ChromiaConfigWriterTest {
         val writer = ChromiaConfigWriter.custom(configFile)
         writer.setBrid(BlockchainRid.ZERO_RID)
         writer.setProperty("url" to "http://localhost:7740")
+        writer.setKeyId("myKeyId")
         assertThat(configFile.readLines()).all {
             contains("brid = 0000000000000000000000000000000000000000000000000000000000000000")
             contains("url = http://localhost:7740")
+            contains("keyId = myKeyId")
         }
     }
 }

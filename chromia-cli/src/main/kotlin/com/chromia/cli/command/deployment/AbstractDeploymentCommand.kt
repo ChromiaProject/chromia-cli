@@ -4,9 +4,9 @@ import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter
+import com.chromia.build.tools.config.client
 import com.chromia.cli.tools.config.BlockchainConfigurationCompressor
 import com.chromia.cli.tools.config.chromiaModelConfigOption
-import com.chromia.cli.tools.config.client
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.apiVersion
 import com.chromia.cli.util.blockchainOption

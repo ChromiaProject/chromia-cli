@@ -1,4 +1,4 @@
-package com.chromia.cli.tools.config
+package com.chromia.build.tools.config
 
 import com.chromia.cli.model.ChromiaModel
 import java.io.File
@@ -34,3 +34,4 @@ fun ChromiaModel.client(config: ChromiaConfig, network: String, blockchain: Stri
                     ?: deploymentModel.blockchainRid,
     )
 }
+

@@ -1,4 +1,4 @@
-package com.chromia.cli.tools.config
+package com.chromia.build.tools.config
 
 import java.io.File
 import java.io.FileWriter
@@ -16,6 +16,8 @@ class ChromiaConfigWriter private constructor(val configFile: File) {
     }
 
     fun setBrid(blockchainRid: BlockchainRid) = setProperty("brid" to blockchainRid.toHex())
+
+    fun setKeyId(keyId: String) = setProperty("keyId" to keyId)
 
     fun setProperty(vararg property: Pair<String, Any>) = setProperty(property.toMap())
 

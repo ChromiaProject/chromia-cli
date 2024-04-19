@@ -1,4 +1,4 @@
-package com.chromia.cli.tools.config
+package com.chromia.build.tools.config
 
 import java.io.File
 import net.postchain.common.PropertiesFileLoader

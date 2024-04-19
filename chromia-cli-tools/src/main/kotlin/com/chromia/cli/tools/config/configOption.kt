@@ -1,5 +1,6 @@
 package com.chromia.cli.tools.config
 
+import com.chromia.build.tools.config.ChromiaConfigLoader
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.tools.env.cliEnv
 import com.github.ajalt.clikt.core.CliktCommand

@@ -1,6 +1,8 @@
 package com.chromia.cli.command
 
+import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -27,11 +29,15 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
     )
             .default("")
 
-    private val file by option("-s", "--save", help = "File to save the generated keypair in")
+    private val file by option("-s", "--save", help = "Set file to save keypair to explicitly")
             .file(canBeDir = false)
 
     private val deprecated by option("-dr", "--deprecated-recovery", help = "Used to recover keys from Mnemonic generated before version 0.13.2, will be removed in the future")
             .flag()
+
+    private val keyId by option("--key-id", help = "Name the generated key with an id")
+
+    private val dry by option("--dry", help = "Perform dry run, does not save keys to disk").flag()
 
     /**
      * Cryptographic key generator. Will generate a pair of public and private keys and print to stdout.
@@ -39,9 +45,6 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
     override fun run() {
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList, deprecated)
 
-        file?.let {
-            saveSecp256k1KeyPair(keyPair, it.absoluteFile)
-        }
         println(
                 """
             |privkey:   ${keyPair.privKey.data.toHex()}
@@ -49,6 +52,19 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
             |mnemonic:  $mnemonic 
         """.trimMargin()
         )
+
+        when {
+            dry -> return
+            file != null -> saveSecp256k1KeyPair(keyPair, file!!.absoluteFile)
+            else -> {
+                val chromiaKeyStore = keyId?.let { ChromiaKeyStore(it) } ?: ChromiaKeyStore()
+                val existingKeyPair = chromiaKeyStore.findKeyPair()
+                if (existingKeyPair != null) {
+                    throw PrintMessage("Keypair with id: ${chromiaKeyStore.keyId} already exists", 1)
+                }
+                chromiaKeyStore.saveKeyPair(keyPair)
+            }
+        }
     }
 }
 
