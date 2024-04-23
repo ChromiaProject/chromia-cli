@@ -1,6 +1,5 @@
 package com.chromia.build.tools.keystore
 
-import com.chromia.build.tools.config.ChromiaConfigWriter
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -22,7 +21,12 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
         Path(chromiaHome).createDirectories()
         publicKeyFile.writeText(keyPair.pubKey.hex())
         privateKeyFile.writeText(keyPair.privKey.hex())
-        ChromiaConfigWriter.global.setKeyId(keyId)
+
+        println(
+                """
+            |Keypair is written to $chromiaHome. To use this key pair, set keyId = $keyId in your configuration file
+        """.trimMargin()
+        )
     }
 
     fun loadKeyPair(): KeyPair {

@@ -1,5 +1,6 @@
 package com.chromia.build.tools.config
 
+import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.cli.model.ChromiaModel
 import java.io.File
 import net.postchain.client.config.PostchainClientConfig
@@ -16,6 +17,11 @@ class ChromiaConfig(private val config: Configuration) : Configuration by config
                 copy(config)
                 apiurl?.let { setProperty("api.url", it) }
                 blockchainRid?.let { setProperty("brid", it.toHex()) }
+                config.getString("keyId")?.let {
+                    val keyPair = ChromiaKeyStore(it).loadKeyPair()
+                    setProperty("pubkey", keyPair.pubKey.hex())
+                    setProperty("privkey", keyPair.privKey.hex())
+                }
                 secret?.let {
                     val secretProps = PropertiesFileLoader.load(it.absolutePath)
                     if (secretProps.containsKey("pubkey")) setProperty("pubkey", secretProps.getString("pubkey"))

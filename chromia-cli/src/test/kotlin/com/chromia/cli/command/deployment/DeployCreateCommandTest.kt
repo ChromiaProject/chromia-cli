@@ -3,6 +3,7 @@ package com.chromia.cli.command.deployment
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
+import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DeploymentTestDataCreator
@@ -13,7 +14,12 @@ import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 import kotlin.io.path.notExists
+import kotlin.test.assertNotNull
+import net.postchain.crypto.KeyPair
 import net.postchain.rell.api.base.RellCliBasicException
 import org.http4k.core.HttpHandler
 import org.http4k.core.Response
@@ -25,10 +31,7 @@ import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.nio.file.Files
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.test.assertNotNull
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 
 class DeployCreateCommandTest {
@@ -39,6 +42,7 @@ class DeployCreateCommandTest {
     private lateinit var settingsFile: File
     private lateinit var settings: ChromiaModel
     private lateinit var secret: File
+    private lateinit var config: File
 
     @BeforeEach
     fun setup() {
@@ -46,7 +50,7 @@ class DeployCreateCommandTest {
         settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
-
+        config = testDir.resolve("config").toFile()
     }
 
     @Test
@@ -125,5 +129,16 @@ class DeployCreateCommandTest {
         whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
         DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--no-compression"))
         assertThat(testDir.resolve("build/my_rell_dapp_compressed.xml").notExists())
+    }
+
+    @Test
+    fun deployDappUsingKeyId() {
+        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
+        val keyPair = KeyPair.of("02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765", "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429")
+        EnvironmentVariables("CHROMIA_HOME", testDir.absolutePathString()).execute {
+            ChromiaKeyStore(DeploymentTestDataCreator.keyIdName).saveKeyPair(keyPair)
+            val res = DeployCreateCommand({ httpHandler }, { TestClient(it, { 0 }) }).test(listOf("-s", settingsFile.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--config", config.absolutePath))
+            assertThat(res.stdout).contains("Deployment of blockchain my_rell_dapp was successful")
+        }
     }
 }

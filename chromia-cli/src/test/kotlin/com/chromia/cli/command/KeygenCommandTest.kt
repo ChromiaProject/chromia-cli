@@ -24,7 +24,7 @@ class KeygenCommandTest {
         val file = kotlin.io.path.createTempFile()
         KeygenCommand().parse(arrayOf(
                 "-m", "picnic shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
-                "-s", file.absolutePathString(),
+                "-f", file.absolutePathString(),
                 "--deprecated-recovery"))
 
         val keys = PropertiesFileLoader.load(file.absolutePathString())
@@ -51,14 +51,14 @@ class KeygenCommandTest {
     @Test
     fun keygenInvalidCombinationOfSettings() {
         val exception = assertThrows<IllegalStateException> {
-            KeygenCommand().parse(listOf("--save", ".secret", "--deprecated-recovery"))
+            KeygenCommand().parse(listOf("--file", ".secret", "--deprecated-recovery"))
         }
         assertEquals("Mnemonic is needed to use --deprecated-recovery", exception.message)
     }
 
     @Test
     fun generateFile() {
-        KeygenCommand().parse(listOf("--save", ".secret"))
+        KeygenCommand().parse(listOf("--file", ".secret"))
         val file = File(".secret")
         assertThat(file).exists()
         file.delete()
@@ -105,7 +105,7 @@ class KeygenCommandTest {
             KeygenCommand().parse(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
                     "--key-id", myKeyId,
-                    "--save", secretFile.toString()
+                    "--file", secretFile.toString()
             ))
         }
         val privateKeyFile = dir.resolve(myKeyId)
@@ -125,7 +125,7 @@ class KeygenCommandTest {
             KeygenCommand().parse(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
                     "--key-id", myKeyId,
-                    "--save", secretFile.toString(),
+                    "--file", secretFile.toString(),
                     "--dry"
             ))
         }

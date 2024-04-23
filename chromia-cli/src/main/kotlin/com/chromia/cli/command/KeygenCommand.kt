@@ -29,7 +29,7 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
     )
             .default("")
 
-    private val file by option("-s", "--save", help = "Set file to save keypair to explicitly")
+    private val file by option("-f", "--file", help = "Set file to save keypair to explicitly")
             .file(canBeDir = false)
 
     private val deprecated by option("-dr", "--deprecated-recovery", help = "Used to recover keys from Mnemonic generated before version 0.13.2, will be removed in the future")
@@ -37,7 +37,7 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
 
     private val keyId by option("--key-id", help = "Name the generated key with an id")
 
-    private val dry by option("--dry", help = "Perform dry run, does not save keys to disk").flag()
+    private val dry by option("--dry", help = "Perform dry run, prints keys in terminal and does not save keys to disk").flag()
 
     /**
      * Cryptographic key generator. Will generate a pair of public and private keys and print to stdout.
@@ -47,14 +47,20 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
 
         println(
                 """
-            |privkey:   ${keyPair.privKey.data.toHex()}
-            |pubkey:    ${keyPair.pubKey.data.toHex()}
-            |mnemonic:  $mnemonic 
-        """.trimMargin()
+                |mnemonic:  $mnemonic 
+                |pubkey:    ${keyPair.pubKey.data.toHex()}
+            """.trimMargin()
         )
 
         when {
-            dry -> return
+            dry -> {
+                println(
+                        """
+                    |privkey:   ${keyPair.privKey.data.toHex()}
+                """.trimMargin()
+                )
+            }
+
             file != null -> saveSecp256k1KeyPair(keyPair, file!!.absoluteFile)
             else -> {
                 val chromiaKeyStore = keyId?.let { ChromiaKeyStore(it) } ?: ChromiaKeyStore()
@@ -103,4 +109,9 @@ private fun saveSecp256k1KeyPair(keyPair: KeyPair, file: File) {
         properties.store(fs, "Keypair generated using secp256k1")
         fs.flush()
     }
+    println(
+            """
+            |Keypair is written to ${file.absolutePath}
+        """.trimMargin()
+    )
 }

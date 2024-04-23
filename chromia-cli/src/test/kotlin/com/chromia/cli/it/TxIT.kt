@@ -5,11 +5,13 @@ import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.RestApiInstance.apiUrl
 import com.chromia.build.tools.RestApiInstance.withModel
+import com.chromia.build.tools.TestDataBuilder
 import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.testData
 import java.nio.file.Path
 import java.time.Duration
+import kotlin.io.path.absolutePathString
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -24,6 +26,7 @@ import net.postchain.gtx.Gtx
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 
 class TxRecorderModel(val model: Model) : Model by model {
@@ -98,6 +101,48 @@ class TxIT {
     }
 
     @Test
+    fun transactionUsingKeyIdFromConfigFile(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "$apiUrl"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        chains:
+                          hello: x"${testBrid.toHex()}"
+                        """.trimIndent()
+                )
+            }
+            keyStore()
+        }
+
+        val config = dir.resolve("config").absolutePathString()
+        EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
+            val txRecorderModel = TxRecorderModel(testBrid)
+            withModel(
+                    Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                    txRecorderModel
+            ) {
+
+                TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--config", config)
+                        .setWorkingDir(dir.toFile())
+                        .start { process ->
+                            process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
+                        }
+            }
+            assertThat(txRecorderModel.txList.size).isEqualTo(1)
+            val gtx = Gtx.decode(txRecorderModel.txList.first())
+            assertThat(gtx.signatures.size).isEqualTo(1)
+            assertThat(gtx.gtxBody.operations.size).isEqualTo(1)
+            val op = gtx.gtxBody.operations.first()
+            assertThat(op.opName).isEqualTo("call_op")
+            assertThat(op.args).containsExactly(gtv(13))
+        }
+    }
+
+    @Test
     fun queryWithOldFtAuthFails(@TempDir dir: Path) {
         testData(dir) {
             secret()
@@ -118,10 +163,10 @@ class TxIT {
 
     @Test
     fun queryWithFtAuthV1(@TempDir dir: Path) {
-        val testDataBuilder = testData(dir) {
+        testData(dir) {
             secret()
         }
-        val pubKey = testDataBuilder.secretKeyPair.pubKey
+        val pubKey = TestDataBuilder.keyPair.pubKey
 
         val txRecorderModel = TxRecorderModel(testBrid)
         withModel(Ft4Model(
@@ -155,10 +200,10 @@ class TxIT {
 
     @Test
     fun queryWithFtAuthV2(@TempDir dir: Path) {
-        val testDataBuilder = testData(dir) {
+        testData(dir) {
             secret()
         }
-        val pubKey = testDataBuilder.secretKeyPair.pubKey
+        val pubKey = TestDataBuilder.keyPair.pubKey
 
         val txRecorderModel = TxRecorderModel(testBrid)
         withModel(Ft4Model(

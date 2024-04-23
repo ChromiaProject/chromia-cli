@@ -1,8 +1,11 @@
 package com.chromia.build.tools
 
-import net.postchain.crypto.KeyPair
+import com.chromia.build.tools.keystore.ChromiaKeyStore
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import net.postchain.crypto.KeyPair
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 class TestDataBuilder {
 
@@ -15,7 +18,7 @@ class TestDataBuilder {
     private val sourceFiles = mutableMapOf<String, () -> String>("main.rell" to { content })
     private val configBuilder = ConfigBuilder()
     private var secretBuilder: SecretBuilder? = null
-    lateinit var secretKeyPair: KeyPair
+    private var keysStoreBuilder: KeyStoreBuilder? = null
 
     fun content(init: String) {
         content = init
@@ -32,6 +35,7 @@ class TestDataBuilder {
         }
         configBuilder.createFile(target)
         secretBuilder?.createFile(target)
+        keysStoreBuilder?.createFiles(target)
     }
 
     fun config(init: ConfigBuilder.() -> Unit) {
@@ -41,9 +45,16 @@ class TestDataBuilder {
     fun secret(init: SecretBuilder.() -> Unit = {}) {
         secretBuilder = SecretBuilder()
         init(secretBuilder!!)
-        secretKeyPair = secretBuilder!!.keyPair
     }
 
+    fun keyStore(init: KeyStoreBuilder.() -> Unit = {}) {
+        keysStoreBuilder = KeyStoreBuilder()
+        init(keysStoreBuilder!!)
+    }
+
+    companion object {
+        val keyPair = KeyPair.of("03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05", "BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114")
+    }
 }
 
 class ConfigBuilder {
@@ -97,15 +108,23 @@ class ConfigBuilder {
 }
 
 class SecretBuilder {
-    var keyPair = KeyPair.of("03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05", "BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114")
-    fun keyPair(pubkey: String, privkey: String) {
-        keyPair = KeyPair.of(pubkey, privkey)
-    }
-
     fun createFile(target: Path) {
         File(target.toFile(), ".chromia/config").also { it.parentFile.mkdirs() }.writeText("""
-           pubkey=${keyPair.pubKey.hex()} 
-           privkey=${keyPair.privKey.hex()} 
+           pubkey=${TestDataBuilder.keyPair.pubKey.hex()} 
+           privkey=${TestDataBuilder.keyPair.privKey.hex()} 
+        """.trimIndent())
+    }
+}
+
+class KeyStoreBuilder {
+    private val keyIdName: String = "keyIdUsedForTesting"
+    fun createFiles(target: Path) {
+        EnvironmentVariables("CHROMIA_HOME", target.absolutePathString()).execute {
+            ChromiaKeyStore(keyIdName).saveKeyPair(TestDataBuilder.keyPair)
+        }
+
+        File(target.toFile(), "/config").also { it.parentFile.mkdirs() }.writeText("""
+           keyId = $keyIdName
         """.trimIndent())
     }
 }
