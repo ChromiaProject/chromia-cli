@@ -119,13 +119,7 @@
             <groupId>org.redundent</groupId>
             <artifactId>kotlin-xml-builder</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.bitcoinj</groupId>
-            <artifactId>bitcoinj-core</artifactId>
-        </dependency>
-
-
+        
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-jupiter</artifactId>

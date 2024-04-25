@@ -10,7 +10,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 import net.postchain.common.PropertiesFileLoader
-import org.bitcoinj.crypto.MnemonicException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,24 +19,16 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 class KeygenCommandTest {
 
     @Test
-    fun keygenRecoverDeprecated() {
+    fun keygenRecover() {
         val file = kotlin.io.path.createTempFile()
         KeygenCommand().parse(arrayOf(
                 "-m", "picnic shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
                 "-f", file.absolutePathString(),
-                "--deprecated-recovery"))
+        ))
 
         val keys = PropertiesFileLoader.load(file.absolutePathString())
-        assertEquals("030C9C4203B80509B353F85792FB9F664918F6D2136D8FCE55BE1A985B89E058D3", keys.getString("pubkey"))
-        assertEquals("A438E1FA331ACBB9DFD7E5F692B07F9250075752905F5763D268FA2356C24787", keys.getString("privkey"))
-    }
-
-    @Test
-    fun invalidLengthOfMnemonicDeprecated() {
-        val exception = assertThrows<MnemonicException.MnemonicLengthException> {
-            KeygenCommand().parse(arrayOf("-m", "invalid mnemonic", "--deprecated-recovery"))
-        }
-        assertEquals("Word list size must be multiple of three words.", exception.message)
+        assertEquals("02AF635148608B9A18DF11241F1862624C3E7CCEDEC0864FEE00B3D4E7093CC4CF", keys.getString("pubkey"))
+        assertEquals("CE59E2F0E7342EFB12A889B4168E3C7D909EC858849C0CA5FFAB78541C22AB65", keys.getString("privkey"))
     }
 
     @Test
@@ -46,14 +37,6 @@ class KeygenCommandTest {
             KeygenCommand().parse(arrayOf("-m", "invalid mnemonic"))
         }
         assertEquals("Invalid number of words in mnemonic. Supported number of words are 12 or 24", exception.message)
-    }
-
-    @Test
-    fun keygenInvalidCombinationOfSettings() {
-        val exception = assertThrows<IllegalStateException> {
-            KeygenCommand().parse(listOf("--file", ".secret", "--deprecated-recovery"))
-        }
-        assertEquals("Mnemonic is needed to use --deprecated-recovery", exception.message)
     }
 
     @Test

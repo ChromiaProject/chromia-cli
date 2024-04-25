@@ -457,27 +457,7 @@
                 <version>2.0.1</version>
                 <scope>test</scope>
             </dependency>
-
-            <!--TODO: See if we can remove this after the update of keygen-->
-            <dependency>
-                <groupId>org.bitcoinj</groupId>
-                <artifactId>bitcoinj-core</artifactId>
-                <version>0.16.2</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.bouncycastle</groupId>
-                        <artifactId>bcprov-jdk15to18</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.protobuf</groupId>
-                        <artifactId>protobuf-javalite</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.squareup.okhttp3</groupId>
-                        <artifactId>okhttp</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+            
         </dependencies>
     </dependencyManagement>
 
