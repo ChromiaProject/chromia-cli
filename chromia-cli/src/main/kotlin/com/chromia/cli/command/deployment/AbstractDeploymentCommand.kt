@@ -14,8 +14,8 @@ import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.filterGtxModules
 import com.chromia.cli.util.secretOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
-import com.chromia.cli.versionfinder.Http4kRellVersionFinder
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
+import com.chromia.cli.versionfinder.PostchainRellVersionFinder
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.directory1.common.queries.getClusterApiUrls
 import com.chromia.directory1.common.queries.getContainerData
@@ -146,9 +146,9 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     protected fun validateRellVersion(client: PostchainClient, httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) {
-        val httpClient = httpHandlerFactory(createClientConfig())
-        val rellVersionController = Http4kRellVersionFinder(httpClient)
+        val rellVersionController = PostchainRellVersionFinder(client.config, clientProvider)
 
         val clusterName = client.getContainerData(deployModel.container!!).cluster
         val clusterNodeUrls = client.getClusterApiUrls(clusterName)

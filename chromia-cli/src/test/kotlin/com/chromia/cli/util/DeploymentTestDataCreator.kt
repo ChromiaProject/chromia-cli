@@ -1,11 +1,18 @@
 package com.chromia.cli.util
 
+import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.TestModel
 import java.io.File
 import java.nio.file.Path
+import net.postchain.common.BlockchainRid
 
 object DeploymentTestDataCreator {
 
     val keyIdName = "keyIdUsedForTesting"
+
+    val deployedChainBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")
+    val deployedChainModel = TestModel(deployedChainBrid, 1)
+    val wrongConfigBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000003")
 
     fun unitTestApp(dir: Path) {
         with(File(dir.toFile(), "src/main.rell")) {
@@ -42,12 +49,12 @@ object DeploymentTestDataCreator {
                         name: { nameIsInterprededAsDict }
                 deployments:
                   test:
-                    url: "https://localhost:7740"
-                    brid: x"0000000000000000000000000000000000000000000000000000000000000001"
+                    url: "${RestApiInstance.apiUrl}"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
                     container: foo
                     chains:
-                      deployed: x"0000000000000000000000000000000000000000000000000000000000000002"
-                      wrongConfig: x"0000000000000000000000000000000000000000000000000000000000000003"
+                      deployed: x"${deployedChainBrid.toHex()}"
+                      wrongConfig: x"${wrongConfigBrid.toHex()}"
             """.trimIndent())
         }
         with(File(dir.toFile(), ".secret")) {

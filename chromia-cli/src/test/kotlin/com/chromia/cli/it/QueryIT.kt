@@ -1,9 +1,9 @@
 package com.chromia.cli.it
 
-import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
-import com.chromia.build.tools.RestApiInstance.apiUrl
-import com.chromia.build.tools.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
 import java.nio.file.Path
 import net.postchain.api.rest.controller.Model

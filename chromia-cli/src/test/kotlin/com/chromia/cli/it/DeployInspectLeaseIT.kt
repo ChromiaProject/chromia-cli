@@ -1,9 +1,10 @@
 package com.chromia.cli.it
 
-import com.chromia.build.tools.RestApiInstance
-import com.chromia.build.tools.TestModel
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
+import java.nio.file.Path
 import net.postchain.api.rest.controller.Model
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
@@ -15,7 +16,6 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 
 class DeployInspectLeaseIT {
 

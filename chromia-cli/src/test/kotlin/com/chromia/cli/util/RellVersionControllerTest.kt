@@ -2,42 +2,46 @@ package com.chromia.cli.util
 
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.versionfinder.Http4kRellVersionFinder
+import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.TestModel
+import com.chromia.build.tools.restapi.withRellVersion
+import com.chromia.cli.versionfinder.PostchainRellVersionFinder
+import kotlin.test.assertEquals
+import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.Endpoint
+import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.base.model.R_LangVersion
-import org.http4k.core.HttpHandler
-import org.http4k.core.Response
-import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import kotlin.test.assertEquals
 
 class RellVersionControllerTest {
 
-    private val httpHandler = mock<HttpHandler>()
+    val template = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = EndpointPool.singleUrl(""))
+    val clientProvider = PostchainClientProviderImpl()
 
     @Test
     fun getTargetVersion200Status() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.OK, "").body("0.13.5"))
-        val res = Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32)))
-        assertEquals(res, R_LangVersion.of("0.13.5"))
+        val expectedVersion = R_LangVersion.of("0.13.5")
+        withModel(TestModel(BlockchainRid.ZERO_RID).withRellVersion(expectedVersion)) {
+            val res = PostchainRellVersionFinder(template, PostchainClientProviderImpl()).getTargetVersion(Endpoint(RestApiInstance.apiUrl), BlockchainRid.ZERO_RID)
+            assertEquals(res, expectedVersion)
+        }
     }
 
     @Test
     fun getTargetVersion404Status() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.NOT_FOUND, ""))
-        val res = assertThrows<RuntimeException> { Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
-        assertThat(res).contains("Can not find blockchain with blockchainRID: 0000000000000000000000000000000000000000000000000000000000000000")
+        withModel() {
+            val res = assertThrows<RuntimeException> { PostchainRellVersionFinder(template, clientProvider).getTargetVersion(Endpoint(RestApiInstance.apiUrl), BlockchainRid(ByteArray(32))) }.message!!
+            assertThat(res).contains("Can not find blockchain with blockchainRID: 0000000000000000000000000000000000000000000000000000000000000000")
+        }
     }
 
     @Test
-    fun getTargetVersion502Status() {
-        whenever(httpHandler.invoke(any())).thenReturn(Response(Status.BAD_GATEWAY, ""))
-        val res = assertThrows<RuntimeException> { Http4kRellVersionFinder(httpHandler).getTargetVersion(Endpoint("foo"), BlockchainRid(ByteArray(32))) }.message!!
-        assertThat(res).contains("Unknown status 502 Bad Gateway for request foo/query/0000000000000000000000000000000000000000000000000000000000000000?type=rell.get_rell_version")
+    fun getTargetVersion503Status() {
+        val res = assertThrows<RuntimeException> { PostchainRellVersionFinder(template, clientProvider).getTargetVersion(Endpoint("https://localhost:7745"), BlockchainRid(ByteArray(32))) }.message!!
+        assertThat(res).contains("Connection Refused from https://localhost:7745")
     }
 }

@@ -1,4 +1,4 @@
-package com.chromia.build.tools
+package com.chromia.build.tools.restapi
 
 import java.time.Clock
 import net.postchain.api.rest.controller.Model
@@ -16,8 +16,9 @@ object RestApiInstance {
     }
 
     fun withModel(vararg model: Model, action: () -> Unit) {
-        model.forEach { getInstance().attachModel(it.blockchainRid, it) }
+        val restApi = getInstance()
+        model.forEach { restApi.attachModel(it.blockchainRid, it) }
         action()
-        model.forEach { getInstance().detachModel(it.blockchainRid) }
+        model.forEach { restApi.detachModel(it.blockchainRid) }
     }
 }
