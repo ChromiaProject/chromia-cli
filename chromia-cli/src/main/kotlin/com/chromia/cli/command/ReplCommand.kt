@@ -28,7 +28,21 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 
 
-class ReplCommand : CliktCommand(help = "Run rell commands in shell") {
+class ReplCommand : CliktCommand(help = """
+    REPL is used to create a language shell for Rell that takes single user inputs, executes them, and returns the result.
+    Inside the repl you can create local variables and execute Rell commands, it can be attached to a Rell module to be able
+    to inspect a dapp state and execute dapp functionalities.
+    
+    Run query commands:
+    To be able to run queries in the shell, a user must have a module defined from the start of the repl command in 
+    which the query is defined. Queries that do not depend on entities can be executed without a database connection, and queries
+    that depend on an entity must then have a database connection defined.
+    
+    Run Operations commands:
+    When a operation is executed from the repl shell, the database connection and a module needs to be defined from the start of the repl command,
+    to be able to execute  an operation it needs added to a transaction. 
+    This can be done by wrapping it with a test transaction like this: `rell.test.tx(<your operation>..).run()`
+""".trimIndent()) {
     private val settings by optionalChromiaModelOption()
     private val sourceDir by lazy { settings.sourceDir ?: File(System.getProperty("user.dir")) }
     private val module by module()

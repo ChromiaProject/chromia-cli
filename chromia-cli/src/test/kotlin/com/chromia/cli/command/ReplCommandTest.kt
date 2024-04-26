@@ -4,14 +4,15 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.util.InitExtension
 import com.github.ajalt.clikt.testing.test
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.io.File
 
 class ReplCommandTest {
     @JvmField
@@ -47,6 +48,28 @@ class ReplCommandTest {
         val res = ReplCommand().test("-c '5+5'")
         assertThat(res.output).doesNotContain("Rell")
         assertThat(res.output).contains("10")
+    }
+
+
+    //TODO update assertion message when there is a proper warning message when a operation is called from repl
+    @Test
+    fun commandLineInputOperation() {
+        with(File(dir, "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                
+                object my_name {
+                  mutable name= "World";
+                 }
+                
+                operation set_name(name) {
+                  my_name.name = name;
+                }
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("--module=main -s ${dir.absolutePath}/chromia.yml -c 'set_name(\"foo\")'")
+        assertThat(res.output).contains("Type rell.test.op cannot be converted to Gtv. Switch to a different output format.")
     }
 
     @Test
