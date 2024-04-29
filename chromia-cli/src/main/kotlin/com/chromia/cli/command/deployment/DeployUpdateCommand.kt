@@ -11,24 +11,17 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.long
-import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
-import net.postchain.client.defaultHttpHandler
+import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.gtv.gtvml.GtvMLEncoder
-import org.http4k.core.HttpHandler
-import org.http4k.core.Method
-import org.http4k.core.Request
-import org.http4k.core.Status
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion,
-        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { Companion.httpHandlerFactory(it) }
 
 ) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
@@ -55,34 +48,18 @@ class DeployUpdateCommand(
         }
     }
 
-    private fun verifyConfiguration(chain: BlockchainConfiguration, client: PostchainClient) {
+    private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient) {
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
-        val compiledConfig = GtvMLEncoder.encodeXMLGtv(chain.config)
-        val httpHandler = httpHandlerFactory(client.config)
-        val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
-
+        val clusterManagement = clusterManagementFactory.buildClusterManagement(directoryChainClient)
         val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
-        val request = Request(Method.POST, "${endpoint.first().url.trimEnd().replace(Regex("/$"), "")}/config/${blockchainRid.toHex()}")
-                .body(compiledConfig)
-
-        val result = httpHandler(request)
-        when (result.status) {
-            Status.OK -> {
-                echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
-            }
-
-            Status.BAD_REQUEST, Status.NOT_FOUND -> {
-                echo(result.body.toString())
-                throw PrintMessage("Blockchain ${chain.name} cannot be updated on network $target. Code is not compatible with deployed version", 1)
-            }
-
-            else -> {
-                echo("Unexpected status code: ${result.status.code} \nBody: ${result.body} ")
-                throw PrintMessage("Blockchain ${chain.name} can not be updated on network. Unexpected status code: ${result.status.code} \n" +
-                        "Body: ${result.body}")
-            }
+        val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
+        try {
+            nodeClient.validateConfiguration(chain.config)
+            echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
+        } catch (e: ClientError) {
+            throw PrintMessage("Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}", statusCode = 1)
         }
         if (verifyOnly) throw PrintMessage("Verification only, skipping sending updates", 0)
     }
@@ -90,6 +67,5 @@ class DeployUpdateCommand(
     companion object : ClusterManagementFactory {
         override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
 
-        fun httpHandlerFactory(config: PostchainClientConfig) = defaultHttpHandler(config)
     }
 }

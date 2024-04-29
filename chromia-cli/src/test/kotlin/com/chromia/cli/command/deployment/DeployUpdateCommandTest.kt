@@ -111,7 +111,7 @@ class DeployUpdateCommandTest {
             val throwable = assertThrows<PrintMessage> {
                 DeployUpdateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
             }
-            assertThat(throwable.message!!).contains("Blockchain deployed cannot be updated on network test. Code is not compatible with deployed version")
+            assertThat(throwable.message!!).contains("Blockchain deployed cannot be updated on network test. Reason: Invalid configuration")
         }
     }
 

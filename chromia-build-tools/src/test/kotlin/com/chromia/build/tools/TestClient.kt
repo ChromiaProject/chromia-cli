@@ -1,5 +1,6 @@
 package com.chromia.build.tools
 
+import java.time.Duration
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.TransactionInfo
@@ -15,7 +16,6 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvPrimitive
 import net.postchain.gtx.Gtx
-import java.time.Duration
 
 data class TestConfiguration(
         val txs: MutableList<Gtx> = mutableListOf(),
@@ -38,6 +38,7 @@ open class TestClient(
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
     override fun getTransactionInfo(txRid: TxRid): TransactionInfo = TODO("Not yet implemented")
     override fun getTransactionsCount(): Long = TODO("Not yet implemented")
+    override fun getBlockchainRID(chainIID: Long): BlockchainRid = TODO("Not yet implemented")
     override fun getTransactionsInfo(limit: Long, beforeTime: Long, signer: String?): List<TransactionInfo> = TODO("Not yet implemented")
 
     override fun postTransaction(tx: Gtx): TransactionResult =
@@ -63,6 +64,8 @@ open class TestClient(
         "get_economy_chain_rid" -> gtv(BlockchainRid.ZERO_RID.data)
         else -> TODO("Not yet implemented")
     }
+
+    override fun validateConfiguration(configuration: Gtv) { }
 }
 
 fun getContainerDataResult(name: String): Map<String, GtvPrimitive> {
