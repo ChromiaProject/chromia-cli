@@ -22,14 +22,15 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 
-class DeployInspectLeaseCommand(val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : CliktCommand(
+class DeployInspectLeaseCommand : CliktCommand(
         name = "lease-info",
         help = "Information about a leases of for a given owner",
         hidden = true
 ) {
+    private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
-    private val explicitTarget by ExplicitRemoteSystemOption().cooccurring()
-    private val deploymentTarget by RemoteSystemOption { settings.model ?: ChromiaModel() }.cooccurring()
+    private val explicitTarget by ExplicitRemoteSystemOption { settings.config }.cooccurring()
+    private val deploymentTarget by RemoteSystemOption { (settings.model ?: ChromiaModel()) to settings.config }.cooccurring()
     private val ownerOfLeasePubkey by publicKeyOption()
     private val containerId by containerIdOption()
 
@@ -52,28 +53,25 @@ class DeployInspectLeaseCommand(val clientProvider: PostchainClientProvider = Po
         val target = deploymentTarget ?: explicitTarget
         require(target != null) { "Must specify network target from config or set it explicitly" }
         val container = containerId ?: target.containerId
+        require(ownerOfLeasePubkey != null || container != null) { "Option pubkey or container name needs to be specified."}
         val client = createEconomyChainClient(target)
 
-        if (ownerOfLeasePubkey != null) {
+        return if (ownerOfLeasePubkey != null) {
             echo("Getting active leases for user with public key: $ownerOfLeasePubkey")
             val leaseData = client.getLeasesByAccount(ownerOfLeasePubkey!!.hexStringToByteArray())
             if (leaseData.isEmpty()) throw PrintMessage("No active leases for user: $ownerOfLeasePubkey", 0)
-            return leaseData
-
-        } else if (container != null) {
-            echo("Getting lease information for container: $container")
-            val leaseData = client.getLeaseByContainerName(container)
-                    ?: throw PrintMessage("Container $container not found", 0)
-            return listOf(leaseData)
+            leaseData
 
         } else {
-            throw PrintMessage("Option pubkey or container name needs to be specified.", 0)
+            echo("Getting lease information for container: $container")
+            val leaseData = client.getLeaseByContainerName(container!!)
+                    ?: throw PrintMessage("Container $container not found", 0)
+            listOf(leaseData)
         }
     }
 
     private fun createEconomyChainClient(target: SystemOption): PostchainClient {
-        val chromiaClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        val d1Client = chromiaClientConfig.client(clientProvider)
+        val d1Client = target.client
         val economyChainBrid = d1Client.getEconomyChainRid()
                 ?: throw PrintMessage("Couldn't get blockchainrid for economy chain", 1)
 
