@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.build.tools
 
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -10,6 +10,7 @@ import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.KeyPair
+import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvPrimitive
@@ -46,7 +47,7 @@ open class TestClient(
             testConfiguration.txResultFactory(testConfiguration.txs.size).also { testConfiguration.txs.add(tx) }
 
     override fun transactionBuilder() = TransactionBuilder(
-            this, config.blockchainRid, listOf(), listOf()
+            this, config.blockchainRid, config.signers.map { it.pubKey.data }, config.signers.map { it.sigMaker(Secp256K1CryptoSystem()) }
     )
 
     override fun transactionBuilder(signers: List<KeyPair>) = TODO("Not yet implemented")

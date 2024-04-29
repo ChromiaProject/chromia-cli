@@ -61,7 +61,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val clientConfig = settings.config.get(target.url, target.brid)
+        val clientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
         val res = target.createClient(clientConfig)
                 .query(queryName, args as Gtv)
         echo(res)

@@ -11,7 +11,7 @@ object RestApiInstance {
     val apiUrl = "http://localhost:$apiPort"
 
     private fun getInstance(): RestApi {
-        if (restApi == null) restApi = RestApi(apiPort, "", clock = Clock.systemUTC())
+        if (restApi == null) restApi = RestApi(apiPort, "", clock = Clock.systemUTC(), gracefulShutdown = false)
         return restApi!!
     }
 

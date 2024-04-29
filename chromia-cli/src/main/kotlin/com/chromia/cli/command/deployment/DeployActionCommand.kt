@@ -1,55 +1,59 @@
 package com.chromia.cli.command.deployment
 
-import com.chromia.api.result.BlockchainConfiguration
-import com.chromia.cli.util.pubkey
+import com.chromia.api.ChromiaDeploymentApi
+import com.chromia.api.filterChains
+import com.chromia.cli.tools.config.chromiaModelConfigOption
+import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.deployTargetOption
+import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
-import com.chromia.directory1.proposal_blockchain.proposeBlockchainActionOperation
+import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.config.PostchainClientConfig
-import net.postchain.client.core.PostchainClient
-import net.postchain.client.core.PostchainClientProvider
-import net.postchain.client.core.PostchainQuery
-import net.postchain.client.core.TxRid
-import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.client.transaction.TransactionBuilder
+import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.validate
 
 sealed class DeployActionCommand(
         private val action: BlockchainAction,
-        help: String,
-        clientProvider: PostchainClientProvider
-) : AbstractDeploymentCommand(name = action.name, help = help, clientProvider) {
+        help: String
+) : CliktCommand(name = action.name, help = help) {
 
+    protected val settings by chromiaModelConfigOption()
+    private val secret by secretOption()
     private val description by option(help = "Description on why the blockchain is being acted on").default("")
 
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration) {
-        blockchain?.map {
-            proposeBlockchainActionOperation(
-                    clientConfig.pubkey.data,
-                    deployModel.chains[it]!!,
-                    action,
-                    description
-            )
-        }
+    protected val target by deployTargetOption().required()
+            .validate { require(settings.model.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
+    protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
+            .validate { require(settings.model.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
+    protected val deployModel by lazy {
+        val deployModel = settings.model.deployments[target]
+        if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
+        deployModel
     }
 
-    override fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient) {
-        compiledChains.forEach { chain ->
-            if (!deployModel.chains.containsKey(chain.name)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain.name} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
+    override fun run() {
+        blockchain?.forEach { chain ->
+            if (!deployModel.chains.containsKey(chain)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
         }
-    }
+        val deployModel = settings.model.deployments[target]!!.filterChains(blockchain)
 
-    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>) {
-        for ((chain, _) in deployTxs) {
-            echo("${action.name} of blockchain \"${chain.name}\" was successful")
-            if (action == BlockchainAction.remove) {
-                echo("INFO: Clean up deployment \"${chain.name}\" from your config file under chains for network \"$target\", as it is no longer a valid deployment")
-            }
+        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        val (res, msg) = ChromiaDeploymentApi.action(deployModel, settings.config, action, description)
+        if (res) {
+            echo("${action.name} of blockchain ${deployModel.chains.keys} was successful")
+        } else {
+            throw PrintMessage(msg!!, statusCode = 1)
+        }
+        if (action == BlockchainAction.remove) {
+            echo("INFO: Clean up deployment ${deployModel.chains.keys} from your config file under chains for network \"$target\", as it is no longer a valid deployment")
         }
     }
 }
 
-class DeployResumeCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container", clientProvider)
-class DeployPauseCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.pause, "Pauses a blockchain in a container", clientProvider)
-class DeployRemoveCommand(clientProvider: PostchainClientProvider = PostchainClientProviderImpl()) : DeployActionCommand(BlockchainAction.remove, "Removes a blockchain in a container (This action is permanent)", clientProvider)
+class DeployResumeCommand : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container")
+class DeployPauseCommand : DeployActionCommand(BlockchainAction.pause, "Pauses a blockchain in a container")
+class DeployRemoveCommand : DeployActionCommand(BlockchainAction.remove, "Removes a blockchain in a container (This action is permanent)")

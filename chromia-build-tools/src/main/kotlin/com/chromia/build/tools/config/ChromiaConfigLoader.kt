@@ -18,7 +18,7 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
         fun localConfigurationFile() = File(DEFAULT_CONFIG_FILENAME)
     }
 
-    fun loadClientConfigFile(file: File? = null): ChromiaConfig {
+    fun loadClientConfigFile(file: File? = null): ChromiaClientConfig {
         val config = PropertiesConfiguration()
         config.setProperty("status.poll-interval", 2000)
         loadFromFileIfExists(globalConfigurationFile(), config)
@@ -29,7 +29,7 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
 
         loadFromFileIfExists(localConfigurationFile(), config)
         loadFromFileIfExists(file, config)
-        return ChromiaConfig(config)
+        return ChromiaClientConfig.from(config)
     }
 
     private fun loadFromFileIfExists(file: File?, config: Configuration) {

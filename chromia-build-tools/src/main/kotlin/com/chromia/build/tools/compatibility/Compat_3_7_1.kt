@@ -1,4 +1,4 @@
-package com.chromia.cli.compatibility
+package com.chromia.build.tools.compatibility
 
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid

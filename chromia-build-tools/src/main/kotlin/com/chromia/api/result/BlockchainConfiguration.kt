@@ -12,9 +12,7 @@ import net.postchain.gtv.GtvEncoder
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import java.nio.file.Path
 
-data class BlockchainConfiguration(override val name: String, val config: Gtv): Named<Gtv> {
-    override val value: Gtv
-        get() = config
+data class BlockchainConfiguration(override val name: String, val config: Gtv): Named<Gtv>(name, config) {
     val configByteArray get() = GtvEncoder.encodeGtv(config)
 
     fun withSigners(vararg signer: ByteArray) = BlockchainConfiguration(name, withSigner(config, *signer))
@@ -35,8 +33,8 @@ data class BlockchainConfiguration(override val name: String, val config: Gtv): 
     }
 }
 
-interface Named<T> {
-    val name: String
+open class Named<T> (
+    open val name: String,
     val value: T
-}
+)
 //data class Named<T>(val name: String, val value: T)

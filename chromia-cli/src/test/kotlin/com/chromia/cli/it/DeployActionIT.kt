@@ -45,8 +45,8 @@ class DeployActionIT {
             val lines = TestProcess.Builder("deployment", "remove", "--network", "test", "--blockchain", "deployed", "--secret", secretFile.absolutePath)
                     .setConfig(settingsFile)
                     .start { it.readLines() }
-            assertThat(lines[0]).contains("remove of blockchain \"deployed\" was successful")
-            assertThat(lines[1]).contains("INFO: Clean up deployment \"deployed\" from your config file under chains for network \"test\", as it is no longer a valid deployment")
+            assertThat(lines[0]).contains("remove of blockchain [deployed] was successful")
+            assertThat(lines[1]).contains("INFO: Clean up deployment [deployed] from your config file under chains for network \"test\", as it is no longer a valid deployment")
         }
 
     }
@@ -57,7 +57,7 @@ class DeployActionIT {
             val lines = TestProcess.Builder("deployment", "pause", "--network", "test", "--blockchain", "deployed", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { it.readLines() }
-            assertThat(lines[0]).contains("pause of blockchain \"deployed\" was successful")
+            assertThat(lines[0]).contains("pause of blockchain [deployed] was successful")
         }
     }
 
@@ -67,7 +67,7 @@ class DeployActionIT {
             val lines = TestProcess.Builder("deployment", "resume", "--network", "test", "--blockchain", "deployed", "--secret", secretFile.absolutePath)
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .start { it.readLines() }
-            assertThat(lines[0]).contains("resume of blockchain \"deployed\" was successful")
+            assertThat(lines[0]).contains("resume of blockchain [deployed] was successful")
         }
     }
 

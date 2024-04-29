@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.chromia.build.tools.HeightFinder
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError

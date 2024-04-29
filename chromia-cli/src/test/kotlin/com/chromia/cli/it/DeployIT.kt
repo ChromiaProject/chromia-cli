@@ -1,11 +1,11 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.getContainerDataResult
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
-import com.chromia.cli.util.getContainerDataResult
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString

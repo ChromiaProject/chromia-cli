@@ -1,5 +1,6 @@
 package com.chromia.cli.util
 
+import com.chromia.build.tools.HeightFinder
 import dev.forkhandles.result4k.get
 import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.mapFailure

@@ -3,7 +3,7 @@ package com.chromia.cli.command.deployment
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
-import com.chromia.cli.util.TestClient
+import com.chromia.build.tools.TestClient
 import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal

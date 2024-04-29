@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.chromia.cli.tools.formatter.defaultTable
-import com.chromia.cli.util.TestClient
+import com.chromia.build.tools.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.table.SectionBuilder

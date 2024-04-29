@@ -83,13 +83,14 @@ class TxCommand : CliktCommand(help = """
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val postchainClientConfig = settings.config.get(target.url, target.brid, secret)
+        val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
+        secret?.let { postchainClientConfig.setSignerFromSecret(it.toPath()) }
         val client = target.createClient(postchainClientConfig)
         val transactionBuilder = client.transactionBuilder()
         val args = if (iccfTx != null) {
             require(iccfSource != null) { "Chain id for iccf transaction must be specified" }
             val sourceBrid = bridFetcher(client.config).fetchBlockchainRid(iccfSource!!)
-            val sourceClient = target.createClient(postchainClientConfig.copy(blockchainRid = sourceBrid))
+            val sourceClient = target.createClient(postchainClientConfig.setBrid(sourceBrid))
             val proof = sourceClient.confirmationProof(TxRid(iccfTx!!))
             val txHash = GtvDecoder.decodeGtv(proof)["hash"]!!
             val tx = sourceClient.getTransaction(TxRid(iccfTx!!))

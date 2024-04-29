@@ -57,7 +57,8 @@ class DeployUpdateCommandTest {
             assertThat(operations.map { it.opName }).containsExactly("nop", "propose_configuration")
             assertThat(operations.last().args).containsAll(gtv("03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05".hexStringToByteArray()), gtv("0000000000000000000000000000000000000000000000000000000000000002".hexStringToByteArray()), gtv(""))
             assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
-            assertThat(testDir.resolve("build/deployed_compressed.xml").toFile().readText()).contains("<entry key=\"compressed_roots\">")
+            val deployedFile = testDir.resolve("build").listDirectoryEntries("test_deployed_*").first()
+            assertThat(deployedFile.toFile().readText()).contains("<entry key=\"compressed_roots\">")
         }
     }
 

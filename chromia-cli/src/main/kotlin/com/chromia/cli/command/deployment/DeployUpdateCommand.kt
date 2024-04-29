@@ -1,12 +1,11 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
-import com.chromia.cli.compatibility.BlockchainOperations
+import com.chromia.api.result.BlockchainDeploymentResult
+import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
-import com.chromia.cli.util.HeightFinder
-import com.chromia.cli.util.apiVersion
-import com.chromia.cli.util.pubkey
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -16,11 +15,9 @@ import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
-import net.postchain.client.core.TxRid
 import net.postchain.client.defaultHttpHandler
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
-import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.cm.cm_api.ClusterManagementImpl
 import net.postchain.gtv.gtvml.GtvMLEncoder
 import org.http4k.core.HttpHandler
@@ -40,8 +37,7 @@ class DeployUpdateCommand(
     private val verifyOnly by option("--verify-only", help = "Verifies blockchain config without sending update transaction").flag()
     private val skipVerification by option("--skip-verification", help = "Skip verification of blockchain config before sending update transaction").flag()
 
-    override fun beforeDeployment(compiledChains: Collection<BlockchainConfiguration>, client: PostchainClient) {
-        validateRellVersion(client, httpHandlerFactory)
+    override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
         if (skipVerification) {
             echo("Skipping verification of blockchain config")
             return
@@ -49,7 +45,11 @@ class DeployUpdateCommand(
         compiledChains.forEach { chain -> verifyConfiguration(chain, client) }
     }
 
-    override fun afterDeployment(client: PostchainClient, deployTxs: List<Pair<BlockchainConfiguration, TxRid>>) {
+    override fun performDeploymentOperation(configurations: List<BlockchainConfiguration>): List<BlockchainDeploymentResult> {
+        return ChromiaDeploymentApi.update(cliEnv(), deployModel, settings.config, configurations, !noCompression, height)
+    }
+
+    override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
         for ((chain, _) in deployTxs) {
             echo("Blockchain ${chain.name} was successfully updated on network $target")
         }
@@ -59,7 +59,7 @@ class DeployUpdateCommand(
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
-        val compiledConfig = GtvMLEncoder.encodeXMLGtv(configToDeploy(chain).config)
+        val compiledConfig = GtvMLEncoder.encodeXMLGtv(chain.config)
         val httpHandler = httpHandlerFactory(client.config)
         val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
 
@@ -85,14 +85,6 @@ class DeployUpdateCommand(
             }
         }
         if (verifyOnly) throw PrintMessage("Verification only, skipping sending updates", 0)
-    }
-
-    override fun TransactionBuilder.addDeploymentOperation(client: PostchainQuery, clientConfig: PostchainClientConfig, configHolder: BlockchainConfiguration) {
-        val clusterManagement = clusterManagementFactory.buildClusterManagement(client)
-        val heightChecker by lazy { HeightFinder(clientProvider, clientConfig, clusterManagement) }
-        val blockchainRid = deployModel.chains[configHolder.name]!!
-        BlockchainOperations(client.apiVersion, this, heightChecker)
-                .proposeConfiguration(clientConfig.pubkey.data, blockchainRid, configHolder.configByteArray, clusterManagement.getClusterOfBlockchain(blockchainRid), height, true)
     }
 
     companion object : ClusterManagementFactory {

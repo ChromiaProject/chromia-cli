@@ -1,4 +1,4 @@
-package com.chromia.cli.util
+package com.chromia.build.tools
 
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider

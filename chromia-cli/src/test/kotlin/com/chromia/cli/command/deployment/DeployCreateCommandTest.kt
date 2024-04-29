@@ -125,14 +125,9 @@ class DeployCreateCommandTest {
         ) {
             DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y"))
         }
-
         val buildGtx = testDir.resolve("build").listDirectoryEntries().find { it.name.startsWith("test_my_rell_dapp") }?.toFile()?.readText()
         assertNotNull(buildGtx)
-        val buildGtxCompressed = testDir.resolve("build/my_rell_dapp_compressed.xml").toFile().readText()
-        assertThat(buildGtxCompressed).contains("<entry key=\"compressed_roots\">")
-        assertThat(buildGtxCompressed).doesNotContain("<entry key=\"a_file.rell\">")
-        assertThat(buildGtx).doesNotContain("<entry key=\"compressed_roots\">")
-        assertThat(buildGtx).contains("<entry key=\"a_file.rell\">")
+        assertThat(buildGtx).contains("<entry key=\"compressed_roots\">")
     }
 
 
@@ -145,6 +140,10 @@ class DeployCreateCommandTest {
         ) {
             DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--no-compression"))
             assertThat(testDir.resolve("build/my_rell_dapp_compressed.xml").notExists())
+            val buildGtx = testDir.resolve("build").listDirectoryEntries().find { it.name.startsWith("test_my_rell_dapp") }?.toFile()?.readText()
+            assertNotNull(buildGtx)
+            assertThat(buildGtx).doesNotContain("<entry key=\"compressed_roots\">")
+            assertThat(buildGtx).contains("<entry key=\"a_file.rell\">")
         }
     }
 

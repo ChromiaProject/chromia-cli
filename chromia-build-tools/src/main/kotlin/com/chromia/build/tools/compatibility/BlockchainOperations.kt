@@ -1,9 +1,9 @@
-package com.chromia.cli.compatibility
+package com.chromia.build.tools.compatibility
 
-import com.chromia.cli.compatibility.Compat_3_7_1.proposeBlockchainOperation
-import com.chromia.cli.compatibility.Compat_3_7_1.proposeConfigurationAtOperation
-import com.chromia.cli.compatibility.Compat_3_7_1.proposeConfigurationOperation
-import com.chromia.cli.util.HeightFinder
+import com.chromia.build.tools.HeightFinder
+import com.chromia.build.tools.compatibility.Compat_3_7_1.proposeBlockchainOperation
+import com.chromia.build.tools.compatibility.Compat_3_7_1.proposeConfigurationAtOperation
+import com.chromia.build.tools.compatibility.Compat_3_7_1.proposeConfigurationOperation
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainOperation
 import com.chromia.directory1.proposal_blockchain.proposeConfigurationAtOperation
 import com.chromia.directory1.proposal_blockchain.proposeConfigurationOperation

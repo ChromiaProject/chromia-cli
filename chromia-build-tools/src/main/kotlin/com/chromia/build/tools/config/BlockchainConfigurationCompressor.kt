@@ -1,4 +1,4 @@
-package com.chromia.cli.tools.config
+package com.chromia.build.tools.config
 
 import com.chromia.directory1.common.queries.getCompressedConfigurationParts
 import net.postchain.client.core.PostchainClient

@@ -72,8 +72,8 @@ class DeployInspectLeaseCommand(val clientProvider: PostchainClientProvider = Po
     }
 
     private fun createEconomyChainClient(target: SystemOption): PostchainClient {
-        val postchainClientConfig = settings.config.get(target.url, target.brid)
-        val d1Client = clientProvider.createClient(postchainClientConfig)
+        val chromiaClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
+        val d1Client = chromiaClientConfig.client(clientProvider)
         val economyChainBrid = d1Client.getEconomyChainRid()
                 ?: throw PrintMessage("Couldn't get blockchainrid for economy chain", 1)
 
