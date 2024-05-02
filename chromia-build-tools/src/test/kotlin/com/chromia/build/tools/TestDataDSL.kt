@@ -124,7 +124,7 @@ class KeyStoreBuilder {
         }
 
         File(target.toFile(), "/config").also { it.parentFile.mkdirs() }.writeText("""
-           keyId = $keyIdName
+           key.id = $keyIdName
         """.trimIndent())
     }
 }

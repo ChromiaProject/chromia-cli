@@ -155,6 +155,9 @@ class DeployCreateCommandTest {
         ) {
             val keyPair = KeyPair.of("02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765", "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429")
             EnvironmentVariables("CHROMIA_HOME", testDir.absolutePathString()).execute {
+                File(testDir.absolutePathString(), "/config").also { it.parentFile.mkdirs() }.writeText("""
+                    key.id = ${DeploymentTestDataCreator.keyIdName}
+                """.trimIndent())
                 ChromiaKeyStore(DeploymentTestDataCreator.keyIdName).saveKeyPair(keyPair)
                 val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--config", config.absolutePath))
                 assertThat(res.stdout).contains("Deployment of blockchain my_rell_dapp was successful")

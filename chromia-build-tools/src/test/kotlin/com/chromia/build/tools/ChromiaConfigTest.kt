@@ -24,7 +24,7 @@ class ChromiaConfigTest {
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             ChromiaKeyStore(keyIdName).saveKeyPair(keyPair)
             val config = PropertiesConfiguration()
-            config.setProperty("keyId", keyIdName)
+            config.setProperty("key.id", keyIdName)
             val clientConfig = ChromiaClientConfig.from(config)
             assertThat(clientConfig.signers.size).isEqualTo(1)
             assertThat(clientConfig.signers.first().pubKey.hex()).isEqualTo(pubKey)

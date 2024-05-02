@@ -58,8 +58,8 @@ class ChromiaClientConfig private constructor(
             }.let { PostchainClientConfig.fromConfiguration(it) }
                     .let { ChromiaClientConfig(it) }
                     .let { res ->
-                        if (config.containsKey("keyId")) {
-                           ChromiaKeyStore(config.getString("keyId")).findKeyPair()?.let { res.setSigner(it)  }
+                        if (config.containsKey("key.id")) {
+                            ChromiaKeyStore(config.getString("key.id")).findKeyPair()?.let { res.setSigner(it) }
                         }
                         res
                     }
