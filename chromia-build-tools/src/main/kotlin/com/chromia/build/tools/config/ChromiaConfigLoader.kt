@@ -1,5 +1,6 @@
 package com.chromia.build.tools.config
 
+import com.chromia.build.tools.keystore.ChromiaKeyStore
 import java.io.File
 import net.postchain.common.PropertiesFileLoader
 import net.postchain.rell.api.base.RellCliEnv
@@ -18,7 +19,20 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
         fun localConfigurationFile() = File(DEFAULT_CONFIG_FILENAME)
     }
 
+    /**
+     * Loads configuration from system
+     * @param file file containing additional overriding properties
+     */
     fun loadClientConfigFile(file: File? = null): ChromiaClientConfig {
+        val config = loadProperties(file)
+        return ChromiaClientConfig.from(config)
+    }
+
+    /**
+     * Loads properties from the system
+     * @param file file containing additional overriding properties
+     */
+    fun loadProperties(file: File? = null): Configuration {
         val config = PropertiesConfiguration()
         config.setProperty("status.poll-interval", 2000)
         loadFromFileIfExists(globalConfigurationFile(), config)
@@ -29,7 +43,13 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
 
         loadFromFileIfExists(localConfigurationFile(), config)
         loadFromFileIfExists(file, config)
-        return ChromiaClientConfig.from(config)
+        if (config.containsKey("key.id")) {
+            ChromiaKeyStore(config.getString("key.id")).findKeyPair()?.let {
+                config.setProperty("pubkey", it.pubKey.hex())
+                config.setProperty("privkey", it.privKey.hex())
+            }
+        }
+        return config
     }
 
     private fun loadFromFileIfExists(file: File?, config: Configuration) {

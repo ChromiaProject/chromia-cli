@@ -1,6 +1,5 @@
 package com.chromia.build.tools.config
 
-import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.cli.model.DeploymentModel
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -50,19 +49,15 @@ class ChromiaClientConfig private constructor(
     companion object {
 
         val EMPTY = from(PropertiesConfiguration())
-        fun from(config: Configuration): ChromiaClientConfig {
-            return PropertiesConfiguration().apply {
-                copy(config)
-                if (!config.containsKey("api.url")) setProperty("api.url", "http://not-set")
-                if (!config.containsKey("brid")) setProperty("brid", BlockchainRid.ZERO_RID)
-            }.let { PostchainClientConfig.fromConfiguration(it) }
-                    .let { ChromiaClientConfig(it) }
-                    .let { res ->
-                        if (config.containsKey("key.id")) {
-                            ChromiaKeyStore(config.getString("key.id")).findKeyPair()?.let { res.setSigner(it) }
-                        }
-                        res
-                    }
-        }
+
+        fun from(config: Configuration): ChromiaClientConfig = PropertiesConfiguration()
+                .apply {
+                    copy(config)
+                    if (!config.containsKey("api.url")) setProperty("api.url", "http://not-set")
+                    if (!config.containsKey("brid")) setProperty("brid", BlockchainRid.ZERO_RID)
+                }
+                .let { PostchainClientConfig.fromConfiguration(it) }
+                .let { ChromiaClientConfig(it) }
+
     }
 }
