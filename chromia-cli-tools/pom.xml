@@ -46,28 +46,6 @@
                 <groupId>pl.project13.maven</groupId>
                 <artifactId>git-commit-id-plugin</artifactId>
             </plugin>
-
-            <plugin>
-                <groupId>net.postchain.rell</groupId>
-                <artifactId>rell-maven-plugin</artifactId>
-                <configuration>
-                    <source>${directory.source}</source>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>rell-client-gen</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>rell-generate-client</goal>
-                        </goals>
-                        <configuration>
-                            <packageName>com.chromia.directory1</packageName>
-                            <mainModule>common.queries</mainModule>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
 
