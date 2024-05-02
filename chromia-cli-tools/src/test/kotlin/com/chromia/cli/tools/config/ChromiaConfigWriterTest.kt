@@ -24,7 +24,7 @@ class ChromiaConfigWriterTest {
         assertThat(configFile.readLines()).all {
             contains("brid = 0000000000000000000000000000000000000000000000000000000000000000")
             contains("url = http://localhost:7740")
-            contains("keyId = myKeyId")
+            contains("key.id = myKeyId")
         }
     }
 }

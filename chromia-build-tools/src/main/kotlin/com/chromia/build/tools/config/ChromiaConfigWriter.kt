@@ -17,7 +17,7 @@ class ChromiaConfigWriter private constructor(val configFile: File) {
 
     fun setBrid(blockchainRid: BlockchainRid) = setProperty("brid" to blockchainRid.toHex())
 
-    fun setKeyId(keyId: String) = setProperty("keyId" to keyId)
+    fun setKeyId(keyId: String) = setProperty("key.id" to keyId)
 
     fun setProperty(vararg property: Pair<String, Any>) = setProperty(property.toMap())
 

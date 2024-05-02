@@ -24,7 +24,7 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
 
         println(
                 """
-            |Keypair is written to $chromiaHome. To use this key pair, set keyId = $keyId in your configuration file
+            |Keypair is written to $chromiaHome. To use this key pair, set key.id = $keyId in your configuration file
         """.trimMargin()
         )
     }
