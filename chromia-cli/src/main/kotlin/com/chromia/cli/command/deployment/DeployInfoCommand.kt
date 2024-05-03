@@ -33,7 +33,7 @@ class DeployInfoCommand(
 ) {
 
     private val settings by optionalChromiaModelOption()
-    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel() }.cooccurring()
+    private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val option by lazy { configuredOptions ?: manualOptions ?: throw PrintMessage("No target blockchain to analyze specified") }

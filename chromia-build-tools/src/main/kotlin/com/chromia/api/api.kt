@@ -35,8 +35,8 @@ object ChromiaLibrariesApi {
      * Installs libraries to src/lib folder.
      */
     @ExperimentalApi("May want to remove RepositoryCloner parameter from this api")
-    fun install(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path, repositoryCloner: RepositoryCloner)
-        = com.chromia.api.impl.install(cliEnv, repositoryCloner, projectDir, model)
+    fun install(cliEnv: RellCliEnv, model: ChromiaModel, repositoryCloner: RepositoryCloner)
+        = com.chromia.api.impl.install(cliEnv, repositoryCloner, model)
 }
 
 object ChromiaDeploymentApi {

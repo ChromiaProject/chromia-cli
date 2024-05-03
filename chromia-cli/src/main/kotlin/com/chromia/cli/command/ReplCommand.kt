@@ -62,7 +62,7 @@ class ReplCommand : CliktCommand(help = """
         if (useDB && settings.model == null) {
             throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
-        val localModel = settings.model ?: ChromiaModel()
+        val localModel = settings.model ?: ChromiaModel.default()
         val compileConfig = RellApiCompile.Config.Builder()
                 .cliEnv(CliktCliEnv(this))
                 .mountConflictError(false)

@@ -39,8 +39,8 @@ open class ChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration P
     private val modelFile: File by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
-    val sourceDir get() = model.compile.sourceFile(projectFolder)
-    val targetDir get() = model.compile.targetFile(projectFolder)
+    val sourceDir get() = model.compile.source.toFile()
+    val targetDir get() = model.compile.target.toFile()
 }
 
 open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
@@ -48,8 +48,8 @@ open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configu
     private val resolvedModelFile by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile) }
     val projectFolder by lazy { resolvedModelFile?.parentFile }
     val model by lazy { resolvedModelFile?.let { parseModel(it) } }
-    val sourceDir get() = model?.compile?.sourceFile(projectFolder!!)
-    val targetDir get() = model?.compile?.targetFile(projectFolder!!)
+    val sourceDir get() = model?.compile?.source?.toFile()
+    val targetDir get() = model?.compile?.target?.toFile()
 }
 
 
@@ -59,8 +59,8 @@ open class ChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configura
     private val modelFile by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
-    val sourceDir get() = model.compile.sourceFile(projectFolder)
-    val targetDir get() = model.compile.targetFile(projectFolder)
+    val sourceDir get() = model.compile.source.toFile()
+    val targetDir get() = model.compile.target.toFile()
 }
 
 open class OptionalChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {

@@ -30,7 +30,7 @@ class DeployInspectLeaseCommand : CliktCommand(
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by ExplicitRemoteSystemOption { settings.config }.cooccurring()
-    private val deploymentTarget by RemoteSystemOption { (settings.model ?: ChromiaModel()) to settings.config }.cooccurring()
+    private val deploymentTarget by RemoteSystemOption { (settings.model ?: ChromiaModel.default()) to settings.config }.cooccurring()
     private val ownerOfLeasePubkey by publicKeyOption()
     private val containerId by containerIdOption()
 

@@ -32,7 +32,7 @@ class DeployInspectCommand(
 
     private val settings by optionalChromiaModelOption()
     private val configuredOptions by ConfiguredDeploymentInfoOption(clientProvider) {
-        settings.model ?: ChromiaModel()
+        settings.model ?: ChromiaModel.default()
     }.cooccurring()
     private val manualOptions by ManualDeploymentInfoOption(clientProvider, httpHandlerFactory).cooccurring()
     private val moduleOption by modulesOption("Explicitly state which module to inspect (Comma separated)")

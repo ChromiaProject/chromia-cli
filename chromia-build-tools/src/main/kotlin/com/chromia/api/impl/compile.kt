@@ -4,6 +4,7 @@ import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
 import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.model.ChromiaModel
+import java.nio.file.Path
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.GtvFactory
@@ -14,13 +15,11 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.utils.RellGtxConfigConstants
-import java.nio.file.Path
 
 private val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
 
 fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path): List<BlockchainConfiguration> {
-    val sourceDir = model.compile.sourceFile(projectDir.toFile()).toPath()
-    LibraryVerifyer(cliEnv).verifyLibs(sourceDir, model.libs)
+    LibraryVerifyer(cliEnv).verifyLibs(model.compile.source, model.libs)
     val blockchainConfigurationGenerator = BlockchainConfigurationGenerator(cliEnv, model.compile, projectDir)
     return blockchainConfigurationGenerator.generate(model.blockchains)
 }

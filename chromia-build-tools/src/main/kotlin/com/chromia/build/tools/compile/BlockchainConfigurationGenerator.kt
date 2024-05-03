@@ -4,6 +4,7 @@ import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.MinimalRellVersionStrictGtv
+import java.nio.file.Path
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
@@ -16,7 +17,6 @@ import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.module.RellPostchainModuleFactory
-import java.nio.file.Path
 
 internal class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
@@ -64,7 +64,7 @@ internal class BlockchainConfigurationGenerator(
                 .quiet(compileModel.quiet)
                 .build()
 
-        val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.sourceFile(projectDir.toFile()), blockchainModel.module)
+        val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), blockchainModel.module)
         b.update(rellBcConfig, "gtx", "rell")
 
         blockchainModel.config.filterKeys { it != "modules" }

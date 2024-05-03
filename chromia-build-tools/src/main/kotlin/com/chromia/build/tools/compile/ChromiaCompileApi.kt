@@ -3,8 +3,8 @@ package com.chromia.build.tools.compile
 import com.chromia.api.filterBlockchains
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
 import com.chromia.cli.model.ChromiaModel
-import net.postchain.rell.api.base.RellCliEnv
 import java.io.File
+import net.postchain.rell.api.base.RellCliEnv
 
 @Deprecated("Use the new api instead", replaceWith = ReplaceWith("ChromiaCompileApi", imports = arrayOf("com.chromia.api.ChromiaCompileApi")))
 object ChromiaCompileApi {
@@ -28,6 +28,6 @@ object ChromiaCompileApi {
             validateGtv: Boolean = false
     ): Collection<ChromiaCompileResult> {
         return com.chromia.api.ChromiaCompileApi.build(cliEnv, model.filterBlockchains(blockchains), projectFolder.toPath()).map { ChromiaCompileResult(it.name, it.config) }
-                .onEach { (name, gtv) -> storeConfig(gtv, name, model.compile.targetFile(projectFolder).toPath()) }
+                .onEach { (name, gtv) -> storeConfig(gtv, name, model.compile.target) }
     }
 }

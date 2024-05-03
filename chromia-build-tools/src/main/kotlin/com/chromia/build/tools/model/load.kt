@@ -2,16 +2,16 @@ package com.chromia.cli.model
 
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.parser.loadAnchor
-import org.yaml.snakeyaml.parser.ParserException
 import java.io.File
 import java.nio.file.Path
+import org.yaml.snakeyaml.parser.ParserException
 
 
 fun parseModel(src: Path) = parseModel(src.toFile())
 fun parseModel(src: File): ChromiaModel {
     return try {
         val anc = loadAnchor(src, ChromiaModel.schema)
-        ChromiaModel.load(anc)
+        ChromiaModel.load(anc, src.toPath().parent)
     } catch (e: ValidationException) {
         throw e
     } catch (e: ParserException) {

@@ -24,7 +24,6 @@ class InstallCommand(
         ChromiaLibrariesApi.install(
                 CliktCliEnv(this),
                 settings.model.filterLibraries(library.takeIf { it.isNotEmpty() }),
-                settings.projectFolder.toPath(),
                 repositoryClonerFactory(!terminal.info.outputInteractive),
         )
     }

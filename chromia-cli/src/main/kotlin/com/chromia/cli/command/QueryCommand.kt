@@ -22,7 +22,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
 
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
 
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query, passed either as key=value pairs or as a single dict.", helpTags = mapOf(
