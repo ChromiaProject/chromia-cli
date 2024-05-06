@@ -1,39 +1,44 @@
 package com.chromia.cli.util
 
-import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.lib.RepositoryCloner
-import net.postchain.common.exception.UserMistake
-import org.eclipse.jgit.api.errors.InvalidRemoteException
+import com.chromia.cli.model.RellLibraryModel
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.name
+import kotlin.io.path.writeText
+import net.postchain.common.hexStringToWrappedByteArray
 
 class TestRepositoryCloner : RepositoryCloner {
+    val repos = listOf(foo, bar, filter).associateBy { it.model.registry }
     override fun clone(registry: String, target: File, tagOrBranch: String?) {
-        when (registry) {
-            "http://bar.com" -> createFile(target, "${InstallDirTarget.SOURCE.target}/d.rell")
-            "http://foo.com" -> {
-                createFile(target, "${InstallDirTarget.SOURCE.target}/a.rell")
-                createFile(target, "${InstallDirTarget.SOURCE.target}/nested/b.rell")
-                createFile(target, "not/include/c.rell")
-            }
-
-            "http://filter.com" -> {
-                createFile(target, "${InstallDirTarget.SOURCE.target}/a.rell")
-                createFile(target, "${InstallDirTarget.SOURCE.target}/a.yml")
-                createFile(target, "${InstallDirTarget.SOURCE.target}/nested/b.rell")
-                createFile(target, "${InstallDirTarget.SOURCE.target}/nested/b.yml")
-            }
-
-            "http://wrongAddress.com" -> throw LibraryInstallException("This is an error")
-        }
+        repos[registry]?.let { repo ->
+            repo.files.forEach { createFile(target.toPath(), it) }
+        } ?: throw LibraryInstallException("Repository does not exist")
     }
 
-    fun createFile(dir: File, name: String) {
-        with(File(dir, name)) {
-            parentFile.mkdirs()
-            writeText("""
-                    module; 
-                """.trimIndent())
-        }
+    fun createFile(dir: Path, file: Path) {
+        dir.resolve(file).createParentDirectories().writeText("module; //${file.name}")
     }
+
+    companion object {
+        val foo = TestRepo(
+                RellLibraryModel("http://foo.com", path = "path/to/foo", rid = "046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1".hexStringToWrappedByteArray()),
+                Path("path/to/foo/a.rell"), Path("path/to/foo/nested/b.rell"), Path("not/included/c.rell")
+        )
+        val bar = TestRepo(
+                RellLibraryModel("http://bar.com", path = "some/path", rid = "E0013E89E674D21797B2A8F7522E87E085418613AA99EF042AD95B08A0D314C9".hexStringToWrappedByteArray()),
+                Path("some/path/d.rell")
+        )
+        val filter = TestRepo(
+                RellLibraryModel("http://filter.com", path = "path/lib/filter", rid = "046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1".hexStringToWrappedByteArray()),
+                Path("path/lib/filter/a.rell"),
+                Path("path/lib/filter/a.yml"),
+                Path("path/lib/filter/nested/b.rell"),
+                Path("path/lib/filter/nested/b.yml"),
+        )
+    }
+    class TestRepo(val model: RellLibraryModel, vararg val files: Path)
 }

@@ -1,6 +1,7 @@
 package com.chromia.build.tools
 
 import com.chromia.build.tools.keystore.ChromiaKeyStore
+import com.chromia.cli.model.RellLibraryModel
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -67,7 +68,7 @@ class ConfigBuilder {
                 maxblocktime: 1000
     """.trimIndent()
     private var deployments = ""
-    private var libs = ""
+    private var libModels = mutableMapOf<String, RellLibraryModel>()
     private var test = ""
     private var docs = ""
     private var database = """
@@ -83,8 +84,8 @@ class ConfigBuilder {
         deployments = init
     }
 
-    fun libs(init: String) {
-        libs = init
+    fun lib(name: String, lib: RellLibraryModel) = apply {
+        libModels[name] = lib
     }
 
     fun test(init: String) {
@@ -99,7 +100,12 @@ class ConfigBuilder {
         val sb = StringBuilder()
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
-        if (libs.isNotEmpty()) sb.append("\n$libs")
+        if (libModels.isNotEmpty()) {
+            sb.append("\nlibs:\n")
+            libModels.forEach { (name, model) ->
+                sb.append(model.format(name))
+            }
+        }
         if (test.isNotEmpty()) sb.append("\n$test")
         if (docs.isNotEmpty()) sb.append("\n$docs")
         sb.append("\n$database")

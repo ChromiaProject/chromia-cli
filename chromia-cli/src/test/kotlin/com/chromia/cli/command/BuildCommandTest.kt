@@ -11,21 +11,23 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.lib.InstallDirTarget
+import com.chromia.build.tools.testData
+import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
-import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import kotlin.test.assertFailsWith
+import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.io.File
-import kotlin.test.assertFailsWith
 
 internal class BuildCommandTest {
     private val logger = TerminalRecorder()
@@ -92,13 +94,7 @@ internal class BuildCommandTest {
     fun libraryMissingTest() {
         testData(dir.toPath()) {
             config {
-                libs("""
-                    libs:
-                        missing:
-                          registry: http://missing.com
-                          path: lib
-                          rid: x"11"
-                """.trimIndent())
+                lib("missing", RellLibraryModel("http://missing.com", path = "lib", rid = "11".hexStringToWrappedByteArray()))
             }
         }
         val e = assertFailsWith<ValidationException> { command.parse() }
@@ -109,13 +105,7 @@ internal class BuildCommandTest {
     fun libraryTamperedTest() {
         testData(dir.toPath()) {
             config {
-                libs("""
-                    libs:
-                        bar:
-                          registry: http://bar.com
-                          path: lib
-                          rid: x"11"
-                """.trimIndent())
+                lib("bar", TestRepositoryCloner.bar.model.copy(rid = "11".hexStringToWrappedByteArray()))
             }
         }
 
@@ -125,7 +115,7 @@ internal class BuildCommandTest {
         }
         assertThat(logger.stderr()).all {
             contains("Should be: 11")
-            contains("Was: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5")
+            contains("Was: ${TestRepositoryCloner.bar.model.rid}")
         }
     }
 

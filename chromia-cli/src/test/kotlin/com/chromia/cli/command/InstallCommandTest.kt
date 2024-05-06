@@ -5,7 +5,9 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
+import com.chromia.build.tools.testData
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.context
@@ -14,13 +16,14 @@ import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.test.assertFailsWith
+import net.postchain.common.hexStringToWrappedByteArray
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-
 
 class InstallCommandTest {
     val path = "src/${InstallDirTarget.SOURCE.target}"
@@ -35,27 +38,12 @@ class InstallCommandTest {
 
     @BeforeEach
     fun setup() {
-        with(File(testDir.toFile(), "chromia.yml")) {
-            writeText("""
-                blockchains: 
-                  main:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
-                    bar:
-                      registry: http://bar.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                    insecureBar:
-                      registry: http://bar.com
-                      path: lib
-                      rid: x"11"
-                      insecure: true
-
-            """.trimIndent())
+        testData(testDir) {
+            config {
+                lib("foo", TestRepositoryCloner.foo.model)
+                lib("bar", TestRepositoryCloner.bar.model)
+                lib("insecureBar", TestRepositoryCloner.bar.model.copy(insecure = true, rid = "11".hexStringToWrappedByteArray()))
+            }
         }
 
         settingsFile = testDir.resolve("chromia.yml").toFile()
@@ -74,7 +62,7 @@ class InstallCommandTest {
             libs:
                 fooFail:
                   registry: http://foo.com
-                  path: lib
+                  path: path/to/foo
                   rid: x"11"
         """.trimIndent())
             InstallCommand { TestRepositoryCloner() }
@@ -84,13 +72,12 @@ class InstallCommandTest {
         assertThat(logger.output()).contains(
                 "The rid for library fooFail does not match the configured value.\n" +
                         "Should be: 11\n" +
-                        "Was: 1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5\n" +
+                        "Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1\n" +
                         "Do not blindly copy the calculated rid as the integrity of the library cannot be verified.")
     }
 
     @Test
     fun insecureTrueRidNotMatchingTest() {
-
         InstallCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "insecureBar"))
 
@@ -100,10 +87,11 @@ class InstallCommandTest {
 
     @Test
     fun alreadyPopulatedTargetTest() {
-        TestRepositoryCloner().createFile(testDir.resolve("$path/foo").toFile(), "existingFileFoo.rell")
-        TestRepositoryCloner().createFile(testDir.resolve("$path/bar").toFile(), "existingFileBar.rell")
+        val testRepositoryCloner = TestRepositoryCloner()
+        testRepositoryCloner.createFile(testDir.resolve("$path/foo"), Path("existingFileFoo.rell"))
+        testRepositoryCloner.createFile(testDir.resolve("$path/bar"), Path("existingFileBar.rell"))
 
-        val res = InstallCommand { TestRepositoryCloner() }
+        val res = InstallCommand { testRepositoryCloner }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "foo"))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
@@ -164,38 +152,26 @@ class InstallCommandTest {
 
     @Test
     fun wrongRegistryTest() {
-        File(testDir.toFile(), "chromia.yml").writeText("""
-            blockchains:
-              my_rell_dapp:
-                module: main
-            libs:
-                wrongRegistry:
-                    registry: http://wrongAddress.com
-                    path: lib
-                    rid: x"13"
-        """.trimIndent())
+        testData(testDir) {
+            config {
+                lib("wrongRegistry", RellLibraryModel("http://wrongAddress.com", path = "lib", rid = null))
+            }
+        }
 
         val error = assertThrows<LibraryInstallException> {
             InstallCommand { TestRepositoryCloner() }
                     .test(listOf("-s", settingsFile.absolutePath, "-lib", "wrongRegistry"))
         }
-        assertThat(error.message).isEqualTo("This is an error")
+        assertThat(error.message).isEqualTo("Repository does not exist")
     }
 
     @Test
     fun nonRellFilesTest() {
-        File(testDir.toFile(), "chromia.yml").writeText("""
-            blockchains:
-              my_rell_dapp:
-                module: main
-            libs:
-                emptyRegistry:
-                    registry: http://filter.com
-                    path: lib
-                    rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
-        """.trimIndent())
-
-
+        testData(testDir) {
+            config {
+                lib("emptyRegistry", TestRepositoryCloner.filter.model)
+            }
+        }
 
         assertFailsWith<LibraryInstallException> {
             InstallCommand { TestRepositoryCloner() }
@@ -203,8 +179,8 @@ class InstallCommandTest {
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "emptyRegistry"))
         }
         assertThat(logger.output()).contains("Library emptyRegistry contains files that are not rell files.")
-        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/lib/a.yml")
-        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/lib/nested/b.yml")
+        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/path/lib/filter/a.yml")
+        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/path/lib/filter/nested/b.yml")
     }
 
 }

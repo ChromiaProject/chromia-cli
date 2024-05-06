@@ -11,6 +11,16 @@ data class RellLibraryModel(
         val insecure: Boolean = false,
         val rid: WrappedByteArray?,
 ) {
+
+    fun format(name: String) = buildString {
+        append("\n  $name:")
+        append("\n    registry: $registry")
+        tagOrBranch?.let { append("\n    tagOrBranch: $it") }
+        append("\n    path: $path")
+        if (insecure) append("\n    insecure: true")
+        rid?.let { append("\n    rid: x\"$it\"") }
+    }
+
     companion object {
         fun load(data: Map<String, Any>, additionalProperty: String) = RellLibraryModel(
                 registry = ensureType<String>(data["registry"], "libs", additionalProperty, "registry"),
