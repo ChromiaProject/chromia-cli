@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dict>
+    <entry key="gtx">
+        <dict>
+            <entry key="modules">
+                <array>
+                </array>
+            </entry>
+            <entry key="rell">
+                <dict>
+                    <entry key="compilerVersion">
+                        <string>0.13.11</string>
+                    </entry>
+                    <entry key="moduleArgs">
+                        <dict>
+                        </dict>
+                    </entry>
+                    <entry key="modules">
+                        <array>
+                            <string>mocked_module</string>
+                        </array>
+                    </entry>
+                    <entry key="sources">
+                        <dict>
+                            <entry key="mocked_module/module.rell">
+                                <string>
+                                    module;
+
+                                    entity identical {}
+                                    entity removed_in_new {}
+
+                                    entity changed1 {
+                                        text: text;
+                                    }
+
+                                    // Change with dependency
+                                    entity changed2_entity_1 {
+                                        dummy: boolean;
+                                    }
+                                    entity changed2_entity_2 {
+                                        changed2_entity_1;
+                                        dummy: integer = 1;
+                                    }
+                                    entity changed2_entity_3 {
+                                        changed2_entity_2;
+                                    }
+                                    entity changed2_entity_4 {
+                                        changed2_entity_1;
+                                        changed2_entity_2;
+                                        changed2_entity_3;
+                                    }
+                                </string>
+                            </entry>
+                        </dict>
+                    </entry>
+                    <entry key="strictGtvConversion">
+                        <int>1</int>
+                    </entry>
+                    <entry key="version">
+                        <string>0.13.10</string>
+                    </entry>
+                </dict>
+            </entry>
+        </dict>
+    </entry>
+</dict>
