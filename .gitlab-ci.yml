@@ -29,6 +29,8 @@ stages:
   - release
 
 build:
+  tags:
+    - saas-windows-medium-amd64
   extends:
     - .setup
     - .visualise-test-coverage
