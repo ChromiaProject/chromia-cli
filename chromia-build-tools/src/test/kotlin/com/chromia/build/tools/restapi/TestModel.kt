@@ -70,6 +70,10 @@ class TestModel(
         TODO("Not yet implemented")
     }
 
+    override fun getNextBlockchainConfigurationHeight(height: Long): BlockHeight? {
+        TODO("Not yet implemented")
+    }
+
     override fun getStatus(txRID: TxRid): ApiStatus {
         val tx = txMap[txRID]
         return ApiStatus(tx?.let { TransactionStatus.CONFIRMED } ?: TransactionStatus.UNKNOWN)
