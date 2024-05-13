@@ -58,7 +58,7 @@ class TxCommandTest : IntegrationTestSetup() {
         createTestNode("${dir.absolutePathString()}/build/a.xml")
         TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
                 "test_op", "foobar", "\"Hello, world!\"", "[\"foo bar\"]", "null",
-                "-brid", "69E96E4387B065895AD2600314F9FF970E90312492A12A0E58609A707062AEF9"))
+                "-brid", "708691A9ACFD786AA9282DC3B0695AE851B34DDA42E2A06B934A8DC56B7AFCBA"))
 
         assertThat(logger.output()).contains("CONFIRMED")
     }

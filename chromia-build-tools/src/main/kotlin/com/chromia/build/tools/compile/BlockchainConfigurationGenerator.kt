@@ -77,6 +77,7 @@ internal class BlockchainConfigurationGenerator(
         b.update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
         b.update(gtv("HEADER_HASH"), "config_consensus_strategy")
         b.update(gtv(2000), "revolt", "fast_revolt_status_timeout")
+        b.update(gtv(true), "revolt", "revolt_when_should_build_block")
         b.update(gtv(1000), "blockstrategy", "mininterblockinterval")
 
         val modulesGtv: MutableList<Gtv> = mutableListOf(
