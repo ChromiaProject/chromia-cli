@@ -1,7 +1,7 @@
 package com.chromia.api.impl
 
+import com.chromia.api.impl.compile.addDefaultEntries
 import com.chromia.api.result.BlockchainConfiguration
-import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
 import com.chromia.build.tools.lib.DirectoryHashCalculator
 import com.chromia.build.tools.lib.DirectoryHashCalculator.RidStrategy
 import com.chromia.build.tools.lib.LibraryVerifyer
@@ -23,8 +23,27 @@ fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel): List<BlockchainConfigur
     val (libraries, blockchains) = model.blockchains.toList().partition { it.second.type == BlockchainModel.Type.LIBRARY }
             .let { (libs, chains) -> libs.toMap() to chains.toMap() }
 
-    return BlockchainConfigurationGenerator(cliEnv, model.compile).generate(blockchains) +
+    return blockchains.map { (bc, m) -> blockchainGtv(cliEnv, model.compile, bc, m) } +
             libraries.map { (lib, m) -> libraryGtv(cliEnv, model.compile, lib, m) }
+}
+
+private fun blockchainGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: String, blockchainModel: BlockchainModel): BlockchainConfiguration {
+    val gtv = GtvBuilder().apply {
+        addDefaultEntries(blockchainModel, compileModel)
+
+        val config = RellApiCompile.Config.Builder()
+                .cliEnv(cliEnv)
+                .moduleArgs(blockchainModel.moduleArgs)
+                .mountConflictError(true)
+                .moduleArgsMissingError(true)
+                .version(compileModel.langVersion)
+                .quiet(compileModel.quiet)
+                .build()
+
+        val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), blockchainModel.module)
+        update(rellBcConfig, "gtx", "rell")
+    }.build()
+    return BlockchainConfiguration(name, gtv)
 }
 
 private fun libraryGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: String, library: BlockchainModel): BlockchainConfiguration {
