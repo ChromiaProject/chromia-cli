@@ -35,6 +35,6 @@ class ChromiaConfigWriter private constructor(val configFile: File) {
             PropertiesConfiguration()
         }
         properties.forEach { (k, v) -> configuration.setProperty(k, v) }
-        configuration.write(FileWriter(configFile.absoluteFile))
+        FileWriter(configFile.absoluteFile).use { configuration.write(it) }
     }
 }

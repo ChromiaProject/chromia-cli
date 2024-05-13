@@ -5,31 +5,25 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.cli.model.parseModel
-import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.rell.api.base.RellCliEnv
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.rell.api.base.RellCliEnv
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.io.TempDir
 
 internal class RellLibraryModelTest {
     private lateinit var settingsFile: File
-    private var fileMap = mutableMapOf<String, List<File>>()
 
-    private fun createFile(dir: File, name: String, code: String = ""): File {
-        return File(dir, "$name.rell").apply {
+    private fun createFile(dir: Path, name: String, code: String = ""): Path {
+        return File(dir.toFile(), "$name.rell").apply {
             parentFile.mkdirs()
             writeText("""
                     module; $code
                 """.trimIndent())
-        }
-    }
-
-    @AfterEach
-    fun setup() {
-        fileMap.clear()
+        }.toPath()
     }
 
     @Test
@@ -48,14 +42,15 @@ internal class RellLibraryModelTest {
         }
 
         val settings = parseModel(settingsFile)
-        fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo"), createFile(dir.toFile(), "lib/bar", "//Bar"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
-            override fun error(msg: String) = println(msg)
-            override fun print(msg: String) = println(msg)
-        })
+        createFile(dir, "lib/foo/foo")
+        createFile(dir, "lib/foo/bar", "//Bar")
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
 
+        assertDoesNotThrow {
+            libraryVerifyer.verifyLibs(settings.libs)
+        }
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
+            assertThat(libraryVerifyer.verifyLib(it.key, it.value)).isTrue()
         }
     }
 
@@ -166,7 +161,7 @@ internal class RellLibraryModelTest {
 
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
-        val fileMap = mutableMapOf<String, List<File>>()
+        val fileMap = mutableMapOf<String, List<Path>>()
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
@@ -185,20 +180,16 @@ internal class RellLibraryModelTest {
         }
 
         val settings = parseModel(settingsFile)
-        fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
-        fileMap["bar"] = listOf(createFile(dir.toFile(), "lib/bar/main"))
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
-            override fun error(msg: String) = println(msg)
-            override fun print(msg: String) = println(msg)
-        })
+        fileMap["foo"] = listOf(createFile(dir, "lib/foo/main"), createFile(dir, "lib/foo/api"))
+        fileMap["bar"] = listOf(createFile(dir, "lib/bar/main"))
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
+            assertThat(libraryVerifyer.verifyLib(it.key, it.value)).isTrue()
         }
     }
 
     @Test
     fun skipLibraryValidationTest(@TempDir dir: Path) {
-        val fileMap = mutableMapOf<String, List<File>>()
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
@@ -213,14 +204,12 @@ internal class RellLibraryModelTest {
         }
 
         val settings = parseModel(settingsFile)
-        fileMap["foo"] = listOf(createFile(dir.toFile(), "lib/foo/main"), createFile(dir.toFile(), "lib/foo/api"))
+        createFile(dir, "lib/foo/main")
+        createFile(dir, "lib/foo/api")
 
-        val libraryVerifyer = LibraryVerifyer(object : RellCliEnv {
-            override fun error(msg: String) = println(msg)
-            override fun print(msg: String) = println(msg)
-        })
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
         settings.libs.forEach {
-            assertThat(libraryVerifyer.verifyLib(it.value, it.key, fileMap[it.key]!!)).isTrue()
+            assertThat(libraryVerifyer.verifyLib(it.key, it.value)).isTrue()
         }
     }
 

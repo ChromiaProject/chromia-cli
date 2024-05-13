@@ -17,7 +17,7 @@ class GitRepositoryClonerIT {
     @Test
     fun clonePublicHttpsRepository(@TempDir testDir: Path) {
         val cloner = GitRepositoryCloner(quiet = true)
-        cloner.clone("https://gitlab.com/chromaway/core-tools/chromia-images.git", testDir.toFile(), "dev")
+        cloner.clone("https://gitlab.com/chromaway/core-tools/chromia-images.git", testDir, "dev")
         assertThat(testDir.resolve(".git").exists()).isTrue()
     }
 
@@ -36,7 +36,7 @@ class GitRepositoryClonerIT {
         val cloner = GitRepositoryCloner(sshDir, true)
         val cloneDir = testDir.resolve("cloned-project")
         Files.createDirectory(cloneDir)
-        cloner.clone("git@gitlab.com:chromaway/core-tools/gitclonetestrepo.git", cloneDir.toFile(), "main")
+        cloner.clone("git@gitlab.com:chromaway/core-tools/gitclonetestrepo.git", cloneDir, "main")
 
         assertThat(cloneDir.resolve(".git").exists()).isTrue()
     }
@@ -61,7 +61,7 @@ class GitRepositoryClonerIT {
         val cloner = GitRepositoryCloner(sshDir = sshDir.resolve("agent"), quiet = true)
         val cloneDir = testDir.resolve("cloned-project")
         Files.createDirectory(cloneDir)
-        cloner.clone("git@gitlab.com:chromaway/core-tools/gitclonetestrepo.git", cloneDir.toFile(), "main")
+        cloner.clone("git@gitlab.com:chromaway/core-tools/gitclonetestrepo.git", cloneDir, "main")
 
         assertThat(cloneDir.resolve(".git").exists()).isTrue()
     }

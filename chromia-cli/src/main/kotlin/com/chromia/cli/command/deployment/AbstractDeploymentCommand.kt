@@ -68,7 +68,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val chainsToDeploy = blockchain ?: settings.model.blockchains.keys
         val cliEnv = CliktCliEnv(this@AbstractDeploymentCommand)
         val res = ChromiaCompileApi.build(cliEnv,
-                settings.model.filterBlockchains(chainsToDeploy), settings.projectFolder.toPath())
+                settings.model.filterBlockchains(chainsToDeploy))
                 .onEach { it.filterGtxModules(cliEnv).validate() }
                 .apply { validateRellVersion(client) }
                 .apply { preDeploymentVerification(this) }

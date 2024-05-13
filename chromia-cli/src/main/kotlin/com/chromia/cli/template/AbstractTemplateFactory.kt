@@ -25,11 +25,12 @@ abstract class AbstractTemplateFactory(private val folderName: String) : Templat
             }
         }
 
-        fun createGitIgnore() {
+        fun createGitIgnore(init: () -> String = { "" }) {
             val sourceName = ".gitignore"
             with(File(targetDir, sourceName)) {
                 val fileContent = AbstractTemplateFactory::class.java.getResource(sourceName)!!.readText()
                 writeText(fileContent)
+                appendText(init())
             }
         }
     }

@@ -10,7 +10,6 @@ import assertk.assertions.isNotEmpty
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.build.tools.compile.ValidationException
-import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.util.CommandExtension
@@ -85,7 +84,7 @@ internal class BuildCommandTest {
 
     @Test
     fun simpleLibraryExistTest() {
-        TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar"), "")
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar").toPath(), "")
         command.parse()
         assertThat(dir.resolve("src/lib/bar").listFiles()).isNotEmpty()
     }
@@ -109,7 +108,7 @@ internal class BuildCommandTest {
             }
         }
 
-        TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/${InstallDirTarget.SOURCE.target}/bar"), "")
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar").toPath(), "")
         assertFailsWith<ValidationException> {
             BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml")))
         }

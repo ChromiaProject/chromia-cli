@@ -178,6 +178,11 @@
           "default": "main",
           "description": "Entrypoint module for blockchain"
         },
+        "type": {
+          "type": "string",
+          "enum": ["blockchain", "library"],
+          "description": "Mark this blockchain as a library"
+        },
         "moduleArgs": {
           "$ref": "#/$defs/moduleArgs"
         },

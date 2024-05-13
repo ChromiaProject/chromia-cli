@@ -51,7 +51,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
     protected fun extractConfigs(): Collection<BlockchainConfiguration> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val blockchainsToCompile = settings.model.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
-            ChromiaCompileApi.build(CliktCliEnv(this), settings.model.filterBlockchains(blockchainsToCompile), settings.projectFolder.toPath())
+            ChromiaCompileApi.build(CliktCliEnv(this), settings.model.filterBlockchains(blockchainsToCompile))
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }

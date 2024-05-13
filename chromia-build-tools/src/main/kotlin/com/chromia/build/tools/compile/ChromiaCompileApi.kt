@@ -18,6 +18,7 @@ object ChromiaCompileApi {
     fun compile(
             cliEnv: RellCliEnv,
             model: ChromiaModel,
+            @Suppress("UNUSED_PARAMETER")
             projectFolder: File,
             blockchains: Collection<String>,
             @Suppress("UNUSED_PARAMETER")
@@ -27,7 +28,7 @@ object ChromiaCompileApi {
             @Suppress("UNUSED_PARAMETER")
             validateGtv: Boolean = false
     ): Collection<ChromiaCompileResult> {
-        return com.chromia.api.ChromiaCompileApi.build(cliEnv, model.filterBlockchains(blockchains), projectFolder.toPath()).map { ChromiaCompileResult(it.name, it.config) }
+        return com.chromia.api.ChromiaCompileApi.build(cliEnv, model.filterBlockchains(blockchains)).map { ChromiaCompileResult(it.name, it.config) }
                 .onEach { (name, gtv) -> storeConfig(gtv, name, model.compile.target) }
     }
 }

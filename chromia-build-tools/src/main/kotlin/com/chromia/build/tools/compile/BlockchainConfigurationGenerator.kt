@@ -4,7 +4,6 @@ import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.MinimalRellVersionStrictGtv
-import java.nio.file.Path
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
@@ -20,8 +19,7 @@ import net.postchain.rell.module.RellPostchainModuleFactory
 
 internal class BlockchainConfigurationGenerator(
         private val cliEnv: RellCliEnv,
-        private val compileModel: CompileModel,
-        private val projectDir: Path) {
+        private val compileModel: CompileModel) {
 
     fun generate(blockchainModelMap: Map<String, BlockchainModel>): List<BlockchainConfiguration> {
         return blockchainModelMap.toList().map { generateConfiguration(it.first, it.second) }

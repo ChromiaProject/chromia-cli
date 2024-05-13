@@ -3,9 +3,14 @@ package com.chromia.build.tools.model
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.containsOnly
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.compile.ValidationException
+import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.parseModel
+import java.io.File
+import java.math.BigInteger
+import java.nio.file.Path
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvByteArray
@@ -15,9 +20,6 @@ import net.postchain.gtv.GtvString
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.math.BigInteger
-import java.nio.file.Path
 
 internal class ChromiaModelTest {
     @Test
@@ -66,6 +68,38 @@ internal class ChromiaModelTest {
 
         val settings = parseModel(settingsFile)
         assertThat(settings.blockchains.toList().map { it.first }).isEqualTo(listOf("chainB", "chainA"))
+    }
+
+    @Test
+    fun `library is parsed`(@TempDir dir: Path) {
+        val settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                     my_lib:
+                         module: first
+                         type: library
+            """.trimIndent())
+        }
+
+        val settings = parseModel(settingsFile)
+        assertThat(settings.blockchains.keys).containsOnly("my_lib")
+        assertThat(settings.blockchains.values.single().type).isEqualTo(BlockchainModel.Type.LIBRARY)
+    }
+
+    @Test
+    fun `Wrong type is rejected`(@TempDir dir: Path) {
+        val settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                     my_lib:
+                         module: main
+                         type: no_type
+            """.trimIndent())
+        }
+
+        assertThrows<ValidationException> {
+            parseModel(settingsFile)
+        }
     }
 
     @Test

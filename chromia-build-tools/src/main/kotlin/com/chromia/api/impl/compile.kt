@@ -2,30 +2,59 @@ package com.chromia.api.impl
 
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.build.tools.compile.BlockchainConfigurationGenerator
+import com.chromia.build.tools.lib.DirectoryHashCalculator
+import com.chromia.build.tools.lib.DirectoryHashCalculator.RidStrategy
 import com.chromia.build.tools.lib.LibraryVerifyer
+import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaModel
-import java.nio.file.Path
-import net.postchain.common.types.WrappedByteArray
-import net.postchain.crypto.Secp256K1CryptoSystem
-import net.postchain.gtv.GtvFactory
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
-import net.postchain.gtv.merkleHash
-import net.postchain.rell.api.base.RellApiBaseInternal
+import com.chromia.cli.model.CompileModel
+import com.chromia.cli.model.RellLibraryModel
+import kotlin.io.path.exists
+import kotlin.io.path.pathString
+import kotlin.io.path.relativeTo
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
-import net.postchain.rell.base.compiler.base.utils.C_SourceDir
 import net.postchain.rell.base.utils.RellGtxConfigConstants
 
-private val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
+fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel): List<BlockchainConfiguration> {
+    LibraryVerifyer(cliEnv, model.compile.libFolder).verifyLibs(model.libs)
+    val (libraries, blockchains) = model.blockchains.toList().partition { it.second.type == BlockchainModel.Type.LIBRARY }
+            .let { (libs, chains) -> libs.toMap() to chains.toMap() }
 
-fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path): List<BlockchainConfiguration> {
-    LibraryVerifyer(cliEnv).verifyLibs(model.compile.source, model.libs)
-    val blockchainConfigurationGenerator = BlockchainConfigurationGenerator(cliEnv, model.compile, projectDir)
-    return blockchainConfigurationGenerator.generate(model.blockchains)
+    return BlockchainConfigurationGenerator(cliEnv, model.compile).generate(blockchains) +
+            libraries.map { (lib, m) -> libraryGtv(cliEnv, model.compile, lib, m) }
 }
 
-fun verify(cliEnv: RellCliEnv, model: ChromiaModel, sourceDir: Path): WrappedByteArray {
-    LibraryVerifyer(cliEnv).verifyLibs(sourceDir, model.libs)
+private fun libraryGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: String, library: BlockchainModel): BlockchainConfiguration {
+    val compileconfig = RellApiCompile.Config.Builder()
+            .cliEnv(cliEnv)
+            .includeTestSubModules(true)
+            .mountConflictError(false)
+            .moduleArgsMissingError(false)
+            .appModuleInTestsError(false)
+            .version(compileModel.langVersion)
+            .quiet(false)
+            .build()
+
+    RellApiCompile.compileApp(compileconfig, compileModel.source.toFile(), listOf(library.module), library.test.modules)
+
+    val libFolder = compileModel.libFolder.resolve(name)
+    if (!libFolder.exists()) throw IllegalArgumentException("Library $name not found. Please verify that the name of the library matches the folder name in lib folder.")
+    val rid = DirectoryHashCalculator(compileModel.source).compute(libFolder, RidStrategy.LIST)
+
+    val gtv = GtvBuilder().apply {
+        update(gtv(compileModel.rellVersion), "gtx", "rell", RellGtxConfigConstants.LANG_VERSION_KEY)
+        update(gtv(rid), "rid")
+    }.build()
+
+    cliEnv.print(RellLibraryModel("", path = libFolder.relativeTo(compileModel.root).pathString, rid = rid).format(name))
+    return BlockchainConfiguration(name, gtv)
+}
+
+fun verify(cliEnv: RellCliEnv, model: ChromiaModel): Boolean {
+    LibraryVerifyer(cliEnv, model.compile.libFolder).verifyLibs(model.libs)
 
     val compileconfig = RellApiCompile.Config.Builder()
             .cliEnv(cliEnv)
@@ -35,7 +64,5 @@ fun verify(cliEnv: RellCliEnv, model: ChromiaModel, sourceDir: Path): WrappedByt
             .quiet(false)
             .build()
 
-    val gtv = RellApiBaseInternal.compileGtv(compileconfig, C_SourceDir.diskDir(sourceDir.toFile()), null)
-    val gtvSources = GtvFactory.gtv(mapOf(RellGtxConfigConstants.SOURCES_KEY to gtv[RellGtxConfigConstants.SOURCES_KEY]!!)) // TODO: Verify this
-    return WrappedByteArray(gtvSources.merkleHash(hashCalculator))
+    return RellApiCompile.compileApp(compileconfig, model.compile.source.toFile(), null).valid
 }

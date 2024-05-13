@@ -6,6 +6,7 @@ import net.postchain.gtv.listMapAndPrimitivesToGtv
 
 data class BlockchainModel(
         val module: String,
+        val type: Type,
         val moduleArgs: Map<String, Map<String, Gtv>> = mapOf(),
         val config: Map<String, Gtv> = mapOf(),
         val test: TestModel = TestModel()
@@ -14,6 +15,7 @@ data class BlockchainModel(
         @Suppress("UNCHECKED_CAST")
         fun load(data: Map<String, Any>, additionalParameter: String) = BlockchainModel(
                 module = ensureType<String>(data["module"], "blockchain", "module"),
+                type = ensureType<String?>(data["type"], "blockchain", "library")?.let { Type.valueOf(it.uppercase()) } ?: Type.BLOCKCHAIN,
                 moduleArgs = ensureType<Map<String, Any?>?>(data["moduleArgs"], "blockchain", additionalParameter, "moduleArgs")
                         ?.mapValues { a ->
                             (a.value as Map<String, Any?>).mapValues { b -> listMapAndPrimitivesToGtv(b.value) }
@@ -25,5 +27,10 @@ data class BlockchainModel(
                 test = data["test"]?.let { TestModel.load(it as Map<String, Any>, "blockchain", additionalParameter) }
                         ?: TestModel()
         )
+    }
+
+    enum class Type {
+        BLOCKCHAIN,
+        LIBRARY,
     }
 }

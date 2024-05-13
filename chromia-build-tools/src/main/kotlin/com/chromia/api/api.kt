@@ -8,10 +8,8 @@ import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DeploymentModel
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
-import java.nio.file.Path
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.cm.cm_api.ClusterManagementImpl
-import net.postchain.common.types.WrappedByteArray
 import net.postchain.rell.api.base.RellCliEnv
 
 object ChromiaCompileApi {
@@ -19,15 +17,15 @@ object ChromiaCompileApi {
     /**
      * Builds blockchain configurations
      */
-    fun build(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path)
-            : List<BlockchainConfiguration> = compileGtv(cliEnv, model, projectDir)
+    fun build(cliEnv: RellCliEnv, model: ChromiaModel)
+            : List<BlockchainConfiguration> = compileGtv(cliEnv, model)
 
     /**
      * Verifies rell source code and computes the RID
      */
     @ExperimentalApi
-    fun verify(cliEnv: RellCliEnv, model: ChromiaModel, projectDir: Path)
-            : WrappedByteArray = com.chromia.api.impl.verify(cliEnv, model, projectDir)
+    fun verify(cliEnv: RellCliEnv, model: ChromiaModel)
+            : Boolean = com.chromia.api.impl.verify(cliEnv, model)
 }
 
 object ChromiaLibrariesApi {

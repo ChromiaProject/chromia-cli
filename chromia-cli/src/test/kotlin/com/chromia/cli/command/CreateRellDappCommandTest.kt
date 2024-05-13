@@ -12,12 +12,11 @@ import org.junit.jupiter.api.io.TempDir
 
 internal class CreateRellDappCommandTest {
     @TempDir
-    @JvmField
-    var dir: File? = null
+    lateinit var dir: File
 
     @Test
     fun minimalTemplate() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
+        CreateRellDappCommand().test("-d ${dir.absolutePath}")
         val projectDir = File(dir, "my-rell-dapp")
         val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
@@ -32,7 +31,7 @@ internal class CreateRellDappCommandTest {
 
     @Test
     fun plainTemplate() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain plain")
+        CreateRellDappCommand().test("-d ${dir.absolutePath} --template plain plain")
         val projectDir = File(dir, "plain")
         val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
@@ -46,7 +45,7 @@ internal class CreateRellDappCommandTest {
 
     @Test
     fun plainMultiTemplate() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath} --template plain-multi my-dapp")
+        CreateRellDappCommand().test("-d ${dir.absolutePath} --template plain-multi my-dapp")
         val projectDir = File(dir, "my-dapp")
         val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(configYmlFile.exists())
@@ -63,8 +62,21 @@ internal class CreateRellDappCommandTest {
     }
 
     @Test
+    fun plainLibraryTemplate() {
+        CreateRellDappCommand().test("-d ${dir.absolutePath} --template plain-library my-lib")
+        val projectDir = dir.resolve("my-lib")
+        assertTrue(projectDir.exists())
+        assertTrue(projectDir.resolve("chromia.yml").exists())
+        val libDir = projectDir.resolve("src/lib/my_lib")
+        assertTrue(libDir.exists())
+        assertTrue(libDir.resolve("module.rell").exists())
+        assertTrue(projectDir.resolve("src/tests/test_lib_my_lib.rell").exists())
+        BuildCommand().test("-s ${projectDir.absolutePath}")
+    }
+
+    @Test
     fun minimalTemplateCreatesNewFilesWithCustomName() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath} new-name")
+        CreateRellDappCommand().test("-d ${dir.absolutePath} new-name")
         val projectDir = File(dir, "new-name")
         val configYmlFile = File(projectDir, "chromia.yml")
         assertTrue(File(projectDir, "src/main.rell").exists())
@@ -82,8 +94,8 @@ internal class CreateRellDappCommandTest {
 
     @Test
     fun alreadyExistingPackageInDirectory() {
-        CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
-        val output = CreateRellDappCommand().test("-d ${dir!!.absolutePath}")
+        CreateRellDappCommand().test("-d ${dir.absolutePath}")
+        val output = CreateRellDappCommand().test("-d ${dir.absolutePath}")
         assertThat(output.stdout).contains("There already exist a directory called \"my-rell-dapp\" in the working directory, aborting.")
     }
 }

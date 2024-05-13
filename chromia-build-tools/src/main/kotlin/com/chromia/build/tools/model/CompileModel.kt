@@ -11,7 +11,9 @@ data class CompileModel(
         private val deprecatedError: Boolean = false,
         val quiet: Boolean = true,
         val strictGtvConversion: Boolean = true,
+        val root: Path,
 ) {
+    val libFolder: Path = source.resolve("lib")
     val langVersion get() = R_LangVersion.of(rellVersion)
 
     companion object {
@@ -24,6 +26,7 @@ data class CompileModel(
                 quiet = ensureType<Boolean?>(data["quiet"], "compile", "quiet") ?: false,
                 strictGtvConversion = ensureType<Boolean?>(data["strictGtvConversion"], "compile", "strictGtvConversion")
                         ?: true,
+                dir,
         )
         fun default(dir: Path) = load(mapOf(), dir)
     }

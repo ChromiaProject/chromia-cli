@@ -1,6 +1,7 @@
 package com.chromia.build.tools.lib
 
 import java.io.File
+import java.nio.file.Path
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.api.errors.InvalidRemoteException
 import org.eclipse.jgit.internal.transport.sshd.agent.connector.Factory
@@ -11,19 +12,19 @@ import org.eclipse.jgit.util.FS
 
 class GitRepositoryCloner(val sshDir: File? = null, val quiet: Boolean = false) : RepositoryCloner {
 
-    override fun clone(registry: String, target: File, tagOrBranch: String?) {
+    override fun clone(registry: String, target: Path, tagOrBranch: String?) {
         try {
             val sshdSessionFactory = createSshdSessionFactory()
             SshSessionFactory.setInstance(sshdSessionFactory)
             Git.cloneRepository()
                     .apply { if (tagOrBranch != null) setBranch(tagOrBranch) }
-                    .setDirectory(target)
+                    .setDirectory(target.toFile())
                     .setURI(registry)
                     .setTimeout(60)
                     .apply { if (!quiet) setProgressMonitor(TextProgressMonitor()) }
                     .call()
         } catch (e: InvalidRemoteException) {
-            target.deleteRecursively()
+            target.toFile().deleteRecursively()
             throw LibraryInstallException(e.message!!)
         }
     }

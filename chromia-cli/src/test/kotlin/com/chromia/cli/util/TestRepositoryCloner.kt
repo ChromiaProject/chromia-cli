@@ -3,7 +3,6 @@ package com.chromia.cli.util
 import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.model.RellLibraryModel
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
@@ -13,9 +12,9 @@ import net.postchain.common.hexStringToWrappedByteArray
 
 class TestRepositoryCloner : RepositoryCloner {
     val repos = listOf(foo, bar, filter).associateBy { it.model.registry }
-    override fun clone(registry: String, target: File, tagOrBranch: String?) {
+    override fun clone(registry: String, target: Path, tagOrBranch: String?) {
         repos[registry]?.let { repo ->
-            repo.files.forEach { createFile(target.toPath(), it) }
+            repo.files.forEach { createFile(target, it) }
         } ?: throw LibraryInstallException("Repository does not exist")
     }
 

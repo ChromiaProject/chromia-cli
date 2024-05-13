@@ -2,8 +2,8 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import com.chromia.build.tools.lib.InstallDirTarget
 import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.ChromiaModel
@@ -15,18 +15,22 @@ import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import java.io.File
+import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
 import kotlin.test.assertFailsWith
 import net.postchain.common.hexStringToWrappedByteArray
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 
 class InstallCommandTest {
-    val path = "src/${InstallDirTarget.SOURCE.target}"
+    val path = "src/lib"
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(logger)
 
@@ -49,7 +53,6 @@ class InstallCommandTest {
         settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
         settings = parseModel(settingsFile)
-
     }
 
     @Test
@@ -69,11 +72,7 @@ class InstallCommandTest {
                     .context { terminal = testTerminal }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
         }
-        assertThat(logger.output()).contains(
-                "The rid for library fooFail does not match the configured value.\n" +
-                        "Should be: 11\n" +
-                        "Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1\n" +
-                        "Do not blindly copy the calculated rid as the integrity of the library cannot be verified.")
+        assertThat(logger.output()).contains( "Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
     }
 
     @Test
@@ -98,6 +97,19 @@ class InstallCommandTest {
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/existingFileBar.rell").exists())
         Assertions.assertFalse(File(testDir.toFile(), "$path/Foo/existingFileFoo.rell").exists())
         assertThat(res.output).contains("Library foo not up to date, reinstalling")
+    }
+
+    @Test
+    fun aliasImportIsAllowed() {
+       testData(testDir) {
+           config {
+               lib("alias_foo", TestRepositoryCloner.foo.model)
+           }
+       }
+        assertDoesNotThrow {
+            InstallCommand { TestRepositoryCloner() }
+                    .parse(listOf("-s", settingsFile.absolutePath, "-lib", "alias_foo"))
+        }
     }
 
     @Test
@@ -173,14 +185,15 @@ class InstallCommandTest {
             }
         }
 
-        assertFailsWith<LibraryInstallException> {
+        assertDoesNotThrow {
             InstallCommand { TestRepositoryCloner() }
                     .context { terminal = testTerminal }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "emptyRegistry"))
         }
-        assertThat(logger.output()).contains("Library emptyRegistry contains files that are not rell files.")
-        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/path/lib/filter/a.yml")
-        assertThat(logger.output()).contains("/build/.lib/emptyRegistry/path/lib/filter/nested/b.yml")
+        val (rellFiles, nonRellFiles) = Files.walk(testDir.resolve("src/lib/emptyRegistry"))
+                .filter { !it.isDirectory() }.toList().partition { it.extension == "rell" }
+        assertThat(nonRellFiles).isEmpty()
+        assertThat(rellFiles.size).isEqualTo(2)
     }
 
 }

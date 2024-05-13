@@ -1,3 +1,3 @@
 build
-src/lib
+src/lib/*
 .chromia

@@ -1,6 +1,7 @@
 package com.chromia.cli.command
 
 import com.chromia.cli.template.MinimalTemplateFactory
+import com.chromia.cli.template.PlainLibraryTemplateFactory
 import com.chromia.cli.template.PlainMultiTemplateFactory
 import com.chromia.cli.template.PlainTemplateFactory
 import com.github.ajalt.clikt.core.CliktCommand
@@ -49,6 +50,7 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
             TemplateProject.PLAIN -> PlainTemplateFactory()
             TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory()
             TemplateProject.MINIMAL -> MinimalTemplateFactory()
+            TemplateProject.PLAIN_LIBRARY -> PlainLibraryTemplateFactory()
         }
         factory.createProjectFromTemplate(projectDir, projectName)
     }
@@ -57,5 +59,6 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
         PLAIN,
         PLAIN_MULTI,
         MINIMAL,
+        PLAIN_LIBRARY,
     }
 }
