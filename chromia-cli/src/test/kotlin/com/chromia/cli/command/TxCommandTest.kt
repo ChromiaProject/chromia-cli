@@ -2,18 +2,24 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.TestModel
+import com.chromia.build.tools.restapi.withQuery
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class TxCommandTest : IntegrationTestSetup() {
     private val logger = TerminalRecorder()
@@ -61,5 +67,21 @@ class TxCommandTest : IntegrationTestSetup() {
                 "-brid", "8C27D50E189022DB039830F19C9178975EF3C2CF38F205F2CE74E6FD3244E81A"))
 
         assertThat(logger.output()).contains("CONFIRMED")
+    }
+
+    @Test
+    fun underscoreArgumentIsParsed() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--await", "--api-url", apiUrl, "_foobar"))
+            assertThat(res.stdout).contains("CONFIRMED")
+        }
+    }
+
+    @Test
+    fun underscoreOperationIsParsed() {
+        withModel(TestModel().withQuery("_test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("_test_op", "--await", "--api-url", apiUrl, "foobar"))
+            assertThat(res.stdout).contains("CONFIRMED")
+        }
     }
 }

@@ -2,21 +2,28 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.doesNotContain
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.TestModel
+import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.client.exception.ClientError
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class QueryCommandTest : IntegrationTestSetup() {
     @TempDir
@@ -43,6 +50,13 @@ class QueryCommandTest : IntegrationTestSetup() {
     @Test
     fun testMissingQueryName() {
         val res = QueryCommand().test(listOf())
+        assertThat(res.stderr).contains("missing argument <queryname>")
+    }
+
+    @Test
+    fun testIncorrectQueryOptionAndMissingArgument() {
+        val res = QueryCommand().test(listOf("--bar"))
+        assertThat(res.stderr).contains("no such option --bar")
         assertThat(res.stderr).contains("missing argument <queryname>")
     }
 
@@ -135,5 +149,21 @@ class QueryCommandTest : IntegrationTestSetup() {
         val res = QueryCommand().test(listOf("test_query", "foo=17", "bar=hello", "baz=\"Hello, world=5\"", "my_struct=[\"name\":\"what ever\"]", "n=null"))
         assertThat(res.statusCode).isEqualTo(0)
         assertThat(res.stdout).isEqualTo("4711\n")
+    }
+
+    @Test
+    fun underscoreArgumentIsParsedAsOption() {
+        withModel(TestModel().withQuery("test_query", gtv(1))) {
+            val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "_bar=hello"))
+            assertThat(res.stderr).contains("Error: no such option _bar")
+        }
+    }
+
+    @Test
+    fun doubleDashMakesForceArgumentParsing() {
+        withModel(TestModel().withQuery("test_query", gtv(1))) {
+            val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "--", "_bar=hello"))
+            assertThat(res.stderr).isEmpty()
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
+import com.chromia.cli.util.DASH_DASH_DESCRIPTION
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.github.ajalt.clikt.core.CliktCommand
@@ -18,7 +19,13 @@ import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
 
-class QueryCommand : CliktCommand(help = "Make a query towards a running node") {
+class QueryCommand : CliktCommand(help = """
+    Make a query towards a running node
+    
+    Note: For query arguments:
+    $DASH_DASH_DESCRIPTION
+""".trimIndent()
+) {
 
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
@@ -31,7 +38,7 @@ class QueryCommand : CliktCommand(help = "Make a query towards a running node") 
             "string" to "foo, \"bar\"",
             "bytearray" to "will be encoded using the rell notation x\"<myByteArray>\" and will initially be interpreted as a hex-string.",
             "array" to "[foo,123]",
-            "dict" to """["key1":value1,"key2":value2]"""
+            "dict" to """["key1":value1,"key2":value2]""",
     ))
             .multiple()
             .transformAll {

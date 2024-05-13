@@ -23,7 +23,7 @@ import net.postchain.gtx.Gtx
 import net.postchain.gtx.GtxQuery
 
 class TestModel(
-        override val blockchainRid: BlockchainRid,
+        override val blockchainRid: BlockchainRid = BlockchainRid.buildRepeat(1),
         override val chainIID: Long = 0,
 ) : CachedModel {
     override val queryCacheTtlSeconds: Long = 0
