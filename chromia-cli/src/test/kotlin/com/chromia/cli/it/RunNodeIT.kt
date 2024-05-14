@@ -1,17 +1,21 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
-import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.build.tools.testData
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
+import com.chromia.cli.command.node.INITILIZED_LOG
 import java.io.File
 import java.nio.file.Path
 import java.time.Duration
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 class RunNodeIT {
+
+    @TempDir
+    lateinit var dir: Path
+
     @Test
-    fun startNode(@TempDir dir: Path) {
+    fun startNode() {
         testData(dir)
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
@@ -58,8 +62,33 @@ class RunNodeIT {
     }
 
     @Test
-    fun icmfMessageIsReceived(@TempDir dir: Path) {
+    fun startNodeWithLibraryChain() {
+        testData(dir) {
+            addFile("lib/my_lib/module.rell", """module; query hello() = "Hello!";""")
+            addFile("tests/dapp.rell", """module; import lib.my_lib;""")
+            config {
+                blockchains("""
+                    blockchains:
+                      my_lib:
+                        module: lib.my_lib
+                        type: library
+                      my_test_chain:
+                        module: tests.dapp
+                """.trimIndent())
+            }
+        }
+        TestProcess.Builder("node", "start")
+                .verbose()
+                .startCondition(INITILIZED_LOG)
+                .awaitCompletion(false)
+                .setWorkingDir(dir.toFile())
+                .start {
+                    TestProcess.Builder("query", "hello").startCondition("Hello!").start()
+                }
+    }
 
+    @Test
+    fun icmfMessageIsReceived() {
         testData(dir) {
             config {
                 blockchains("""
@@ -122,7 +151,7 @@ class RunNodeIT {
     }
 
     @Test
-    fun startNodeWithNonWhitelistedGtxModuleFails(@TempDir dir: Path) {
+    fun startNodeWithNonWhitelistedGtxModuleFails() {
         testData(dir) {
             config {
                 blockchains("""
@@ -145,7 +174,7 @@ class RunNodeIT {
     }
 
     @Test
-    fun startNodeWithGtxStrictConfigurationTrue(@TempDir dir: Path) {
+    fun startNodeWithGtxStrictConfigurationTrue() {
         testData(dir) {
             config {
                 blockchains("""
@@ -175,7 +204,7 @@ class RunNodeIT {
     }
 
     @Test
-    fun startNodeWithGtxStrictConfigurationFalse(@TempDir dir: Path) {
+    fun startNodeWithGtxStrictConfigurationFalse() {
         testData(dir) {
             config {
                 blockchains("""
@@ -203,7 +232,7 @@ class RunNodeIT {
     }
 
     @Test
-    fun typeConversionDefaultNonStrictBehaviour(@TempDir dir: Path) {
+    fun typeConversionDefaultNonStrictBehaviour() {
         // This test will fail when we set default rell version >=0.13.9
         // Test could probably be removed then, and we can update startNodeWithGtxStrictConfigurationTrue and
         // startNodeWithGtxStrictConfigurationFalse to capture default / non-default behaviour

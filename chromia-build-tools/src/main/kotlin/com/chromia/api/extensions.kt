@@ -2,6 +2,7 @@ package com.chromia.api
 
 import com.chromia.api.result.Named
 import com.chromia.build.tools.compile.ValidationException
+import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DeploymentModel
 
@@ -9,6 +10,10 @@ fun ChromiaModel.filterBlockchains(blockchains: Collection<String>): ChromiaMode
     if (blockchains.isEmpty()) return this
     if (!this.blockchains.keys.containsAll(blockchains)) throw ValidationException("Cannot compile blockchains $blockchains. Configured chains are ${this.blockchains.keys}")
     return copy(blockchains = this.blockchains.filter { blockchains.isEmpty() || it.key in blockchains })
+}
+
+fun ChromiaModel.filterBlockchains(predicate: (String, BlockchainModel) -> Boolean): ChromiaModel {
+    return copy(blockchains = this.blockchains.filter { predicate(it.key, it.value) })
 }
 
 fun ChromiaModel.filterLibraries(libraries: List<String>?): ChromiaModel {

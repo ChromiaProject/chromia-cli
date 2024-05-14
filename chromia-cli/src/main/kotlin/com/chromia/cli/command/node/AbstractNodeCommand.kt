@@ -9,6 +9,7 @@ import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastru
 import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.d1.ManagementChainFactory
+import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.filterGtxModules
@@ -50,8 +51,10 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
 
     protected fun extractConfigs(): Collection<BlockchainConfiguration> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
-            val blockchainsToCompile = settings.model.blockchains.filter { name.isEmpty() || name.contains(it.key) }.keys
-            ChromiaCompileApi.build(CliktCliEnv(this), settings.model.filterBlockchains(blockchainsToCompile))
+            val model = settings.model.filterBlockchains { bc, model ->
+                model.type == BlockchainModel.Type.BLOCKCHAIN && (name.isEmpty() || name.contains(bc))
+            }
+            ChromiaCompileApi.build(CliktCliEnv(this), model)
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
