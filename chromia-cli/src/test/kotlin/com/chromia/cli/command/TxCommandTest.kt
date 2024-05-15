@@ -10,6 +10,10 @@ import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import net.postchain.common.BlockchainRid
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
@@ -17,19 +21,18 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
+
 
 class TxCommandTest : IntegrationTestSetup() {
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(logger)
 
-    private fun createTestNode(config: String) {
+    private fun launchBlockchainInTestNode(config: String): BlockchainRid {
         val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())
         val setup = SystemSetupFactory.buildSystemSetup(listOf(BlockchainSetup.buildFromGtv(0, gtvConfig)))
         setup.needRestApi = true
         createNodesFromSystemSetup(setup, true)
+        return setup.blockchainMap[0]!!.rid
     }
 
     @Test
@@ -60,11 +63,12 @@ class TxCommandTest : IntegrationTestSetup() {
                   schema: txcommandtest0_0
             """.trimIndent())
         }
-        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
-        createTestNode("${dir.absolutePathString()}/build/a.xml")
+
+        BuildCommand().test(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
+        val brid = launchBlockchainInTestNode("${dir.absolutePathString()}/build/a.xml")
         TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
                 "test_op", "foobar", "\"Hello, world!\"", "[\"foo bar\"]", "null",
-                "-brid", "8C27D50E189022DB039830F19C9178975EF3C2CF38F205F2CE74E6FD3244E81A"))
+                "-brid", "$brid"))
 
         assertThat(logger.output()).contains("CONFIRMED")
     }

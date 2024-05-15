@@ -4,6 +4,10 @@ import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.testData
 import com.chromia.cli.command.node.INITILIZED_LOG
 import java.nio.file.Path
+import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.impl.PostchainClientProviderImpl
+import net.postchain.client.request.EndpointPool
+import net.postchain.common.BlockchainRid
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -15,12 +19,16 @@ class DeployInspectIT {
                 .awaitCompletion(false)
                 .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
-                .verbose()
                 .start {
-                    val brid = "F04F34FED990B043358EFCA85F4FA493952671350C9BFD78D7C055C0829B1421"
-                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", brid).startCondition("Module: main").start()
-                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", brid, "-l").startCondition("main").start()
-
+                    val brid = getBrid()
+                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", "$brid").startCondition("Module: main").start()
+                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", "$brid", "-l").startCondition("main").start()
                 }
+    }
+
+    private fun getBrid(): BlockchainRid {
+        val clientConfig = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = EndpointPool.singleUrl("http://localhost:7740"))
+        val brid = PostchainClientProviderImpl().createClient(clientConfig).getBlockchainRID(0)
+        return brid
     }
 }
