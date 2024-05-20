@@ -2,6 +2,7 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
+import com.chromia.cli.tools.gtv.pretty
 import com.chromia.cli.util.DASH_DASH_DESCRIPTION
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
@@ -71,6 +72,6 @@ class QueryCommand : CliktCommand(help = """
         val clientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
         val res = target.createClient(clientConfig)
                 .query(queryName, args as Gtv)
-        echo(res)
+        echo(res.pretty())
     }
 }

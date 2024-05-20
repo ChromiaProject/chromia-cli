@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.doesNotContain
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
@@ -17,6 +16,7 @@ import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
+import net.postchain.gtv.parse.GtvParser
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -165,5 +165,51 @@ class QueryCommandTest : IntegrationTestSetup() {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "--", "_bar=hello"))
             assertThat(res.stderr).isEmpty()
         }
+    }
+
+    @Test
+    fun prettyPrint(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                query test_query() = map([("a",[1,2,3]),("b",[5,6])]);
+            """.trimIndent())
+        }
+        with(File(dir.toFile(), "chromia.yml")) {
+            writeText("""
+                blockchains:
+                  a:
+                    module: main
+                    config:
+                      signers:
+                        - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+                      blockstrategy:
+                        name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+
+                database:
+                  schema: txcommandtest0_0
+            """.trimIndent())
+        }
+        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
+        createTestNode("${dir.absolutePathString()}/build/a.xml")
+        val res = QueryCommand().test(listOf("test_query"))
+        assertThat(res.statusCode).isEqualTo(0)
+        val output = res.stdout
+        assertThat(output).isEqualTo("""[
+            |  "a": [
+            |    1,
+            |    2,
+            |    3
+            |  ],
+            |  "b": [
+            |    5,
+            |    6
+            |  ]
+            |]
+            |""".trimMargin())
+        assertThat(GtvParser.parse(output)).isEqualTo(
+                gtv(mapOf("a" to gtv(listOf(gtv(1), gtv(2), gtv(3))), "b" to gtv(listOf(gtv(5), gtv(6)))))
+        )
     }
 }
