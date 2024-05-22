@@ -35,7 +35,7 @@
         },
         "failOnError": {
           "type": "boolean",
-          "description": "Fail build on first test error or not"
+          "description": "Indicates whether to fail the build on the first test error"
         }
       }
     },
@@ -73,7 +73,7 @@
         },
         "logSqlErrors": {
           "type": "boolean",
-          "description": "Log any sql error to console"
+          "description": "Log any SQL errors to the console"
         }
       }
     },
@@ -95,11 +95,11 @@
         },
         "source": {
           "type": "string",
-          "description": "Path to sources root"
+          "description": "Path to the source root directory"
         },
         "target": {
           "type": "string",
-          "description": "Path to compilation target folder"
+          "description": "Path to the compilation target folder"
         },
         "deprecatedError": {
           "type": "boolean",
@@ -114,7 +114,7 @@
         "strictGtvConversion": {
           "type": "boolean",
           "default": true,
-          "description": "Use strict gtv conversion to not allow transformation of gtv types when parsing operation arguments. It is recommended to leave this to true (default)."
+          "description": "Use strict GTV conversion to disallow transformation of GTV types when parsing operation arguments. It is recommended to leave this set to true (default)."
         }
       }
     },
@@ -135,14 +135,14 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "Title for generated documentation site"
+          "description": "Title for the generated documentation site"
         },
         "customStyleSheets": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "Additional css stylesheets to include"
+          "description": "Additional CSS stylesheets to include"
         },
         "customAssets": {
           "type": "array",
@@ -156,7 +156,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Additional markdown documentation files to include"
+          "description": "Additional Markdown documentation files to include"
         },
         "footerMessage": {
           "type": "string",
@@ -176,12 +176,12 @@
         "module": {
           "type": "string",
           "default": "main",
-          "description": "Entrypoint module for blockchain"
+          "description": "Entrypoint module for the blockchain"
         },
         "type": {
           "type": "string",
           "enum": ["blockchain", "library"],
-          "description": "Mark this blockchain as a library"
+          "description": "Indicates whether this blockchain is marked as a library"
         },
         "moduleArgs": {
           "$ref": "#/$defs/moduleArgs"
@@ -294,7 +294,7 @@
       "properties": {
         "registry": {
           "type": "string",
-          "description": "Registry url (https or ssh)"
+          "description": "Registry URL (HTTPS or SSH)"
         },
         "tagOrBranch": {
           "type": "string",
@@ -307,7 +307,7 @@
         "insecure": {
           "type": "boolean",
           "default": false,
-          "description": "Will not verify the rid if true"
+          "description": "If true, will not verify the RID"
         },
         "rid": {
           "type": "string",
@@ -328,14 +328,14 @@
         "brid": {
           "type": "string",
           "pattern": "^x\"[a-fA-F0-9]+\"$",
-          "description": "Blockchain Rid for target networks management chain"
+          "description": "Blockchain RID for the target network's management chain"
         },
         "container": {
           "type": [
             "string",
             "null"
           ],
-          "description": "Container id"
+          "description": "Container ID"
         },
         "url": {
           "type": [
@@ -345,7 +345,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Url(s) to nodes in the system cluster of network"
+          "description": "URL(s) to nodes in the system cluster or network"
         },
         "chains": {
           "type": "object",
@@ -354,7 +354,7 @@
             "pattern": "^x\"[a-fA-F0-9]+\"$",
             "description": "BlockchainRid"
           },
-          "description": "Map of deployed blockchains with with their Blockchain Rids on this network"
+          "description": "Map of deployed blockchains with their Blockchain RIDs on this network"
         }
       }
     },
@@ -394,7 +394,7 @@
     },
     "gtx": {
       "type": "object",
-      "description": "Gtx configuration overrides",
+      "description": "GTX configuration overrides",
       "additionalProperties": false,
       "properties": {
         "max_transaction_size": {
@@ -439,12 +439,12 @@
         "exponential_delay_initial": {
           "type": "integer",
           "default": 1000,
-          "description": "The initial delay of revolt timeout in milliseconds"
+          "description": "The initial delay of the revolt timeout in milliseconds"
         },
         "exponential_delay_power_base": {
           "type": "string",
           "default": "1.2",
-          "description": "Power base of the exponential increase of the revolt timeout per round"
+          "description": "Base of the exponential increase for the revolt timeout per round"
         },
         "exponential_delay_max": {
           "type": "integer",
@@ -454,12 +454,12 @@
         "fast_revolt_status_timeout": {
           "type": "integer",
           "default": -1,
-          "description": "Timeout in milliseconds since last received status message before considering a node disconnected and revolting immediately. -1 to disable this functionality"
+          "description": "Timeout in milliseconds since the last received status message before considering a node disconnected and revolting immediately. -1 to disable this functionality"
         },
         "revolt_when_should_build_block": {
           "type": "boolean",
           "default": false,
-          "description": "Only start counting revolt timeout after we ourselves consider it possible to actually build a block"
+          "description": "Start counting the revolt timeout only after considering it possible to build a block"
         }
       }
     },
@@ -470,7 +470,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Block strategy, name of class implementing net.postchain.core.block.BlockBuildingStrategy"
+          "description": "Block strategy, name of the class implementing net.postchain.core.block.BlockBuildingStrategy"
         },
         "maxblocksize": {
           "type": "integer",
@@ -495,7 +495,7 @@
         "maxtxdelay": {
           "type": "integer",
           "default": 1000,
-          "description": "Maximum time to wait before starting to build a block after the first transaction was received, in milliseconds"
+          "description": "Maximum time to wait before starting to build a block after the first transaction is received, in milliseconds"
         },
         "minbackofftime": {
           "type": "integer",
@@ -510,7 +510,7 @@
         "maxspecialendtransactionsize": {
           "type": "integer",
           "default": 1024,
-          "description": "Maximum size of special end transaction, in bytes"
+          "description": "Maximum size of a special end transaction, in bytes"
         },
         "preemptiveblockbuilding": {
           "type": "boolean",
