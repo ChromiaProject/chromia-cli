@@ -71,6 +71,7 @@ class ConfigBuilder {
     private var libModels = mutableMapOf<String, RellLibraryModel>()
     private var test = ""
     private var docs = ""
+    private var compile = ""
     private var database = """
         database:
           schema: integration_test_schema
@@ -96,6 +97,10 @@ class ConfigBuilder {
         docs = init
     }
 
+    fun compile(init: String) {
+        compile = init
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         sb.append(content)
@@ -109,6 +114,7 @@ class ConfigBuilder {
         if (test.isNotEmpty()) sb.append("\n$test")
         if (docs.isNotEmpty()) sb.append("\n$docs")
         sb.append("\n$database")
+        if (compile.isNotEmpty()) sb.append("\n$compile")
         File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }
 }

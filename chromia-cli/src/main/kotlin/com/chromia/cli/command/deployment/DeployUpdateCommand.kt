@@ -6,6 +6,7 @@ import com.chromia.api.result.BlockchainDeploymentResult
 import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -23,7 +24,7 @@ class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion,
 
-) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
+        ) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
     }
@@ -35,7 +36,11 @@ class DeployUpdateCommand(
             echo("Skipping verification of blockchain config")
             return
         }
-        compiledChains.forEach { chain -> verifyConfiguration(chain, client) }
+        val messages = compiledChains.mapNotNull { chain -> verifyConfiguration(chain, client) }
+        if (messages.isNotEmpty()) {
+            throw PrintMessage(messages.joinToString("\n"), statusCode = 1)
+        }
+        if (verifyOnly) throw PrintMessage("Verification only, skipping sending updates", 0)
     }
 
     override fun performDeploymentOperation(configurations: List<BlockchainConfiguration>): List<BlockchainDeploymentResult> {
@@ -48,7 +53,7 @@ class DeployUpdateCommand(
         }
     }
 
-    private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient) {
+    private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient): String? {
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
@@ -59,9 +64,9 @@ class DeployUpdateCommand(
             nodeClient.validateConfiguration(chain.config)
             echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
         } catch (e: ClientError) {
-            throw PrintMessage("Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}", statusCode = 1)
+            return "Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}"
         }
-        if (verifyOnly) throw PrintMessage("Verification only, skipping sending updates", 0)
+        return null
     }
 
     companion object : ClusterManagementFactory {

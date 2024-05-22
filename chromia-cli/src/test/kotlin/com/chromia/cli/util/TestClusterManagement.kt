@@ -6,7 +6,7 @@ import net.postchain.common.BlockchainRid
 import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Status
 
-class TestClusterManagement(
+open class TestClusterManagement(
         private val clusterOfBlockchain: Map<BlockchainRid, String> = mapOf(),
 ) : ClusterManagement {
     override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
@@ -17,7 +17,7 @@ class TestClusterManagement(
     override fun getClusterNames() = TODO("Not yet implemented")
     override fun getSystemAnchoringChain() = TODO("Not yet implemented")
 
-    override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = clusterOfBlockchain[blockchainRid] ?:
-        if (!blockchainRid.toHex().endsWith("4")) "my_cluster"
-        else throw ClientError("", Status(404, null), "", Endpoint(""))
+    override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = clusterOfBlockchain[blockchainRid]
+            ?: if (!blockchainRid.toHex().endsWith("4")) "my_cluster"
+            else throw ClientError("", Status(404, null), "", Endpoint(""))
 }

@@ -7,17 +7,22 @@ import assertk.assertions.containsExactly
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.DirectoryChainModel
+import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withCompression
 import com.chromia.build.tools.restapi.withInvalidConfiguration
+import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.restapi.withValidConfiguration
+import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
+import net.postchain.common.BlockchainRid
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
@@ -26,6 +31,7 @@ import kotlin.test.assertNotNull
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellCliBasicException
+import net.postchain.rell.base.model.R_LangVersion
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -122,6 +128,41 @@ class DeployUpdateCommandTest {
             val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test", "--verify-only"))
             assertThat(res.output).contains("Blockchain deployed was successfully verified against deployed chain on network test")
             assertThat(res.output).doesNotContain("Blockchain deployed was successfully updated on network test")
+        }
+    }
+
+    @Test
+    fun verifyOnlyMultipleChains() {
+        withModel(model.withValidConfiguration().withClusterManagement(object : TestClusterManagement() {
+            override fun getBlockchainApiUrls(blockchainRid: BlockchainRid): List<String> {
+                return listOf(RestApiInstance.apiUrl)
+            }
+        }), TestModel(BlockchainRid.buildRepeat(34)).withValidConfiguration(), TestModel(BlockchainRid.buildRepeat(17)).withInvalidConfiguration()
+        ) {
+            testData(testDir) {
+                config {
+                    blockchains("""
+                    blockchains:
+                      foo:
+                        module: main
+                      bar:
+                        module: main
+                """.trimIndent())
+                    deployments("""
+                    deployments:
+                        test:
+                          url: "http://localhost:7745"
+                          brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                          container: test_container
+                          chains:
+                            bar: x"1111111111111111111111111111111111111111111111111111111111111111"
+                            foo: x"2222222222222222222222222222222222222222222222222222222222222222"
+                """.trimIndent())
+                }
+            }
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "foo,bar", "--network", "test", "--verify-only"))
+            assertThat(res.output).contains("Blockchain foo was successfully verified against deployed chain on network test")
+            assertThat(res.output).contains("Blockchain bar cannot be updated on network test. Reason: Invalid configuration")
         }
     }
 
