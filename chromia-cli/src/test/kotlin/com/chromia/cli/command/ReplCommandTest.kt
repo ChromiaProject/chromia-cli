@@ -2,11 +2,9 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
-import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.InitExtension
 import com.github.ajalt.clikt.testing.test
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -46,10 +44,59 @@ class ReplCommandTest {
     @Test
     fun commandLineInput() {
         val res = ReplCommand().test("-c '5+5'")
-        assertThat(res.output).doesNotContain("Rell")
-        assertThat(res.output).contains("10")
+        assertThat(res.output).isEqualTo("10\n")
     }
 
+    @Test
+    fun `default format`() {
+        val res = ReplCommand().test("""-c '["One": 1, "Two": 2, "Three": 3]'""")
+        assertThat(res.output).isEqualTo("""["One": 1, "Three": 3, "Two": 2]
+            |
+        """.trimMargin())
+    }
+
+    @Test
+    fun `raw format`() {
+        val res = ReplCommand().test("""--output-format raw -c '["One": 1, "Two": 2, "Three": 3]'""")
+        assertThat(res.output).isEqualTo("""
+            One=1
+            Two=2
+            Three=3
+            
+        """.trimIndent())
+    }
+
+    @Test
+    fun `json format`() {
+        val res = ReplCommand().test("""--output-format json -c '[\"One\": 1, \"Two\": 2, \"Three\": 3]'""")
+        assertThat(res.output).isEqualTo("""
+            {
+              "One": 1,
+              "Three": 3,
+              "Two": 2
+            }
+            
+            """.trimIndent())
+    }
+
+    @Test
+    fun `xml format`() {
+        val res = ReplCommand().test("""-f xml -c '[\"One\": 1, \"Two\": 2, \"Three\": 3]'""")
+        assertThat(res.output).isEqualTo("""
+            <dict>
+                <entry key="One">
+                    <int>1</int>
+                </entry>
+                <entry key="Three">
+                    <int>3</int>
+                </entry>
+                <entry key="Two">
+                    <int>2</int>
+                </entry>
+            </dict>
+            
+            """.trimIndent())
+    }
 
     //TODO update assertion message when there is a proper warning message when a operation is called from repl
     @Test

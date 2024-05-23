@@ -9,8 +9,11 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.google.common.base.Throwables
 import java.io.File
@@ -51,9 +54,11 @@ class ReplCommand : CliktCommand(help = """
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
     private val command by option("-c", "--command", help = "Execute a single command", metavar = "COMMAND")
     private val rawOutput by option("-r", "--raw-output", help = "Will print large object line by line and strings without quotes").flag()
+            .deprecated("Use `--output-format raw` instead")
+    private val outputFormat by option("-f", "--output-format", help = "Output format").enum<OutputFormat>()
+            .default(OutputFormat.pretty)
 
     override fun run() {
-
         if (module != null && settings.model == null) {
             echo("To find the module \"$module\", specifying the settings file is required")
             return
@@ -92,7 +97,16 @@ class ReplCommand : CliktCommand(help = """
     }
 
     private inner class CliktOutputChannelFactory(private val failOnError: Boolean) : ReplOutputChannelFactory {
-        private var valueFormat = if (rawOutput) ReplValueFormat.ONE_ITEM_PER_LINE else ReplValueFormat.GTV_STRING
+        private var valueFormat = if (rawOutput)
+            ReplValueFormat.ONE_ITEM_PER_LINE
+        else
+            when (outputFormat) {
+                OutputFormat.pretty -> ReplValueFormat.GTV_STRING
+                OutputFormat.raw -> ReplValueFormat.ONE_ITEM_PER_LINE
+                OutputFormat.JSON -> ReplValueFormat.GTV_JSON
+                OutputFormat.XML -> ReplValueFormat.GTV_XML
+            }
+
         override fun createOutputChannel() = object : ReplOutputChannel {
             override fun printInfo(msg: String) = echo(msg)
             override fun printCompilerError(code: String, msg: String) = if (failOnError) throw PrintMessage(msg, 1) else echo(msg, err = true)
@@ -119,4 +133,9 @@ class ReplCommand : CliktCommand(help = """
             }
         }
     }
+}
+
+@Suppress("EnumEntryName")
+enum class OutputFormat {
+    pretty, raw, JSON, XML
 }
