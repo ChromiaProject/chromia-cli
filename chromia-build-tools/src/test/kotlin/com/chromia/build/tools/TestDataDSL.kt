@@ -59,6 +59,7 @@ class TestDataBuilder {
 }
 
 class ConfigBuilder {
+    private var definitions = ""
     private var content = """
         blockchains:
           hello:
@@ -68,10 +69,12 @@ class ConfigBuilder {
                 maxblocktime: 1000
     """.trimIndent()
     private var deployments = ""
-    private var libModels = mutableMapOf<String, RellLibraryModel>()
+    private val libStart = "\nlibs:\n"
+    private var libs = libStart
     private var test = ""
     private var docs = ""
     private var compile = ""
+    private var extra = ""
     private var database = """
         database:
           schema: integration_test_schema
@@ -85,8 +88,20 @@ class ConfigBuilder {
         deployments = init
     }
 
-    fun lib(name: String, lib: RellLibraryModel) = apply {
-        libModels[name] = lib
+    //Intent is to use either of the lib function never both
+    fun addLib(name: String, lib: RellLibraryModel) = apply {
+        formatLibModule(name, lib)
+    }
+
+    //Intent is to use either of the lib function never both
+    fun setFullLib(init: String) = apply {
+        libs = init
+    }
+
+    private fun formatLibModule(name: String, lib: RellLibraryModel) {
+        val sb = StringBuilder()
+        sb.append(libs).append(lib.format(name))
+        libs = sb.toString()
     }
 
     fun test(init: String) {
@@ -101,20 +116,29 @@ class ConfigBuilder {
         compile = init
     }
 
+    fun extra(init: String) {
+        extra = init
+    }
+
+    fun database(init: String) {
+        database = init
+    }
+
+    fun definitions(init: String) {
+        definitions = init
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
+        if (definitions.isNotEmpty()) sb.append("$definitions\n")
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
-        if (libModels.isNotEmpty()) {
-            sb.append("\nlibs:\n")
-            libModels.forEach { (name, model) ->
-                sb.append(model.format(name))
-            }
-        }
+        if (libs != libStart) sb.append("\n$libs")
         if (test.isNotEmpty()) sb.append("\n$test")
         if (docs.isNotEmpty()) sb.append("\n$docs")
         sb.append("\n$database")
         if (compile.isNotEmpty()) sb.append("\n$compile")
+        if (extra.isNotEmpty()) sb.append("\n$extra")
         File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }
 }

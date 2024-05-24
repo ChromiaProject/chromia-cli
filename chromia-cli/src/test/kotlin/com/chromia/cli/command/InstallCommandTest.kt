@@ -44,9 +44,9 @@ class InstallCommandTest {
     fun setup() {
         testData(testDir) {
             config {
-                lib("foo", TestRepositoryCloner.foo.model)
-                lib("bar", TestRepositoryCloner.bar.model)
-                lib("insecureBar", TestRepositoryCloner.bar.model.copy(insecure = true, rid = "11".hexStringToWrappedByteArray()))
+                addLib("foo", TestRepositoryCloner.foo.model)
+                addLib("bar", TestRepositoryCloner.bar.model)
+                addLib("insecureBar", TestRepositoryCloner.bar.model.copy(insecure = true, rid = "11".hexStringToWrappedByteArray()))
             }
         }
 
@@ -72,7 +72,7 @@ class InstallCommandTest {
                     .context { terminal = testTerminal }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
         }
-        assertThat(logger.output()).contains( "Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
+        assertThat(logger.output()).contains("Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
     }
 
     @Test
@@ -101,11 +101,11 @@ class InstallCommandTest {
 
     @Test
     fun aliasImportIsAllowed() {
-       testData(testDir) {
-           config {
-               lib("alias_foo", TestRepositoryCloner.foo.model)
-           }
-       }
+        testData(testDir) {
+            config {
+                addLib("alias_foo", TestRepositoryCloner.foo.model)
+            }
+        }
         assertDoesNotThrow {
             InstallCommand { TestRepositoryCloner() }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "alias_foo"))
@@ -166,7 +166,7 @@ class InstallCommandTest {
     fun wrongRegistryTest() {
         testData(testDir) {
             config {
-                lib("wrongRegistry", RellLibraryModel("http://wrongAddress.com", path = "lib", rid = null))
+                addLib("wrongRegistry", RellLibraryModel("http://wrongAddress.com", path = "lib", rid = null))
             }
         }
 
@@ -181,7 +181,7 @@ class InstallCommandTest {
     fun nonRellFilesTest() {
         testData(testDir) {
             config {
-                lib("emptyRegistry", TestRepositoryCloner.filter.model)
+                addLib("emptyRegistry", TestRepositoryCloner.filter.model)
             }
         }
 

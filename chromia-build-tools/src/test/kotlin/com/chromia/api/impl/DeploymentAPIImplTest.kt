@@ -32,7 +32,7 @@ class DeploymentAPIImplTest {
     @Test
     fun invalidConfigurations() {
         testData(dir)
-        val testModel = DeploymentModel(BlockchainRid.ZERO_RID.wData, "my_container", gtv("http://host"), mapOf("my_chain" to BlockchainRid.ZERO_RID))
+        val testModel = DeploymentModel(BlockchainRid.ZERO_RID, "my_container", gtv("http://host"), mapOf("my_chain" to BlockchainRid.ZERO_RID))
         testModel.failsToCreateNewDeployment("Deployment for chain [my_chain] already configured")
         testModel.copy(container = null).failsToCreateNewDeployment("No container id is configured")
         testModel.copy(chains = mapOf()).failsToCreateNewDeployment("No signers configured")
@@ -43,7 +43,7 @@ class DeploymentAPIImplTest {
         testData(dir) {
             secret()
         }
-        val testModel = DeploymentModel(BlockchainRid.ZERO_RID.wData, "my_container", gtv("http://host"))
+        val testModel = DeploymentModel(BlockchainRid.ZERO_RID, "my_container", gtv("http://host"))
 
         val res = createNew(env, testModel, ChromiaConfigLoader(env).loadClientConfigFile(dir.resolve(".chromia/config").toFile()), listOf(BlockchainConfiguration("my_chain", GtvNull)), false) { TestClient(it, { 0L }) }
         assertThat(res.isSuccess()).isTrue()
@@ -53,7 +53,7 @@ class DeploymentAPIImplTest {
     @Test
     fun failingUpdateConfigs() {
         testData(dir)
-        val testModel = DeploymentModel(BlockchainRid.ZERO_RID.wData, "my_container", gtv("http://host"), mapOf("my_chain" to BlockchainRid.ZERO_RID))
+        val testModel = DeploymentModel(BlockchainRid.ZERO_RID, "my_container", gtv("http://host"), mapOf("my_chain" to BlockchainRid.ZERO_RID))
         testModel.failsToUpdateDeployment("No signers configured")
         testModel.copy(chains = mapOf()).failsToUpdateDeployment("Deployment for chain [my_chain] not found")
 
@@ -69,9 +69,9 @@ class DeploymentAPIImplTest {
         testData(dir) {
             secret()
         }
-        val testModel = DeploymentModel(BlockchainRid.ZERO_RID.wData, "my_container", gtv("http://host"), chains = mapOf("my_chain" to BlockchainRid.buildRepeat(2)))
+        val testModel = DeploymentModel(BlockchainRid.ZERO_RID, "my_container", gtv("http://host"), chains = mapOf("my_chain" to BlockchainRid.buildRepeat(2)))
 
-        val res = updateExisting(env, testModel, ChromiaConfigLoader(env).loadClientConfigFile(dir.resolve(".chromia/config").toFile()), listOf(BlockchainConfiguration("my_chain", GtvNull)),  null, false, { DeploymentClient(it) }) { ClusterManagementImpl(it) }
+        val res = updateExisting(env, testModel, ChromiaConfigLoader(env).loadClientConfigFile(dir.resolve(".chromia/config").toFile()), listOf(BlockchainConfiguration("my_chain", GtvNull)), null, false, { DeploymentClient(it) }) { ClusterManagementImpl(it) }
         assertThat(res.isSuccess()).isTrue()
         assertThat(res.first().blockchainRid).isEqualTo(BlockchainRid.buildRepeat(2))
     }
@@ -90,7 +90,7 @@ class DeploymentAPIImplTest {
         assertThat(res1.message!!).contains(containsMessage)
     }
 
-    inner class DeploymentClient(config: PostchainClientConfig): TestClient(config, { 100 }) {
+    inner class DeploymentClient(config: PostchainClientConfig) : TestClient(config, { 100 }) {
         override fun query(name: String, args: Gtv): Gtv {
             return when (name) {
                 "cm_get_blockchain_cluster" -> gtv("my_cluster")
