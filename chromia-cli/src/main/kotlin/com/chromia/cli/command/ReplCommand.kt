@@ -8,6 +8,7 @@ import com.chromia.cli.util.module
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.deprecated
@@ -75,16 +76,21 @@ class ReplCommand : CliktCommand(help = """
                 .build()
 
         val shellConfig = RellApiRunShell.Config.Builder()
-                .apply { if (!command.isNullOrBlank()) inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!))) }
+                .apply {
+                    if (!command.isNullOrBlank())
+                        inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
+                    else if (!terminal.info.inputInteractive)
+                        inputChannelFactory(NonInteractiveCommandInputChannelFactory())
+                }
                 .compileConfig(compileConfig)
                 .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
                 .historyFile(historyFile)
                 .outPrinter(::echo)
                 .logPrinter(::echo)
-                .outputChannelFactory(CliktOutputChannelFactory(!command.isNullOrBlank()))
+                .outputChannelFactory(CliktOutputChannelFactory(!terminal.info.outputInteractive || !command.isNullOrBlank()))
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
-                .printIntroMessage(command.isNullOrBlank())
+                .printIntroMessage(terminal.info.outputInteractive && command.isNullOrBlank())
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }
@@ -131,6 +137,12 @@ class ReplCommand : CliktCommand(help = """
             override fun setValueFormat(format: ReplValueFormat) {
                 valueFormat = format
             }
+        }
+    }
+
+    private inner class NonInteractiveCommandInputChannelFactory : ReplInputChannelFactory {
+        override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
+            override fun readLine(prompt: String): String? = terminal.readLineOrNull(hideInput = false)
         }
     }
 }

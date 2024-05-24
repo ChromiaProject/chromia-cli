@@ -2,11 +2,9 @@ package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.testData
+import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-import java.time.Duration
-
 
 class ReplIT {
 
@@ -20,15 +18,11 @@ class ReplIT {
     }
 
     @Test
-    fun canStartReplSession() {
+    fun canRunNoninteractiveReplSession() {
         TestProcess.Builder("repl")
-                .awaitCompletion(false)
-                .verbose()
-                .startCondition("Rell")
-                .start { process ->
-                    process.waitUntil("Type '\\q' to quit or '\\?' for help.", Duration.ofSeconds(2))
-                    process.close()
-                }
+                .input("5+5\n5*5\n")
+                .wholeOutput("10\n25")
+                .start()
     }
 
     @Test

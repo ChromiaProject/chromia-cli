@@ -4,7 +4,11 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.InitExtension
+import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -124,5 +128,26 @@ class ReplCommandTest {
         val res = ReplCommand().test("-c 'non_existing_entity @ {}'")
         assertThat(res.statusCode).isEqualTo(1)
         assertThat(res.output).contains("Unknown name: 'non_existing_entity'")
+    }
+
+    @Test
+    fun nonInteractiveReplSession() {
+        val recorder = TerminalRecorder(inputInteractive = false, outputInteractive = false)
+        recorder.inputLines = mutableListOf("5+5")
+        ReplCommand().context {
+            terminal = Terminal(terminalInterface = recorder)
+        }.parse(listOf())
+        assertThat(recorder.stdout()).isEqualTo("10\n")
+    }
+
+    @Test
+    @Disabled("Cannot send input to JLine")
+    fun interactiveReplSession() {
+        val recorder = TerminalRecorder(inputInteractive = true, outputInteractive = true)
+        recorder.inputLines = mutableListOf("5+5", "\\q")
+        ReplCommand().context {
+            terminal = Terminal(terminalInterface = recorder)
+        }.parse(listOf())
+        assertThat(recorder.stdout()).isEqualTo("10\n")
     }
 }
