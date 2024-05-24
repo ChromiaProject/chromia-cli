@@ -3,18 +3,18 @@ package com.chromia.cli.command
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
+import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.module
+import com.chromia.cli.util.outputFormat
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.google.common.base.Throwables
 import java.io.File
@@ -56,8 +56,7 @@ class ReplCommand : CliktCommand(help = """
     private val command by option("-c", "--command", help = "Execute a single command", metavar = "COMMAND")
     private val rawOutput by option("-r", "--raw-output", help = "Will print large object line by line and strings without quotes").flag()
             .deprecated("Use `--output-format raw` instead")
-    private val outputFormat by option("-f", "--output-format", help = "Output format").enum<OutputFormat>()
-            .default(OutputFormat.pretty)
+    private val outputFormat by outputFormat()
 
     override fun run() {
         if (module != null && settings.model == null) {
@@ -145,9 +144,4 @@ class ReplCommand : CliktCommand(help = """
             override fun readLine(prompt: String): String? = terminal.readLineOrNull(hideInput = false)
         }
     }
-}
-
-@Suppress("EnumEntryName")
-enum class OutputFormat {
-    pretty, raw, JSON, XML
 }

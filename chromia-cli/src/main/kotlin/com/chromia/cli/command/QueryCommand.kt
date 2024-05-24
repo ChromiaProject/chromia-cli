@@ -5,7 +5,12 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.gtv.pretty
 import com.chromia.cli.util.DASH_DASH_DESCRIPTION
 import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.formatJson
+import com.chromia.cli.util.formatRaw
+import com.chromia.cli.util.formatXml
+import com.chromia.cli.util.outputFormat
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -19,7 +24,6 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
-
 class QueryCommand : CliktCommand(help = """
     Make a query towards a running node
     
@@ -27,11 +31,10 @@ class QueryCommand : CliktCommand(help = """
     $DASH_DASH_DESCRIPTION
 """.trimIndent()
 ) {
-
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
-
+    private val outputFormat by outputFormat()
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query, passed either as key=value pairs or as a single dict.", helpTags = mapOf(
             "integer" to "123",
@@ -66,12 +69,15 @@ class QueryCommand : CliktCommand(help = """
         }
     }
 
-
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
         val clientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        val res = target.createClient(clientConfig)
-                .query(queryName, args as Gtv)
-        echo(res.pretty())
+        val gtv = target.createClient(clientConfig).query(queryName, args as Gtv)
+        echo(when (outputFormat) {
+            OutputFormat.pretty -> gtv.pretty()
+            OutputFormat.raw -> formatRaw(gtv)
+            OutputFormat.JSON -> formatJson(gtv)
+            OutputFormat.XML -> formatXml(gtv)
+        })
     }
 }

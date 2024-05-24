@@ -11,10 +11,16 @@ import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.testing.test
 import net.postchain.client.exception.ClientError
+import net.postchain.common.hexStringToByteArray
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.GtvBigInteger
+import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvInteger
+import net.postchain.gtv.GtvNull
+import net.postchain.gtv.GtvString
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.parse.GtvParser
 import org.junit.jupiter.api.BeforeEach
@@ -22,6 +28,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.math.BigInteger
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
@@ -167,49 +174,153 @@ class QueryCommandTest : IntegrationTestSetup() {
         }
     }
 
-    @Test
-    fun prettyPrint(@TempDir dir: Path) {
-        with(File(dir.toFile(), "src/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                module;
-                query test_query() = map([("a",[1,2,3]),("b",[5,6])]);
-            """.trimIndent())
-        }
-        with(File(dir.toFile(), "chromia.yml")) {
-            writeText("""
-                blockchains:
-                  a:
-                    module: main
-                    config:
-                      signers:
-                        - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
-                      blockstrategy:
-                        name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+    private val queryResponse = gtv(mapOf("a" to gtv(listOf(gtv(1), gtv("foo bar"), GtvNull)), "b" to gtv(listOf(gtv("1234ABCD".hexStringToByteArray()), gtv(4711)))))
 
-                database:
-                  schema: txcommandtest0_0
-            """.trimIndent())
-        }
-        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
-        createTestNode("${dir.absolutePathString()}/build/a.xml")
-        val res = QueryCommand().test(listOf("test_query"))
-        assertThat(res.statusCode).isEqualTo(0)
-        val output = res.stdout
-        assertThat(output).isEqualTo("""[
+    @Test
+    fun prettyPrint() {
+        withModel(TestModel().withQuery("test_query", queryResponse)) {
+            val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            val output = res.stdout
+            assertThat(output).isEqualTo("""[
             |  "a": [
             |    1,
-            |    2,
-            |    3
+            |    "foo bar",
+            |    null
             |  ],
             |  "b": [
-            |    5,
-            |    6
+            |    x"1234ABCD",
+            |    4711
             |  ]
             |]
             |""".trimMargin())
-        assertThat(GtvParser.parse(output)).isEqualTo(
-                gtv(mapOf("a" to gtv(listOf(gtv(1), gtv(2), gtv(3))), "b" to gtv(listOf(gtv(5), gtv(6)))))
-        )
+            assertThat(GtvParser.parse(output)).isEqualTo(queryResponse)
+        }
+    }
+
+    @Test
+    fun jsonOutput() {
+        withModel(TestModel().withQuery("test_query", queryResponse)) {
+            val res = QueryCommand().test(listOf("test_query", "-f", "json", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""{
+            |  "a": [
+            |    1,
+            |    "foo bar",
+            |    null
+            |  ],
+            |  "b": [
+            |    "1234ABCD",
+            |    4711
+            |  ]
+            |}
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun xmlOutput() {
+        withModel(TestModel().withQuery("test_query", queryResponse)) {
+            val res = QueryCommand().test(listOf("test_query", "-f", "xml", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+                |<dict>
+                |    <entry key="a">
+                |        <array>
+                |            <int>1</int>
+                |            <string>foo bar</string>
+                |            <null xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>
+                |        </array>
+                |    </entry>
+                |    <entry key="b">
+                |        <array>
+                |            <bytea>1234ABCD</bytea>
+                |            <int>4711</int>
+                |        </array>
+                |    </entry>
+                |</dict>
+                |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputNull() {
+        withModel(TestModel().withQuery("test_query", GtvNull)) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |null
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputByteArray() {
+        withModel(TestModel().withQuery("test_query", GtvByteArray("1234ABCD".hexStringToByteArray()))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |0x1234abcd
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputString() {
+        withModel(TestModel().withQuery("test_query", GtvString("foo bar"))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |foo bar
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputInteger() {
+        withModel(TestModel().withQuery("test_query", GtvInteger(17))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |17
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputBigInteger() {
+        withModel(TestModel().withQuery("test_query", GtvBigInteger(BigInteger("19223372036854775807")))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |19223372036854775807
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputArray() {
+        withModel(TestModel().withQuery("test_query", gtv(listOf(gtv(1), gtv(2), gtv(3))))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |1
+            |2
+            |3
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputDict() {
+        withModel(TestModel().withQuery("test_query", gtv(mapOf("a" to gtv(1), "b" to gtv(2), "c" to gtv(3))))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |a=1
+            |b=2
+            |c=3
+            |""".trimMargin())
+        }
     }
 }

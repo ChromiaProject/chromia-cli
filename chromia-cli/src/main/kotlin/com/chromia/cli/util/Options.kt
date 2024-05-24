@@ -4,13 +4,22 @@ import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.rell.base.model.R_ModuleName
 
+@Suppress("EnumEntryName")
+enum class OutputFormat {
+    pretty, raw, JSON, XML
+}
+
+fun CliktCommand.outputFormat() = option("-f", "--output-format", help = "Output format").enum<OutputFormat>()
+        .default(OutputFormat.pretty)
 
 fun CliktCommand.nodePropertiesOption() =
         option("-np", "--node-properties", help = "Full path to override node properties file", metavar = "PATH")
