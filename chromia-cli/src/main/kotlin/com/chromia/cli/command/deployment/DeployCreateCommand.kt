@@ -21,7 +21,6 @@ class DeployCreateCommand(
 ) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
     private val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
-
     override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
         compiledChains.forEach { chain ->
             if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain ${chain.name} is already deployed to network $target")
@@ -43,6 +42,10 @@ class DeployCreateCommand(
                 chains:
                   ${deployTxs.joinToString("\n      ") { "${it.blockchain.name}: x\"${it.blockchainRid?.toHex()}\"" }}
             """.trimIndent())
+    }
+
+    override fun explicitChainsToDeploy(): Collection<String> {
+        return settings.model.blockchains.keys
     }
 
     companion object : ClusterManagementFactory {

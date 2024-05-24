@@ -53,6 +53,14 @@ class DeployUpdateCommand(
         }
     }
 
+    override fun explicitChainsToDeploy(): Collection<String> {
+        val chains = settings.model.deployments[target]?.chains?.keys
+        if (chains.isNullOrEmpty()) {
+            throw PrintMessage("No chains found in deployment $target", 1)
+        }
+        return chains
+    }
+
     private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient): String? {
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")

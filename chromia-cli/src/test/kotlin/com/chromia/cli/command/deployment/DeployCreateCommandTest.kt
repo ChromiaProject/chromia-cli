@@ -11,6 +11,7 @@ import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withCompression
 import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.restapi.withRellVersion
+import com.chromia.build.tools.testData
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DeploymentTestDataCreator
@@ -162,6 +163,33 @@ class DeployCreateCommandTest {
                 val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--config", config.absolutePath))
                 assertThat(res.stdout).contains("Deployment of blockchain my_rell_dapp was successful")
             }
+        }
+    }
+
+    @Test
+    fun deployAllDappsInConfig() {
+        withModel(model.withCompression().withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))) {
+            testData(testDir) {
+                config {
+                    blockchains("""
+                    blockchains:
+                      foo:
+                        module: main
+                      bar:
+                        module: main
+                """.trimIndent())
+                    deployments("""
+                    deployments:
+                        test:
+                          url: "http://localhost:7745"
+                          brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                          container: test_container
+                """.trimIndent())
+                }
+            }
+            val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--network", "test", "-y", "--config", config.absolutePath, "--secret", secret.absolutePath))
+            assertThat(res.stdout).contains("Deployment of blockchain bar was successful")
+            assertThat(res.stdout).contains("Deployment of blockchain foo was successful")
         }
     }
 }

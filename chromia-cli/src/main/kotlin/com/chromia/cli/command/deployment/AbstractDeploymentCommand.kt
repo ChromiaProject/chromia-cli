@@ -65,10 +65,9 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-        val chainsToDeploy = blockchain ?: settings.model.blockchains.keys
         val cliEnv = CliktCliEnv(this@AbstractDeploymentCommand)
-        val res = ChromiaCompileApi.build(cliEnv,
-                settings.model.filterBlockchains(chainsToDeploy))
+        val chainsToDeploy = blockchain ?: explicitChainsToDeploy()
+        val res = ChromiaCompileApi.build(cliEnv, settings.model.filterBlockchains(chainsToDeploy))
                 .onEach { it.filterGtxModules(cliEnv).validate() }
                 .apply { validateRellVersion(client) }
                 .apply { preDeploymentVerification(this) }
@@ -86,6 +85,8 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     abstract fun performDeploymentOperation(configurations: List<BlockchainConfiguration>): List<BlockchainDeploymentResult>
 
     abstract fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>)
+
+    abstract fun explicitChainsToDeploy(): Collection<String>
 
     protected fun validateRellVersion(client: PostchainClient) {
         val rellVersionController = PostchainRellVersionFinder(client.config, clientProvider)

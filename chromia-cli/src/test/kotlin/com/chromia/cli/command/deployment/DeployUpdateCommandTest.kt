@@ -13,7 +13,6 @@ import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withCompression
 import com.chromia.build.tools.restapi.withInvalidConfiguration
-import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.restapi.withValidConfiguration
 import com.chromia.build.tools.testData
@@ -23,19 +22,18 @@ import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
 import net.postchain.common.BlockchainRid
+import net.postchain.common.hexStringToByteArray
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.rell.api.base.RellCliBasicException
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.test.assertNotNull
-import net.postchain.common.hexStringToByteArray
-import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.rell.api.base.RellCliBasicException
-import net.postchain.rell.base.model.R_LangVersion
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.io.TempDir
 
 
 class DeployUpdateCommandTest {
@@ -165,6 +163,60 @@ class DeployUpdateCommandTest {
             assertThat(res.output).contains("Blockchain bar cannot be updated on network test. Reason: Invalid configuration")
         }
     }
+
+    @Test
+    fun onlyDeployedChainsAreDeployedWithNetworkFlag() {
+        withModel(model.withCompression()) {
+            testData(testDir) {
+                config {
+                    blockchains("""
+                    blockchains:
+                      foo:
+                        module: main
+                      bar:
+                        module: main
+                """.trimIndent())
+                    deployments("""
+                    deployments:
+                        test:
+                          url: "http://localhost:7745"
+                          brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                          container: test_container
+                          chains:
+                            bar: x"1111111111111111111111111111111111111111111111111111111111111111"
+                """.trimIndent())
+                }
+            }
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--network", "test", "--skip-verification"))
+            assertThat(res.output).contains("Blockchain bar was successfully updated on network test")
+            assertThat(res.output).doesNotContain("Blockchain foo was successfully updated on network test")
+        }
+    }
+
+    @Test
+    fun throwsErrorIfNoChainsAreInDeployments() {
+        withModel {
+            testData(testDir) {
+                config {
+                    blockchains("""
+                    blockchains:
+                      foo:
+                        module: main
+                """.trimIndent())
+                    deployments("""
+                    deployments:
+                        test:
+                          url: "http://localhost:7745"
+                          brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                          container: test_container
+                """.trimIndent())
+                }
+            }
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--network", "test", "--skip-verification"))
+            assertThat(res.output).contains("No chains found in deployment test")
+        }
+    }
+
 
     @Test
     fun skipVerification() {
