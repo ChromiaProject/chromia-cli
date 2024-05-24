@@ -166,6 +166,27 @@ internal class RellModelErrorMessagesTest {
     }
 
     @Test
+    fun `incorrect type length for brid in deployment model`(@TempDir dir: Path) {
+        settingsFile = File(dir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  bc1:
+                    module: main
+                deployments:
+                    foo:
+                      url: "http://foo.com"
+                      brid: 615175A2847D739C2CD0EC2733
+            """.trimIndent())
+        }
+        val throwable = assertThrows<ValidationException> { parseModel(settingsFile) }
+        assertThat(throwable.message!!).contains("""
+            Following errors found in chromia.yml:
+            Additional property 'foo' found but was invalid (location: deployments->foo)
+            String doesn't match pattern ^x"[a-fA-F0-9]+"${'$'} - "615175A2847D739 ... 2A7E3C3E7032DB5" (location: deployments->foo->brid)
+        """.trimIndent())
+    }
+
+    @Test
     fun `incorrect type non hex string for chains in deployment model expecting byteArray test`(@TempDir dir: Path) {
         settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""

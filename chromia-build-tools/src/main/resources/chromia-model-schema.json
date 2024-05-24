@@ -180,7 +180,10 @@
         },
         "type": {
           "type": "string",
-          "enum": ["blockchain", "library"],
+          "enum": [
+            "blockchain",
+            "library"
+          ],
           "description": "Indicates whether this blockchain is marked as a library"
         },
         "moduleArgs": {
@@ -262,7 +265,7 @@
         },
         "historic_brid": {
           "type": "string",
-          "pattern": "x\"[a-fA-F0-9]+\""
+          "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$"
         },
         "dependencies": {
           "type": "object"
@@ -327,7 +330,7 @@
       "properties": {
         "brid": {
           "type": "string",
-          "pattern": "^x\"[a-fA-F0-9]+\"$",
+          "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$",
           "description": "Blockchain RID for the target network's management chain"
         },
         "container": {
@@ -351,8 +354,8 @@
           "type": "object",
           "additionalProperties": {
             "type": "string",
-            "pattern": "^x\"[a-fA-F0-9]+\"$",
-            "description": "BlockchainRid"
+            "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$",
+            "description": "Blockchain RID for the deployed chain"
           },
           "description": "Map of deployed blockchains with their Blockchain RIDs on this network"
         }
@@ -382,7 +385,7 @@
                       "string",
                       "null"
                     ],
-                    "pattern": "x\"[a-fA-F0-9]+\"",
+                    "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$",
                     "description": "Blockchain RID for sender blockchain"
                   }
                 }
