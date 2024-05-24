@@ -1,5 +1,6 @@
 package com.chromia.cli.model
 
+import com.chromia.build.tools.model.Brid
 import com.chromia.build.tools.model.ensureType
 import net.postchain.common.BlockchainRid
 import net.postchain.common.types.WrappedByteArray
@@ -27,7 +28,7 @@ data class DeploymentModel(
 
     companion object {
         fun load(data: Map<String, Any>, additionalProperty: String) = DeploymentModel(
-                brid = ensureType<ByteArray>(data["brid"], "deployments", additionalProperty, "brid").wrap(),
+                brid = ensureType<Brid>(data["brid"], "deployments", additionalProperty, "brid").toByteArray().wrap(),
                 container = ensureType<String?>(data["container"], "deployments", additionalProperty, "container"),
                 url = listMapAndPrimitivesToGtv(data["url"]),
                 chains = ensureType<Map<String, ByteArray>?>(data["chains"], "deployments", additionalProperty, "chains")
