@@ -9,6 +9,7 @@ import java.nio.file.attribute.PosixFilePermission
 import kotlin.io.path.exists
 import org.apache.commons.lang3.SystemUtils
 import org.junit.jupiter.api.Assumptions
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
@@ -22,6 +23,7 @@ class GitRepositoryClonerIT {
     }
 
     @Test
+    @Tag("ssh")
     fun clonePrivateRepositoryUsingNotEncryptedKey(@TempDir testDir: Path) {
         val sshDir = testDir.resolve("ssh_test").toFile()
         sshDir.mkdirs()
@@ -42,6 +44,7 @@ class GitRepositoryClonerIT {
     }
 
     @Test
+    @Tag("ssh")
     fun clonePrivateRepositoryWithSshAgent(@TempDir testDir: Path) {
         Assumptions.assumeFalse(SystemUtils.IS_OS_WINDOWS)
         val sshDir = testDir.resolve("ssh_test").toFile()
