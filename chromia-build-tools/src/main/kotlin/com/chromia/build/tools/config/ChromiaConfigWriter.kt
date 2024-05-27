@@ -10,8 +10,11 @@ import org.apache.commons.configuration2.builder.fluent.Parameters
 class ChromiaConfigWriter private constructor(val configFile: File) {
 
     companion object {
-        val local = ChromiaConfigWriter(ChromiaConfigLoader.localConfigurationFile())
-        val global = ChromiaConfigWriter(ChromiaConfigLoader.globalConfigurationFile())
+        val local
+            get() = ChromiaConfigWriter(ChromiaConfigLoader.localConfigurationFile())
+        val global
+            get() = ChromiaConfigWriter(ChromiaConfigLoader.globalConfigurationFile())
+
         fun custom(file: File) = ChromiaConfigWriter(file)
     }
 
