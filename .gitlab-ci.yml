@@ -43,7 +43,7 @@ build:
     - mvn
       $MAVEN_CLI_OPTS
       --activate-profiles ci,docker,coverage
-      verify
+      clean verify
 
 dependency-check:
   extends: .maven-dependency-check
@@ -84,7 +84,7 @@ deploy:
       $MAVEN_CLI_OPTS
       --activate-profiles ci,docker,docker-push
       -Drevision=$CI_COMMIT_TAG
-      source:jar deploy
+      clean source:jar deploy
 
 trigger-homebrew-release:
   stage: release
