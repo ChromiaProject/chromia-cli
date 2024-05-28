@@ -72,6 +72,7 @@ class ConfigBuilder {
     private var test = ""
     private var docs = ""
     private var compile = ""
+    private var manualContent = ""
     private var database = """
         database:
           schema: integration_test_schema
@@ -101,6 +102,14 @@ class ConfigBuilder {
         compile = init
     }
 
+    fun manualContent(init: String) {
+        manualContent = init
+    }
+
+    fun database(init: String) {
+        database = init
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         sb.append(content)
@@ -115,6 +124,7 @@ class ConfigBuilder {
         if (docs.isNotEmpty()) sb.append("\n$docs")
         sb.append("\n$database")
         if (compile.isNotEmpty()) sb.append("\n$compile")
+        if (manualContent.isNotEmpty()) sb.append("\n$manualContent")
         File(target.toFile(), "chromia.yml").writeText(sb.toString())
     }
 }

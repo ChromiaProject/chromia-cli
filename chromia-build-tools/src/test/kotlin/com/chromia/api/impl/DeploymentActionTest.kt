@@ -19,9 +19,10 @@ import org.junit.jupiter.api.Test
 class DeploymentActionTest {
 
     val sentTxs = mutableListOf<Gtx>()
+
     @Test
     fun deploymentActionPostsTransaction() {
-        val model = DeploymentModel(BlockchainRid.buildRepeat(1).wData, url = gtv("http://host"), container = null, chains = mapOf("first" to BlockchainRid.buildRepeat(2), "second" to BlockchainRid.buildRepeat(3)))
+        val model = DeploymentModel(BlockchainRid.buildRepeat(1), url = gtv("http://host"), container = null, chains = mapOf("first" to BlockchainRid.buildRepeat(2), "second" to BlockchainRid.buildRepeat(3)))
         val res = action(model, ChromiaClientConfig.EMPTY.setSigner(testKeyPair), BlockchainAction.pause, "For testint") { LoggedClient(it) }
         assertThat(res.first).isTrue()
         assertThat(res.second).isNull()
@@ -31,7 +32,7 @@ class DeploymentActionTest {
         assertThat(tx.gtxBody.operations.size).isEqualTo(1 /* nop */ + 2 /* bc */)
     }
 
-    inner class LoggedClient(config: PostchainClientConfig): TestClient(config, { 32 }) {
+    inner class LoggedClient(config: PostchainClientConfig) : TestClient(config, { 32 }) {
         override fun postTransactionAwaitConfirmation(tx: Gtx): TransactionResult {
             sentTxs.add(tx)
             return super.postTransactionAwaitConfirmation(tx)
