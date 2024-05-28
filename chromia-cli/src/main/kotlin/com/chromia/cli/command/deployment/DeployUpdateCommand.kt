@@ -6,7 +6,6 @@ import com.chromia.api.result.BlockchainDeploymentResult
 import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -19,6 +18,7 @@ import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
 import net.postchain.cm.cm_api.ClusterManagementImpl
+import org.http4k.core.Status
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -69,10 +69,14 @@ class DeployUpdateCommand(
         val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
         try {
-            nodeClient.validateConfiguration(chain.config)
+           nodeClient.validateConfiguration(chain.config)
             echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
         } catch (e: ClientError) {
-            return "Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}"
+            return when (e.status) {
+                Status.UNAUTHORIZED -> "Node rejected request. You might need to update your chr to latest version. Reason: ${e.errorMessage}"
+                Status.FORBIDDEN -> "You do not have access to validate configuration against this blockchain. Make sure the configured keypair match the blockchain provider/owner and try again."
+                else -> "Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}"
+            }
         }
         return null
     }

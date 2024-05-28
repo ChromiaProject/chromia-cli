@@ -6,6 +6,7 @@ import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.TransactionInfo
 import net.postchain.client.core.TransactionResult
 import net.postchain.client.core.TxRid
+import net.postchain.client.core.Version
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
@@ -40,6 +41,7 @@ open class TestClient(
     override fun getTransactionsCount(): Long = TODO("Not yet implemented")
     override fun getBlockchainRID(chainIID: Long): BlockchainRid = TODO("Not yet implemented")
     override fun getTransactionsInfo(limit: Long, beforeTime: Long, signer: String?): List<TransactionInfo> = TODO("Not yet implemented")
+    override fun getVersion(): Version { TODO("Not yet implemented") }
 
     override fun postTransaction(tx: Gtx): TransactionResult =
             testConfiguration.txResultFactory(testConfiguration.txs.size).also { testConfiguration.txs.add(tx) }

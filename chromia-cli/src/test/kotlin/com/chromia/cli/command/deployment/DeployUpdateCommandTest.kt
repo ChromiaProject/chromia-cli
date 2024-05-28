@@ -17,18 +17,28 @@ import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.restapi.withValidConfiguration
 import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
+import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
+import net.postchain.PostchainContext
+import net.postchain.api.rest.controller.PostchainModel
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
+import net.postchain.crypto.BaseCryptoSystem
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.managed.ManagedNodeDataSource
+import net.postchain.managed.config.ManagedBlockchainConfiguration
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
@@ -50,7 +60,6 @@ class DeployUpdateCommandTest {
         settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
     }
-
 
     @Test
     fun successfulDeployment() {
@@ -247,6 +256,50 @@ class DeployUpdateCommandTest {
             }
             assertThat(throwable.message!!).contains("The local compile version 0.13.5 is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                     "The deployment is aborted.")
+        }
+    }
+
+    @Test
+    fun cannotVerifyUpdateDueToNotSignedByProvider() {
+        val testModel = createManagedModeMockModel(deployedChainBrid, true)
+        withModel(model, testModel) {
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            assertThat(res.output).contains("You do not have access to validate configuration against this blockchain. Make sure the configured keypair match the blockchain provider/owner and try again.")
+        }
+    }
+
+    @Test
+    fun cannotVerifyUpdateDueToIncorrectSignature() {
+        val testModel = createManagedModeMockModel(deployedChainBrid, false)
+        withModel(model, testModel) {
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            assertThat(res.output).contains("Node rejected request. You might need to update your chr to latest version. Reason: Invalid signature")
+        }
+    }
+
+    private fun createManagedModeMockModel(bcRid: BlockchainRid, verifyDigestValue: Boolean): PostchainModel {
+        return mock<PostchainModel> {
+            on { live } doReturn true
+            on { blockchainRid } doReturn bcRid
+            on { blockchainConfiguration } doAnswer {
+                mock<ManagedBlockchainConfiguration> {
+                    on { dataSource } doAnswer {
+                        mock<ManagedNodeDataSource> {
+                            on { isBlockchainProvider(any(), any()) } doReturn false
+                        }
+                    }
+                }
+            }
+            on { postchainContext } doAnswer {
+                mock<PostchainContext> {
+                    on { cryptoSystem } doAnswer {
+                        mock<BaseCryptoSystem> {
+                            on { digest(any()) } doReturn ByteArray(0)
+                            on { verifyDigest(any(), any()) } doReturn verifyDigestValue
+                        }
+                    }
+                }
+            }
         }
     }
 }
