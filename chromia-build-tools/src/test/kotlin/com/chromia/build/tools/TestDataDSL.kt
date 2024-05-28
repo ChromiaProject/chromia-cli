@@ -59,6 +59,7 @@ class TestDataBuilder {
 }
 
 class ConfigBuilder {
+    private var definitions = ""
     private var content = """
         blockchains:
           hello:
@@ -110,8 +111,13 @@ class ConfigBuilder {
         database = init
     }
 
+    fun definitions(init: String) {
+        definitions = init
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
+        if (definitions.isNotEmpty()) sb.append("$definitions\n")
         sb.append(content)
         if (deployments.isNotEmpty()) sb.append("\n$deployments")
         if (libModels.isNotEmpty()) {
