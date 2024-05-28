@@ -5,8 +5,10 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import com.chromia.build.tools.testData
+import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
 import net.postchain.common.BlockchainRid
+import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.Assertions
@@ -17,36 +19,21 @@ import java.io.File
 import java.nio.file.Path
 
 internal class RellLibraryModelTest {
-    private lateinit var settingsFile: File
-
-    private fun createFile(dir: Path, name: String, code: String = ""): Path {
-        return File(dir.toFile(), "$name.rell").apply {
-            parentFile.mkdirs()
-            writeText("""
-                    module; $code
-                """.trimIndent())
-        }.toPath()
-    }
-
     @Test
     fun `can parse hex string of length 64 as brid`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                config {
-                    blockchains("""
+                blockchains("""
                 blockchains:
                   a:
                     module: main
-                    """.trimIndent()
-                    )
-                    deployments("""
+                    """.trimIndent())
+                deployments("""
                 deployments: 
                     foo:
                       url: "http://foo.com"
                       brid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5
-                            """.trimIndent()
-                    )
-                }
+                            """.trimIndent())
             }
         }
         val model = parseModel(dir.resolve("chromia.yml").toFile())
@@ -57,21 +44,17 @@ internal class RellLibraryModelTest {
     fun `can parse bytearray as brid`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                config {
-                    blockchains("""
+                blockchains("""
                 blockchains:
                   a:
                     module: main
-                    """.trimIndent()
-                    )
-                    deployments("""
+                    """.trimIndent())
+                deployments("""
                 deployments: 
                     foo:
                       url: "http://foo.com"
                       brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                            """.trimIndent()
-                    )
-                }
+                            """.trimIndent())
             }
         }
         val model = parseModel(dir.resolve("chromia.yml").toFile())
@@ -80,23 +63,16 @@ internal class RellLibraryModelTest {
 
     @Test
     fun singleLibraryTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: x"B06598BD8F8963AAE587ECBE3CA5442DE437F332D60DFC1FF10D77E4D524A6B5"  
-            """.trimIndent())
+        testData(dir) {
+            config {
+                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
+                addFile("lib/foo/foo.rell", """module;""")
+                addFile("lib/foo/bar.rell", """module; //Bar""")
+            }
         }
 
-        val settings = parseModel(settingsFile)
-        createFile(dir, "lib/foo/foo")
-        createFile(dir, "lib/foo/bar", "//Bar")
-        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
+        val settings = parseModel(dir.resolve("chromia.yml").toFile())
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("src/lib"))
 
         assertDoesNotThrow {
             libraryVerifyer.verifyLibs(settings.libs)
@@ -109,32 +85,22 @@ internal class RellLibraryModelTest {
     //TODO this is not what we want, want the parser to throw error if duplicate keys "name" of libs
     @Test
     fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo1.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                    foo:
-                      registry: http://foo2.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
-            """.trimIndent())
+        testData(dir) {
+            config {
+                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
+                lib("foo", RellLibraryModel("http://foo2.com", null, "lib", false, "615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5".hexStringToWrappedByteArray()))
+            }
         }
-
-        val settings = parseModel(settingsFile)
+        val settings = parseModel(dir.resolve("chromia.yml").toFile())
         Assertions.assertEquals(settings.libs.size, 1)
         Assertions.assertEquals(settings.libs["foo"]!!.registry, "http://foo2.com")
     }
 
     @Test
     fun fullConfigParseTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
+        testData(dir) {
+            config {
+                manualContent("""
                 blockchains:
                     foo:
                         module: main
@@ -203,38 +169,28 @@ internal class RellLibraryModelTest {
                         tagOrBranch: branchOne
                         rid: x"1234"
                         insecure: false
-            """.trimIndent())
+            """.trimIndent()
+                )
+            }
         }
 
-        val settings = parseModel(settingsFile)
-
+        val settings = parseModel(dir.resolve("chromia.yml").toFile())
         assertThat(settings).isNotNull()
     }
 
     @Test
     fun multipleLibraryTest(@TempDir dir: Path) {
-        val fileMap = mutableMapOf<String, List<Path>>()
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      rid: x"1FA06E7C18BE7AE88C782DDCD9FD4FD16CEBA7C5E2ABA72419413F73975185A5"
-                    bar:
-                      registry: http://bar.com
-                      path: lib
-                      rid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"  
-            """.trimIndent())
+        testData(dir) {
+            config {
+                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "33B5C0C7909B01AD272346A49C4F4FCD6FF7E29685803F7F6C8B5EF320BF2F0C".hexStringToWrappedByteArray()))
+                lib("bar", RellLibraryModel("http://bar.com", null, "lib", false, "E9A6EE3D187533034566A53007CA034F328CD469D986048B31EEE86E238E6E14".hexStringToWrappedByteArray()))
+                addFile("lib/foo/main.rell", """module;""")
+                addFile("lib/foo/api.rell", """module;""")
+                addFile("lib/bar/main.rell", """module;""")
+            }
         }
-
-        val settings = parseModel(settingsFile)
-        fileMap["foo"] = listOf(createFile(dir, "lib/foo/main"), createFile(dir, "lib/foo/api"))
-        fileMap["bar"] = listOf(createFile(dir, "lib/bar/main"))
-        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
+        val settings = parseModel(dir.resolve("chromia.yml").toFile())
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("src/lib"))
         settings.libs.forEach {
             assertThat(libraryVerifyer.verifyLib(it.key, it.value)).isTrue()
         }
@@ -242,24 +198,16 @@ internal class RellLibraryModelTest {
 
     @Test
     fun skipLibraryValidationTest(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains:
-                  bc1:
-                    module: main
-                libs:
-                    foo:
-                      registry: http://foo.com
-                      path: lib
-                      insecure: true
-            """.trimIndent())
+        testData(dir) {
+            config {
+                lib("foo", RellLibraryModel("http://foo.com", null, "lib", true, null))
+                addFile("lib/foo/main.rell", """module;""")
+                addFile("lib/foo/api.rell", """module;""")
+            }
         }
 
-        val settings = parseModel(settingsFile)
-        createFile(dir, "lib/foo/main")
-        createFile(dir, "lib/foo/api")
-
-        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("lib"))
+        val settings = parseModel(dir.resolve("chromia.yml").toFile())
+        val libraryVerifyer = LibraryVerifyer(RellCliEnv.DEFAULT, dir.resolve("src/lib"))
         settings.libs.forEach {
             assertThat(libraryVerifyer.verifyLib(it.key, it.value)).isTrue()
         }
@@ -267,33 +215,38 @@ internal class RellLibraryModelTest {
 
     @Test
     fun `Can parse the real world examples of config files`() {
-        settingsFile = File(this.javaClass.classLoader.getResource("realWorldConfigs/d1.yml")!!.file)
+        val settingsFile = File(this.javaClass.classLoader.getResource("realWorldConfigs/d1.yml")!!.file)
         //TODO make more comprehensive tests
         parseModel(settingsFile)
     }
 
     @Test
     fun `Anchors and references resolves correct`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
+        testData(dir) {
+            config {
+                definitions("""
                 definitions: 
                   bar: &anc_bar
                     foo: hello
+                """.trimIndent())
+                blockchains("""
                 blockchains:
                   bc1:
                     module: module1
                     moduleArgs: 
-                      arg: *anc_bar
-            """.trimIndent())
+                      arg: *anc_bar 
+                """.trimIndent())
+            }
         }
-        val model = parseModel(settingsFile)
+        val model = parseModel(dir.resolve("chromia.yml").toFile())
         assertThat(model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]).isEqualTo(gtv("hello"))
     }
 
     @Test
     fun `list of byte array are validated and parsed`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
+        testData(dir) {
+            config {
+                blockchains("""
                 blockchains:
                   bc1:
                     module: module1
@@ -301,10 +254,12 @@ internal class RellLibraryModelTest {
                         arg:
                             foo:
                                 - x"1234"
-                                - x"5678"              
-            """.trimIndent())
+                                - x"5678"    
+                """.trimIndent())
+            }
         }
-        val model = parseModel(settingsFile)
+
+        val model = parseModel(dir.resolve("chromia.yml").toFile())
         val byteArrays = model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]
         assertThat(byteArrays?.get(0).toString()).isEqualTo("x\"1234\"")
         assertThat(byteArrays?.get(1).toString()).isEqualTo("x\"5678\"")
@@ -312,8 +267,9 @@ internal class RellLibraryModelTest {
 
     @Test
     fun `nested list of byte array are validated and parsed`(@TempDir dir: Path) {
-        settingsFile = File(dir.toFile(), "chromia.yml").apply {
-            writeText("""
+        testData(dir) {
+            config {
+                blockchains("""
                 blockchains:
                   bc1:
                     module: module1
@@ -323,10 +279,11 @@ internal class RellLibraryModelTest {
                                 -
                                     - x"1234"
                                     - x"5678"
-                                - x"2468"
-            """.trimIndent())
+                                - x"2468"  
+                """.trimIndent())
+            }
         }
-        val model = parseModel(settingsFile)
+        val model = parseModel(dir.resolve("chromia.yml").toFile())
         val byteArrays = model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]
         assertThat(byteArrays?.get(0)!![0].toString()).isEqualTo("x\"1234\"")
         assertThat(byteArrays[0][1].toString()).isEqualTo("x\"5678\"")
