@@ -174,7 +174,7 @@ class QueryCommandTest : IntegrationTestSetup() {
         }
     }
 
-    private val queryResponse = gtv(mapOf("a" to gtv(listOf(gtv(1), gtv("foo bar"), GtvNull)), "b" to gtv(listOf(gtv("1234ABCD".hexStringToByteArray()), gtv(4711)))))
+    private val queryResponse = gtv(mapOf("a" to gtv(listOf(gtv(1), gtv("foo bar"), GtvNull)), "b" to gtv(listOf(gtv("1234ABCD".hexStringToByteArray()), gtv(BigInteger("19223372036854775807"))))))
 
     @Test
     fun prettyPrint() {
@@ -190,7 +190,7 @@ class QueryCommandTest : IntegrationTestSetup() {
             |  ],
             |  "b": [
             |    x"1234ABCD",
-            |    4711
+            |    19223372036854775807L
             |  ]
             |]
             |""".trimMargin())
@@ -211,7 +211,7 @@ class QueryCommandTest : IntegrationTestSetup() {
             |  ],
             |  "b": [
             |    "1234ABCD",
-            |    4711
+            |    19223372036854775807
             |  ]
             |}
             |""".trimMargin())
@@ -235,7 +235,7 @@ class QueryCommandTest : IntegrationTestSetup() {
                 |    <entry key="b">
                 |        <array>
                 |            <bytea>1234ABCD</bytea>
-                |            <int>4711</int>
+                |            <bigint>19223372036854775807</bigint>
                 |        </array>
                 |    </entry>
                 |</dict>

@@ -8,7 +8,7 @@ import net.postchain.gtv.GtvType
 import net.postchain.gtv.gtvml.GtvMLEncoder
 
 private val PRETTY_GSON = GsonBuilder()
-        .registerTypeAdapter(Gtv::class.java, GtvAdapter())
+        .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false))
         .serializeNulls()
         .setPrettyPrinting()
         .create()!!
