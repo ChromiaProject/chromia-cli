@@ -17,11 +17,10 @@ inline fun <reified T> ensureType(any: Any?, vararg path: String): T {
     return any
 }
 
-fun ensureBrid(any: Any, vararg path: String): BlockchainRid {
+fun ensureBrid(any: Any?, vararg path: String): BlockchainRid {
     return when (any) {
         is String -> BlockchainRid.buildFromHex(any)
         is ByteArray -> BlockchainRid(any)
-        //this should not be necessary, but good to have in case there is a case we are missing
-        else -> throw ValidationException("Incorrect type ${any::class.simpleName}, expected ByteArray or hex string (location: ${path.joinToString("->")})")
+        else -> throw ValidationException("Incorrect type ${any?.javaClass?.simpleName}, expected ByteArray or hex string (location: ${path.joinToString("->")})")
     }
 }

@@ -36,7 +36,7 @@ internal class RellModelErrorMessagesTest {
     }
 
     @Test
-    fun `can parse blockchain config brid values that do not follow the brid format`(@TempDir dir: Path) {
+    fun `can not parse blockchain config brid values that do not follow the brid format`(@TempDir dir: Path) {
         testData(dir) {
             config {
                 blockchains("""

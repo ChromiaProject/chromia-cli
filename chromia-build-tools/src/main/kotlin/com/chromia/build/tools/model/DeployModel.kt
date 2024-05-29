@@ -26,7 +26,7 @@ data class DeploymentModel(
 
     companion object {
         fun load(data: Map<String, Any>, additionalProperty: String) = DeploymentModel(
-                blockchainRid = ensureBrid(data["brid"]!!, "deployments", additionalProperty, "brid"),
+                blockchainRid = ensureBrid(data["brid"], "deployments", additionalProperty, "brid"),
                 container = ensureType<String?>(data["container"], "deployments", additionalProperty, "container"),
                 url = listMapAndPrimitivesToGtv(data["url"]),
                 chains = ensureType<Map<String, Any>?>(data["chains"], "deployments", additionalProperty, "chains")
