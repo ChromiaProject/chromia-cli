@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.readText
 
 class GenerateDocsIT {
 
@@ -22,7 +23,7 @@ class GenerateDocsIT {
                 .startCondition("Documentation generated at")
                 .start()
 
-        val indexFile = File("${dir.toAbsolutePath()}", "build/site/index.html")
+        val indexFile = dir.resolve("build/site/index.html")
         assertThat(indexFile).exists()
     }
 
@@ -44,11 +45,35 @@ class GenerateDocsIT {
                 .startCondition("Documentation generated at")
                 .start()
 
-        val indexFile = File("${dir.toAbsolutePath()}", "build/site/index.html")
+        val indexFile = dir.resolve("build/site/index.html")
         assertThat(indexFile).exists()
         val indexFileContent = indexFile.readText()
         assertThat(indexFileContent).contains("my_dapp")
         assertThat(indexFileContent).contains("my_footer")
+    }
+
+    @Test
+    fun `Test that source links gets added to html`(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                docs("""
+                     docs:
+                       title: My Dapp
+                       sourceLink:
+                         remoteUrl: https://github.com/chromia/foobar/src
+                         remoteLineSuffix: "#L"
+             """.trimIndent())
+            }
+        }
+
+        TestProcess.Builder("generate", "docs")
+                .setWorkingDir(dir.toFile())
+                .awaitCompletion(false)
+                .startCondition("Documentation generated at")
+                .start()
+
+        val callOpContent = dir.resolve("build/site/-my -dapp/main/call_op.html").readText()
+        assertThat(callOpContent).contains("https://github.com/chromia/foobar/src/main.rell#L4")
     }
 
     @Test

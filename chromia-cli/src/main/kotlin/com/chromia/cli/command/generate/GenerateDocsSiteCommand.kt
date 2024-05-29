@@ -12,6 +12,7 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
+import java.net.URL
 
 class GenerateDocsSiteCommand : CliktCommand(
         name = "docs-site",
@@ -20,7 +21,7 @@ class GenerateDocsSiteCommand : CliktCommand(
         """.trimIndent()
 ) {
     private val settings by optionalChromiaModelOption()
-    private val docsModel by lazy { settings.model!!.docs }
+    private val model by lazy { settings.model!! }
 
     private val system by option(hidden = true).flag()
     private val systemIncludes by option("-si", "--system-include", hidden = true)
@@ -46,13 +47,19 @@ class GenerateDocsSiteCommand : CliktCommand(
     private fun configBuilder() = when (system) {
         true -> RellDokkaPluginConfigurationBuilder.SYSTEM.includes(systemIncludes)
         else -> RellDokkaPluginConfigurationBuilder(
-                title = docsModel.title,
+                title = model.docs.title,
                 modules = settings.model!!.blockchains.values.map { it.module },
                 projectRoot = settings.sourceDir!!
         )
-                .customStyleSheets(docsModel.customStyleSheets)
-                .customAssets(docsModel.customAssets)
-                .includes(docsModel.additionalContentFiles)
-                .footerMessage(docsModel.footerMessage)
+                .customStyleSheets(model.docs.customStyleSheets)
+                .customAssets(model.docs.customAssets)
+                .includes(model.docs.additionalContentFiles)
+                .footerMessage(model.docs.footerMessage)
+                .apply {
+                    model.docs.sourceLink?.let {
+                        val localDirectory = model.compile.source
+                        addSourceLink(localDirectory.toString(), URL(it.remoteUrl), it.remoteLineSuffix)
+                    }
+                }
     }
 }

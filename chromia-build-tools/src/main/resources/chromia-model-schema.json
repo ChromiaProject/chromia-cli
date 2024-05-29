@@ -161,6 +161,25 @@
         "footerMessage": {
           "type": "string",
           "description": "Message shown in the footer"
+        },
+        "sourceLink": {
+          "type": "object",
+          "description": "Link to a web site for browsing the source code",
+          "additionalProperties": false,
+          "required": [
+            "remoteUrl"
+          ],
+          "properties": {
+            "remoteUrl": {
+              "type": "string",
+              "description": "The URL of the source code hosting service that can be accessed by documentation readers"
+            },
+            "remoteLineSuffix": {
+              "type": "string",
+              "description": "The suffix used to append the source code line number to the URL",
+              "default": "#L"
+            }
+          }
         }
       }
     }
