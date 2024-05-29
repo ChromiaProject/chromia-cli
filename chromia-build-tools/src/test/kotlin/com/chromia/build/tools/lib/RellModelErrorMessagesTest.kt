@@ -36,6 +36,34 @@ internal class RellModelErrorMessagesTest {
     }
 
     @Test
+    fun `can parse blockchain config brid values that do not follow the brid format`(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                blockchains("""
+                blockchains:
+                  a:
+                    module: main
+                    config:
+                        historic_brid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3
+                        icmf:
+                            receiver:
+                              local:
+                                - topic: "L_topic"
+                                  brid: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A
+                            
+                    """.trimIndent())
+            }
+        }
+        val throwable = assertThrows<ValidationException> { parseModel(dir.resolve("chromia.yml").toFile()) }
+        assertThat(throwable.message!!).contains("""
+            Following errors found in chromia.yml:
+            Additional property 'a' found but was invalid (location: blockchains->a)
+            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")|([0-9A-Fa-f]{64})${'$'} - "615175A2847D739 ... 513654069E2912A" (location: blockchains->a->config->icmf->receiver->local->0->brid)
+            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")|([0-9A-Fa-f]{64})${'$'} - "615175A2847D739 ... 654069E2912A7E3" (location: blockchains->a->config->historic_brid)
+        """.trimIndent())
+    }
+
+    @Test
     fun `invalid indent in rell model test`(@TempDir dir: Path) {
         testData(dir) {
             config {
