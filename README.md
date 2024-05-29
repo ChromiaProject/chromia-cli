@@ -6,20 +6,6 @@ The Chromia-cli is a tool intended to make the development cycle and deployment 
 
 Use `chr --help` to see available options and parameters. More information found in the [official docs](https://docs.chromia.com).
 
-## Contributing
-
-Build and test the repo using `mvn install`. 
-
-### Prerequisities
-
-- Docker
-- Postgres
-
-Package as a docker image using `-Pdocker`. 
-Postgres is needed with `en_US.UTF-8` collation to be able to run the test suite. See [setup guide](https://docs.chromia.com/getting-started/dev-setup/database-setup) for instructions.
-
-We recommend installing [direnv](https://direnv.net) for manual testing, as then you can access the build artifact by calling `chr` in this repo.
-
 ### Auto completion
 
 To enable auto-completion you need to run the following commands, these needs to run each time a new version of the cli
@@ -29,3 +15,20 @@ is installed.
 $ chr --generate-completion=bash > ~/chr-completion.sh
 $ source ~/chr-completion.sh
 ```
+## Contributing
+
+Build and test the repo using `mvn install`. 
+
+### Prerequisites
+
+- Docker
+- Postgres
+
+Package as a docker image using `-Pdocker`. 
+Postgres is needed with `en_US.UTF-8` collation to be able to run the test suite. See [setup guide](https://docs.chromia.com/getting-started/dev-setup/database-setup) for instructions.
+
+We recommend installing [direnv](https://direnv.net) for manual testing, as then you can access the build artifact by calling `chr` in this repo.
+
+### Tests
+
+Use `mvn verify -DexcludedGroups=ssh` to exclude integration tests relying on SSH (which does not work in some environments).

@@ -15,7 +15,8 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
         private const val DEFAULT_PMC_CONFIG_FILENAME = ".pmc/config"
         private const val DEFAULT_CHROMIA_MODEL_FILENAME = "chromia.yml"
         private const val DEFAULT_CONFIG_MODEL_FILENAME = "config.yml"
-        private val chromiaHome = System.getenv("CHROMIA_HOME") ?: (System.getProperty("user.home") + "/.chromia")
+        private val chromiaHome
+            get() = System.getenv("CHROMIA_HOME") ?: (System.getProperty("user.home") + "/.chromia")
         fun globalConfigurationFile() = File("$chromiaHome/config")
         fun localConfigurationFile() = File(DEFAULT_CONFIG_FILENAME)
     }
