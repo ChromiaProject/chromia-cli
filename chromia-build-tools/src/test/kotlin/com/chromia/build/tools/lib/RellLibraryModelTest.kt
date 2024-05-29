@@ -23,11 +23,6 @@ internal class RellLibraryModelTest {
     fun `can parse hex string of length 64 as brid`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                blockchains("""
-                blockchains:
-                  a:
-                    module: main
-                    """.trimIndent())
                 deployments("""
                 deployments: 
                     foo:
@@ -44,17 +39,12 @@ internal class RellLibraryModelTest {
     fun `can parse bytearray as brid`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                blockchains("""
-                blockchains:
-                  a:
-                    module: main
-                    """.trimIndent())
                 deployments("""
                 deployments: 
                     foo:
                       url: "http://foo.com"
                       brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
-                            """.trimIndent())
+                     """.trimIndent())
             }
         }
         val model = parseModel(dir.resolve("chromia.yml").toFile())
