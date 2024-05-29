@@ -58,8 +58,8 @@ internal class RellModelErrorMessagesTest {
         assertThat(throwable.message!!).contains("""
             Following errors found in chromia.yml:
             Additional property 'a' found but was invalid (location: blockchains->a)
-            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")|([0-9A-Fa-f]{64})${'$'} - "615175A2847D739 ... 513654069E2912A" (location: blockchains->a->config->icmf->receiver->local->0->brid)
-            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")|([0-9A-Fa-f]{64})${'$'} - "615175A2847D739 ... 654069E2912A7E3" (location: blockchains->a->config->historic_brid)
+            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")${'$'} - "615175A2847D739 ... 513654069E2912A" (location: blockchains->a->config->icmf->receiver->local->0->brid)
+            String doesn't match pattern ^(x"[0-9A-Fa-f]{64}")${'$'} - "615175A2847D739 ... 654069E2912A7E3" (location: blockchains->a->config->historic_brid)
         """.trimIndent())
     }
 
