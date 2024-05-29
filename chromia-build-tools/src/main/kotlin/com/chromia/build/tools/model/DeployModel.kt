@@ -27,12 +27,12 @@ data class DeploymentModel(
 
     companion object {
         fun load(data: Map<String, Any>, additionalProperty: String) = DeploymentModel(
-                brid = ensureBrid(data["brid"], "deployments", additionalProperty, "brid"),
+                brid = ensureBrid(data["brid"]!!, "deployments", additionalProperty, "brid"),
                 container = ensureType<String?>(data["container"], "deployments", additionalProperty, "container"),
                 url = listMapAndPrimitivesToGtv(data["url"]),
-                chains = ensureType<Map<String, ByteArray>?>(data["chains"], "deployments", additionalProperty, "chains")
+                chains = ensureType<Map<String, Any>?>(data["chains"], "deployments", additionalProperty, "chains")
                         ?.mapValues {
-                            BlockchainRid(it.value)
+                            ensureBrid(it.value, "deployments", additionalProperty, "chains", it.key)
                         } ?: mapOf(),
         )
     }

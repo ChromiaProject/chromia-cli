@@ -166,7 +166,7 @@ internal class RellModelErrorMessagesTest {
     }
 
     @Test
-    fun `incorrect type non hex string for chains in deployment model expecting byteArray test`(@TempDir dir: Path) {
+    fun `missing quotes for hex when not denoting it as a bytearray throws an error`(@TempDir dir: Path) {
         testData(dir) {
             config {
                 deployments("""
@@ -175,7 +175,7 @@ internal class RellModelErrorMessagesTest {
                         url: "http://foo.com"
                         brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
                         chains:
-                            bc1: 1234
+                            bc1: 1234123412341234123412341234123412341234123412341234123412341234
                 """.trimIndent())
             }
         }
