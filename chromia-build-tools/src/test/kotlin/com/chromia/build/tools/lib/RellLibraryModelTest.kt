@@ -62,6 +62,25 @@ internal class RellLibraryModelTest {
     }
 
     @Test
+    fun `can parse both formats for brid chains in deployed chains`(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                deployments("""
+                deployments:
+                    foo:
+                        url: "http://foo.com"
+                        brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                        chains:
+                            bc1: 615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5
+                            bc2: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
+                """.trimIndent())
+            }
+        }
+        val model = parseModel(dir.resolve("chromia.yml").toFile())
+        assertThat(model.deployments["foo"]!!.chains.keys.size).isEqualTo(2)
+    }
+
+    @Test
     fun singleLibraryTest(@TempDir dir: Path) {
         testData(dir) {
             config {
