@@ -265,7 +265,7 @@
         },
         "historic_brid": {
           "type": "string",
-          "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$"
+          "pattern": "^(x\"[0-9A-Fa-f]{64}\")$"
         },
         "dependencies": {
           "type": "object"
@@ -385,7 +385,7 @@
                       "string",
                       "null"
                     ],
-                    "pattern": "^(x\"[0-9A-Fa-f]{64}\")|([0-9A-Fa-f]{64})$",
+                    "pattern": "^(x\"[0-9A-Fa-f]{64}\")$",
                     "description": "Blockchain RID for sender blockchain"
                   }
                 }
