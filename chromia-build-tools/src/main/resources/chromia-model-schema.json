@@ -177,7 +177,7 @@
             "remoteLineSuffix": {
               "type": "string",
               "description": "The suffix used to append the source code line number to the URL",
-              "default": "#L"
+              "default": "\"#L\""
             }
           }
         }
