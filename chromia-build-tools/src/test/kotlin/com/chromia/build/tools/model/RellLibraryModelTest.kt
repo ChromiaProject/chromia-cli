@@ -20,7 +20,7 @@ internal class RellLibraryModelTest {
     fun singleLibraryTest(@TempDir dir: Path) {
         testData(dir) {
             config {
-                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
+                addLib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
                 addFile("lib/foo/foo.rell", """module;""")
                 addFile("lib/foo/bar.rell", """module; //Bar""")
             }
@@ -42,8 +42,8 @@ internal class RellLibraryModelTest {
     fun conflictingLibraryNameIsOverriddenTest(@TempDir dir: Path) {
         testData(dir) {
             config {
-                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
-                lib("foo", RellLibraryModel("http://foo2.com", null, "lib", false, "615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5".hexStringToWrappedByteArray()))
+                addLib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "2415A364EF7DB349F3AECE7201094D9294915641D35F7D1842E83DAAF9BBC558".hexStringToWrappedByteArray()))
+                addLib("foo", RellLibraryModel("http://foo2.com", null, "lib", false, "615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5".hexStringToWrappedByteArray()))
             }
         }
         val settings = parseModel(dir.resolve("chromia.yml").toFile())
@@ -55,8 +55,8 @@ internal class RellLibraryModelTest {
     fun multipleLibraryTest(@TempDir dir: Path) {
         testData(dir) {
             config {
-                lib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "33B5C0C7909B01AD272346A49C4F4FCD6FF7E29685803F7F6C8B5EF320BF2F0C".hexStringToWrappedByteArray()))
-                lib("bar", RellLibraryModel("http://bar.com", null, "lib", false, "E9A6EE3D187533034566A53007CA034F328CD469D986048B31EEE86E238E6E14".hexStringToWrappedByteArray()))
+                addLib("foo", RellLibraryModel("http://foo.com", null, "lib", false, "33B5C0C7909B01AD272346A49C4F4FCD6FF7E29685803F7F6C8B5EF320BF2F0C".hexStringToWrappedByteArray()))
+                addLib("bar", RellLibraryModel("http://bar.com", null, "lib", false, "E9A6EE3D187533034566A53007CA034F328CD469D986048B31EEE86E238E6E14".hexStringToWrappedByteArray()))
                 addFile("lib/foo/main.rell", """module;""")
                 addFile("lib/foo/api.rell", """module;""")
                 addFile("lib/bar/main.rell", """module;""")
@@ -73,7 +73,7 @@ internal class RellLibraryModelTest {
     fun skipLibraryValidationTest(@TempDir dir: Path) {
         testData(dir) {
             config {
-                lib("foo", RellLibraryModel("http://foo.com", null, "lib", true, null))
+                addLib("foo", RellLibraryModel("http://foo.com", null, "lib", true, null))
                 addFile("lib/foo/main.rell", """module;""")
                 addFile("lib/foo/api.rell", """module;""")
             }

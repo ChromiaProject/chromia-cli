@@ -93,7 +93,7 @@ internal class BuildCommandTest {
     fun libraryMissingTest() {
         testData(dir.toPath()) {
             config {
-                lib("missing", RellLibraryModel("http://missing.com", path = "lib", rid = "11".hexStringToWrappedByteArray()))
+                addLib("missing", RellLibraryModel("http://missing.com", path = "lib", rid = "11".hexStringToWrappedByteArray()))
             }
         }
         val e = assertFailsWith<ValidationException> { command.parse() }
@@ -104,7 +104,7 @@ internal class BuildCommandTest {
     fun libraryTamperedTest() {
         testData(dir.toPath()) {
             config {
-                lib("bar", TestRepositoryCloner.bar.model.copy(rid = "11".hexStringToWrappedByteArray()))
+                addLib("bar", TestRepositoryCloner.bar.model.copy(rid = "11".hexStringToWrappedByteArray()))
             }
         }
 
@@ -174,7 +174,7 @@ internal class BuildCommandTest {
         File(dir, "src/main.rell").writeText("""
             module;
         """.trimIndent())
-        
+
         command.parse()
         val outputFile = File(dir, "build/hello.xml")
 

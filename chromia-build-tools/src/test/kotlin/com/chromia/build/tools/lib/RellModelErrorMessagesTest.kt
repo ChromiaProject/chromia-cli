@@ -17,7 +17,7 @@ internal class RellModelErrorMessagesTest {
     fun `unrecognized field in rell model test`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                setFullLib("""
                 libs:
                     foo:
                         registry: http://foo.com
@@ -123,7 +123,7 @@ internal class RellModelErrorMessagesTest {
     fun `incorrect type byteArray for registry in library model expecting string test`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                extra("""
                 libs:
                     foo:
                         path: lib
@@ -139,7 +139,7 @@ internal class RellModelErrorMessagesTest {
     fun `incorrect type byteArray for tagOrBranch in library model expecting optional string test`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                extra("""
                 libs:
                     foo:
                         registry: http://foo.com
@@ -156,7 +156,7 @@ internal class RellModelErrorMessagesTest {
     fun `incorrect type string for rid in library model expecting optional byteArray test`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                extra("""
                 libs:
                     foo:
                         registry: http://foo.com
@@ -220,7 +220,7 @@ internal class RellModelErrorMessagesTest {
     fun `incorrect type string for insecure in library model boolean test`(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                extra("""
                 libs:
                     foo:
                       registry: http://foo.com

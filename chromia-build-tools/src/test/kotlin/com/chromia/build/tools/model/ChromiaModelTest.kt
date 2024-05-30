@@ -107,7 +107,7 @@ internal class ChromiaModelTest {
     fun fullConfigParseTest(@TempDir dir: Path) {
         testData(dir) {
             config {
-                manualContent("""
+                blockchains("""
                 blockchains:
                     foo:
                         module: main
@@ -128,7 +128,8 @@ internal class ChromiaModelTest {
                                 moduleOne:
                                     hex: x"1234"
                                     string: foobar
-                
+                """.trimIndent())
+                deployments("""
                 deployments:
                   testnet:
                     brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
@@ -138,19 +139,20 @@ internal class ChromiaModelTest {
                     container: 1234id
                     chains:
                       foo: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5" 
-                      
                   mainnet:
                     brid: x"615175A2847D739C2CD0EC27339E8128549E513654069E2912A7E3C3E7032DB5"
                     url: https://bar.com
                     container: 1234id
-                
+                """.trimIndent())
+                compile("""
                 compile:
                   rellVersion: 0.13.5
                   source: src
                   target: build
                   deprecatedError: false
                   quiet: true
-                  
+                """.trimIndent())
+                database("""
                 database:
                     password: postchain
                     username: postchain
@@ -158,8 +160,9 @@ internal class ChromiaModelTest {
                     host: localhost
                     logSqlErrors: true
                     schema: rell_app
-                    driver: org.postgresql.Driver
-                
+                    driver: org.postgresql.Driver                    
+                """.trimIndent())
+                test("""
                 test:
                     modules:
                         - test.bar
@@ -168,16 +171,17 @@ internal class ChromiaModelTest {
                         moduleOne:
                             hex: x"1234"
                             string: foo
-                    failOnError: true
+                    failOnError: true   
+                """.trimIndent())
+                setFullLib("""
                 libs:
                     lib:
                         registry: https://bar.com
                         path: path/foo
                         tagOrBranch: branchOne
                         rid: x"1234"
-                        insecure: false
-            """.trimIndent()
-                )
+                        insecure: false      
+                """.trimIndent())
             }
         }
 
