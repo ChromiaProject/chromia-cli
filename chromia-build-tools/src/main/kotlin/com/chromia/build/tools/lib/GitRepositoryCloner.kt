@@ -18,6 +18,8 @@ class GitRepositoryCloner(val sshDir: File? = null, val quiet: Boolean = false) 
             SshSessionFactory.setInstance(sshdSessionFactory)
             Git.cloneRepository()
                     .apply { if (tagOrBranch != null) setBranch(tagOrBranch) }
+                    .setDepth(1)
+                    .setCloneAllBranches(false) // Speed up when [tagOrBranch] is not set
                     .setDirectory(target.toFile())
                     .setURI(registry)
                     .setTimeout(60)
