@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <dict>
+    <entry key="add_primary_key_to_header">
+        <int>1</int>
+    </entry>
     <entry key="blockstrategy">
         <dict>
             <entry key="mininterblockinterval">

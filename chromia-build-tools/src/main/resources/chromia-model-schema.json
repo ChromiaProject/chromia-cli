@@ -291,6 +291,7 @@
         },
         "config_consensus_strategy": {
           "type": "string",
+          "default": "HEADER_HASH",
           "description": "Configuration consensus strategy"
         },
         "query_cache_ttl_seconds": {
@@ -302,6 +303,11 @@
           "type": "number",
           "default": 10000,
           "description": "How long time in the future a block timestamp can be, compared to current time, in milliseconds. -1 means disabled check."
+        },
+        "add_primary_key_to_header": {
+          "type": "boolean",
+          "default": true,
+          "description": "If enabled primary node will add its public key to the block header. Please note that this value is **not** validated and can only be trusted for features that incentivize nodes to add their own key."
         }
       }
     },
@@ -475,12 +481,12 @@
         },
         "fast_revolt_status_timeout": {
           "type": "integer",
-          "default": -1,
+          "default": 2000,
           "description": "Timeout in milliseconds since the last received status message before considering a node disconnected and revolting immediately. -1 to disable this functionality"
         },
         "revolt_when_should_build_block": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Start counting the revolt timeout only after considering it possible to build a block"
         }
       }
@@ -506,7 +512,7 @@
         },
         "mininterblockinterval": {
           "type": "integer",
-          "default": 25,
+          "default": 1000,
           "description": "Smallest time interval between blocks in milliseconds"
         },
         "maxblocktime": {

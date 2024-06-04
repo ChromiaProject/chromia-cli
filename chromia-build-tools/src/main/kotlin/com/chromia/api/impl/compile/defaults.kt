@@ -15,6 +15,7 @@ internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, comp
     // TODO: override these from config ([BlockchainModel.config])
     update(GtvFactory.gtv("name" to GtvFactory.gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
     update(GtvFactory.gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
+    update(GtvFactory.gtv(true), "add_primary_key_to_header")
     update(GtvFactory.gtv("HEADER_HASH"), "config_consensus_strategy")
     update(GtvFactory.gtv(2000), "revolt", "fast_revolt_status_timeout")
     update(GtvFactory.gtv(true), "revolt", "revolt_when_should_build_block")
