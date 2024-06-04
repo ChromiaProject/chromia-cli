@@ -18,8 +18,15 @@ enum class OutputFormat {
     pretty, raw, JSON, XML
 }
 
+@Suppress("EnumEntryName")
+enum class TableOutputFormat {
+    table, JSON
+}
+
 fun CliktCommand.outputFormat() = option("-f", "--output-format", help = "Output format").enum<OutputFormat>()
         .default(OutputFormat.pretty)
+
+fun CliktCommand.tableOutputFormat() = option("-f", "--output-format", help = "Output format").enum<TableOutputFormat>()
 
 fun CliktCommand.nodePropertiesOption() =
         option("-np", "--node-properties", help = "Full path to override node properties file", metavar = "PATH")
@@ -56,6 +63,6 @@ fun CliktCommand.module() = option("-m", "--module", help = "Name of module", me
 fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
 fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()
 
-fun ParameterHolder.targetUrlOption() = option(help = "Target url")
+fun ParameterHolder.targetUrlOption() = option("--api-url", help = "Target url")
 
 fun ParameterHolder.containerIdOption() = option("-cid", "--container-id", help = "Set container id explicitly")

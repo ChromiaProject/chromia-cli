@@ -48,7 +48,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
         val errorLens = Body.auto<NodeStatus.Error>().toLens()
 
         private val tableHeaders = listOf("Node url", "Height", "Status")
-        private val verboseTableHeaders = listOf("Node Url", "Height", "State", "Round", "Revolting", "Status")
+        private val verboseTableHeaders = listOf("Node url", "Height", "State", "Round", "Revolting", "Status")
     }
 
     sealed class NodeStatus {

@@ -21,8 +21,8 @@ class DeployInspectIT {
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
                     val brid = getBrid()
-                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", "$brid").startCondition("Module: main").start()
-                    TestProcess.Builder("deployment", "inspect", "--url", "http://localhost:7740", "-brid", "$brid", "-l").startCondition("main").start()
+                    TestProcess.Builder("deployment", "inspect", "--api-url", "http://localhost:7740", "-brid", "$brid").startCondition(""""mount_name": "hello"""").start()
+                    TestProcess.Builder("deployment", "inspect", "--api-url", "http://localhost:7740", "-brid", "$brid", "-l").startCondition(""""main"""").start()
                 }
     }
 

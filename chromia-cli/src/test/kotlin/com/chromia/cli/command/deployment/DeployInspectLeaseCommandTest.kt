@@ -23,7 +23,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 
 class DeployInspectLeaseCommandTest {
-    private val logger = TerminalRecorder(width = 1000)
+    private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
     private val testTerminal = Terminal(logger)
 
     @TempDir
@@ -56,7 +56,7 @@ class DeployInspectLeaseCommandTest {
         withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", gtv(getLeaseData()))) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "-s", settingsFile.absolutePath))
-            assertThat(logger.output()).contains("Getting lease information for container: containerId")
+            assertThat(logger.output()).contains(""""container": "containerId"""")
         }
     }
 
@@ -98,7 +98,7 @@ class DeployInspectLeaseCommandTest {
         withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", gtv(getLeaseData()))) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "--container-id", "A Different Container", "-s", settingsFile.absolutePath))
-            assertThat(logger.output()).contains("Getting lease information for container: A Different Container")
+            assertThat(logger.output()).contains(""""container": "A Different Container"""")
         }
     }
 
@@ -121,7 +121,7 @@ class DeployInspectLeaseCommandTest {
             val pubkey = "0000000000000000000000000000000000000000000000000000000000000003"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "--pubkey", pubkey, "-s", settingsFile.absolutePath))
-            assertThat(logger.output()).contains("Getting active leases for user with public key: $pubkey")
+            assertThat(logger.output()).contains(""""pubkey": "$pubkey"""")
         }
     }
 
@@ -132,7 +132,7 @@ class DeployInspectLeaseCommandTest {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
             val res = assertThrows<Exception> {
-                command.parse(listOf("--url", "http://localhost:7745", "--blockchain-rid", brid))
+                command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid))
             }
             assertThat(res.message).isEqualTo("Option pubkey or container name needs to be specified.")
         }
@@ -147,8 +147,8 @@ class DeployInspectLeaseCommandTest {
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
-            command.parse(listOf("--url", "http://localhost:7745", "--blockchain-rid", brid, "--pubkey", pubkey))
-            assertThat(logger.output()).contains("Getting active leases for user with public key: $pubkey")
+            command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid, "--pubkey", pubkey))
+            assertThat(logger.output()).contains(""""pubkey": "$pubkey"""")
         }
     }
 
@@ -158,8 +158,8 @@ class DeployInspectLeaseCommandTest {
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
-            command.parse(listOf("--url", "http://localhost:7745", "--blockchain-rid", brid, "--container-id", "container-id"))
-            assertThat(logger.output()).contains("Getting lease information for container: container-id")
+            command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid, "--container-id", "container-id"))
+            assertThat(logger.output()).contains(""""container": "container-id"""")
         }
     }
 
@@ -170,7 +170,7 @@ class DeployInspectLeaseCommandTest {
         val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
         val res = assertThrows<Exception> {
-            command.parse(listOf("--url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
+            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
         }
         assertThat(res.message.toString()).contains("Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f.")
     }
@@ -182,7 +182,7 @@ class DeployInspectLeaseCommandTest {
         val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
         val res = assertThrows<Exception> {
-            command.parse(listOf("--url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
+            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
         }
         assertThat(res.message.toString()).contains("The public key must be a hex string with even length. Length was: ${pubkey.length}")
     }

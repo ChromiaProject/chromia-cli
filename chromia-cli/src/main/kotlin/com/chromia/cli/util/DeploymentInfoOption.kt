@@ -53,13 +53,13 @@ class ConfiguredDeploymentInfoOption(private val clientProvider: PostchainClient
 
 class ManualDeploymentInfoOption(private val clientProvider: PostchainClientProvider, private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler) : DeploymentInfoOption("Manual", help = "Set connection parameters manually") {
     private val blockchainRid by blockchainRidOption("Target Blockchain RID").required()
-    private val url by option(help = "Target url").multiple().validate { it.isNotEmpty() }
+    private val apiUrl by option(help = "Target api url").multiple().validate { it.isNotEmpty() }
 
-    override val urls: List<String> get() = url
+    override val urls: List<String> get() = apiUrl
     override val brid: BlockchainRid get() = blockchainRid.let { BlockchainRid.buildFromHex(it) }
     override val blockchainName: String get() = blockchainRid
     override val networkBrid: BlockchainRid
-        get() = BridFetcher(httpHandlerFactory(PostchainClientConfig(brid, EndpointPool.default(urls))), url.first())
+        get() = BridFetcher(httpHandlerFactory(PostchainClientConfig(brid, EndpointPool.default(urls))), apiUrl.first())
                 .fetchBlockchainRid(0)
 
     override fun networkClient(): PostchainClient {

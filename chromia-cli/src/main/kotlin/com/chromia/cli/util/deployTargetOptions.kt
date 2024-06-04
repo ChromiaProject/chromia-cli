@@ -23,7 +23,7 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     abstract fun createClient(config: ChromiaClientConfig): PostchainClient
 }
 
-class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Make query towards a configured deployment") {
+class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment") {
     private val network by deployTargetOption()
     private val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
     override val brid: BlockchainRid
@@ -49,7 +49,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
 
 class LocalDeploymentOption(
         private val config: () -> ChromiaClientConfig,
-        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Make query/tx towards a test node") {
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Target a test node") {
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int()
     private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)

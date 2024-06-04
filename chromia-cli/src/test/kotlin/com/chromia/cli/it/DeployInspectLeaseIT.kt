@@ -89,18 +89,44 @@ class DeployInspectLeaseIT {
         ) {
             TestProcess.Builder("deployment", "lease-info", "--network", "test")
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    //Spacing needs to match exactly with table line printed from command
-                    .startCondition("│ $clusterName │ $containerName │ $containerUnits" +
-                            "                     │ $extraStorageGib                   │ $expireTimeMillis" +
-                            "                    │ $expired   │ $autoRenew")
+                    .wholeOutput("""
+                        {
+                          "pubkey": null,
+                          "container": "containerName",
+                          "leases": [
+                            {
+                              "Cluster": "$clusterName",
+                              "Container": "$containerName",
+                              "Container_units": $containerUnits,
+                              "Extra_storage": $extraStorageGib,
+                              "Expire_time": $expireTimeMillis,
+                              "Expired": $expired,
+                              "Auto_renew": $autoRenew
+                            }
+                          ]
+                        }
+                    """.trimIndent())
                     .start()
 
             TestProcess.Builder("deployment", "lease-info", "--network", "test", "--pubkey", accountId)
                     .setConfig(dir.resolve("chromia.yml").toFile())
-                    //Spacing needs to match exactly with table line printed from command
-                    .startCondition("│ $clusterName │ $containerName │ $containerUnits" +
-                            "                     │ $extraStorageGib                   │ $expireTimeMillis" +
-                            "                    │ $expired   │ $autoRenew")
+                    .wholeOutput("""
+                        {
+                          "pubkey": "$accountId",
+                          "container": null,
+                          "leases": [
+                            {
+                              "Cluster": "$clusterName",
+                              "Container": "$containerName",
+                              "Container_units": $containerUnits,
+                              "Extra_storage": $extraStorageGib,
+                              "Expire_time": $expireTimeMillis,
+                              "Expired": $expired,
+                              "Auto_renew": $autoRenew
+                            }
+                          ]
+                        }
+                    """.trimIndent())
                     .start()
         }
     }

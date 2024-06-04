@@ -34,6 +34,7 @@ class QueryCommand : CliktCommand(help = """
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+
     private val outputFormat by outputFormat()
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query, passed either as key=value pairs or as a single dict.", helpTags = mapOf(
@@ -72,7 +73,9 @@ class QueryCommand : CliktCommand(help = """
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
         val clientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        val gtv = target.createClient(clientConfig).query(queryName, args as Gtv)
+        val client = target.createClient(clientConfig)
+
+        val gtv = client.query(queryName, args as Gtv)
         echo(when (outputFormat) {
             OutputFormat.pretty -> gtv.pretty()
             OutputFormat.raw -> formatRaw(gtv)

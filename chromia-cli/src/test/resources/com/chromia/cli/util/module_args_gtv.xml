@@ -1,0 +1,73 @@
+<dict>
+    <entry key="common">
+        <dict>
+            <entry key="allow_blockchain_dependencies">
+                <int>0</int>
+            </entry>
+            <entry key="provider_quota_max_actions_per_day">
+                <int>100</int>
+            </entry>
+        </dict>
+    </entry>
+    <entry key="common.init">
+        <dict>
+            <entry key="genesis_node">
+                <dict>
+                    <entry key="api_url">
+                        <string>https://node0.devnet2.chromia.dev:7740</string>
+                    </entry>
+                    <entry key="host">
+                        <string>node0.devnet2.chromia.dev</string>
+                    </entry>
+                    <entry key="port">
+                        <int>9870</int>
+                    </entry>
+                    <entry key="pubkey">
+                        <bytea>0350FE40766BC0CE8D08B3F5B810E49A8352FDD458606BD5FAFE5ACDCDC8FF3F57</bytea>
+                    </entry>
+                    <entry key="territory">
+                        <string>SE</string>
+                    </entry>
+                </dict>
+            </entry>
+            <entry key="initial_provider">
+                <bytea>03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05</bytea>
+            </entry>
+        </dict>
+    </entry>
+    <entry key="proposal_blockchain.util">
+        <dict>
+            <entry key="allowed_dapp_chain_gtx_modules">
+                <array>
+                    <string>net.postchain.rell.module.RellPostchainModuleFactory</string>
+                    <string>net.postchain.gtx.StandardOpsGTXModule</string>
+                    <string>net.postchain.d1.icmf.IcmfSenderGTXModule</string>
+                    <string>net.postchain.d1.icmf.IcmfReceiverGTXModule</string>
+                    <string>net.postchain.d1.iccf.IccfGTXModule</string>
+                    <string>net.postchain.eif.EifGTXModule</string>
+                </array>
+            </entry>
+            <entry key="allowed_dapp_chain_sync_exts">
+                <array>
+                    <string>net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension</string>
+                    <string>net.postchain.eif.EifSynchronizationInfrastructureExtension</string>
+                </array>
+            </entry>
+            <entry key="max_block_size">
+                <int>27262976</int>
+            </entry>
+            <entry key="max_config_path_depth">
+                <int>10</int>
+            </entry>
+            <entry key="max_config_size">
+                <int>5242880</int>
+            </entry>
+            <entry key="min_fast_revolt_status_timeout">
+                <int>2000</int>
+            </entry>
+            <entry key="min_inter_block_interval">
+                <int>1000</int>
+            </entry>
+        </dict>
+    </entry>
+</dict>

@@ -30,6 +30,6 @@ fun jsonTable(headers: List<String>, rows: List<List<String>>): String = json(
             }
         })
 
-private fun fixKey(key: String) = key.replace(' ', '_').replace(":", "")
+fun fixKey(key: String) = key.replace(' ', '_').replace(":", "")
 
-private fun json(data: Any) = GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(data)
+fun json(data: Any) = GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(data)
