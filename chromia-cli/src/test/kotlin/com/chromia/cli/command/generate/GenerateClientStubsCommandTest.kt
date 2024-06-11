@@ -23,8 +23,8 @@ internal class GenerateClientStubsCommandTest {
     @Test
     fun errorMessageIncludeAllStubTargets() {
         val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
-        assertThat(res.statusCode).isEqualTo(1)
         assertThat(res.output.trim()).isEqualTo("Missing language option: [--typescript, --javascript, --kotlin]")
+        assertThat(res.statusCode).isEqualTo(1)
     }
 
 
@@ -45,6 +45,7 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.kt")
         assertThat(File(dir, "build/stubs/main/main.kt").readLines()[2]).isEqualTo("package com.example.main")
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.kt]")
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test
@@ -53,6 +54,7 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
         assertThat(File(dir, "build/stubs/main").list()).containsAll("main.ts")
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.ts]")
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test
@@ -63,6 +65,7 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "build/stubs/").list()).containsAll("root.js")
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]")
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test
@@ -112,6 +115,7 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A1 = {" }).hasSize(1)
         assertThat(File(dir, "build/stubs/a/a.ts").readLines().filter { it == "export type A2 = {" }).hasSize(1)
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [a/a.ts, e1/e1.ts, e2/e2.ts]")
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test
@@ -123,7 +127,7 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "stubs/").list()).containsAll("root.js")
         assertThat(res.output).contains("Created files in ${File(dir, "/stubs").absolutePath}: [/root.js, main/main.js]")
-
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test
@@ -152,6 +156,19 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/foo/main").listFiles()!!).hasSize(1)
         assertThat(File(dir, "build/stubs/bar/main").listFiles()!!).hasSize(1)
         assertThat(res.output).contains("/build/stubs: [foo/main/foo_main.kt, bar/main/bar_main.kt]")
+        assertThat(res.statusCode).isEqualTo(0)
+    }
 
+    @Test
+    fun queryWithMixedTupleReturnNonZeroExit() {
+        testData(dir.toPath()) {
+            addFile("mixed.rell", """
+                query mixed() = (1, foo="bar");
+            """.trimIndent())
+        }
+        val targetDir = dir.absolutePath
+        val res = command.parse(listOf("-s", "$targetDir/chromia.yml", "--typescript"))
+        assertThat(res.stderr).contains("Query return type contains unsupported mixed tuple type")
+        assertThat(res.statusCode).isEqualTo(1)
     }
 }
