@@ -54,6 +54,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
             val model = settings.model.filterBlockchains { bc, model ->
                 model.type == BlockchainModel.Type.BLOCKCHAIN && (name.isEmpty() || name.contains(bc))
             }
+            require(model.blockchains.isNotEmpty()) { "No blockchains started" }
             ChromiaCompileApi.build(CliktCliEnv(this), model)
         } else {
             blockchainConfigs

@@ -45,6 +45,18 @@ class TxCommand : CliktCommand(help = """
     ICCF:
     To verify a transaction using ICCF, specify the tx-rid to verify using `--iccf-tx` and which chain id the transaction was processed.
     The command will both construct and insert a `iccf_proof` operation prior to the user operation but will also add the the transaction as a `gtx_transaction` as first argument to the user operation.
+    
+    Examples:
+    ```
+    # operation primitive_args(arg1: integer, arg2: name, arg3: text, arg4: byte_array, arg5: my_enum)
+    chr tx primitive_args 123 Alice \"My Neighbor\" x\"AB12\" 0
+    # operation dict_arg(arg: map<text, integer>)
+    chr tx dict_arg '["key": 12]'
+    # operation map_arg(arg: map<my_enum, text>)
+    chr tx map_arg '[[0, "first"],[1, "second"]]'
+    # operation struct_arg(arg: my_struct)
+    chr tx struct_arg '[12, "structs are arrays", x"AB"]'
+    ```
 """.trimIndent()) {
 
     private val settings by optionalChromiaModelConfigOption()

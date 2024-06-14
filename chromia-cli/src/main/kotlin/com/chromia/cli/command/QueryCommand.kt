@@ -29,6 +29,21 @@ class QueryCommand : CliktCommand(help = """
     
     Note: For query arguments:
     $DASH_DASH_DESCRIPTION
+    
+    Examples:
+    ```
+    # query primitive_args(arg1: integer, arg2: name, arg3: text, arg4: byte_array, arg5: my_enum)
+    chr query primitive_args 'arg1=123' 'arg2=Alice' 'arg3="My Neighbor"' 'arg4=x"AB12"' 'arg5=0'
+    # query dict_arg(arg: map<text, integer>)
+    chr query dict_arg 'arg=["key": 12]'
+    # query map_arg(arg: map<my_enum, text>)
+    chr query map_arg 'arg=[[0, "first"],[1, "second"]]'
+    # query struct_arg(arg: my_struct)
+    chr query struct_arg 'arg=[12, "structs are arrays", x"AB"]'
+    
+    # Use -- do avoid additional quotes
+    chr query my_query -- arg1=foo arg2=x"AB12"
+    ```
 """.trimIndent()
 ) {
     private val settings by optionalChromiaModelConfigOption()
