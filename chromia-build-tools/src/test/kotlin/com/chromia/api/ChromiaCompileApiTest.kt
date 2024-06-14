@@ -172,6 +172,23 @@ internal class ChromiaCompileApiTest {
     }
 
     @Test
+    fun `Library exposing module arguments should compile anyway`() {
+        testData(dir) {
+            config {
+                blockchains("""
+                blockchains:
+                  my:
+                    module: lib.my
+                    type: library
+                """.trimIndent())
+            }
+            addFile("lib/my/module.rell", """module; struct module_args { name; }""")
+        }
+        val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
+        assertThat(result.size).isEqualTo(1)
+    }
+
+    @Test
     fun `verify library`(@TempDir dir: Path) {
         testData(dir)
         val result = ChromiaCompileApi.verify(cliEnv, parseModel(dir.resolve("chromia.yml")))
