@@ -74,6 +74,23 @@ class TxCommandTest : IntegrationTestSetup() {
     }
 
     @Test
+    fun awaitTxByDefault() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl))
+            assertThat(res.stdout).contains("CONFIRMED")
+        }
+    }
+
+    @Test
+    fun noAwaitTxGivesCorrectStatusCode() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--no-await"))
+            assertThat(res.stdout).contains("WAITING")
+        }
+    }
+
+
+    @Test
     fun underscoreArgumentIsParsed() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--await", "--api-url", apiUrl, "_foobar"))

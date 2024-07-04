@@ -23,7 +23,7 @@ class RunNodeIT {
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start { process ->
                     TestProcess.Builder("query", "hello").startCondition("Hi!").start()
-                    TestProcess.Builder("tx", "call_op", "1").startCondition("was posted WAITING: OK").start()
+                    TestProcess.Builder("tx", "call_op", "1", "--no-await").startCondition("was posted WAITING: OK").start()
 
                     TestProcess.Builder("query", "new_query").startCondition("Unknown query: new_query").exitCode(1).start()
                     with(File(dir.toFile(), "src/main.rell")) {

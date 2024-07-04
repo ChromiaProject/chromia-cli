@@ -63,7 +63,7 @@ class TxCommand : CliktCommand(help = """
     private val secret by secretOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
-    private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag()
+    private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
         val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()

@@ -85,7 +85,7 @@ class TxIT {
                 txRecorderModel
         ) {
 
-            TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello")
+            TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--no-await")
                     .setWorkingDir(dir.toFile())
                     .start { process ->
                         process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
@@ -126,7 +126,7 @@ class TxIT {
                     txRecorderModel
             ) {
 
-                TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--config", config)
+                TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--config", config, "--no-await")
                         .setWorkingDir(dir.toFile())
                         .start { process ->
                             process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
@@ -185,7 +185,7 @@ class TxIT {
                         "ft4.get_auth_flags" to gtv(gtv("A"))
                 )
         )) {
-            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth")
+            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth", "--no-await")
                     .setWorkingDir(dir.toFile())
                     .start()
 
@@ -221,9 +221,8 @@ class TxIT {
                         "ft4.get_auth_flags" to gtv(gtv("A"))
                 )
         )) {
-            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth")
+            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth", "--no-await")
                     .setWorkingDir(dir.toFile())
-                    .verbose()
                     .start()
 
             val gtx = Gtx.decode(txRecorderModel.txList.single())
