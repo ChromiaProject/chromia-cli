@@ -23,7 +23,7 @@ class DeployCreateCommand(
 
     override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
         compiledChains.forEach { chain ->
-            if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain ${chain.name} is already deployed to network $target")
+            if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain '${chain.name}' is already defined in the configuration file: '${settings.modelFile}' under the deployment: '$target'")
             if (!confirm && YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
                             terminal, default = false
                     ).ask() != true) throw PrintMessage("Deployment was aborted")

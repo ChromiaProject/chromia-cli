@@ -3,6 +3,7 @@ package com.chromia.cli.command.deployment
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
 import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
@@ -18,6 +19,7 @@ import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.RellDeployVersionException
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path
@@ -191,5 +193,16 @@ class DeployCreateCommandTest {
             assertThat(res.stdout).contains("Deployment of blockchain bar was successful")
             assertThat(res.stdout).contains("Deployment of blockchain foo was successful")
         }
+    }
+
+    @Test
+    fun `Can not create new deployment of chain defined under deployments`() {
+        withModel(model.withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(0)))) {
+            val throwable = assertThrows<PrintMessage> {
+                DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            }
+            assertThat(throwable.message).isEqualTo("Blockchain 'deployed' is already defined in the configuration file: '${settingsFile.absoluteFile}' under the deployment: 'test'")
+        }
+
     }
 }

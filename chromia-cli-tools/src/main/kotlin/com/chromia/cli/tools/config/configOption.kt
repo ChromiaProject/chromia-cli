@@ -56,7 +56,7 @@ open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configu
 open class ChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
     val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
-    private val modelFile by requiredChromiaModelOption(cliEnv)
+    val modelFile by requiredChromiaModelOption(cliEnv)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
     val sourceDir get() = model.compile.source.toFile()
