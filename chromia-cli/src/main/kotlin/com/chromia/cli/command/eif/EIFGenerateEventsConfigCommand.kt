@@ -11,13 +11,13 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.terminal.YesNoPrompt
+import java.io.File
+import kotlin.io.path.listDirectoryEntries
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.make_gtv_gson
 import net.postchain.gtv.yaml.GtvYaml
-import java.io.File
-import kotlin.io.path.listDirectoryEntries
 
 //Reference implementation from:
 // https://gitlab.com/chromaway/postchain-eif/-/blob/0.2.10/postchain-eif-core/src/main/kotlin/net/postchain/eif/cli/GenerateEventsConfigCommand.kt?ref_type=tags
@@ -31,7 +31,7 @@ class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-conf
             .split(",")
             .required()
 
-    private val target by option("--target", help = "Target file to generate events in (defaults to \"build/events.yaml\")")
+    private val target by option("--target", help = "Target file to generate events in (defaults to \"build/eif-events.yaml\")")
             .file()
             .validate {
                 require(it.name.endsWith(fileFormat.name.lowercase()))
@@ -45,7 +45,7 @@ class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-conf
             .default(FileFormat.YAML)
 
     override fun run() {
-        val targetFile = target ?: File("eif-events.${fileFormat.name.lowercase()}")
+        val targetFile = target ?: File("build/eif-events.${fileFormat.name.lowercase()}")
         if (targetFile.exists() && YesNoPrompt("Target file: $targetFile already exists. Do you want to overwrite its content?",
                         terminal, default = false
                 ).ask() != true) throw PrintMessage("Generation of events was aborted")
