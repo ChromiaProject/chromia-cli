@@ -40,3 +40,5 @@ Loggers:
       level: error
     - name: net.postchain.network.peer.DefaultPeerCommunicationManager
       level: info
+    - name: net.postchain.rell.toolbox.formatter
+      level: error

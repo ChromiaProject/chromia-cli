@@ -2,6 +2,7 @@ package com.chromia
 
 import com.chromia.cli.command.BuildCommand
 import com.chromia.cli.command.CreateRellDappCommand
+import com.chromia.cli.command.FormatCommand
 import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
 import com.chromia.cli.command.QueryCommand
@@ -40,5 +41,6 @@ fun main(args: Array<out String>) = CliLauncher("chr")
                 ReplCommand(),
                 TestCommand(),
                 TxCommand(),
+                FormatCommand(),
         )
         .catchingAllExceptionsMain(args)

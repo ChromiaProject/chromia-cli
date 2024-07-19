@@ -240,6 +240,10 @@
             <artifactId>rell-dokka-plugin</artifactId>
             <version>${rell.dokka.version}</version>
         </dependency>
+        <dependency>
+          <groupId>net.postchain.rell.toolbox</groupId>
+          <artifactId>core</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.github.ajalt.clikt</groupId>
