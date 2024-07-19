@@ -33,5 +33,23 @@ abstract class AbstractTemplateFactory(private val folderName: String) : Templat
                 appendText(init())
             }
         }
+
+        fun createLinterConfig(init: () -> String = { "" }) {
+            val sourceName = ".rell_lint"
+            with(File(targetDir, sourceName)) {
+                val fileContent = AbstractTemplateFactory::class.java.getResource(sourceName)!!.readText()
+                writeText(fileContent)
+                appendText(init())
+            }
+        }
+
+        fun createFormatterConfig(init: () -> String = { "" }) {
+            val sourceName = ".rell_format"
+            with(File(targetDir, sourceName)) {
+                val fileContent = AbstractTemplateFactory::class.java.getResource(sourceName)!!.readText()
+                writeText(fileContent)
+                appendText(init())
+            }
+        }
     }
 }

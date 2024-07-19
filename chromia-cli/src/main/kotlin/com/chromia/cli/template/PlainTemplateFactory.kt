@@ -11,6 +11,8 @@ class PlainTemplateFactory : AbstractTemplateFactory("plain") {
         with(FileBuilder(targetDir)) {
             createChromiaConfig(projectName)
             createGitIgnore()
+            createFormatterConfig()
+            createLinterConfig()
             createFile("src/main.rell")
             createFile("src/test/plain_test.rell", "src/test/${projectFileName}_test.rell")
         }

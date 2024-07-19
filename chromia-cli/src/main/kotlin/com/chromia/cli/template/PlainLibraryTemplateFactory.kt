@@ -15,6 +15,8 @@ class PlainLibraryTemplateFactory : AbstractTemplateFactory("plain-library") {
             createChromiaConfig(projectName) {
                 it.replace("PROJECT_MODULE_NAME", projectFileName)
             }
+            createFormatterConfig()
+            createLinterConfig()
             createFile("src/lib/plain-library/module.rell", "src/lib/$projectFileName/module.rell")
             createFile("src/tests/test_lib_plain_library.rell", "src/tests/test_lib_$projectFileName.rell")
         }

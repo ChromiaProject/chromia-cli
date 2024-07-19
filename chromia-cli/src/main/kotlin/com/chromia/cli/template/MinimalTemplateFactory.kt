@@ -10,6 +10,8 @@ class MinimalTemplateFactory : AbstractTemplateFactory("minimal") {
         with(FileBuilder(targetDir)) {
             createChromiaConfig(projectName)
             createGitIgnore()
+            createFormatterConfig()
+            createLinterConfig()
             createFile("src/main.rell")
             createFile("src/test/arithmetic_test.rell")
             createFile("src/test/data_test.rell")

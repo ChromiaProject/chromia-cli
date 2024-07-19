@@ -16,6 +16,8 @@ class PlainMultiTemplateFactory : AbstractTemplateFactory("plain-multi") {
                 it.replace("plain_multi", projectFileName)
             }
             createGitIgnore()
+            createFormatterConfig()
+            createLinterConfig()
             createFile("src/development.rell")
             createFile("src/plain-multi/module.rell", "src/$projectFileName/module.rell")
             createFile("src/plain-multi/test/plain_multi_test.rell", "src/$projectFileName/test/${projectFileName}_test.rell")
