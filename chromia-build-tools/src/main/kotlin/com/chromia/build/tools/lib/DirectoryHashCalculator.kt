@@ -25,11 +25,16 @@ import net.postchain.rell.base.utils.RellGtxConfigConstants
 class DirectoryHashCalculator(private val sourceDir: Path) {
     private val hashCalculator = GtvMerkleHashCalculator(Secp256K1CryptoSystem())
 
+    companion object {
+        const val EOL_WINDOWS: String = "\r\n"
+        const val EOL_UNIX: String = "\n"
+    }
+
     /**
      * Computes the rid (hash) of the contents of a folder.
      **/
     fun compute(dir: Path, strategy: RidStrategy): WrappedByteArray {
-        val filesStream = Files.walk(dir).filter { it.extension == "rell" }.map { it.relativeTo(sourceDir) to it.readText() }
+        val filesStream = Files.walk(dir).filter { it.extension == "rell" }.map { it.relativeTo(sourceDir) to it.readText().replace(EOL_WINDOWS, EOL_UNIX) }
         return gtv(RellGtxConfigConstants.SOURCES_KEY to strategy.reduce(filesStream))
                 .merkleHash(hashCalculator)
                 .wrap()
