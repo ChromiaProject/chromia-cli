@@ -15,7 +15,7 @@ import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class FormatCommand : CliktCommand(help = "Format Rell source code", invokeWithoutSubcommand = true) {
+class FormatCommand : CliktCommand(help = "Automatically format Rell code. Configurable using .rell_format file", invokeWithoutSubcommand = true) {
     override fun aliases() = createAliases()
 
     private val settings by chromiaModelOption()

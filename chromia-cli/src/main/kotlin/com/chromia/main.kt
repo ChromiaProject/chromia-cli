@@ -5,10 +5,12 @@ import com.chromia.cli.command.CreateRellDappCommand
 import com.chromia.cli.command.FormatCommand
 import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
+import com.chromia.cli.command.LintCommand
 import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.command.TestCommand
 import com.chromia.cli.command.TxCommand
+import com.chromia.cli.command.code.CodeCommand
 import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
@@ -41,6 +43,6 @@ fun main(args: Array<out String>) = CliLauncher("chr")
                 ReplCommand(),
                 TestCommand(),
                 TxCommand(),
-                FormatCommand(),
+                CodeCommand.commands(),
         )
         .catchingAllExceptionsMain(args)

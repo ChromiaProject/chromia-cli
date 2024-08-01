@@ -25,6 +25,7 @@
         <postchain.client.version>3.14.0</postchain.client.version>
         <rell.version>0.13.14</rell.version>
         <rell.dokka.version>0.2.3</rell.dokka.version>
+        <rell.toolbox.version>0.4.1</rell.toolbox.version>
         <eif.version>0.4.1</eif.version>
         <directory.chain.version>1.35.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
@@ -407,7 +408,7 @@
             <dependency>
               <groupId>net.postchain.rell.toolbox</groupId>
               <artifactId>core</artifactId>
-              <version>0.4.0</version>
+              <version>${rell.toolbox.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jgit</groupId>
