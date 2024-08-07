@@ -18,3 +18,7 @@ fun parseModel(src: File): ChromiaModel {
         throw ValidationException("Unable to parse file ${src.name} due to unexpected value at line: ${e.problemMark.line}, column: ${e.problemMark.column}\n${e.problemMark._snippet}")
     }
 }
+
+fun getLibPaths(model: ChromiaModel, sourceDir: Path): Set<Path> {
+    return model.libs.keys.map { libName -> sourceDir.resolve("lib/$libName") }.toSet()
+}

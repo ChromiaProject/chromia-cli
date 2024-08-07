@@ -4,10 +4,16 @@ import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.launcher.createAliases
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.readText
+import kotlin.io.path.toPath
+import kotlin.io.path.writeText
 import net.postchain.rell.api.base.RellCliExitException
 import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
@@ -15,11 +21,6 @@ import net.postchain.rell.toolbox.linter.AutoFixer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.readText
-import kotlin.io.path.toPath
-import kotlin.io.path.writeText
 
 class LintCommand : CliktCommand(help = "Analyze Rell code to find potential issue and coding style violations. Configurable using .rell_lint file", invokeWithoutSubcommand = true) {
     override fun aliases() = createAliases()
@@ -31,7 +32,8 @@ class LintCommand : CliktCommand(help = "Analyze Rell code to find potential iss
             mustBeWritable = true,
             canBeDir = true,
             canBeFile = false
-    )
+    ).convert { it.toAbsolutePath().normalize() }
+
     private val formatterOptionsFile by option("--formatter-options", "-fo", help = "Formatter options file (default '${FormatterOptions.PREFERRED_RELL_FORMAT_FILE_NAME}')").file(
             mustExist = true,
             mustBeReadable = true,
@@ -74,16 +76,19 @@ class LintCommand : CliktCommand(help = "Analyze Rell code to find potential iss
     }
 
     private fun fixAutoFixableIssues(indexer: WorkspaceIndexer, sourceDir: Path) {
-        indexer.fileUriResourceMap.forEach { (fileUri, resource) ->
-            val filePath = fileUri.toPath()
-            echo("Fixing: ${sourceDir.relativize(filePath)}... ", trailingNewline = false)
-            val sourceText = filePath.readText()
-            val fixedText = autoFixer.fix(resource, sourceText)
-            if (sourceText != fixedText) {
-                filePath.writeText(fixedText)
-                echo("fixed")
-            } else {
-                echo("no changes")
+        indexer.getAllIssues().forEach { (fileUri, issues) ->
+            if (issues.isNotEmpty()) {
+                val filePath = fileUri.toPath()
+                echo("Fixing: ${sourceDir.relativize(filePath)}... ", trailingNewline = false)
+                val sourceText = filePath.readText()
+                val resource = indexer.getResource(fileUri) ?: return@forEach
+                val fixedText = autoFixer.fix(resource, sourceText)
+                if (sourceText != fixedText) {
+                    filePath.writeText(fixedText)
+                    echo("fixed")
+                } else {
+                    echo("no changes")
+                }
             }
         }
     }
@@ -92,11 +97,8 @@ class LintCommand : CliktCommand(help = "Analyze Rell code to find potential iss
         val allIssues = indexer.getAllIssues()
         var issuesFound = false
         allIssues.forEach { (fileUri, fileIssues) ->
-            echo("Analyzing: ${sourceDir.relativize(fileUri.toPath())}... ", trailingNewline = false)
-            if (fileIssues.isEmpty()) {
-                echo("no issues found")
-            } else {
-                echo("issues found")
+            if (fileIssues.isNotEmpty()) {
+                echo("${sourceDir.relativize(fileUri.toPath())}")
                 issuesFound = true
                 fileIssues.forEach { issue ->
                     echo("    ${issue.code} - ${issue.message}")
@@ -109,7 +111,13 @@ class LintCommand : CliktCommand(help = "Analyze Rell code to find potential iss
     }
 
     private fun runIndexer(sourceDir: Path, formatterOptions: FormatterOptions, linterOptions: LinterOptions): WorkspaceIndexer {
-        val indexer = WorkspaceIndexer(sourceDir.toUri(), RellLinter(), linterOptions, FormattingStyleLinter(), formatterOptions)
+        val indexer = WorkspaceIndexer(
+                sourceDir.toUri(),
+                RellLinter(),
+                linterOptions,
+                FormattingStyleLinter(),
+                formatterOptions,
+                settings.projectFolder.toURI())
         indexer.initialFileIndexBuild(cachedIndexer = null)
         return indexer
     }

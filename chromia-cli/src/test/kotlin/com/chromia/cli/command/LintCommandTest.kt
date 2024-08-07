@@ -44,6 +44,24 @@ internal class LintCommandTest {
         
     """.trimIndent()
 
+    private val myLibContent = """
+            module;
+
+            function my_lib_hello() {
+                var x = 5;
+            }
+
+        """.trimIndent()
+
+    private val otherLibContent = """
+            module;
+
+            function other_lib_hello() {
+                var x = 5;
+            }
+
+        """.trimIndent()
+
     @BeforeEach
     fun setup() {
         with(File(testDir.toFile(), "src/main/module.rell")) {
@@ -54,6 +72,16 @@ internal class LintCommandTest {
         with(File(testDir.toFile(), "src/test/test.rell")) {
             parentFile.mkdirs()
             writeText(testRellContent)
+        }
+
+        with(File(testDir.toFile(), "src/lib/my_lib/module.rell")) {
+            parentFile.mkdirs()
+            writeText(myLibContent)
+        }
+
+        with(File(testDir.toFile(), "src/lib/other_lib/module.rell")) {
+            parentFile.mkdirs()
+            writeText(otherLibContent)
         }
 
         with(File(testDir.toFile(), ".rell_format")) {
@@ -97,6 +125,13 @@ internal class LintCommandTest {
                 blockchains:
                     hello:
                         module: main
+                libs:
+                  other_lib:
+                    registry: https://bitbucket.org/chromawallet/ft3-lib
+                    path: rell/src/lib/ft4
+                    tagOrBranch: v0.7.0r
+                    rid: x"F7C207AA595ABD25FDE5C2C2E32ECD3768B480AD03D1F2341548FF4F37D9B7AF"
+                    insecure: false
             """.trimIndent())
         }
     }
@@ -107,7 +142,7 @@ internal class LintCommandTest {
             LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath))
         }
         assertThat(logger.output()).contains("""
-        Analyzing: main/module.rell... issues found
+        main/module.rell
             linter_issue:rule_constant_detection - Variable 'x' is never modified, so it can be declared using 'val'
             linter_issue:rule_constant_detection - Variable 'Sum' is never modified, so it can be declared using 'val'
             linter_issue:rule_naming_convention - 'Hello' should be in snake case
@@ -118,7 +153,15 @@ internal class LintCommandTest {
             linter_issue:formatting - Change: `··` to '⏎' at line 7, column 2
         """.trimIndent())
 
-        assertThat(logger.output()).contains("Analyzing: test/test.rell... no issues found")
+        assertThat(logger.output()).doesNotContain("test/test.rell")
+
+        assertThat(logger.output()).contains("""
+            lib/my_lib/module.rell
+                linter_issue:rule_constant_detection - Variable 'x' is never modified, so it can be declared using 'val'
+                linter_issue:rule_unused_variable - Variable 'x' is never used
+        """.trimIndent())
+
+        assertThat(logger.output()).doesNotContain("lib/other_lib/module.rell")
     }
 
     @Test
@@ -127,7 +170,7 @@ internal class LintCommandTest {
             LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--source-dir", testDir.resolve("src/main").toString()))
         }
         assertThat(logger.output()).contains("""
-        Analyzing: module.rell... issues found
+        module.rell
             linter_issue:rule_constant_detection - Variable 'x' is never modified, so it can be declared using 'val'
             linter_issue:rule_constant_detection - Variable 'Sum' is never modified, so it can be declared using 'val'
             linter_issue:rule_naming_convention - 'Hello' should be in snake case
@@ -143,7 +186,7 @@ internal class LintCommandTest {
     @Test
     fun testLintNoIssues() {
         LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--source-dir", testDir.resolve("src/test").toString()))
-        assertThat(logger.output()).contains("Analyzing: test.rell... no issues found")
+        assertThat(logger.output()).doesNotContain("test.rell")
     }
 
     @Test
@@ -165,10 +208,10 @@ internal class LintCommandTest {
             LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--linter-options", testDir.resolve(".my_rell_lint").toString()))
         }
         assertThat(logger.output()).contains("""
-            Analyzing: main/module.rell... issues found
-                linter_issue:rule_quote_format - Use single quotes for "Hi!"
+        main/module.rell
+            linter_issue:rule_quote_format - Use single quotes for "Hi!"
         """.trimIndent())
-        assertThat(logger.output()).contains("Analyzing: test/test.rell... no issues found")
+        assertThat(logger.output()).doesNotContain("test/test.rell")
     }
 
     @Test

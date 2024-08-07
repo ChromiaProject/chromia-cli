@@ -1,5 +1,6 @@
 package com.chromia.cli.command
 
+import com.chromia.cli.model.getLibPaths
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.launcher.createAliases
 import com.github.ajalt.clikt.core.CliktCommand
@@ -52,8 +53,9 @@ class FormatCommand : CliktCommand(help = "Automatically format Rell code. Confi
             formatRellFile(file!!.toString(), file!!, formatterOptions)
         } else {
             val theSourceDir = sourceDir ?: settings.sourceDir.toPath()
+            val libPaths = getLibPaths(settings.model, theSourceDir)
             Files.find(theSourceDir, Int.MAX_VALUE, { path, attributes ->
-                attributes.isRegularFile && path.toString().endsWith(".rell")
+                attributes.isRegularFile && path.toString().endsWith(".rell") && libPaths.none { path.startsWith(it) }
             }).use {
                 it.forEach { rellFile ->
                     formatRellFile(theSourceDir.relativize(rellFile).toString(), rellFile, formatterOptions)

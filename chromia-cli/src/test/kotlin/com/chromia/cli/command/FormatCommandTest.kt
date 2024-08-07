@@ -1,16 +1,18 @@
 package com.chromia.cli.command
 
 import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.readText
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 
 internal class FormatCommandTest {
 
@@ -43,6 +45,22 @@ internal class FormatCommandTest {
         }
 
     """.trimIndent()
+    private val myLibContent = """
+            module;
+
+            function my_lib_hello() {
+                var x = 5;
+            }
+
+        """.trimIndent()
+    private val otherLibContent = """
+            module;
+
+            function other_lib_hello() {
+                var x = 5;
+            }
+
+        """.trimIndent()
 
     @BeforeEach
     fun setup() {
@@ -54,6 +72,16 @@ internal class FormatCommandTest {
         with(File(testDir.toFile(), "src/test/test.rell")) {
             parentFile.mkdirs()
             writeText(testRellContent)
+        }
+
+        with(File(testDir.toFile(), "src/lib/my_lib/module.rell")) {
+            parentFile.mkdirs()
+            writeText(myLibContent)
+        }
+
+        with(File(testDir.toFile(), "src/lib/other_lib/module.rell")) {
+            parentFile.mkdirs()
+            writeText(otherLibContent)
         }
 
         with(File(testDir.toFile(), ".rell_format")) {
@@ -77,6 +105,13 @@ internal class FormatCommandTest {
                 blockchains:
                     hello:
                         module: main
+                libs:
+                    other_lib:
+                        registry: https://bitbucket.org/chromawallet/ft3-lib
+                        path: rell/src/lib/ft4
+                        tagOrBranch: v0.7.0r
+                        rid: x"F7C207AA595ABD25FDE5C2C2E32ECD3768B480AD03D1F2341548FF4F37D9B7AF"
+                        insecure: false
             """.trimIndent())
         }
     }
@@ -84,12 +119,11 @@ internal class FormatCommandTest {
     @Test
     fun testFormatDefault() {
         FormatCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath))
-        assertThat(logger.output()).isEqualTo("""
-            Formatting main/module.rell... changed
-            Formatting test/test.rell... no changes
-            
-        """.trimIndent())
 
+        assertThat(logger.output()).contains("Formatting test/test.rell... no changes")
+        assertThat(logger.output()).contains("Formatting lib/my_lib/module.rell... changed")
+        assertThat(logger.output()).contains("Formatting main/module.rell... changed")
+        assertThat(logger.output()).doesNotContain("lib/other_lib/module.rell")
         assertThat(testDir.resolve("src/main/module.rell").readText()).isEqualTo(formattedMainRellContent)
         assertThat(testDir.resolve("src/test/test.rell").readText()).isEqualTo(testRellContent)
     }
@@ -120,12 +154,10 @@ internal class FormatCommandTest {
     @Test
     fun testFormatOptions() {
         FormatCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--formatter-options", testDir.resolve(".my_rell_format").toString()))
-        assertThat(logger.output()).isEqualTo("""
-            Formatting main/module.rell... changed
-            Formatting test/test.rell... no changes
-            
-        """.trimIndent())
-
+        assertThat(logger.output()).contains("Formatting test/test.rell... no changes")
+        assertThat(logger.output()).contains("Formatting lib/my_lib/module.rell... changed")
+        assertThat(logger.output()).contains("Formatting main/module.rell... changed")
+        assertThat(logger.output()).doesNotContain("lib/other_lib/module.rell")
         assertThat(testDir.resolve("src/main/module.rell").readText()).isEqualTo("""
                 module;
                 
