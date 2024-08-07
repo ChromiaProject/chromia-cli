@@ -76,7 +76,7 @@ class LintCommand : CliktCommand(help = "Analyze Rell code to find potential iss
     }
 
     private fun fixAutoFixableIssues(indexer: WorkspaceIndexer, sourceDir: Path) {
-        indexer.getAllIssues().forEach { (fileUri, issues) ->
+        indexer.getAllLintAndFormatIssues().forEach { (fileUri, issues) ->
             if (issues.isNotEmpty()) {
                 val filePath = fileUri.toPath()
                 echo("Fixing: ${sourceDir.relativize(filePath)}... ", trailingNewline = false)
