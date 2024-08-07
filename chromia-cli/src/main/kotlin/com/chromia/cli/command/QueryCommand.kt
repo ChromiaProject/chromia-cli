@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.tools.gtv.pretty
 import com.chromia.cli.util.DASH_DASH_DESCRIPTION
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.OutputFormat
@@ -22,6 +21,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvString
+import net.postchain.gtv.pretty
 import net.postchain.gtv.parse.GtvParser
 
 class QueryCommand : CliktCommand(help = """

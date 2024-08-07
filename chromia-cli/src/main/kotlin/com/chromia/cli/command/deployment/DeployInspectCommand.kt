@@ -5,7 +5,6 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.tools.formatter.header
 import com.chromia.cli.tools.formatter.json
-import com.chromia.cli.tools.gtv.pretty
 import com.chromia.cli.util.BlockchainAnalyzer
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.ModuleArgsAnalyzer
@@ -37,6 +36,7 @@ import net.postchain.client.core.PostchainClient
 import net.postchain.client.exception.ClientError
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvString
+import net.postchain.gtv.pretty
 
 class DeployInspectCommand(
         private val blockchainAnalyzerFactory: (PostchainClient) -> BlockchainAnalyzer = { RellBlockchainAnalyzer(it) },
