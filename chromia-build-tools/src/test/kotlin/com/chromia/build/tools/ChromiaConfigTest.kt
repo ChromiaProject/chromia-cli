@@ -5,13 +5,12 @@ import assertk.assertions.isEqualTo
 import com.chromia.build.tools.config.ChromiaConfigLoader
 import com.chromia.build.tools.config.ChromiaConfigWriter
 import com.chromia.build.tools.keystore.ChromiaKeyStore
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.crypto.KeyPair
-import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class ChromiaConfigTest {
 
@@ -25,7 +24,7 @@ class ChromiaConfigTest {
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             ChromiaKeyStore(keyIdName).saveKeyPair(keyPair)
             ChromiaConfigWriter.global.setKeyId(keyIdName)
-            val clientConfig = ChromiaConfigLoader(RellCliEnv.NULL).loadClientConfigFile()
+            val clientConfig = ChromiaConfigLoader { _ -> }.loadClientConfigFile()
             assertThat(clientConfig.signers.size).isEqualTo(1)
             assertThat(clientConfig.signers.first().pubKey.hex()).isEqualTo(pubKey)
             assertThat(clientConfig.signers.first().privKey.hex()).isEqualTo(privKey)

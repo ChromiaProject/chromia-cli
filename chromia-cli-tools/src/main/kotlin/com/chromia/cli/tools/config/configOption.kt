@@ -2,7 +2,6 @@ package com.chromia.cli.tools.config
 
 import com.chromia.build.tools.config.ChromiaConfigLoader
 import com.chromia.cli.model.parseModel
-import com.chromia.cli.tools.env.cliEnv
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.core.PrintMessage
@@ -12,40 +11,39 @@ import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
-import net.postchain.rell.api.base.RellCliEnv
 
 
 // Optional Client Configuration. Reads from file system if not set
-fun CliktCommand.chromiaConfigOption() = ChromiaConfigOption(cliEnv())
+fun CliktCommand.chromiaConfigOption() = ChromiaConfigOption(::echo)
 
 // Chromia model must be found or explicitly set
-fun CliktCommand.chromiaModelOption() = ChromiaModelOption(cliEnv())
+fun CliktCommand.chromiaModelOption() = ChromiaModelOption(::echo)
 
 // Chromia model is optional. Will not throw if model file is not found
-fun CliktCommand.optionalChromiaModelOption() = OptionalChromiaModelOption(cliEnv())
+fun CliktCommand.optionalChromiaModelOption() = OptionalChromiaModelOption(::echo)
 
 // Chromia model must be found or explicitly set. Client config is read from system if not set
-fun CliktCommand.chromiaModelConfigOption() = ChromiaModelConfigOption(cliEnv())
+fun CliktCommand.chromiaModelConfigOption() = ChromiaModelConfigOption(::echo)
 
 // Chromia model if optional. Client config is read from system if not set
-fun CliktCommand.optionalChromiaModelConfigOption() = OptionalChromiaModelConfigOption(cliEnv())
+fun CliktCommand.optionalChromiaModelConfigOption() = OptionalChromiaModelConfigOption(::echo)
 
-open class ChromiaConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
+open class ChromiaConfigOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
-    val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
+    val config by lazy { ChromiaConfigLoader(logger).loadClientConfigFile(configFile) }
 }
 
-open class ChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
-    private val modelFile: File by requiredChromiaModelOption(cliEnv)
+open class ChromiaModelOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
+    private val modelFile: File by requiredChromiaModelOption(logger)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
     val sourceDir get() = model.compile.source.toFile()
     val targetDir get() = model.compile.target.toFile()
 }
 
-open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
+open class OptionalChromiaModelOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
     private val modelFile by chromiaModelOption()
-    private val resolvedModelFile by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile) }
+    private val resolvedModelFile by lazy { ChromiaConfigLoader(logger).findModelFile(modelFile) }
     val projectFolder by lazy { resolvedModelFile?.parentFile }
     val model by lazy { resolvedModelFile?.let { parseModel(it) } }
     val sourceDir get() = model?.compile?.source?.toFile()
@@ -53,27 +51,27 @@ open class OptionalChromiaModelOption(cliEnv: RellCliEnv) : OptionGroup("Configu
 }
 
 
-open class ChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
+open class ChromiaModelConfigOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
-    val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
-    val modelFile by requiredChromiaModelOption(cliEnv)
+    val config by lazy { ChromiaConfigLoader(logger).loadClientConfigFile(configFile) }
+    val modelFile by requiredChromiaModelOption(logger)
     val model by lazy { parseModel(modelFile) }
     val projectFolder by lazy { modelFile.parentFile }
     val sourceDir get() = model.compile.source.toFile()
     val targetDir get() = model.compile.target.toFile()
 }
 
-open class OptionalChromiaModelConfigOption(cliEnv: RellCliEnv) : OptionGroup("Configuration Properties") {
+open class OptionalChromiaModelConfigOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
-    val config by lazy { ChromiaConfigLoader(cliEnv).loadClientConfigFile(configFile) }
+    val config by lazy { ChromiaConfigLoader(logger).loadClientConfigFile(configFile) }
     private val modelFile by chromiaModelOption()
-    val model by lazy { ChromiaConfigLoader(cliEnv).findModelFile(modelFile)?.let { parseModel(it) } }
+    val model by lazy { ChromiaConfigLoader(logger).findModelFile(modelFile)?.let { parseModel(it) } }
     val projectFolder by lazy { modelFile?.parentFile }
 }
 
-internal fun ParameterHolder.requiredChromiaModelOption(cliEnv: RellCliEnv) = chromiaModelOption()
+internal fun ParameterHolder.requiredChromiaModelOption(logger: (String) -> Unit) = chromiaModelOption()
         .defaultLazy {
-            ChromiaConfigLoader(cliEnv).findModelFile(null) ?: throw PrintMessage("Project settings file not found")
+            ChromiaConfigLoader(logger).findModelFile(null) ?: throw PrintMessage("Project settings file not found")
         }
 
 internal fun ParameterHolder.chromiaModelOption() = option(

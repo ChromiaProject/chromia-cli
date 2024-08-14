@@ -3,12 +3,11 @@ package com.chromia.build.tools.config
 import com.chromia.build.tools.keystore.ChromiaKeyStore
 import java.io.File
 import net.postchain.common.PropertiesFileLoader
-import net.postchain.rell.api.base.RellCliEnv
 import org.apache.commons.configuration2.Configuration
 import org.apache.commons.configuration2.PropertiesConfiguration
 
 
-class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
+class ChromiaConfigLoader(private val logger: (String) -> Unit) {
 
     companion object {
         private const val DEFAULT_CONFIG_FILENAME = ".chromia/config"
@@ -39,7 +38,7 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
         config.setProperty("status.poll-interval", 2000)
         loadFromFileIfExists(globalConfigurationFile(), config)
         if (!localConfigurationFile().exists() && File(DEFAULT_PMC_CONFIG_FILENAME).exists()) {
-            cliEnv.print("Loading .pmc/config file. Rename to .chromia/config to silence this message")
+            logger("Loading .pmc/config file. Rename to .chromia/config to silence this message")
             loadFromFileIfExists(File(DEFAULT_PMC_CONFIG_FILENAME), config) // Backwards compatibility
         }
 
@@ -73,7 +72,7 @@ class ChromiaConfigLoader(private val cliEnv: RellCliEnv) {
 
         val configModelFile = File(DEFAULT_CONFIG_MODEL_FILENAME)
         if (configModelFile.exists() && configModelFile.isFile) {
-            cliEnv.print("Found config.yml settings file. Rename to chromia.yml to silence this message")
+            logger("Found config.yml settings file. Rename to chromia.yml to silence this message")
             return configModelFile.absoluteFile
         }
         return null
