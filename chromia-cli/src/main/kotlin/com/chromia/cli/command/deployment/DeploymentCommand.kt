@@ -1,10 +1,11 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.cli.command.deployment.proposal.ProposalCommand
 import com.chromia.cli.tools.launcher.createAliases
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 
-class DeploymentCommand private constructor(): NoOpCliktCommand(help = "Create and maintain deployments") {
+class DeploymentCommand private constructor() : NoOpCliktCommand(help = "Create and maintain deployments") {
     override fun aliases() = createAliases()
 
     companion object {
@@ -16,7 +17,8 @@ class DeploymentCommand private constructor(): NoOpCliktCommand(help = "Create a
                 DeployResumeCommand(),
                 DeployPauseCommand(),
                 DeployRemoveCommand(),
-                DeployInspectLeaseCommand()
+                DeployInspectLeaseCommand(),
+                ProposalCommand.commands()
         )
     }
 }

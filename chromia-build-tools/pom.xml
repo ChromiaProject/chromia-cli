@@ -61,6 +61,7 @@
             <plugin>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-maven-plugin</artifactId>
+                <version>0.12.0</version>
                 <configuration>
                     <source>${directory.source}</source>
                 </configuration>
@@ -153,7 +154,7 @@
             <groupId>org.redundent</groupId>
             <artifactId>kotlin-xml-builder</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>uk.org.webcompere</groupId>
             <artifactId>system-stubs-jupiter</artifactId>

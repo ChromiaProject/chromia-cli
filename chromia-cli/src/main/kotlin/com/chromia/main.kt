@@ -2,10 +2,8 @@ package com.chromia
 
 import com.chromia.cli.command.BuildCommand
 import com.chromia.cli.command.CreateRellDappCommand
-import com.chromia.cli.command.FormatCommand
 import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
-import com.chromia.cli.command.LintCommand
 import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.command.TestCommand

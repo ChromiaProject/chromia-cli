@@ -47,6 +47,27 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
     ).blockchain(brid)
 }
 
+class DeployedNetworkOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment network") {
+    private val network by deployTargetOption().required()
+    override val brid: BlockchainRid
+        get() {
+            val deploymentModel = settings().deployments[network]
+            require(deploymentModel != null) { "Deployment named $network not found in configuration" }
+            return deploymentModel.blockchainRid
+        }
+
+    override val url: String
+        get() {
+            val deploymentModel = settings().deployments[network]
+            require(deploymentModel != null) { "Deployment named $network not found in configuration" }
+            return deploymentModel.urls.joinToString(",")
+        }
+
+    override fun createClient(config: ChromiaClientConfig) = ChromiaClientProvider.fromClientConfig(
+            config.setBrid(settings().deployments[network]!!.blockchainRid).client(PostchainClientProviderImpl()).config
+    ).blockchain(brid)
+}
+
 class LocalDeploymentOption(
         private val config: () -> ChromiaClientConfig,
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Target a test node") {

@@ -27,7 +27,7 @@
         <rell.dokka.version>0.2.4</rell.dokka.version>
         <rell.toolbox.version>0.4.5</rell.toolbox.version>
         <eif.version>0.4.1</eif.version>
-        <directory.chain.version>1.35.0</directory.chain.version>
+        <directory.chain.version>1.57.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <jgit.version>6.9.0.202403050737-r</jgit.version>

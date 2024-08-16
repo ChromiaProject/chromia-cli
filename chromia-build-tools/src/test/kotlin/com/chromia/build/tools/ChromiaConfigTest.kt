@@ -11,16 +11,17 @@ import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createDirectory
 
 class ChromiaConfigTest {
+    val pubKey = "02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765"
+    val privKey = "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429"
+    val keyPair = KeyPair.of(pubKey, privKey)
+    val keyIdName = "keyIdUsedForTesting"
 
     @Test
     fun `Keystore key gets populated in config`(@TempDir dir: Path) {
-        val pubKey = "02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765"
-        val privKey = "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429"
-        val keyPair = KeyPair.of(pubKey, privKey)
-        val keyIdName = "keyIdUsedForTesting"
-
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             ChromiaKeyStore(keyIdName).saveKeyPair(keyPair)
             ChromiaConfigWriter.global.setKeyId(keyIdName)
@@ -28,6 +29,25 @@ class ChromiaConfigTest {
             assertThat(clientConfig.signers.size).isEqualTo(1)
             assertThat(clientConfig.signers.first().pubKey.hex()).isEqualTo(pubKey)
             assertThat(clientConfig.signers.first().privKey.hex()).isEqualTo(privKey)
+        }
+    }
+
+
+    @Test
+    fun `Global Keystore key gets overridden by manual reference`(@TempDir dir: Path) {
+        val test = dir.resolve("sub")
+        testData(dir) {
+            secret {
+                createFile(test)
+            }
+        }
+        EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
+            ChromiaKeyStore(keyIdName).saveKeyPair(keyPair)
+            ChromiaConfigWriter.global.setKeyId(keyIdName)
+            val clientConfig = ChromiaConfigLoader { _ -> }.loadClientConfigFile(test.resolve(".chromia/config").toFile())
+            assertThat(clientConfig.signers.size).isEqualTo(1)
+            assertThat(clientConfig.signers.first().pubKey.hex()).isEqualTo(TestDataBuilder.keyPair.pubKey.hex())
+            assertThat(clientConfig.signers.first().privKey.hex()).isEqualTo(TestDataBuilder.keyPair.privKey.hex())
         }
     }
 }

@@ -16,6 +16,7 @@ class ChromiaConfigLoader(private val logger: (String) -> Unit) {
         private const val DEFAULT_CONFIG_MODEL_FILENAME = "config.yml"
         private val chromiaHome
             get() = System.getenv("CHROMIA_HOME") ?: (System.getProperty("user.home") + "/.chromia")
+
         fun globalConfigurationFile() = File("$chromiaHome/config")
         fun localConfigurationFile() = File(DEFAULT_CONFIG_FILENAME)
     }
@@ -43,13 +44,13 @@ class ChromiaConfigLoader(private val logger: (String) -> Unit) {
         }
 
         loadFromFileIfExists(localConfigurationFile(), config)
-        loadFromFileIfExists(file, config)
         if (config.containsKey("key.id")) {
             ChromiaKeyStore(config.getString("key.id")).findKeyPair()?.let {
                 config.setProperty("pubkey", it.pubKey.hex())
                 config.setProperty("privkey", it.privKey.hex())
             }
         }
+        loadFromFileIfExists(file, config)
         return config
     }
 
