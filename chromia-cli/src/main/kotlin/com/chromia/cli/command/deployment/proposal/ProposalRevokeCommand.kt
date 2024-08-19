@@ -4,6 +4,7 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.util.pubkey
+import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal.revokeProposalOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
@@ -20,12 +21,16 @@ class ProposalRevokeCommand : CliktCommand(
     private val settings by optionalChromiaModelConfigOption()
     private val networkTarget by DeployedNetworkOption { settings.model ?: ChromiaModel.default() }
     private val idx by proposalIndexOption().required()
+    private val secret by secretOption()
+
 
     override fun run() {
+        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
         val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
         val res = client.transactionBuilder()
                 .revokeProposalOperation(client.config.pubkey.data, RowId(idx))
+                .addNop()
                 .postAwaitConfirmation()
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)

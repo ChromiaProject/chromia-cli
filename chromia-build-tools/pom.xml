@@ -61,6 +61,7 @@
             <plugin>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-maven-plugin</artifactId>
+                <!-- TODO: Remove when new version is released. Should take latest version automatically -->
                 <version>0.12.0</version>
                 <configuration>
                     <source>${directory.source}</source>
