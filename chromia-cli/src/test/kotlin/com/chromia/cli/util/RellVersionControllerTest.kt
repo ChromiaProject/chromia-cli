@@ -6,6 +6,7 @@ import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withRellVersion
+import com.chromia.cli.model.RellVersion
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
 import kotlin.test.assertEquals
 import net.postchain.client.config.PostchainClientConfig
@@ -24,7 +25,7 @@ class RellVersionControllerTest {
 
     @Test
     fun getTargetVersion200Status() {
-        val expectedVersion = R_LangVersion.of("0.13.5")
+        val expectedVersion = R_LangVersion.of(RellVersion)
         withModel(TestModel(BlockchainRid.ZERO_RID).withRellVersion(expectedVersion)) {
             val res = PostchainRellVersionFinder(template, PostchainClientProviderImpl()).getTargetVersion(Endpoint(RestApiInstance.apiUrl), BlockchainRid.ZERO_RID)
             assertEquals(res, expectedVersion)

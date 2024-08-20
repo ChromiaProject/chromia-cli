@@ -1,5 +1,6 @@
 package com.chromia.build.tools.restapi
 
+import com.chromia.cli.model.RellVersion
 import net.postchain.api.rest.BlockHeight
 import net.postchain.api.rest.BlockSignature
 import net.postchain.api.rest.BlockchainNodeState
@@ -112,7 +113,7 @@ class TestModel(
 
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
-            "rell.get_rell_version" -> gtv("0.13.11")
+            "rell.get_rell_version" -> gtv(RellVersion)
             else -> throw NotFound("Query ${query.name} no implemented")
         }
     }

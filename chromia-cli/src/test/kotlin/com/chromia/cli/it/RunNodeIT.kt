@@ -238,16 +238,16 @@ class RunNodeIT {
     }
 
     @Test
-    fun typeConversionDefaultNonStrictBehaviour() {
-        // This test will fail when we set default rell version >=0.13.9
-        // Test could probably be removed then, and we can update startNodeWithGtxStrictConfigurationTrue and
-        // startNodeWithGtxStrictConfigurationFalse to capture default / non-default behaviour
+    fun legacyTypeConversionDefaultNonStrictBehaviour() {
+        // This test captures the behavior of strict_gtv for compile targets before rell 0.13.9
         testData(dir) {
             config {
                 blockchains("""
                     blockchains:
                       hello:
                         module: strictmode
+                    compile:
+                      rellVersion: 0.13.8
                 """.trimIndent())
             }
             addFile("strictmode.rell", """

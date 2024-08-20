@@ -165,7 +165,15 @@ class TxIT {
     fun queryWithFtAuthV1(@TempDir dir: Path) {
         testData(dir) {
             secret()
+            config {
+                compile("""
+                compile:
+                    strictGtvConversion: false
+            """.trimIndent())
+            }
+
         }
+
         val pubKey = TestDataBuilder.keyPair.pubKey
 
         val txRecorderModel = TxRecorderModel(testBrid)

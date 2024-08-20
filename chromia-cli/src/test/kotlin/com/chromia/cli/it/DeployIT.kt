@@ -6,6 +6,7 @@ import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
+import com.chromia.cli.model.RellVersion
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -33,7 +34,7 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
         return when (query.name) {
             "api_version" -> gtv(9)
             "find_blockchain_rid" -> gtv("4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC".hexStringToByteArray())
-            "rell.get_rell_version" -> gtv("0.13.5")
+            "rell.get_rell_version" -> gtv(RellVersion)
             "get_container_data" -> gtv(getContainerDataResult("name"))
             "get_cluster_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
             "get_compressed_configuration_parts" -> gtv(listOf())

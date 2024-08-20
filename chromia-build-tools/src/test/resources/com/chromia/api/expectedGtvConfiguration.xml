@@ -45,7 +45,10 @@
                         </dict>
                     </entry>
                     <entry key="version">
-                        <string>0.13.5</string>
+                        <string>0.13.14</string>
+                    </entry>
+                    <entry key="strictGtvConversion">
+                        <int>1</int>
                     </entry>
                 </dict>
             </entry>
