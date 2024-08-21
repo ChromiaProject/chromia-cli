@@ -14,7 +14,7 @@ import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.model.RellVersion
+import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClusterManagement
@@ -84,7 +84,7 @@ class DeployCreateCommandTest {
             val throwable = assertThrows<RellDeployVersionException> {
                 DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
             }
-            assertThat(throwable.message!!).contains("The local compile version $RellVersion is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
+            assertThat(throwable.message!!).contains("The local compile version $DefaultChromiaModelRellVersion is not supported on the target network. Maximum version allowed is 0.11.0.\n" +
                     "The deployment is aborted.")
         }
     }

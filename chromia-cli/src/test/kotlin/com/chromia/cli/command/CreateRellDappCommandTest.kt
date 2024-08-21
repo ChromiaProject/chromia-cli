@@ -3,7 +3,7 @@ package com.chromia.cli.command
 import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
-import com.chromia.cli.model.RellVersion
+import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,7 +24,7 @@ internal class CreateRellDappCommandTest {
         assertTrue(ignoreFile.exists())
         assertTrue(projectDir.resolve(".rell_lint").exists())
         assertTrue(projectDir.resolve(".rell_format").exists())
-        assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
+        assertTrue(configYmlFile.readText().contains("rellVersion: $DefaultChromiaModelRellVersion"))
         assertTrue(File(projectDir, "src/main.rell").exists())
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
         TestCommand().test("-s ${configYmlFile.absolutePath}")
@@ -41,7 +41,7 @@ internal class CreateRellDappCommandTest {
         assertTrue(ignoreFile.exists())
         assertTrue(projectDir.resolve(".rell_lint").exists())
         assertTrue(projectDir.resolve(".rell_format").exists())
-        assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
+        assertTrue(configYmlFile.readText().contains("rellVersion: $DefaultChromiaModelRellVersion"))
         assertTrue(File(projectDir, "src/main.rell").exists())
         BuildCommand().test("-s ${configYmlFile.absolutePath}")
         assertTrue(File(projectDir, "build/plain.xml").exists())
@@ -55,7 +55,7 @@ internal class CreateRellDappCommandTest {
         assertTrue(configYmlFile.exists())
         val ignoreFile = File(projectDir, ".gitignore")
         assertTrue(ignoreFile.exists())
-        assertTrue(configYmlFile.readText().contains("rellVersion: $RellVersion"))
+        assertTrue(configYmlFile.readText().contains("rellVersion: $DefaultChromiaModelRellVersion"))
         assertTrue(projectDir.resolve(".rell_lint").exists())
         assertTrue(projectDir.resolve(".rell_format").exists())
         assertTrue(File(projectDir, "src/main.rell").exists())

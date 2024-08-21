@@ -9,7 +9,7 @@ import assertk.assertions.isNotNull
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.BlockchainModel
-import com.chromia.cli.model.RellVersion
+import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
 import java.io.File
 import java.math.BigInteger
@@ -147,7 +147,7 @@ internal class ChromiaModelTest {
                 """.trimIndent())
                 compile("""
                 compile:
-                  rellVersion: $RellVersion
+                  rellVersion: $DefaultChromiaModelRellVersion
                   source: src
                   target: build
                   deprecatedError: false

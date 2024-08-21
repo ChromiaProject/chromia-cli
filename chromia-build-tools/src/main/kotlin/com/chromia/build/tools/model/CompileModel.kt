@@ -5,7 +5,7 @@ import java.nio.file.Path
 import net.postchain.rell.base.model.R_LangVersion
 
 data class CompileModel(
-        val rellVersion: String = RellVersion,
+        val rellVersion: String = DefaultChromiaModelRellVersion,
         val source: Path,
         val target: Path,
         private val deprecatedError: Boolean = false,
@@ -18,7 +18,7 @@ data class CompileModel(
 
     companion object {
         fun load(data: Map<String, Any>, dir: Path) = CompileModel(
-                rellVersion = ensureType<String?>(data["rellVersion"], "compile", "rellVersion") ?: RellVersion,
+                rellVersion = ensureType<String?>(data["rellVersion"], "compile", "rellVersion") ?: DefaultChromiaModelRellVersion,
                 source = dir.resolve(ensureType<String?>(data["source"], "compile", "source") ?: "src"),
                 target = dir.resolve(ensureType<String?>(data["target"], "compile", "target") ?: "build"),
                 deprecatedError = ensureType<Boolean?>(data["deprecatedError"], "compile", "deprecatedError")

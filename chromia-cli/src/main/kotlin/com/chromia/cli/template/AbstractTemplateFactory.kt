@@ -1,6 +1,6 @@
 package com.chromia.cli.template
 
-import com.chromia.cli.model.RellVersion
+import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import java.io.File
 
 abstract class AbstractTemplateFactory(private val folderName: String) : TemplateFactory {
@@ -19,7 +19,7 @@ abstract class AbstractTemplateFactory(private val folderName: String) : Templat
         fun createChromiaConfig(projectName: String, transform: (String) -> String = { it }) {
             createFile("chromia.yml") {
                 it.replace("PROJECT_NAME", projectName)
-                        .replace("RELL_VERSION", RellVersion)
+                        .replace("RELL_VERSION", DefaultChromiaModelRellVersion)
                         .replace("RELL_SCHEMA", "schema_${snakeCaseName(projectName)}")
                         .let(transform)
             }
