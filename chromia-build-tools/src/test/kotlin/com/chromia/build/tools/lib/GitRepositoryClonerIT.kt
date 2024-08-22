@@ -59,7 +59,7 @@ class GitRepositoryClonerIT {
 
         val startSshAgentScript = sshDir.resolve("start-ssh-agent.sh")
         startSshAgentScript.setExecutable(true)
-        Runtime.getRuntime().exec(startSshAgentScript.absolutePath + " " + keyFile.absolutePath).waitFor()
+        Runtime.getRuntime().exec(arrayOf(startSshAgentScript.absolutePath, keyFile.absolutePath)).waitFor()
 
         val cloner = GitRepositoryCloner(sshDir = sshDir.resolve("agent"), quiet = true)
         val cloneDir = testDir.resolve("cloned-project")
@@ -69,7 +69,6 @@ class GitRepositoryClonerIT {
         assertThat(cloneDir.resolve(".git").exists()).isTrue()
     }
 
-    private fun getResourceFile(resourceName: String): File {
-        return File(this.javaClass.classLoader.getResource(resourceName)!!.file)
-    }
+    private fun getResourceFile(resourceName: String): File =
+            File(this.javaClass.classLoader.getResource(resourceName)!!.file)
 }

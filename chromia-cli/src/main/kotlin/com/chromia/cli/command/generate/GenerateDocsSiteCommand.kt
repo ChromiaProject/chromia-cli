@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
-import java.net.URL
+import java.net.URI
 
 class GenerateDocsSiteCommand : CliktCommand(
         name = "docs-site",
@@ -58,7 +58,7 @@ class GenerateDocsSiteCommand : CliktCommand(
                 .apply {
                     model.docs.sourceLink?.let {
                         val localDirectory = model.compile.source
-                        addSourceLink(localDirectory.toString(), URL(it.remoteUrl), it.remoteLineSuffix)
+                        addSourceLink(localDirectory.toString(), URI(it.remoteUrl).toURL(), it.remoteLineSuffix)
                     }
                 }
     }
