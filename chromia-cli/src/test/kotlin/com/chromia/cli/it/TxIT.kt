@@ -29,16 +29,6 @@ import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 
-class TxRecorderModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
-
-    val txList = mutableListOf<ByteArray>()
-
-    override fun postTransaction(tx: ByteArray) {
-        txList.add(tx)
-    }
-}
-
 class AlwaysFailingModel(val model: Model, val status: TransactionStatus) : Model by model {
     constructor(blockchainRid: BlockchainRid, status: TransactionStatus) : this(TestModel(blockchainRid), status)
 
@@ -51,7 +41,7 @@ class Ft4Model(val model: Model, val version: String, val responses: Map<String,
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "ft4.get_version" -> gtv(version)
-            else -> responses[query.name] ?: throw UserMistake("Query ${query.name} not found")
+            else -> responses[query.name] ?: throw UserMistake("Query ${query.name} not found in Ft4Model")
         }
     }
 }

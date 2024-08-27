@@ -42,9 +42,7 @@ fun CliktCommand.proposalDescriptionOption(helpMessage: String = "Proposal descr
 class VotersetUpdateCommand : CliktCommand(
         name = "update",
         help = """
-            Propose an update of a voter set's governor
-            
-            New governor must be an existing voter set.
+            Propose an update of a voter set's members list
         """.trimIndent()
 ) {
     private val settings by optionalChromiaModelConfigOption()

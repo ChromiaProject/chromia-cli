@@ -11,7 +11,8 @@ class VotersetCommand() : NoOpCliktCommand(help = "Interact with votersets (Expe
         fun commands() = VotersetCommand().subcommands(
                 VotersetInfoCommand(),
                 VotersetUpdateCommand(),
-                VotersetListCommand()
+                VotersetListCommand(),
+                VotersetAddDappProviderCommand()
         )
 
     }

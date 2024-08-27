@@ -44,7 +44,7 @@ fun CliktCommand.wipeDatabaseOption() =
 
 fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
 
-fun ParameterHolder.publicKeyOption() = option("-pk", "--pubkey", help = "Set public key explicitly")
+fun ParameterHolder.publicKeyOption(help: String = "Set public key explicitly") = option("-pk", "--pubkey", help = help)
         .validate {
             require(it.matches(Regex("[0-9A-Fa-f]+"))) { "Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f." }
             require(it.length % 2 == 0) { "The public key must be a hex string with even length. Length was: ${it.length}" }
@@ -65,4 +65,4 @@ fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql express
 
 fun ParameterHolder.targetUrlOption() = option("--api-url", help = "Target url")
 
-fun ParameterHolder.containerIdOption() = option("-cid", "--container-id", help = "Set container id explicitly")
+fun ParameterHolder.containerIdOption(help: String = "Set container id explicitly") = option("-cid", "--container-id", help = help)
