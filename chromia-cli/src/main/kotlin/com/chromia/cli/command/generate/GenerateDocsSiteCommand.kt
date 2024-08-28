@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
@@ -33,14 +34,29 @@ class GenerateDocsSiteCommand : CliktCommand(
     private val target by option("-d", "--target", help = "Directory to generate code in")
             .file(canBeFile = false)
 
+    private val include by option("-i", "--include", help = """
+        Libs to actively include in the navigation of the generated docs site, by default all are excluded.
+        To include a library, the full identifier must be specified as an example for the library foo, the inclusion of it
+        would be lib.foo
+    """.trimIndent()
+    ).multiple()
+
+    fun getFilteredModules(libs: Set<String>, explicitIncluded: List<String>): List<String> {
+        return libs.minus(explicitIncluded.toSet()).toList()
+    }
+
+    private fun formatLibraryPaths() = model.libs.keys.map { "lib.$it" }.toSet()
+
     override fun run() {
+
         require(system || settings.model != null) { "Project settings file not found" }
         require(!system || target != null) { "Please specify target folder when generating system docs" }
         val targetFolder = target ?: File(settings.targetDir!!, "site")
 
         val builder = configBuilder()
                 .targetFolder(targetFolder)
-        RellDokkaGenerator(builder).generate()
+        RellDokkaGenerator(builder)
+                .generate()
         echo("Documentation generated at $targetFolder")
     }
 
@@ -55,6 +71,7 @@ class GenerateDocsSiteCommand : CliktCommand(
                 .customAssets(model.docs.customAssets)
                 .includes(model.docs.additionalContentFiles)
                 .footerMessage(model.docs.footerMessage)
+                .filteredModules(getFilteredModules(formatLibraryPaths(), include))
                 .apply {
                     model.docs.sourceLink?.let {
                         val localDirectory = model.compile.source

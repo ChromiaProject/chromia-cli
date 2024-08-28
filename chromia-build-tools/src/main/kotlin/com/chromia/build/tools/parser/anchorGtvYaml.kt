@@ -57,7 +57,7 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
     private inner class ConstructBigInteger : AbstractConstruct() {
         override fun construct(node: Node): Any = constructScalar(node as ScalarNode).dropLast(1).toBigInteger()
     }
-
+    
     private inner class ConstructByteArray : AbstractConstruct() {
         override fun construct(node: Node): Any = constructScalar(node as ScalarNode).drop(2).dropLast(1).hexStringToByteArray()
     }
