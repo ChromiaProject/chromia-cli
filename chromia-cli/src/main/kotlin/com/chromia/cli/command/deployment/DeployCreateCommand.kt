@@ -35,13 +35,16 @@ class DeployCreateCommand(
     }
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
-        echo("""
-            Add the following to your project settings file:
-            deployments:
-              $target:
-                chains:
-                  ${deployTxs.joinToString("\n      ") { "${it.blockchain.name}: x\"${it.blockchainRid?.toHex()}\"" }}
-            """.trimIndent())
+        val successfulDeployments = deployTxs.filter { it.success && it.blockchainRid != null }
+        if (successfulDeployments.isNotEmpty()) {
+            echo("""
+                Add the following to your project settings file:
+                deployments:
+                  $target:
+                    chains:
+                      ${successfulDeployments.joinToString("\n      ") { "${it.blockchain.name}: x\"${it.blockchainRid!!.toHex()}\"" }}
+                """.trimIndent())
+        }
     }
 
     override fun explicitChainsToDeploy(): Collection<String> {

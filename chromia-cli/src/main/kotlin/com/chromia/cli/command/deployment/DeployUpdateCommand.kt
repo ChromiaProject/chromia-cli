@@ -48,8 +48,8 @@ class DeployUpdateCommand(
     }
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
-        for ((chain, _) in deployTxs) {
-            echo("Blockchain ${chain.name} was successfully updated on network $target")
+        for (tx in deployTxs) {
+            echo("Blockchain ${tx.blockchain.name} ${if (tx.success) "was successfully updated" else "failed update"} on network $target")
         }
     }
 
