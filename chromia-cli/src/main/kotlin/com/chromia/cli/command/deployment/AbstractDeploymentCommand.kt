@@ -10,7 +10,7 @@ import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
-import com.chromia.cli.util.filterGtxModules
+import com.chromia.cli.util.keepOnlyStandardGtxModules
 import com.chromia.cli.util.secretOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
@@ -68,7 +68,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val cliEnv = CliktCliEnv(this@AbstractDeploymentCommand)
         val chainsToDeploy = blockchain ?: explicitChainsToDeploy()
         val res = ChromiaCompileApi.build(cliEnv, settings.model.filterBlockchains(chainsToDeploy))
-                .onEach { it.filterGtxModules(cliEnv).validate() }
+                .onEach { it.keepOnlyStandardGtxModules().validate() }
                 .apply { validateRellVersion(client) }
                 .apply { preDeploymentVerification(this) }
                 .let { performDeploymentOperation(it) }

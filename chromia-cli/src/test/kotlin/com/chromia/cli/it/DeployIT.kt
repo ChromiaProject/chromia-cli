@@ -77,7 +77,7 @@ class DeployIT {
     }
 
     @Test
-    fun deploymentWithNonWhitelistedGtxModuleFails(@TempDir dir: Path) {
+    fun deploymentWithCustomGtxModule(@TempDir dir: Path) {
         testData(dir) {
             config {
                 blockchains("""
@@ -85,20 +85,23 @@ class DeployIT {
                       hello:
                         module: main
                         config:
+                          blockstrategy:
+                            maxblocktime: 1000
                           gtx:
                             modules:
-                              - "net.postchain.UnknownGTXModule"
+                              - "net.postchain.CustomGTXModule"
                 """.trimIndent())
             }
         }
         val secretFile = File(dir.toFile(), ".secret")
         createConfigurationFiles(dir, secretFile)
 
-        TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
-                .setConfig(dir.resolve("chromia.yml").toFile())
-                .exitCode(3)
-                .startCondition("An error occurred. Could not find Gtx module: net.postchain.UnknownGTXModule")
-                .start()
+        withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
+            TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
+                    .setConfig(dir.resolve("chromia.yml").toFile())
+                    .startCondition("Deployment of blockchain hello was successful")
+                    .start()
+        }
     }
 
     private fun createConfigurationFiles(dir: Path, secretFile: File?) {

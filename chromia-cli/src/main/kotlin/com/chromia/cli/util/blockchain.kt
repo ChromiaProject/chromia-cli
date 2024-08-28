@@ -1,13 +1,13 @@
 package com.chromia.cli.util
 
+import com.chromia.api.impl.compile.standardGtxModules
 import com.chromia.api.result.BlockchainConfiguration
-import com.chromia.cli.command.node.AbstractNodeCommand
-import com.chromia.cli.tools.env.CliktCliEnv
+import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellCliEnv
 
 
-private val whiteListedGtxModules = listOf(
+private val knownGtxModules = listOf(
         "net.postchain.d1.anchoring.system.SystemAnchoringGTXModule",
         "net.postchain.d1.anchoring.cluster.ClusterAnchoringGTXModule",
         "net.postchain.d1.icmf.IcmfSenderGTXModule",
@@ -15,9 +15,9 @@ private val whiteListedGtxModules = listOf(
         "net.postchain.d1.iccf.IccfGTXModule",
 )
 
-fun BlockchainConfiguration.filterGtxModules(cliEnv: RellCliEnv): BlockchainConfiguration {
+fun BlockchainConfiguration.removeKnownGtxModules(cliEnv: RellCliEnv): BlockchainConfiguration {
     val configModules = config["gtx"]?.get("modules")!!.asArray() // Not null since default values are added
-    val intersect = configModules.intersect(whiteListedGtxModules)
+    val intersect = configModules.intersect(knownGtxModules)
 
     if (intersect.isNotEmpty()) {
         cliEnv.error("Warning filtering out modules from configuration;\n ${intersect.joinToString("\n")}")
@@ -26,8 +26,19 @@ fun BlockchainConfiguration.filterGtxModules(cliEnv: RellCliEnv): BlockchainConf
     val gtvBuilder = GtvBuilder()
     gtvBuilder.update(config)
     val gtxModules = configModules
-            .filter { it.asString() !in whiteListedGtxModules }
+            .filter { it.asString() !in knownGtxModules }
             .map { GtvBuilder.GtvNode.decode(it) }
+            .let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
+
+    gtvBuilder.update(gtxModules, "gtx", "modules")
+    return BlockchainConfiguration(name, gtvBuilder.build())
+}
+
+fun BlockchainConfiguration.keepOnlyStandardGtxModules(): BlockchainConfiguration {
+    val gtvBuilder = GtvBuilder()
+    gtvBuilder.update(config)
+    val gtxModules = standardGtxModules
+            .map { GtvBuilder.GtvNode.decode(GtvFactory.gtv(it)) }
             .let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
 
     gtvBuilder.update(gtxModules, "gtx", "modules")

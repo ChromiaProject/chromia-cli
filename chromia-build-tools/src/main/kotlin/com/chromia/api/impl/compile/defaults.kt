@@ -11,6 +11,11 @@ import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
 import net.postchain.rell.module.RellPostchainModuleFactory
 
+val standardGtxModules = listOf(
+        RellPostchainModuleFactory::class.qualifiedName!!,
+        StandardOpsGTXModule::class.qualifiedName!!,
+)
+
 internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, compileModel: CompileModel) = apply {
     // TODO: override these from config ([BlockchainModel.config])
     update(GtvFactory.gtv("name" to GtvFactory.gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
@@ -21,10 +26,7 @@ internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, comp
     update(GtvFactory.gtv(true), "revolt", "revolt_when_should_build_block")
     update(GtvFactory.gtv(1000), "blockstrategy", "mininterblockinterval")
 
-    val modulesGtv: MutableList<Gtv> = mutableListOf(
-            GtvFactory.gtv(RellPostchainModuleFactory::class.qualifiedName!!),
-            GtvFactory.gtv(StandardOpsGTXModule::class.qualifiedName!!)
-    )
+    val modulesGtv: MutableList<Gtv> = standardGtxModules.map { GtvFactory.gtv(it) }.toMutableList()
     blockchainModel.config["modules"]?.let {
         modulesGtv.add(it)
     }

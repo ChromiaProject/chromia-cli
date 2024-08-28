@@ -12,7 +12,7 @@ import com.chromia.cli.d1.ManagementChainFactory
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
-import com.chromia.cli.util.filterGtxModules
+import com.chromia.cli.util.removeKnownGtxModules
 import com.chromia.cli.util.nodePropertiesOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -76,7 +76,7 @@ abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
         return configsToAdd
                 .let { if (directoryChainMock) addDirectoryChain(it) else it }
                 .map { replaceInMemoryIcmf(it) }
-                .map { it.filterGtxModules(CliktCliEnv(this)) }
+                .map { it.removeKnownGtxModules(CliktCliEnv(this)) }
                 .onEach { it.validate() }
     }
 

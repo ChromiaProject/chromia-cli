@@ -1,5 +1,6 @@
 package com.chromia.cli.tools.launcher
 
+import com.chromia.build.tools.compile.ValidationException
 import com.chromia.cli.tools.formatter.PanelHelpFormatter
 import com.chromia.cli.tools.formatter.chromiaTheme
 import com.github.ajalt.clikt.completion.completionOption
@@ -47,6 +48,7 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             is UnsupportedOperationException -> "The operation is not supported."
             is FileNotFoundException -> "The file was not found."
             is IOException -> "An I/O error occurred."
+            is ValidationException -> "Invalid blockchain configuration."
             else -> "An error occurred."
         }
 
