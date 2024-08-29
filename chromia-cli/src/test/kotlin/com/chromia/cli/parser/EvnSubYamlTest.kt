@@ -2,7 +2,6 @@ package com.chromia.cli.parser
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import net.postchain.gtv.yaml.GtvYaml
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables

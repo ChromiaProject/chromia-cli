@@ -32,7 +32,6 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
     }
 
     private inner class IncludeConstructor : Construct {
-        val yaml = Yaml()
         override fun construct(p0: Node): Any {
             p0 as ScalarNode
             val rawFilePath = if (p0.value.startsWith("/")) p0.value else "${rootFile.absoluteFile.parent}/${p0.value}"
@@ -41,6 +40,7 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
         }
 
         private fun parseSubFile(file: File, sub: String) = file.inputStream().use {
+            val yaml = createChromiaYamlParser(file)
             val result = yaml.load<Any>(it)
             if (sub.isNotBlank()) {
                 require(result is Map<*, *>) { "File ${file.path} must be a dict to be able to extract a sub field" }
@@ -57,16 +57,21 @@ class ChromiaConstructor(val rootFile: File) : EnvScalarConstructor() {
     private inner class ConstructBigInteger : AbstractConstruct() {
         override fun construct(node: Node): Any = constructScalar(node as ScalarNode).dropLast(1).toBigInteger()
     }
-    
+
     private inner class ConstructByteArray : AbstractConstruct() {
         override fun construct(node: Node): Any = constructScalar(node as ScalarNode).drop(2).dropLast(1).hexStringToByteArray()
     }
 }
 
-fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
-    val baseConstructor = ChromiaConstructor(src)
+fun createChromiaYamlParser(file: File): Yaml {
+    val baseConstructor = ChromiaConstructor(file)
     val yaml = Yaml(baseConstructor, Representer(DumperOptions()), DumperOptions(), GtvResolver())
     yaml.addImplicitResolver(ENV_TAG, ENV_FORMAT, "$")
+    return yaml
+}
+
+fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
+    val yaml = createChromiaYamlParser(src)
 
     val loaded = src.inputStream().use {
         yaml.load<Map<String, Any>>(it)
