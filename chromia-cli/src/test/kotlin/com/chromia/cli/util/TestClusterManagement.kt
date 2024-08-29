@@ -20,4 +20,7 @@ open class TestClusterManagement(
     override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = clusterOfBlockchain[blockchainRid]
             ?: if (!blockchainRid.toHex().endsWith("4")) "my_cluster"
             else throw ClientError("", Status(404, null), "", Endpoint(""))
+
+    override fun getRemovedClusterAnhcoringChains(removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
+    override fun getRemovedClusterBlockchains(clusterName: String, removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
 }

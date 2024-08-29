@@ -145,6 +145,7 @@ class DeployUpdateCommandTest {
             override fun getBlockchainApiUrls(blockchainRid: BlockchainRid): List<String> {
                 return listOf(RestApiInstance.apiUrl)
             }
+            
         }), TestModel(BlockchainRid.buildRepeat(34)).withValidConfiguration(), TestModel(BlockchainRid.buildRepeat(17)).withInvalidConfiguration()
         ) {
             testData(testDir) {

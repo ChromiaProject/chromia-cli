@@ -29,7 +29,6 @@ class GtvConfigurationTest {
         val model = parseModel(dir.resolve("chromia.yml"))
         val gtv = ChromiaCompileApi.build(RellCliEnv.DEFAULT, model)[0].config
         val expectedGtv = GtvMLParser.parseGtvML(javaClass.getResource("expectedGtvConfiguration.xml")!!.readText())
-
         assertThat(gtv).isEqualTo(expectedGtv)
     }
 }

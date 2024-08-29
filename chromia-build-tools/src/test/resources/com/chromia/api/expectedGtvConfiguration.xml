@@ -30,7 +30,7 @@
             <entry key="rell">
                 <dict>
                     <entry key="compilerVersion">
-                        <string>0.13.15</string>
+                        <string>0.14.1</string>
                     </entry>
                     <entry key="modules">
                         <array>

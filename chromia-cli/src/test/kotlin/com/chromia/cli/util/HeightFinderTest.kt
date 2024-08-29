@@ -49,10 +49,11 @@ class HeightFinderTest {
     }
 
 
-
-    class TestClusterManagement(vararg val apiUrls: String): ClusterManagement {
+    class TestClusterManagement(vararg val apiUrls: String) : ClusterManagement {
 
         override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("1")) "my_cluster" else "system"
+        override fun getRemovedClusterAnhcoringChains(removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
+        override fun getRemovedClusterBlockchains(clusterName: String, removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
         override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = apiUrls.toList()
         override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
         override fun getBlockchainPeers(blockchainRid: BlockchainRid, height: Long) = TODO("Not yet implemented")
