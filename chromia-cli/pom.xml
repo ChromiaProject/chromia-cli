@@ -121,6 +121,9 @@
                                 registry.gitlab.com/chromaway/core-tools/chromia-images/java21:1.0.1@sha256:def7ecec42cdc4545be824e539bc5802f89a3eff618b9194a6c02e2d28910f4a
                             </image>
                         </from>
+                        <to>
+                            <image>${image.name}</image>
+                        </to>
                         <container>
                             <entrypoint>
                                 <args>/usr/bin/chr-entrypoint.sh</args>
@@ -150,16 +153,18 @@
                     </configuration>
                     <executions>
                         <execution>
-                            <id>docker-build</id>
+                            <id>docker-tar</id>
                             <phase>package</phase>
+                            <goals>
+                                <goal>buildTar</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>docker-build</id>
+                            <phase>install</phase>
                             <goals>
                                 <goal>dockerBuild</goal>
                             </goals>
-                            <configuration>
-                                <to>
-                                    <image>${image.name}</image>
-                                </to>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
