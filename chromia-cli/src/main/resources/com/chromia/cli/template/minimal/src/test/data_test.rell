@@ -1,4 +1,5 @@
 @test module;
+
 import ^^.main.{my_name, set_name};
 
 function test_add_name() {
