@@ -439,15 +439,6 @@
           ],
           "description": "Additional GTX Modules"
         },
-        "sqlmodules": {
-          "type": "array",
-          "items": [
-            {
-              "type": "string"
-            }
-          ],
-          "description": "GTX SQL modules"
-        },
         "allowoverrides": {
           "type": "boolean",
           "default": false,
