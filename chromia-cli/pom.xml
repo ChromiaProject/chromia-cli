@@ -255,7 +255,15 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.rell.toolbox</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>code-quality</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell.toolbox</groupId>
+            <artifactId>indexer</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell.toolbox</groupId>
+            <artifactId>common</artifactId>
         </dependency>
 
         <dependency>

@@ -15,8 +15,8 @@ import kotlin.io.path.readText
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
 import net.postchain.rell.api.base.RellCliExitException
-import net.postchain.rell.toolbox.core.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.formatter.FormatterOptions
+import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
 import net.postchain.rell.toolbox.linter.AutoFixer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
