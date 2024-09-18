@@ -16,6 +16,7 @@ class DirectoryChainModel(val model: CachedModel, val apiVersion: Long) : Cached
             "api_version" -> gtv(apiVersion)
             "get_container_data" -> GtvObjectMapper.toGtvDictionary(ContainerData("test_container", "test_cluster", "", "".hexStringToWrappedByteArray(), "deployer_name", false, null, null))
             "get_cluster_api_urls" -> gtv(gtv(RestApiInstance.apiUrl))
+            "cm_get_blockchain_api_urls" -> gtv(gtv(RestApiInstance.apiUrl))
             else -> model.query(query)
         }
     }

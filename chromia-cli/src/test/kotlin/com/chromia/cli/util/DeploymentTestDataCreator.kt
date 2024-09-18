@@ -9,6 +9,8 @@ import net.postchain.common.BlockchainRid
 object DeploymentTestDataCreator {
 
     val keyIdName = "keyIdUsedForTesting"
+    const val pubkey = "03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05"
+    const val privkey = "BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114"
 
     val deployedChainBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")
     val deployedChainModel = TestModel(deployedChainBrid, 1)
@@ -59,8 +61,8 @@ object DeploymentTestDataCreator {
         }
         with(File(dir.toFile(), ".secret")) {
             writeText("""
-            privkey = BBBDFE956021912512E14BB081B27A35A0EABC4098CB687E973C434006BCE114
-            pubkey = 03ECD350EEBC617CBBFBEF0A1B7AE553A748021FD65C7C50C5ABB4CA16D4EA5B05
+            privkey = $privkey
+            pubkey = $pubkey
             """.trimIndent())
         }
 

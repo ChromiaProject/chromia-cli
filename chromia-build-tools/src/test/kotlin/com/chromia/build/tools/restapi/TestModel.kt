@@ -13,7 +13,11 @@ import net.postchain.common.exception.NotFound
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.core.BlockRid
 import net.postchain.core.TransactionInfoExt
+import net.postchain.core.TransactionInfoExtsTruncated
 import net.postchain.core.block.BlockDetail
+import net.postchain.core.block.BlockDetailsTruncated
+import net.postchain.core.block.BlockQueryHeightFilter
+import net.postchain.core.block.BlockQueryTimeFilter
 import net.postchain.crypto.PubKey
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.ebft.rest.contract.StateNodeStatus
@@ -51,11 +55,11 @@ class TestModel(
         TODO("Not yet implemented")
     }
 
-    override fun getBlocks(beforeTime: Long, limit: Int, txHashesOnly: Boolean): List<BlockDetail> {
+    override fun getBlocks(timeFilter: BlockQueryTimeFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int): BlockDetailsTruncated {
         TODO("Not yet implemented")
     }
 
-    override fun getBlocksBeforeHeight(beforeHeight: Long, limit: Int, txHashesOnly: Boolean): List<BlockDetail> {
+    override fun getBlocksBetweenHeights(heightFilter: BlockQueryHeightFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int): BlockDetailsTruncated {
         TODO("Not yet implemented")
     }
 
@@ -88,11 +92,11 @@ class TestModel(
         TODO("Not yet implemented")
     }
 
-    override fun getTransactionsInfo(beforeTime: Long, limit: Int): List<TransactionInfoExt> {
+    override fun getTransactionsInfo(timeFilter: BlockQueryTimeFilter, limit: Int, maxDataSize: Int): TransactionInfoExtsTruncated {
         TODO("Not yet implemented")
     }
 
-    override fun getTransactionsInfoBySigner(beforeTime: Long, limit: Int, signer: PubKey): List<TransactionInfoExt> {
+    override fun getTransactionsInfoBySigner(timeFilter: BlockQueryTimeFilter, limit: Int, signer: PubKey, maxDataSize: Int): TransactionInfoExtsTruncated {
         TODO("Not yet implemented")
     }
 
