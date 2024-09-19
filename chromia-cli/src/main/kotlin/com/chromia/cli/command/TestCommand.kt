@@ -39,7 +39,10 @@ import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
+val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")
 
 class TestCommand : CliktCommand(help = "Run tests in working directory") {
 
@@ -60,6 +63,8 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     private val failOnError by option(help = "Sets test execution to stop on error and override any \"failOnError\" settings for tests that are in the scope being executed")
             .boolean()
             .optionalValueLazy { true }
+
+    private val timestamp by option("-ts", "--timestamp", help = "Timestamp on logs").flag()
 
     override fun run() {
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
@@ -165,7 +170,7 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
                 .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
                 .stopOnError(failOnError ?: settings.model.test.failOnError)
                 .sqlErrorLog(settings.model.logSqlErrors)
-                .logPrinter(::echo)
+                .logPrinter { s -> echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}$s") }
                 .outPrinter(::echo)
                 .printTestCases(false)
                 .onTestCaseStart { case -> case.print() }
@@ -184,20 +189,18 @@ class TestCommand : CliktCommand(help = "Run tests in working directory") {
     }
 
     private fun UnitTestCase.print() {
-
-        echo("${info("TEST")}: $name")
+        echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}${info("TEST")}: $name")
     }
 
     private fun UnitTestCaseResult.print() {
         if (res.isOk) {
-            echo("${success(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
+            echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}${success(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
         } else {
-            echo("${warning(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
+            echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}${warning(res.toString())}: $case (${UnitTestResult.durationToString(res.duration)})")
         }
     }
 
     private fun printResults(results: UnitTestRunnerResults) {
-
         val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
 
         if (failedTests.isNotEmpty()) {
