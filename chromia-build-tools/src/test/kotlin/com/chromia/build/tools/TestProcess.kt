@@ -111,6 +111,8 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startCondi
                         redirectErrorStream(true)
                         workingDir?.let { directory(it) }
                         environment()["COLUMNS"] = "150"
+                        environment().putIfAbsent("CHROMIA_HOME", System.getProperty("user.dir"))
+
                         env.forEach { (k, v) -> environment()[k] = v }
                     }
             return TestProcess(pb, startCondition, wholeOutput, shouldFinish, exitCode, timeout, verbose, input).use(onCompleted)
