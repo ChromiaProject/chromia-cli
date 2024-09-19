@@ -118,7 +118,7 @@
                         <allowInsecureRegistries>false</allowInsecureRegistries>
                         <from>
                             <image>
-                                registry.gitlab.com/chromaway/core-tools/chromia-images/java21:1.0.1@sha256:def7ecec42cdc4545be824e539bc5802f89a3eff618b9194a6c02e2d28910f4a
+                                registry.gitlab.com/chromaway/core-tools/chromia-images/java21:1.0.5@sha256:67dec2a06edb913648bdd2635935a62f0f45f7344bca1d969cdeedbb172fafb1
                             </image>
                         </from>
                         <to>
