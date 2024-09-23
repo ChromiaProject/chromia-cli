@@ -192,10 +192,11 @@ internal class ChromiaModelTest {
 
     @Test
     fun `moduleArgs supports all primitive GTV types`(@TempDir dir: Path) {
+        val blockchainName = "my_rell_dapp"
         val settingsFile = File(dir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
-                  my-rell-dapp:
+                  $blockchainName:
                     module: main
                     moduleArgs:
                       main:
@@ -211,7 +212,7 @@ internal class ChromiaModelTest {
         }
 
         val settings = parseModel(settingsFile)
-        val moduleArgs = settings.blockchains["my-rell-dapp"]!!.moduleArgs["main"]!!
+        val moduleArgs = settings.blockchains[blockchainName]!!.moduleArgs["main"]!!
         assertThat(moduleArgs["s"]).isEqualTo(GtvString("abc"))
         assertThat(moduleArgs["i"]).isEqualTo(GtvInteger(17L))
         assertThat(moduleArgs["ba"]).isEqualTo(GtvByteArray("abc123".hexStringToByteArray()))

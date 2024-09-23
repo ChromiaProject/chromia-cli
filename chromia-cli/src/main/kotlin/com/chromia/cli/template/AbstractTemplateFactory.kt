@@ -18,7 +18,7 @@ abstract class AbstractTemplateFactory(private val folderName: String) : Templat
 
         fun createChromiaConfig(projectName: String, transform: (String) -> String = { it }) {
             createFile("chromia.yml") {
-                it.replace("PROJECT_NAME", projectName)
+                it.replace("PROJECT_NAME", snakeCaseName(projectName))
                         .replace("RELL_VERSION", DefaultChromiaModelRellVersion)
                         .replace("RELL_SCHEMA", "schema_${snakeCaseName(projectName)}")
                         .let(transform)

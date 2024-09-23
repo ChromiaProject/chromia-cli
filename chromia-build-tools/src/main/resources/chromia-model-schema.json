@@ -20,6 +20,10 @@
       "description": "Configuration properties for a blockchain",
       "additionalProperties": {
         "$ref": "#/$defs/blockchain"
+      },
+      "propertyNames": {
+        "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_]{0,63}$",
+        "description": "(Cannot contain hyphens)"
       }
     },
     "test": {
@@ -190,12 +194,14 @@
       "required": [
         "module"
       ],
+      "description": "Name of blockchain (cannot contain hyphens '-')",
       "additionalProperties": false,
       "properties": {
         "module": {
           "type": "string",
           "default": "main",
-          "description": "Entrypoint module for the blockchain"
+          "description": "Entrypoint module for the blockchain (Name of module cannot contain hyphens '-')",
+          "pattern": "[A-Za-z_][A-Za-z_0-9]*"
         },
         "type": {
           "type": "string",

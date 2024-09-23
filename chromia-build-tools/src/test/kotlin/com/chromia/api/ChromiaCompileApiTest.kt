@@ -87,11 +87,12 @@ internal class ChromiaCompileApiTest {
 
     @Test
     fun `Library with mismatching name throws`() {
+        val blockchainName = "wrong_name"
         testData(dir) {
             config {
                 blockchains("""
                 blockchains:
-                  wrong-name:
+                  $blockchainName:
                     module: lib.my
                     type: library
                 """.trimIndent())
@@ -101,7 +102,7 @@ internal class ChromiaCompileApiTest {
         val err = assertThrows<IllegalArgumentException> {
             ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         }
-        assertThat(err.message).isEqualTo("Library wrong-name not found. Please verify that the name of the library matches the folder name in lib folder.")
+        assertThat(err.message).isEqualTo("Library $blockchainName not found. Please verify that the name of the library matches the folder name in lib folder.")
     }
 
     @Test

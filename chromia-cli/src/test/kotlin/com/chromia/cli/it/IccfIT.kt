@@ -22,7 +22,7 @@ class IccfIT {
                 blockchains(
                         """
                            blockchains:
-                                source-chain:
+                                source_chain:
                                     module: main
                                 confirming:
                                     module: confirmation
