@@ -129,7 +129,7 @@ internal class ProposalInfoCommandTest {
     fun votersetUpdateProposalTest() {
         val type = ProposalType.voter_set_update
         withModel(PendingProposalModel(model.blockchainRid, votersetUpdateProposal(), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetVoterSetUpdateProposalResult::class.java, type)
     }
@@ -138,7 +138,7 @@ internal class ProposalInfoCommandTest {
     fun configurationForceProposalTest() {
         val type = ProposalType.force_configuration
         withModel(PendingProposalModel(model.blockchainRid, configurationForceProposal(WrappedByteArray(1)), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetProposedForcedConfigurationResult::class.java, type)
     }
@@ -147,7 +147,7 @@ internal class ProposalInfoCommandTest {
     fun configurationAtProposalTest() {
         val type = ProposalType.configuration
         withModel(PendingProposalModel(model.blockchainRid, configurationAtProposal(WrappedByteArray(1)), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetConfigurationProposalAtResult::class.java, type)
     }
@@ -156,7 +156,7 @@ internal class ProposalInfoCommandTest {
     fun configurationProposalTest() {
         val type = ProposalType.configuration
         withModel(PendingProposalModel(model.blockchainRid, configurationProposal(WrappedByteArray(1)), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetConfigurationProposalResult::class.java, type)
     }
@@ -165,7 +165,7 @@ internal class ProposalInfoCommandTest {
     fun bcProposalTest() {
         val type = ProposalType.bc
         withModel(PendingProposalModel(model.blockchainRid, bcProposal(WrappedByteArray(1)), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetBlockchainProposalResult::class.java, type)
     }
@@ -174,7 +174,7 @@ internal class ProposalInfoCommandTest {
     fun pendingBlockchainMoveStartedProposalTest() {
         val type = ProposalType.blockchain_move_start
         withModel(PendingProposalModel(model.blockchainRid, startedMoveProposal(model.blockchainRid.wData), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetBlockchainMoveProposalResult::class.java, type)
     }
@@ -183,7 +183,7 @@ internal class ProposalInfoCommandTest {
     fun pendingBlockchainMoveFinishedProposalTest() {
         val type = ProposalType.blockchain_move_finish
         withModel(PendingProposalModel(model.blockchainRid, finishedMoveProposal(model.blockchainRid.wData), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         assertPendingProposal(GetBlockchainMoveFinishProposalResult::class.java, type)
     }
@@ -192,7 +192,7 @@ internal class ProposalInfoCommandTest {
     fun pendingBlockchainActionPauseProposalTest() {
         val type = ProposalType.blockchain_action
         withModel(PendingProposalModel(model.blockchainRid, blockchainUnarchiveActionProposal(model.blockchainRid.wData, BlockchainAction.pause), type)) {
-            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--output-format", "JSON"))
+            ProposalInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
         }
         val jsonObject = gson.fromJson(logger.output(), JsonObject::class.java).asJsonObject
         val proposal = jsonObject["proposal"].asJsonObject

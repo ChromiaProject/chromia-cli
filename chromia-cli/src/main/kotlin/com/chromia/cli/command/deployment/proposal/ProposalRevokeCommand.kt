@@ -28,8 +28,16 @@ class ProposalRevokeCommand : CliktCommand(
         secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
         val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
+
+        val pubkey: ByteArray
+        try {
+            pubkey = client.pubkey.data
+        } catch (e: NoSuchElementException) {
+            throw CanNotFindPubkeyException()
+        }
+
         val res = client.transactionBuilder()
-                .revokeProposalOperation(client.config.pubkey.data, RowId(idx))
+                .revokeProposalOperation(pubkey, RowId(idx))
                 .addNop()
                 .postAwaitConfirmation()
 

@@ -1,6 +1,7 @@
-package com.chromia.cli.command.deployment.proposal
+package com.chromia.cli.renderer
 
 import com.chromia.cli.command.deployment.proposal.dataprovider.ProposalDataProviderFactory
+import com.chromia.cli.command.deployment.proposal.formatThreshold
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.directory1.model.Provider
 import com.chromia.directory1.proposal.GetProposalResult
@@ -18,7 +19,7 @@ import net.postchain.common.types.WrappedByteArray
 import java.time.Instant
 import java.util.*
 
-class TableRenderer(val cliktCommand: CliktCommand) : Renderer() {
+class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<RenderData> {
     private fun SectionBuilder.printProposalHeader(id: RowId, type: ProposalType, timestamp: Long, proposedByPubkey: WrappedByteArray, proposedByName: String) {
         row("Proposal", "${id.id} - ${type.name}")
         row("Proposed by", formatProvider(proposedByPubkey, proposedByName))

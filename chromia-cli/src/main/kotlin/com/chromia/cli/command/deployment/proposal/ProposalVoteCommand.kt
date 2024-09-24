@@ -37,8 +37,15 @@ class ProposalVoteCommand : CliktCommand(
         val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
 
+        val pubkey: ByteArray
+        try {
+            pubkey = client.pubkey.data
+        } catch (e: NoSuchElementException) {
+            throw CanNotFindPubkeyException()
+        }
+
         val res = client.transactionBuilder()
-                .makeVoteOperation(client.pubkey.data, idx, vote)
+                .makeVoteOperation(pubkey, idx, vote)
                 .addNop()
                 .postAwaitConfirmation()
 

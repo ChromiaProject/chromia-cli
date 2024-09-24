@@ -1,4 +1,4 @@
-package com.chromia.cli.command.deployment.proposal
+package com.chromia.cli.renderer
 
 import com.chromia.cli.command.deployment.proposal.dataprovider.ProposalDataProviderFactory
 import com.chromia.cli.tools.formatter.json
@@ -9,7 +9,7 @@ import com.chromia.directory1.proposal.getProposalVotingResults
 import com.github.ajalt.clikt.core.CliktCommand
 import net.postchain.client.core.PostchainClient
 
-class JSONRenderer(val cliktCommand: CliktCommand) : Renderer() {
+class ProposalInfoJSONRenderer(val cliktCommand: CliktCommand) : Renderer<RenderData> {
     override fun display(client: PostchainClient, proposal: GetProposalResult, apiVersion: Long, proposedBy: Provider) {
         val result = mutableMapOf<String, Any?>()
         result["proposal"] = proposal
