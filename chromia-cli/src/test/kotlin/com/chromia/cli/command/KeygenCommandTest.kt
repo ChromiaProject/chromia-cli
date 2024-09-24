@@ -3,6 +3,7 @@ package com.chromia.cli.command
 import assertk.assertThat
 import assertk.assertions.exists
 import assertk.assertions.isEqualTo
+import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -80,6 +81,25 @@ class KeygenCommandTest {
     }
 
     @Test
+    fun duplicateKeyIdThrowsErrorTest(@TempDir dir: Path) {
+        val myKeyId = "myKeyId"
+        EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
+            KeygenCommand().parse(arrayOf("--key-id", myKeyId,
+                    "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train"
+            ))
+            val res = KeygenCommand().test(arrayOf("--key-id", myKeyId))
+            //Make sure only output is the message
+            assertThat(res.output).isEqualTo("Keypair with id: myKeyId already exists\n")
+        }
+        val privateKeyFile = dir.resolve(myKeyId)
+        val publicKeyFile = dir.resolve("$myKeyId.pubkey")
+
+        dir.listDirectoryEntries().containsAll(listOf(privateKeyFile, publicKeyFile))
+        assertThat(privateKeyFile.readText()).isEqualTo("7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429")
+        assertThat(publicKeyFile.readText()).isEqualTo("02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765")
+    }
+
+    @Test
     fun savingToSettingsFileTakesPrecedence(@TempDir dir: Path) {
         val myKeyId = "myKeyId"
         val secretFile = dir.resolve(".secret")
@@ -105,12 +125,19 @@ class KeygenCommandTest {
         val secretFile = dir.resolve(".secret")
 
         EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
-            KeygenCommand().parse(arrayOf(
+            val output = KeygenCommand().test(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
                     "--key-id", myKeyId,
                     "--file", secretFile.toString(),
                     "--dry"
             ))
+
+            assertThat(output.output).isEqualTo("""
+                mnemonic:  new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train 
+                pubkey:    02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765
+                privkey:   7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429
+                
+            """.trimIndent())
         }
         val privateKeyFile = dir.resolve(myKeyId)
         val publicKeyFile = dir.resolve("$myKeyId.pubkey")

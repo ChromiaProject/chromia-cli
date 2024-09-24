@@ -38,23 +38,26 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
     override fun run() {
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
 
-        println(
-                """
-                |mnemonic:  $mnemonic 
-                |pubkey:    ${keyPair.pubKey.data.toHex()}
-            """.trimMargin()
-        )
-
         when {
             dry -> {
-                println(
-                        """
+                echo("""
+                    |mnemonic:  $mnemonic 
+                    |pubkey:    ${keyPair.pubKey.data.toHex()}
                     |privkey:   ${keyPair.privKey.data.toHex()}
                 """.trimMargin()
                 )
             }
 
-            file != null -> saveSecp256k1KeyPair(keyPair, file!!.absoluteFile)
+            file != null -> {
+                saveSecp256k1KeyPair(keyPair, file!!.absoluteFile)
+                echo("""
+                    |Keypair is written to ${file!!.absolutePath}
+                    |mnemonic:  $mnemonic 
+                    |pubkey:    ${keyPair.pubKey.data.toHex()}
+                """.trimMargin()
+                )
+            }
+
             else -> {
                 val chromiaKeyStore = keyId?.let { ChromiaKeyStore(it) } ?: ChromiaKeyStore()
                 val existingKeyPair = chromiaKeyStore.findKeyPair()
@@ -62,6 +65,12 @@ class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/pri
                     throw PrintMessage("Keypair with id: ${chromiaKeyStore.keyId} already exists", 1)
                 }
                 chromiaKeyStore.saveKeyPair(keyPair)
+
+                echo("""
+                |mnemonic:  $mnemonic 
+                |pubkey:    ${keyPair.pubKey.data.toHex()}
+            """.trimMargin()
+                )
             }
         }
     }
@@ -86,9 +95,4 @@ private fun saveSecp256k1KeyPair(keyPair: KeyPair, file: File) {
         properties.store(fs, "Keypair generated using secp256k1")
         fs.flush()
     }
-    println(
-            """
-            |Keypair is written to ${file.absolutePath}
-        """.trimMargin()
-    )
 }
