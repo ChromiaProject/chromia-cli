@@ -1,9 +1,7 @@
 package com.chromia.cli.command
 
-import com.chromia.cli.template.MinimalTemplateFactory
-import com.chromia.cli.template.PlainLibraryTemplateFactory
-import com.chromia.cli.template.PlainMultiTemplateFactory
-import com.chromia.cli.template.PlainTemplateFactory
+import com.chromia.build.tools.template.TemplateFactoryProvider
+import com.chromia.build.tools.template.TemplateProject
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -46,19 +44,7 @@ class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
         }
 
         projectDir.mkdirs()
-        val factory = when (template) {
-            TemplateProject.PLAIN -> PlainTemplateFactory()
-            TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory()
-            TemplateProject.MINIMAL -> MinimalTemplateFactory()
-            TemplateProject.PLAIN_LIBRARY -> PlainLibraryTemplateFactory()
-        }
+        val factory = TemplateFactoryProvider.getFactory(template)
         factory.createProjectFromTemplate(projectDir, projectName)
-    }
-
-    private enum class TemplateProject {
-        PLAIN,
-        PLAIN_MULTI,
-        MINIMAL,
-        PLAIN_LIBRARY,
     }
 }

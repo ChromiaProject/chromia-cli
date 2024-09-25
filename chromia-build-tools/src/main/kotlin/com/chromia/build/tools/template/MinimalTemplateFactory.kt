@@ -1,20 +1,20 @@
-package com.chromia.cli.template
+package com.chromia.build.tools.template
 
 import java.io.File
 
 /**
- * Creates an empty single-module project with a main and a test file.
+ * Minimal working example dapp (hello world)
  */
-class PlainTemplateFactory : AbstractTemplateFactory("plain") {
+class MinimalTemplateFactory : AbstractTemplateFactory("minimal") {
     override fun createProjectFromTemplate(targetDir: File, projectName: String) {
-        val projectFileName = snakeCaseName(projectName)
         with(FileBuilder(targetDir)) {
             createChromiaConfig(projectName)
             createGitIgnore()
             createFormatterConfig()
             createLinterConfig()
             createFile("src/main.rell")
-            createFile("src/test/plain_test.rell", "src/test/${projectFileName}_test.rell")
+            createFile("src/test/arithmetic_test.rell")
+            createFile("src/test/data_test.rell")
         }
     }
 }

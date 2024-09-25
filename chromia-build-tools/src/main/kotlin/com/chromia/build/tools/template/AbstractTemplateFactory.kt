@@ -1,4 +1,4 @@
-package com.chromia.cli.template
+package com.chromia.build.tools.template
 
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import java.io.File
