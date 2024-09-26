@@ -69,8 +69,8 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
 }
 
 class LocalDeploymentOption(
-        private val config: () -> ChromiaClientConfig,
-        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Target a test node") {
+    private val config: () -> ChromiaClientConfig,
+    private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Target a test node") {
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int()
     private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)

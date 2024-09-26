@@ -65,6 +65,7 @@ class DeployInspectLeaseIT {
                 "expire_time_millis" to gtv(expireTimeMillis),
                 "expired" to gtv(expired),
                 "auto_renew" to gtv(autoRenew),
+                "subnode_image_name" to gtv("")
         )
 
         val leaseByAccountId = mapOf(accountId.hexStringToWrappedByteArray() to gtv(listOf(gtv(lease))))

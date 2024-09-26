@@ -1,5 +1,6 @@
 package com.chromia.build.tools.template
 
+import com.chromia.build.tools.util.snakeCaseName
 import java.io.File
 
 /**

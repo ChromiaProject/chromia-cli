@@ -55,7 +55,7 @@
                         <configuration>
                             <packageName>com.chromia.directory1</packageName>
                             <mainModule>
-                                common.queries,proposal_voter_set
+                                common.queries,proposal_voter_set,proposal_blockchain
                             </mainModule>
                             <configPath>${directory.config}</configPath>
                         </configuration>

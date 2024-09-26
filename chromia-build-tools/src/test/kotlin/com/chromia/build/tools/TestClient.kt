@@ -91,5 +91,6 @@ fun getLeaseData(): Map<String, GtvPrimitive> {
             "expire_time_millis" to gtv(50),
             "expired" to gtv(false),
             "auto_renew" to gtv(false),
+            "subnode_image_name" to gtv("")
     )
 }

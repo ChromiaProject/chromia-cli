@@ -15,7 +15,8 @@ class ProposalCommand private constructor() : NoOpCliktCommand(help = "Act on pr
                 ProposalVoteCommand(),
                 ProposalListCommand(),
                 ProposalInfoCommand(),
-                ProposalRevokeCommand()
+                ProposalRevokeCommand(),
+                ProposalRenameBlockchainCommand()
         )
 
     }
