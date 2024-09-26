@@ -67,7 +67,7 @@ class FTAuthenticator internal constructor(private val client: FTAuthQuery, priv
 
     private fun findAccountId(pubKey: PubKey): ByteArray {
         return client.findAccountsQuery(pubKey).let {
-            if (it.isEmpty()) throw PrintMessage("No Account found")
+            if (it.isEmpty()) throw PrintMessage("No FT4 Account found for public key: $pubKey")
             if (it.size == 1) it.first()
             else
                 terminal.prompt("More than one account found, which one should we use: ", choices = it.map { ac -> ac.toHex() })
