@@ -4,7 +4,7 @@ import com.chromia.cli.tools.launcher.createAliases
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.subcommands
 
-class VotersetCommand() : NoOpCliktCommand(help = "Interact with votersets (Experimental)") {
+class VotersetCommand : NoOpCliktCommand(help = "Interact with votersets") {
     override fun aliases() = createAliases()
 
     companion object {

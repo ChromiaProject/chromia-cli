@@ -1,7 +1,7 @@
 package com.chromia.cli.command.deployment.proposal
 
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.renderer.RenderData
+import com.chromia.cli.renderer.AbstractRenderData
 import com.chromia.cli.renderer.RendererFactory
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
@@ -14,7 +14,6 @@ import com.chromia.directory1.proposal.getRelevantProposals
 import com.chromia.directory1.proposal.voting.GetProviderVotesResult
 import com.chromia.directory1.proposal.voting.getProviderVotes
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
@@ -70,7 +69,7 @@ class ProposalListCommand : CliktCommand(
     }
 }
 
-data class ProposalListRenderData(val proposals: List<ProposalInfo>, val votes: List<GetProviderVotesResult>) : RenderData()
+data class ProposalListRenderData(val proposals: List<ProposalInfo>, val votes: List<GetProviderVotesResult>) : AbstractRenderData()
 data class ProposalInfo(val rowId: RowId, val proposalType: ProposalType, val state: ProposalState)
 
 fun CliktCommand.dateToTimestampOption(helpMessage: String, default: Long = 0, defaultString: String = "1970-01-01", daysOffset: Long = 0) =

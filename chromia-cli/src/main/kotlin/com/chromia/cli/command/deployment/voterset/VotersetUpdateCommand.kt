@@ -28,7 +28,7 @@ fun metadataTextValidator(): OptionTransformContext.(String) -> Unit = {
 }
 
 fun OptionTransformContext.validateMetadataText(text: String) {
-    require(text.length <= METADATA_LENGTH_MAX) { "value is too long, maximum allowed length is $METADATA_LENGTH_MAX" }
+    require(text.length <= METADATA_LENGTH_MAX) { "value is too long, maximum allowed length is $METADATA_LENGTH_MAX, current length is ${text.length}." }
 }
 
 const val METADATA_LENGTH_MAX = 1_000

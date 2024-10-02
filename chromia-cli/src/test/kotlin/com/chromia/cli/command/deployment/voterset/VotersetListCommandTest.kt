@@ -1,0 +1,93 @@
+package com.chromia.cli.command.deployment.voterset
+
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import com.chromia.build.tools.restapi.DirectoryChainModel
+import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.TestModel
+import com.chromia.cli.util.DeploymentTestDataCreator
+import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import com.chromia.directory1.common.queries.GET_VOTER_SETS
+import com.chromia.directory1.common.queries.GetVoterSetsResult
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
+import net.postchain.api.rest.controller.Model
+import net.postchain.common.BlockchainRid
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.mapper.GtvObjectMapper
+import net.postchain.gtx.GtxQuery
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
+import kotlin.test.Test
+
+class VotersetListModel(val model: Model) : Model by model {
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
+
+    override fun query(query: GtxQuery): Gtv {
+        return when (query.name) {
+            "api_version" -> gtv(33)
+            CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(RestApiInstance.apiUrl)))
+            GET_VOTER_SETS -> gtv(
+                    listOf(
+                            GtvObjectMapper.toGtvDictionary(GetVoterSetsResult(
+                                    name = "vs1",
+                                    threshold = 0,
+                                    gorvernor = "vs1",
+                            )),
+                            GtvObjectMapper.toGtvDictionary(GetVoterSetsResult(
+                                    name = "vs2",
+                                    threshold = -1,
+                                    gorvernor = "vs2",
+                            ))))
+
+            else -> throw IllegalStateException("${query.name}  is not supported")
+        }
+    }
+}
+
+internal class VotersetListCommandTest {
+    val model = DirectoryChainModel()
+    private val gson: Gson = GsonBuilder().create()
+
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+    private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
+    private val testTerminal = Terminal(logger)
+
+    @BeforeEach
+    fun setup() {
+        DeploymentTestDataCreator.unitTestApp(testDir)
+        settingsFile = testDir.resolve("chromia.yml").toFile()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        logger.clearOutput()
+    }
+
+    @Test
+    fun votersetListDataTest() {
+        RestApiInstance.withModel(VotersetListModel(model.blockchainRid)) {
+            VotersetListCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test"))
+        }
+        val votersets = gson.fromJson(logger.output(), JsonObject::class.java).asJsonObject
+        assertThat(votersets.size()).isEqualTo(2)
+        assertThat(votersets["vs1"].asJsonObject["name"].asString).isEqualTo("vs1")
+        assertThat(votersets["vs2"].asJsonObject["name"].asString).isEqualTo("vs2")
+
+        assertThat(votersets["vs1"].asJsonObject["governor"].asString).isEqualTo("vs1")
+        assertThat(votersets["vs2"].asJsonObject["governor"].asString).isEqualTo("vs2")
+
+        assertThat(votersets["vs1"].asJsonObject["majorityLevel"].asString).isEqualTo("super majority (>66.66%)")
+        assertThat(votersets["vs2"].asJsonObject["majorityLevel"].asString).isEqualTo("majority (>50%)")
+    }
+}

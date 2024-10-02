@@ -19,7 +19,7 @@ import net.postchain.common.types.WrappedByteArray
 import java.time.Instant
 import java.util.*
 
-class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<RenderData> {
+class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<AbstractRenderData> {
     private fun SectionBuilder.printProposalHeader(id: RowId, type: ProposalType, timestamp: Long, proposedByPubkey: WrappedByteArray, proposedByName: String) {
         row("Proposal", "${id.id} - ${type.name}")
         row("Proposed by", formatProvider(proposedByPubkey, proposedByName))

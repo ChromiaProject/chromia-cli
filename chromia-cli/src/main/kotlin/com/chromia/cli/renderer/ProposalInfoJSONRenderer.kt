@@ -9,7 +9,7 @@ import com.chromia.directory1.proposal.getProposalVotingResults
 import com.github.ajalt.clikt.core.CliktCommand
 import net.postchain.client.core.PostchainClient
 
-class ProposalInfoJSONRenderer(val cliktCommand: CliktCommand) : Renderer<RenderData> {
+class ProposalInfoJSONRenderer(val cliktCommand: CliktCommand) : Renderer<AbstractRenderData> {
     override fun display(client: PostchainClient, proposal: GetProposalResult, apiVersion: Long, proposedBy: Provider) {
         val result = mutableMapOf<String, Any?>()
         result["proposal"] = proposal

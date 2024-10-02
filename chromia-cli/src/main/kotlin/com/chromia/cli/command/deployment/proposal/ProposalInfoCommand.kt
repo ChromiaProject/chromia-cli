@@ -2,7 +2,7 @@ package com.chromia.cli.command.deployment.proposal
 
 import com.chromia.build.tools.util.apiVersion
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.renderer.RenderData
+import com.chromia.cli.renderer.AbstractRenderData
 import com.chromia.cli.renderer.RendererFactory
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
@@ -35,7 +35,7 @@ class ProposalInfoCommand
         val proposal = client.getProposal(idx) ?: return echo("Proposal $idx not found")
         val proposedBy = client.getProviderData(PubKey(proposal.proposedBy))
         val apiVersion = client.apiVersion
-        val render = RendererFactory.createRenderer<RenderData>(outputFormat, this)
+        val render = RendererFactory.createRenderer<AbstractRenderData>(outputFormat, this)
 
         render.display(client, proposal, apiVersion, proposedBy)
     }
