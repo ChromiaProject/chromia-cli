@@ -1,7 +1,6 @@
 package com.chromia.build.tools
 
 import com.chromia.build.tools.keystore.ChromiaKeyStore
-import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.cli.model.RellLibraryModel
 import java.io.File
 import java.nio.file.Path
@@ -129,6 +128,16 @@ class ConfigBuilder {
         definitions = init
     }
 
+    fun addDeploymentsConfig() {
+        deployments("""
+            deployments:
+                test:
+                    url: "http://localhost:7745"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    container: testcontainer
+            """.trimIndent())
+    }
+
     internal fun createFile(target: Path) {
         val sb = StringBuilder()
         if (definitions.isNotEmpty()) sb.append("$definitions\n")
@@ -151,6 +160,13 @@ class SecretBuilder {
            privkey=${TestDataBuilder.keyPair.privKey.hex()} 
         """.trimIndent())
     }
+
+    fun secretFile(target: Path) {
+        File(target.toFile(), ".secret").writeText("""
+            pubkey=039B9ED551D5BDCC52FF9418ED77FBA7D761B24B7D06596829771A6DEA50E613AD
+            privkey=D33345577D6E08997D35D3D359DAF6CD4AF91651B2C006F9974E4B73E06574F7
+        """.trimIndent())
+    }
 }
 
 class KeyStoreBuilder {
@@ -171,26 +187,4 @@ fun testData(dir: Path, init: TestDataBuilder.() -> Unit = {}): TestDataBuilder 
     testDataBuilder.apply(init)
             .createFiles(dir)
     return testDataBuilder
-}
-
-// TODO: Refactor the tests that uses this function to use the TestDataBuilder instead and remove this function
-fun createConfigurationFiles(dir: Path, secretFile: File?) {
-    with(File(dir.toFile(), "chromia.yml")) {
-        appendText("\n")
-        appendText("""
-                deployments:
-                  test:
-                    url: "$apiUrl"
-                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
-                    container: testcontainer
-            """.trimIndent())
-    }
-    secretFile?.let {
-        with(secretFile) {
-            writeText("""
-                pubkey=039B9ED551D5BDCC52FF9418ED77FBA7D761B24B7D06596829771A6DEA50E613AD
-                privkey=D33345577D6E08997D35D3D359DAF6CD4AF91651B2C006F9974E4B73E06574F7
-            """.trimIndent())
-        }
-    }
 }

@@ -12,6 +12,7 @@ import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.keepOnlyStandardGtxModules
 import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
@@ -27,7 +28,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
-import java.time.Clock
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.Endpoint
@@ -73,7 +73,13 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 .apply { preDeploymentVerification(this) }
                 .let { performDeploymentOperation(it) }
                 .apply { afterDeployment(this) }
-                .apply { save(settings.targetDir.toPath(), prefix = target, suffix = Clock.systemUTC().instant().toString()) }
+                .apply {
+                    save(
+                        settings.targetDir.toPath(),
+                        prefix = target,
+                        suffix = getFormattedUtcDateTime()
+                    )
+                }
 
         if (!res.isSuccess()) {
             throw ProgramResult(1)

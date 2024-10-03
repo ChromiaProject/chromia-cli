@@ -41,14 +41,25 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
 }
 
 class DeployIT {
-
     @Test
     fun deploymentSuccessful(@TempDir dir: Path) {
-        testData(dir)
         val secretFile = File(dir.toFile(), ".secret")
-        createConfigurationFiles(dir, secretFile)
+        testData(dir) {
+            config {
+                addDeploymentsConfig()
+            }
+            secret {
+                secretFile(dir)
+            }
+        }
         withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
-            TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
+            TestProcess.Builder(
+                    "deployment", "create",
+                    "--network", "test",
+                    "--blockchain", "hello",
+                    "-y",
+                    "--secret", secretFile.absolutePath
+            )
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .startCondition("Deployment of blockchain hello was successful")
                     .start()
@@ -59,13 +70,21 @@ class DeployIT {
     fun deploymentSuccessfulUsingKeyIdFromConfig(@TempDir dir: Path) {
         testData(dir) {
             keyStore()
+            config {
+                addDeploymentsConfig()
+            }
+            secret()
         }
-        createConfigurationFiles(dir, null)
         val config = dir.resolve("config").absolutePathString()
 
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
-                TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--config", config)
+                TestProcess.Builder(
+                        "deployment", "create",
+                        "--network", "test",
+                        "--blockchain", "hello",
+                        "-y", "--config", config
+                )
                         .setConfig(dir.resolve("chromia.yml").toFile())
                         .startCondition("Deployment of blockchain hello was successful")
                         .start()
@@ -75,6 +94,7 @@ class DeployIT {
 
     @Test
     fun deploymentWithCustomGtxModule(@TempDir dir: Path) {
+        val secretFile = File(dir.toFile(), ".secret")
         testData(dir) {
             config {
                 blockchains("""
@@ -89,12 +109,22 @@ class DeployIT {
                               - "net.postchain.CustomGTXModule"
                 """.trimIndent())
             }
+            config {
+                addDeploymentsConfig()
+            }
+            secret {
+                secretFile(dir)
+            }
         }
-        val secretFile = File(dir.toFile(), ".secret")
-        createConfigurationFiles(dir, secretFile)
 
         withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
-            TestProcess.Builder("deployment", "create", "--network", "test", "--blockchain", "hello", "-y", "--secret", secretFile.absolutePath)
+            TestProcess.Builder(
+                    "deployment", "create",
+                    "--network", "test",
+                    "--blockchain", "hello",
+                    "-y",
+                    "--secret", secretFile.absolutePath
+            )
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .startCondition("Deployment of blockchain hello was successful")
                     .start()

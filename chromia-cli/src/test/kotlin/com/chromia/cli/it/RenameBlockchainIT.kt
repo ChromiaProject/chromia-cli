@@ -1,7 +1,6 @@
 package com.chromia.cli.it
 
 import com.chromia.build.tools.TestProcess
-import com.chromia.build.tools.createConfigurationFiles
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.testData
@@ -13,9 +12,15 @@ import java.nio.file.Path
 class RenameBlockchainIT {
     @Test
     fun proposeRenameBlockchain(@TempDir dir: Path) {
-        testData(dir)
         val secretFile = File(dir.toFile(), ".secret")
-        createConfigurationFiles(dir, secretFile)
+        testData(dir) {
+            config {
+                addDeploymentsConfig()
+            }
+            secret {
+                secretFile(dir)
+            }
+        }
         withModel(DirectoryChainModel(apiVersion = 65)) {
             TestProcess.Builder(
                     "deployment", "proposal", "rename",
