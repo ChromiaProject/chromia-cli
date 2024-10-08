@@ -80,7 +80,8 @@ open class BlockchainOptions(logger: (String) -> Unit) : OptionGroup() {
 
 internal fun ParameterHolder.requiredChromiaModelOption(logger: (String) -> Unit) = chromiaModelOption()
         .defaultLazy {
-            ChromiaConfigLoader(logger).findModelFile(null) ?: throw PrintMessage("Project settings file not found")
+            ChromiaConfigLoader(logger).findModelFile(null)
+                    ?: throw PrintMessage("Project settings file not found", statusCode = 1)
         }
 
 internal fun ParameterHolder.chromiaModelOption() = option(
