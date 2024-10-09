@@ -1,12 +1,12 @@
 package com.chromia.cli.command.deployment.proposal
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.util.pubkey
 import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal.revokeProposalOperation
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.required
@@ -14,7 +14,7 @@ import net.postchain.common.tx.TransactionStatus
 import net.postchain.common.types.RowId
 
 
-class ProposalRevokeCommand : CliktCommand(
+class ProposalRevokeCommand : ChromiaCommand(
         name = "revoke",
         help = "Revoke/remove a proposal submitted by you"
 ) {

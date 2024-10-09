@@ -1,20 +1,19 @@
 package com.chromia.cli.command
 
 import com.chromia.build.tools.keystore.ChromiaKeyStore
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
-import java.io.FileOutputStream
-import java.util.Properties
 import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
+import java.io.File
+import java.io.FileOutputStream
+import java.util.Properties
 
-class KeygenCommand : CliktCommand(name = "keygen", help = "Generates public/private key pair") {
+class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/private key pair") {
 
     private val wordList by option(
             "-m", "--mnemonic",

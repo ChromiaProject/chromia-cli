@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment.voterset
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.deployment.proposal.formatThreshold
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.renderer.AbstractRenderData
@@ -8,11 +9,10 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.util.tableOutputFormat
 import com.chromia.directory1.common.queries.getVoterSets
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 
 
-class VotersetListCommand : CliktCommand(
+class VotersetListCommand : ChromiaCommand(
         name = "list",
         help = """
             List all voter sets, 

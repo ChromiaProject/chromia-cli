@@ -2,19 +2,19 @@ package com.chromia.cli.command.deployment.proposal
 
 import com.chromia.build.tools.util.apiVersion
 import com.chromia.build.tools.util.snakeCaseName
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.deployment.voterset.nameOption
 import com.chromia.cli.command.deployment.voterset.proposalDescriptionOption
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.*
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.required
 import net.postchain.common.tx.TransactionStatus
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainRenameOperation
 
-class ProposalRenameBlockchainCommand : CliktCommand(
+class ProposalRenameBlockchainCommand : ChromiaCommand(
         name = "rename",
         help = """
             Create a proposal to rename a deployed blockchain

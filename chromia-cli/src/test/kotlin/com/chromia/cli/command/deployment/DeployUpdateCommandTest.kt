@@ -22,12 +22,8 @@ import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.test.assertNotNull
 import net.postchain.PostchainContext
 import net.postchain.api.rest.controller.PostchainModel
 import net.postchain.common.BlockchainRid
@@ -45,6 +41,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
+import kotlin.test.assertNotNull
 
 
 class DeployUpdateCommandTest {

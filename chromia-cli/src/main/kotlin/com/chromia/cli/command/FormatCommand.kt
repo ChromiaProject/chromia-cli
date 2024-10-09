@@ -3,7 +3,6 @@ package com.chromia.cli.command
 import com.chromia.cli.model.getLibPaths
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.launcher.createAliases
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
@@ -16,7 +15,10 @@ import java.nio.file.Path
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class FormatCommand : CliktCommand(help = "Automatically format Rell code. Configurable using .rell_format file", invokeWithoutSubcommand = true) {
+class FormatCommand : ChromiaCommand(help = "Automatically format Rell code. Configurable using .rell_format file") {
+    override val invokeWithoutSubcommand: Boolean
+        get() = true
+
     override fun aliases() = createAliases()
 
     private val settings by chromiaModelOption()

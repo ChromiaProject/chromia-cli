@@ -2,18 +2,12 @@ package com.chromia.cli.command
 
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.launcher.createAliases
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.readText
-import kotlin.io.path.toPath
-import kotlin.io.path.writeText
 import net.postchain.rell.api.base.RellCliExitException
 import net.postchain.rell.toolbox.formatter.FormatterOptions
 import net.postchain.rell.toolbox.indexer.WorkspaceIndexer
@@ -21,8 +15,16 @@ import net.postchain.rell.toolbox.linter.AutoFixer
 import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.readText
+import kotlin.io.path.toPath
+import kotlin.io.path.writeText
 
-class LintCommand : CliktCommand(help = "Analyze Rell code to find potential issue and coding style violations. Configurable using .rell_lint file", invokeWithoutSubcommand = true) {
+class LintCommand : ChromiaCommand(help = "Analyze Rell code to find potential issue and coding style violations. Configurable using .rell_lint file") {
+    override val invokeWithoutSubcommand: Boolean
+        get() = true
+
     override fun aliases() = createAliases()
 
     private val settings by chromiaModelOption()

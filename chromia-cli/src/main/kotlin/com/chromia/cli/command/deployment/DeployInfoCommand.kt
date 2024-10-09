@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.formatter.defaultTable
@@ -11,7 +12,6 @@ import com.chromia.cli.util.ManualDeploymentInfoOption
 import com.chromia.cli.util.NodeStatusFinder
 import com.chromia.cli.util.TableOutputFormat
 import com.chromia.cli.util.tableOutputFormat
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.cooccurring
@@ -32,7 +32,7 @@ class DeployInfoCommand(
         private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion,
         private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { Companion.httpHandlerFactory(it) }
-) : CliktCommand(
+) : ChromiaCommand(
         name = "info",
         help = "Information about a deployed blockchain"
 ) {
@@ -59,7 +59,7 @@ class DeployInfoCommand(
             val cluster = clusterManagement.getClusterOfBlockchain(option.brid)
             val clusterUrls = clusterManagement.getBlockchainApiUrls(option.brid)
 
-            when (outputFormat ?: if (terminal.info.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON) {
+            when (outputFormat ?: if (terminal.terminalInfo.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON) {
                 TableOutputFormat.table -> {
                     echo(defaultTable {
                         header {

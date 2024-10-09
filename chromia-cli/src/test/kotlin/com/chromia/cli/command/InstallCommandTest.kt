@@ -11,16 +11,11 @@ import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.extension
-import kotlin.io.path.isDirectory
-import kotlin.test.assertFailsWith
 import net.postchain.common.hexStringToWrappedByteArray
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -28,11 +23,18 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.extension
+import kotlin.io.path.isDirectory
+import kotlin.test.assertFailsWith
 
 class InstallCommandTest {
     val path = "src/lib"
     private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     @TempDir
     private lateinit var testDir: Path

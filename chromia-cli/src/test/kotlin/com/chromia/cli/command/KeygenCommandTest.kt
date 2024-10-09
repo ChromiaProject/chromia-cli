@@ -3,6 +3,7 @@ package com.chromia.cli.command
 import assertk.assertThat
 import assertk.assertions.exists
 import assertk.assertions.isEqualTo
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import java.io.File
 import java.nio.file.Path

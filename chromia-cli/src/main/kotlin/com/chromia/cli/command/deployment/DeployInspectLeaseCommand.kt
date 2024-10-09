@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
@@ -15,7 +16,6 @@ import com.chromia.directory1.economy_chain.LeaseData
 import com.chromia.directory1.economy_chain.getLeaseByContainerName
 import com.chromia.directory1.economy_chain.getLeasesByAccount
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.cooccurring
@@ -26,11 +26,13 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 
-class DeployInspectLeaseCommand : CliktCommand(
+class DeployInspectLeaseCommand : ChromiaCommand(
         name = "lease-info",
         help = "Information about a leases of for a given owner",
-        hidden = true
 ) {
+    override val hiddenFromHelp: Boolean
+        get() = true
+    
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by ExplicitRemoteSystemOption { settings.config }.cooccurring()
@@ -44,7 +46,7 @@ class DeployInspectLeaseCommand : CliktCommand(
     override fun run() {
         val (pubkey, container, leaseData) = getLeaseData()
 
-        when (outputFormat ?: if (terminal.info.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON) {
+        when (outputFormat ?: if (terminal.terminalInfo.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON) {
             TableOutputFormat.table -> {
                 if (pubkey != null) echo("Getting active leases for user with public key: $pubkey")
                 if (container != null) echo("Getting lease information for container: $container")

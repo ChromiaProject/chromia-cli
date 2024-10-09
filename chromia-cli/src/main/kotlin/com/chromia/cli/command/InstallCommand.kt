@@ -7,7 +7,6 @@ import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.libraryOption
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -15,7 +14,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 
 class InstallCommand(
         private val repositoryClonerFactory: (quiet: Boolean) -> RepositoryCloner = { GitRepositoryCloner(quiet = it) },
-) : CliktCommand(help = "Install library dependencies, if no library specified all will be installed") {
+) : ChromiaCommand(help = "Install library dependencies, if no library specified all will be installed") {
     private val settings by chromiaModelOption()
     private val library by libraryOption().multiple()
             .validate { require(settings.model.libs.keys.containsAll(it)) { "Specified library(s) $it does not exist in config file" } }
@@ -24,7 +23,7 @@ class InstallCommand(
         ChromiaLibrariesApi.install(
                 CliktCliEnv(this),
                 settings.model.filterLibraries(library.takeIf { it.isNotEmpty() }),
-                repositoryClonerFactory(!terminal.info.outputInteractive),
+                repositoryClonerFactory(!terminal.terminalInfo.outputInteractive),
         )
     }
 }

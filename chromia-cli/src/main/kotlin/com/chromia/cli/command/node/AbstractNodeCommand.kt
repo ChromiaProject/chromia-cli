@@ -7,14 +7,14 @@ import com.chromia.build.tools.iccf.SingleNodeIccfGtxModule
 import com.chromia.build.tools.icmf.InMemoryIcmfReceiverGtxModule
 import com.chromia.build.tools.icmf.InMemoryIcmfReceiverSynchronizationInfrastructureExtension
 import com.chromia.build.tools.icmf.InMemoryIcmfSenderGtxModule
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.d1.ManagementChainFactory
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
-import com.chromia.cli.util.removeKnownGtxModules
 import com.chromia.cli.util.nodePropertiesOption
-import com.github.ajalt.clikt.core.CliktCommand
+import com.chromia.cli.util.removeKnownGtxModules
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.associate
 import com.github.ajalt.clikt.parameters.options.flag
@@ -26,7 +26,7 @@ import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.gtv.gtvml.GtvMLParser
 
-abstract class AbstractNodeCommand(help: String) : CliktCommand(help = help) {
+abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
     protected val settings by chromiaModelOption()
     protected val blockchainConfigs by option(
             "-bc", "--blockchain-config",

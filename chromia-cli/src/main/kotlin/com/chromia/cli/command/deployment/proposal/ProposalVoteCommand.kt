@@ -1,12 +1,12 @@
 package com.chromia.cli.command.deployment.proposal
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.util.pubkey
 import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal.voting.makeVoteOperation
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.option
@@ -14,7 +14,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.switch
 import net.postchain.common.tx.TransactionStatus
 
-class ProposalVoteCommand : CliktCommand(
+class ProposalVoteCommand : ChromiaCommand(
         name = "vote",
         help = """
             Vote on proposals linked to your public key

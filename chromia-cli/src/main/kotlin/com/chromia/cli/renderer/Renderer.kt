@@ -26,25 +26,25 @@ object RendererFactory {
             is ProposalInfoCommand -> when (outputFormat) {
                 TableOutputFormat.JSON -> ProposalInfoJSONRenderer(cliktCommand)
                 TableOutputFormat.table -> ProposalInfoTableRenderer(cliktCommand)
-                else -> if (cliktCommand.terminal.info.outputInteractive) ProposalInfoTableRenderer(cliktCommand) else ProposalInfoJSONRenderer(cliktCommand)
+                else -> if (cliktCommand.terminal.terminalInfo.outputInteractive) ProposalInfoTableRenderer(cliktCommand) else ProposalInfoJSONRenderer(cliktCommand)
             }
 
             is ProposalListCommand -> when (outputFormat) {
                 TableOutputFormat.JSON -> ProposalListJSONRenderer(cliktCommand)
                 TableOutputFormat.table -> ProposalListTableRenderer(cliktCommand)
-                else -> if (cliktCommand.terminal.info.outputInteractive) ProposalListTableRenderer(cliktCommand) else ProposalListJSONRenderer(cliktCommand)
+                else -> if (cliktCommand.terminal.terminalInfo.outputInteractive) ProposalListTableRenderer(cliktCommand) else ProposalListJSONRenderer(cliktCommand)
             }
 
             is VotersetInfoCommand -> when (outputFormat) {
                 TableOutputFormat.JSON -> VoterSetInfoJSONRenderer(cliktCommand)
                 TableOutputFormat.table -> VoterSetInfoTableRenderer(cliktCommand)
-                else -> if (cliktCommand.terminal.info.outputInteractive) VoterSetInfoTableRenderer(cliktCommand) else VoterSetInfoJSONRenderer(cliktCommand)
+                else -> if (cliktCommand.terminal.terminalInfo.outputInteractive) VoterSetInfoTableRenderer(cliktCommand) else VoterSetInfoJSONRenderer(cliktCommand)
             }
 
             is VotersetListCommand -> when (outputFormat) {
                 TableOutputFormat.JSON -> VoterSetListJSONRenderer(cliktCommand)
                 TableOutputFormat.table -> VoterSetListTableRenderer(cliktCommand)
-                else -> if (cliktCommand.terminal.info.outputInteractive) VoterSetListTableRenderer(cliktCommand) else VoterSetListJSONRenderer(cliktCommand)
+                else -> if (cliktCommand.terminal.terminalInfo.outputInteractive) VoterSetListTableRenderer(cliktCommand) else VoterSetListJSONRenderer(cliktCommand)
             }
 
             else -> throw IllegalArgumentException("command missing renderer")

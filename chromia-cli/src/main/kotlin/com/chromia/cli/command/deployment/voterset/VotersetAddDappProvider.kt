@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment.voterset
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.ft.FTAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -10,7 +11,6 @@ import com.chromia.cli.util.secretOption
 import com.chromia.directory1.economy_chain.REGISTER_DAPP_PROVIDER
 import com.chromia.directory1.economy_chain.registerDappProviderOperation
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -25,7 +25,7 @@ import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 
 
-class VotersetAddDappProviderCommand : CliktCommand(
+class VotersetAddDappProviderCommand : ChromiaCommand(
         name = "add-dapp-provider",
         help = "Add a dapp provider to container"
 ) {

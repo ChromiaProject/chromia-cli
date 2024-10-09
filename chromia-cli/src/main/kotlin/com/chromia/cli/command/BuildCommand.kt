@@ -6,11 +6,13 @@ import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.blockchainOption
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.multiple
 
-class BuildCommand : CliktCommand(help = "Build an application and create a blockchain configuration", invokeWithoutSubcommand = true) {
+class BuildCommand : ChromiaCommand(help = "Build an application and create a blockchain configuration") {
+    override val invokeWithoutSubcommand: Boolean
+        get() = true
+
     private val blockchain by blockchainOption("Explicitly specify which blockchain(s) to compile", "BLOCKCHAIN").multiple()
     private val settings by chromiaModelOption()
     override fun aliases() = createAliases()

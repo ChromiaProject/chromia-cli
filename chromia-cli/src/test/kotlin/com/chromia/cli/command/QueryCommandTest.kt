@@ -9,6 +9,7 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.testData
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import net.postchain.client.exception.ClientError
 import net.postchain.common.hexStringToByteArray
@@ -159,10 +160,12 @@ class QueryCommandTest : IntegrationTestSetup() {
     }
 
     @Test
-    fun underscoreArgumentIsParsedAsOption() {
+    fun underscoreArgumentIsNotParsedAsOption() {
         withModel(TestModel().withQuery("test_query", gtv(1))) {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "_bar=hello"))
-            assertThat(res.stderr).contains("Error: no such option _bar")
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stderr).isEmpty()
+            assertThat(res.stdout).contains("1\n")
         }
     }
 
@@ -170,7 +173,9 @@ class QueryCommandTest : IntegrationTestSetup() {
     fun doubleDashMakesForceArgumentParsing() {
         withModel(TestModel().withQuery("test_query", gtv(1))) {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "--", "_bar=hello"))
+            assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stderr).isEmpty()
+            assertThat(res.stdout).contains("1\n")
         }
     }
 

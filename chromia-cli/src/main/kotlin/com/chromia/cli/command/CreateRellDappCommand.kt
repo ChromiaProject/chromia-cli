@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 
-class CreateRellDappCommand : CliktCommand(name = "create-rell-dapp", help = """
+class CreateRellDappCommand : ChromiaCommand(name = "create-rell-dapp", help = """
     Generates a template project
     
     Template projects:

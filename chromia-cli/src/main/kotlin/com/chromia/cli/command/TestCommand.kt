@@ -12,9 +12,9 @@ import com.chromia.cli.util.addWhitelistedGTXModules
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -25,10 +25,7 @@ import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.time.Duration
+import com.github.ajalt.mordant.terminal.success
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
@@ -39,12 +36,16 @@ import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestResult
 import net.postchain.rell.base.utils.UnitTestRunnerResults
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")
 
-class TestCommand : CliktCommand(help = "Run tests in working directory") {
+class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s). Can only be a single chain if used together with -m", metavar = "BLOCKCHAIN")
             .multiple()

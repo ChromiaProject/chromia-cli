@@ -59,7 +59,7 @@ class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<Abstr
             }
         })
         if (proposal.state == ProposalState.PENDING) {
-            if (cliktCommand.terminal.info.outputInteractive) cliktCommand.echo("Proposal details")
+            if (cliktCommand.terminal.terminalInfo.outputInteractive) cliktCommand.echo("Proposal details")
             val dataProvider = ProposalDataProviderFactory.getDataProvider(proposal.type, apiVersion)
             if (dataProvider != null) {
                 cliktCommand.echo(dataProvider.getFormattedData(client, proposal.id, cliktCommand))

@@ -1,9 +1,9 @@
 package com.chromia.cli.command.generate
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.rell.dokka.RellDokkaGenerator
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -15,7 +15,7 @@ import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import java.net.URI
 
-class GenerateDocsSiteCommand : CliktCommand(
+class GenerateDocsSiteCommand : ChromiaCommand(
         name = "docs-site",
         help = """
             Generate a documentation site for a dapp ontology

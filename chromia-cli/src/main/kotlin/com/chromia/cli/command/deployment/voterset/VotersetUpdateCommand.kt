@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment.voterset
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
@@ -39,7 +40,7 @@ fun CliktCommand.proposalDescriptionOption(helpMessage: String = "Proposal descr
         .validate(metadataTextValidator())
 
 
-class VotersetUpdateCommand : CliktCommand(
+class VotersetUpdateCommand : ChromiaCommand(
         name = "update",
         help = """
             Propose an update of a voter set's members list

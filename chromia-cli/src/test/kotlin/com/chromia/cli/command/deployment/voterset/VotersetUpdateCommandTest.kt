@@ -10,6 +10,7 @@ import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.tx.TransactionStatus

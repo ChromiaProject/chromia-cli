@@ -13,6 +13,8 @@ import com.chromia.cli.util.RellParameter
 import com.chromia.cli.util.RellQuery
 import com.chromia.cli.util.RellStructure
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.BlockchainRid
@@ -22,9 +24,9 @@ import org.junit.jupiter.api.Test
 
 class DeployInspectCommandTest {
     private val nonInteractiveLogger = TerminalRecorder(width = 1000, outputInteractive = false)
-    private val nonInteractiveTerminal = Terminal(nonInteractiveLogger)
+    private val nonInteractiveTerminal = Terminal(terminalInterface = nonInteractiveLogger)
     private val interactiveLogger = TerminalRecorder(width = 1000, outputInteractive = true)
-    private val interactiveTerminal = Terminal(interactiveLogger)
+    private val interactiveTerminal = Terminal(terminalInterface = interactiveLogger)
 
     private val testInputBlockchain = mapOf(
             "foo" to RellModule("foo",

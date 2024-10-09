@@ -19,6 +19,8 @@ import com.chromia.directory1.proposal.ProposalType
 import com.chromia.directory1.proposal.voting.GET_PROVIDER_VOTES
 import com.chromia.directory1.proposal.voting.GetProviderVotesResult
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.google.gson.Gson
@@ -86,7 +88,7 @@ internal class ProposalListCommandTest {
     private lateinit var settings: ChromiaModel
     private lateinit var config: File
     private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     val model = DirectoryChainModel()
 

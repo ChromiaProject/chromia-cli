@@ -3,6 +3,7 @@ package com.chromia.cli.ft
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.prompt
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.exception.ClientError
 import net.postchain.client.transaction.TransactionBuilder

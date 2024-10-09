@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.util.DASH_DASH_DESCRIPTION
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.RemoteDeploymentOption
@@ -10,7 +9,6 @@ import com.chromia.cli.util.formatJson
 import com.chromia.cli.util.formatRaw
 import com.chromia.cli.util.formatXml
 import com.chromia.cli.util.outputFormat
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -21,14 +19,11 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.GtvString
-import net.postchain.gtv.pretty
 import net.postchain.gtv.parse.GtvParser
+import net.postchain.gtv.pretty
 
-class QueryCommand : CliktCommand(help = """
+class QueryCommand : ChromiaCommand(help = """
     Make a query towards a running node
-    
-    Note: For query arguments:
-    $DASH_DASH_DESCRIPTION
     
     Examples:
     ```

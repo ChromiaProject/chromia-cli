@@ -6,27 +6,30 @@ import com.chromia.cli.tools.formatter.chromiaTheme
 import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.NoOpCliktCommand
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.main
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalDetection
+import mu.KotlinLogging
+import net.postchain.client.exception.ClientError
+import net.postchain.rell.api.base.RellCliException
+import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.sql.SQLException
 import kotlin.system.exitProcess
-import mu.KotlinLogging
-import net.postchain.client.exception.ClientError
-import net.postchain.rell.api.base.RellCliException
-import net.postchain.rell.api.base.RellCliExitException
 
 open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
 
     init {
         completionOption()
-        val detectedTerminal = Terminal()
+        val detectedTerminalInfo = TerminalDetection.detectTerminal(null, null, null, null, detectedStdinInteractive = false, detectedStdoutInteractive = false)
         context {
-            terminal = Terminal(theme = when (detectedTerminal.info.ansiLevel) {
+            terminal = Terminal(theme = when (detectedTerminalInfo.ansiLevel) {
                 AnsiLevel.NONE -> Theme.Plain
                 AnsiLevel.ANSI16 -> Theme.Plain
                 else -> chromiaTheme

@@ -5,6 +5,8 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.InitExtension
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder

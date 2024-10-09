@@ -9,6 +9,7 @@ import com.chromia.build.tools.testData
 import com.chromia.cli.it.AlwaysFailingModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import net.postchain.common.tx.TransactionStatus
 import org.junit.jupiter.api.BeforeEach

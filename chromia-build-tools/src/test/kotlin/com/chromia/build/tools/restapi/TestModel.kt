@@ -55,14 +55,14 @@ class TestModel(
         TODO("Not yet implemented")
     }
 
-    override fun getBlocks(timeFilter: BlockQueryTimeFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int): BlockDetailsTruncated {
+    override fun getBlocksBetweenHeights(heightFilter: BlockQueryHeightFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int, excludeEmpty: Boolean): BlockDetailsTruncated {
         TODO("Not yet implemented")
     }
 
-    override fun getBlocksBetweenHeights(heightFilter: BlockQueryHeightFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int): BlockDetailsTruncated {
+    override fun getBlocksBetweenTimes(timeFilter: BlockQueryTimeFilter, limit: Int, txHashesOnly: Boolean, maxDataSize: Int, excludeEmpty: Boolean): BlockDetailsTruncated {
         TODO("Not yet implemented")
     }
-
+    
     override fun getConfirmationProof(txRID: TxRid): ConfirmationProof? {
         TODO("Not yet implemented")
     }

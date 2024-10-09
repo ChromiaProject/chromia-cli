@@ -7,7 +7,6 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -31,7 +30,7 @@ import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
 
-class TxCommand : CliktCommand(help = """
+class TxCommand : ChromiaCommand(help = """
     Make a transaction towards a node.
     
     Supports both specifying the target node using url and brid/id or from a deployment which is specified in the chromia.yml

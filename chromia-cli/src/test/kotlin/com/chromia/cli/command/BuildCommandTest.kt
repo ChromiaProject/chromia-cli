@@ -15,11 +15,11 @@ import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import kotlin.test.assertFailsWith
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliBasicException
@@ -27,10 +27,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import java.io.File
+import kotlin.test.assertFailsWith
 
 internal class BuildCommandTest {
     private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     @RegisterExtension
     val command = CommandExtension(BuildCommand().context { terminal = testTerminal })

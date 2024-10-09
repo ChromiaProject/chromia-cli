@@ -11,6 +11,7 @@ import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import net.postchain.common.tx.TransactionStatus
 import org.junit.jupiter.api.BeforeEach

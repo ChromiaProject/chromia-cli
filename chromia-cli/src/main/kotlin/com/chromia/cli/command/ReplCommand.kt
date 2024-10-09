@@ -7,7 +7,6 @@ import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.module
 import com.chromia.cli.util.outputFormat
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
@@ -17,7 +16,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
 import com.google.common.base.Throwables
-import java.io.File
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
 import net.postchain.rell.base.compiler.base.utils.C_Message
@@ -30,9 +28,10 @@ import net.postchain.rell.base.repl.ReplValueFormatter
 import net.postchain.rell.base.runtime.Rt_Exception
 import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
+import java.io.File
 
 
-class ReplCommand : CliktCommand(help = """
+class ReplCommand : ChromiaCommand(help = """
     REPL is used to create a language shell for Rell that takes single user inputs, executes them, and returns the result.
     Inside the repl you can create local variables and execute Rell commands, it can be attached to a Rell module to be able
     to inspect a dapp state and execute dapp functionalities.
@@ -78,7 +77,7 @@ class ReplCommand : CliktCommand(help = """
                 .apply {
                     if (!command.isNullOrBlank())
                         inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
-                    else if (!terminal.info.inputInteractive)
+                    else if (!terminal.terminalInfo.inputInteractive)
                         inputChannelFactory(NonInteractiveCommandInputChannelFactory())
                 }
                 .compileConfig(compileConfig)
@@ -86,10 +85,10 @@ class ReplCommand : CliktCommand(help = """
                 .historyFile(historyFile)
                 .outPrinter(::echo)
                 .logPrinter(::echo)
-                .outputChannelFactory(CliktOutputChannelFactory(!terminal.info.outputInteractive || !command.isNullOrBlank()))
+                .outputChannelFactory(CliktOutputChannelFactory(!terminal.terminalInfo.outputInteractive || !command.isNullOrBlank()))
                 .sqlErrorLog(localModel.logSqlErrors)
                 .sqlLog(sqlLog)
-                .printIntroMessage(terminal.info.outputInteractive && command.isNullOrBlank())
+                .printIntroMessage(terminal.terminalInfo.outputInteractive && command.isNullOrBlank())
                 .build()
         RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
     }

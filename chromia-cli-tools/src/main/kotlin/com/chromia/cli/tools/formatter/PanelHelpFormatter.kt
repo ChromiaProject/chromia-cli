@@ -8,6 +8,7 @@ import com.github.ajalt.mordant.rendering.Widget
 import com.github.ajalt.mordant.table.ColumnWidth
 import com.github.ajalt.mordant.table.verticalLayout
 import com.github.ajalt.mordant.widgets.Panel
+import com.github.ajalt.mordant.widgets.Text
 
 class PanelHelpFormatter(context: Context) : MordantHelpFormatter(context, showDefaultValues = true, requiredOptionMarker = "*") {
     // You can override which styles are used for each part of the output.
@@ -30,7 +31,7 @@ class PanelHelpFormatter(context: Context) : MordantHelpFormatter(context, showD
             cell(
                     Panel(
                             section.content,
-                            section.title,
+                            Text(section.title),
                             expand = true,
                             titleAlign = TextAlign.LEFT,
                             borderStyle = theme.style("muted")

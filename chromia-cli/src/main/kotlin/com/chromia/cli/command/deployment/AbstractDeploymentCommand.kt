@@ -6,6 +6,7 @@ import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
 import com.chromia.api.result.isSuccess
 import com.chromia.api.result.save
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
@@ -19,7 +20,6 @@ import com.chromia.cli.versionfinder.PostchainRellVersionFinder
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.chromia.directory1.common.queries.getClusterApiUrls
 import com.chromia.directory1.common.queries.getContainerData
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -31,8 +31,9 @@ import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.Endpoint
+import java.time.Clock
 
-abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : CliktCommand(name = name, help = help) {
+abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : ChromiaCommand(name = name, help = help) {
 
     protected val settings by chromiaModelConfigOption()
     private val secret by secretOption()

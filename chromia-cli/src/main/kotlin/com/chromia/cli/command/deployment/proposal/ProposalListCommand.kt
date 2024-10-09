@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment.proposal
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.renderer.AbstractRenderData
 import com.chromia.cli.renderer.RendererFactory
@@ -19,13 +20,13 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import net.postchain.common.types.RowId
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import net.postchain.common.types.RowId
 
-class ProposalListCommand : CliktCommand(
+class ProposalListCommand : ChromiaCommand(
         name = "list",
         help = "List all proposals that you can vote on"
 ) {

@@ -1,6 +1,7 @@
 package com.chromia.cli.command.deployment.proposal
 
 import com.chromia.build.tools.util.apiVersion
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.renderer.AbstractRenderData
 import com.chromia.cli.renderer.RendererFactory
@@ -19,7 +20,7 @@ import net.postchain.common.types.RowId
 import net.postchain.crypto.PubKey
 
 class ProposalInfoCommand
-    : CliktCommand(
+    : ChromiaCommand(
         name = "info",
         help = "Get information of a given proposal"
 ) {

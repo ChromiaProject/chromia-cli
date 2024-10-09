@@ -1,6 +1,6 @@
 package com.chromia.cli.command.eif
 
-import com.github.ajalt.clikt.core.CliktCommand
+import com.chromia.cli.command.ChromiaCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.default
@@ -11,18 +11,18 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.terminal.YesNoPrompt
-import java.io.File
-import kotlin.io.path.listDirectoryEntries
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.make_gtv_gson
 import net.postchain.gtv.yaml.GtvYaml
+import java.io.File
+import kotlin.io.path.listDirectoryEntries
 
 //Reference implementation from:
 // https://gitlab.com/chromaway/postchain-eif/-/blob/0.2.10/postchain-eif-core/src/main/kotlin/net/postchain/eif/cli/GenerateEventsConfigCommand.kt?ref_type=tags
 
-class EIFGenerateEventsConfigCommand : CliktCommand(name = "generate-events-config", help = "Generate solidity events that EIF will listen to") {
+class EIFGenerateEventsConfigCommand : ChromiaCommand(name = "generate-events-config", help = "Generate solidity events that EIF will listen to") {
     private val abiSource by option("--abi", help = "Path to a JSON ABI file or a directory of JSON ABI files")
             .file(mustExist = true, mustBeReadable = true)
             .required()

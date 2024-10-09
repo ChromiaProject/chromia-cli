@@ -7,12 +7,11 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.common.BlockchainRid
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
@@ -21,11 +20,14 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 
 class TxCommandTest : IntegrationTestSetup() {
     private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     private fun launchBlockchainInTestNode(config: String): BlockchainRid {
         val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())

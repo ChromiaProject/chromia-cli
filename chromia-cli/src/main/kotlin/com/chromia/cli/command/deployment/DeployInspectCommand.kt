@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
@@ -18,7 +19,6 @@ import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.TableOutputFormat
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.tableOutputFormat
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.default
@@ -41,7 +41,7 @@ import net.postchain.gtv.pretty
 class DeployInspectCommand(
         private val blockchainAnalyzerFactory: (PostchainClient) -> BlockchainAnalyzer = { RellBlockchainAnalyzer(it) },
         private val moduleArgsAnalyzerFactory: (PostchainClient) -> ModuleArgsAnalyzer = { RellModuleArgsAnalyzer(it) },
-) : CliktCommand(
+) : ChromiaCommand(
         name = "inspect",
         help = "Inspect the API of a deployed blockchain"
 ) {
@@ -50,7 +50,7 @@ class DeployInspectCommand(
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
 
     private val outputFormat by tableOutputFormat().defaultLazy {
-        if (terminal.info.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON
+        if (terminal.terminalInfo.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON
     }
     private val moduleOption by modulesOption("Explicitly state which module to inspect (comma separated)")
 

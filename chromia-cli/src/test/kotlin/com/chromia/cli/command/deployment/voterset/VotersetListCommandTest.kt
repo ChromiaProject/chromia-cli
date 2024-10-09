@@ -10,6 +10,8 @@ import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.chromia.directory1.common.queries.GET_VOTER_SETS
 import com.chromia.directory1.common.queries.GetVoterSetsResult
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.google.gson.Gson
@@ -61,7 +63,7 @@ internal class VotersetListCommandTest {
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
     private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     @BeforeEach
     fun setup() {

@@ -8,13 +8,13 @@ import assertk.assertions.startsWith
 import com.chromia.build.tools.TestClient
 import com.chromia.cli.util.TestClusterManagement
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
-import java.io.File
-import java.nio.file.Path
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
@@ -23,11 +23,13 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 class DeployInfoCommandTest {
 
     private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     private val gson: Gson = GsonBuilder().create()
 
@@ -145,7 +147,7 @@ class DeployInfoCommandTest {
 
     private fun testClientProvider(): PostchainClientProvider {
         return PostchainClientProvider {
-            assertThat(it.endpointPool.size).equals(1)
+            assertThat(it.endpointPool.size).isEqualTo(1)
             val endpoint = it.endpointPool.first()
             return@PostchainClientProvider when (it.blockchainRid) {
                 BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002") -> TestClient(it, { 569889L })

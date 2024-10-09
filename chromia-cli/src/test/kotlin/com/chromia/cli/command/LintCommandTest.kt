@@ -5,6 +5,8 @@ import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.rell.api.base.RellCliExitException
@@ -20,7 +22,7 @@ import kotlin.io.path.readText
 internal class LintCommandTest {
 
     private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(logger)
+    private val testTerminal = Terminal(terminalInterface = logger)
 
     @TempDir
     private lateinit var testDir: Path

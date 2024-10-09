@@ -1,5 +1,6 @@
 package com.chromia.cli.command.deployment.voterset
 
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.deployment.proposal.formatThreshold
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.renderer.AbstractRenderData
@@ -17,7 +18,7 @@ import net.postchain.common.types.WrappedByteArray
 fun CliktCommand.nameOption(helpMessage: String) = option("-n", "--name", help = helpMessage)
 
 
-class VotersetInfoCommand : CliktCommand(
+class VotersetInfoCommand : ChromiaCommand(
         name = "info",
         help = "Show information of voter set"
 ) {

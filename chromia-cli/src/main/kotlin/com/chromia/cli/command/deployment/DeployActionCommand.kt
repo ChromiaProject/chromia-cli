@@ -2,12 +2,12 @@ package com.chromia.cli.command.deployment
 
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.filterChains
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
@@ -19,7 +19,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 sealed class DeployActionCommand(
         private val action: BlockchainAction,
         help: String
-) : CliktCommand(name = action.name, help = help) {
+) : ChromiaCommand(name = action.name, help = help) {
 
     protected val settings by chromiaModelConfigOption()
     private val secret by secretOption()
