@@ -37,8 +37,6 @@ fun ParameterHolder.deployTargetOption() = option("--network", "-d", help = "Spe
 fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
         option("--blockchain", "-bc", help = help, metavar = metavar)
 
-fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
-
 fun CliktCommand.wipeDatabaseOption() =
         option("--wipe", help = "If a database should be wiped before startup").flag("--no-wipe")
 
@@ -63,6 +61,7 @@ fun CliktCommand.module() = option("-m", "--module", help = "Name of module", me
 fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
 fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()
 
-fun ParameterHolder.targetUrlOption() = option("--api-url", help = "Target url")
-
 fun ParameterHolder.containerIdOption(help: String = "Set container id explicitly") = option("-cid", "--container-id", help = help)
+
+fun ParameterHolder.targetDirectoryOption(help: String) = option("-d", "--target", help = help)
+        .file(canBeFile = false)

@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import com.chromia.build.tools.template.TemplateFactoryProvider
 import com.chromia.build.tools.template.TemplateProject
-import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default

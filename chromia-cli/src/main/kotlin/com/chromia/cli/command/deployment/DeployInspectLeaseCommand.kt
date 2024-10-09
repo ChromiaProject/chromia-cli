@@ -5,6 +5,7 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.tools.formatter.json
+import com.chromia.cli.util.EXPERIMENTAL_COMMAND
 import com.chromia.cli.util.ExplicitRemoteSystemOption
 import com.chromia.cli.util.RemoteSystemOption
 import com.chromia.cli.util.SystemOption
@@ -26,13 +27,14 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 
-class DeployInspectLeaseCommand : ChromiaCommand(
-        name = "lease-info",
-        help = "Information about a leases of for a given owner",
+class DeployInspectLeaseCommand : ChromiaCommand(name = "lease-info", help = """
+    Information about a leases of for a given owner    
+    $EXPERIMENTAL_COMMAND    
+""".trimIndent()
 ) {
     override val hiddenFromHelp: Boolean
         get() = true
-    
+
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by ExplicitRemoteSystemOption { settings.config }.cooccurring()

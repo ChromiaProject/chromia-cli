@@ -9,7 +9,9 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
+import net.postchain.common.BlockchainRid
 import java.io.File
 
 
@@ -69,6 +71,13 @@ open class OptionalChromiaModelConfigOption(logger: (String) -> Unit) : OptionGr
     val projectFolder by lazy { modelFile?.parentFile }
 }
 
+open class BlockchainOptions(logger: (String) -> Unit) : OptionGroup() {
+    private val clientConfigFile by chromiaConfigOption()
+    val config by lazy { ChromiaConfigLoader(logger).loadClientConfigFile(clientConfigFile) }
+    val url by targetUrlOption()
+    val blockchainRid by blockchainRidOption("Target Blockchain RID").convert { BlockchainRid.buildFromHex(it) }.required()
+}
+
 internal fun ParameterHolder.requiredChromiaModelOption(logger: (String) -> Unit) = chromiaModelOption()
         .defaultLazy {
             ChromiaConfigLoader(logger).findModelFile(null) ?: throw PrintMessage("Project settings file not found")
@@ -83,7 +92,7 @@ internal fun ParameterHolder.chromiaModelOption() = option(
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .convert { it.absoluteFile }
 
-internal fun ParameterHolder.chromiaConfigOption() = option(
+fun ParameterHolder.chromiaConfigOption() = option(
         "-cfg", "--config",
         help = "Alternate path for client configuration file",
         metavar = "CONFIG",
@@ -91,3 +100,7 @@ internal fun ParameterHolder.chromiaConfigOption() = option(
 )
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .convert { it.absoluteFile }
+
+fun ParameterHolder.targetUrlOption() = option("--api-url", help = "Target url")
+
+fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)

@@ -14,6 +14,7 @@ import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.nodePropertiesOption
+import com.chromia.cli.util.readBlockchainConfigFile
 import com.chromia.cli.util.removeKnownGtxModules
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.associate
@@ -21,10 +22,8 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.builder.GtvBuilder
-import net.postchain.gtv.gtvml.GtvMLParser
 
 abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
     protected val settings by chromiaModelOption()
@@ -61,13 +60,7 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
                         //TODO remove GTV is no longer supported
-                        if (it.extension == "gtv") {
-                            it.inputStream().use { inputStream ->
-                                it.nameWithoutExtension to GtvDecoder.decodeGtv(inputStream)
-                            }
-                        } else {
-                            it.nameWithoutExtension to GtvMLParser.parseGtvML(it.readText())
-                        }
+                        it.nameWithoutExtension to readBlockchainConfigFile(it)
                     }
                     .map { BlockchainConfiguration(it.key, it.value) }
 

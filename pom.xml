@@ -22,7 +22,7 @@
         <codegen.version>0.14.3</codegen.version>
         <postchain.version>3.20.1</postchain.version>
         <postchain.chromia.version>3.16.22</postchain.chromia.version>
-        <postchain.client.version>3.14.0</postchain.client.version>
+        <postchain.client.version>3.18.1</postchain.client.version>
         <rell.version>0.14.1</rell.version>
         <rell.dokka.version>0.2.7</rell.dokka.version>
         <rell.toolbox.version>0.4.10</rell.toolbox.version>

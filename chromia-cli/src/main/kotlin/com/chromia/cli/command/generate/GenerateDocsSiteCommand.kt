@@ -2,6 +2,7 @@ package com.chromia.cli.command.generate
 
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.util.targetDirectoryOption
 import com.chromia.rell.dokka.RellDokkaGenerator
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -31,8 +32,7 @@ class GenerateDocsSiteCommand : ChromiaCommand(
             .default(listOf())
             .validate { files -> require(files.all { it.extension == "md" }) { "File(s) must be in markdown format ${files.joinToString { it.path }}" } }
 
-    private val target by option("-d", "--target", help = "Directory to generate code in")
-            .file(canBeFile = false)
+    private val target by targetDirectoryOption(help = "Directory to generate code in")
 
     private val include by option("-i", "--include", help = """
         Libs to actively include in the navigation of the generated docs site, by default all are excluded.

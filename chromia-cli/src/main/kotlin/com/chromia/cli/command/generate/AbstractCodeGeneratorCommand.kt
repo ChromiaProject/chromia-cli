@@ -3,11 +3,11 @@ package com.chromia.cli.command.generate
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
+import com.chromia.cli.util.targetDirectoryOption
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.rell.codegen.CodeGenerator
 import net.postchain.rell.codegen.CodeGeneratorConfig
 import net.postchain.rell.codegen.document.DocumentFactory
@@ -18,8 +18,7 @@ abstract class AbstractCodeGeneratorCommand(name: String, help: String): Chromia
     private val settings by chromiaModelOption()
     private val moduleName by option("-m", "--module",
             help = "Explicitly set which modules to generate code for. Separate modules with ','").split(",")
-    private val target by option("-d", "--target", help = "Directory to generate code in")
-            .file(canBeFile = false)
+    private val target by targetDirectoryOption(help = "Directory to generate code in")
 
     abstract fun codeGeneratorConfig(): CodeGeneratorConfig
     abstract fun factory(): DocumentFactory

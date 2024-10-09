@@ -31,7 +31,6 @@ import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.Endpoint
-import java.time.Clock
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : ChromiaCommand(name = name, help = help) {
 

@@ -2,9 +2,13 @@ package com.chromia.cli.util
 
 import com.chromia.api.impl.compile.standardGtxModules
 import com.chromia.api.result.BlockchainConfiguration
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvFactory
 import net.postchain.gtv.builder.GtvBuilder
+import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliEnv
+import java.io.File
 
 
 private val knownGtxModules = listOf(
@@ -43,4 +47,12 @@ fun BlockchainConfiguration.keepOnlyStandardGtxModules(): BlockchainConfiguratio
 
     gtvBuilder.update(gtxModules, "gtx", "modules")
     return BlockchainConfiguration(name, gtvBuilder.build())
+}
+
+fun readBlockchainConfigFile(file: File): Gtv = if (file.extension == "gtv") {
+    file.inputStream().use { inputStream ->
+        GtvDecoder.decodeGtv(inputStream)
+    }
+} else {
+    GtvMLParser.parseGtvML(file.readText())
 }

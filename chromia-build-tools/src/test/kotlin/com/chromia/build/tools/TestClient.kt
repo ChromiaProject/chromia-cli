@@ -2,6 +2,8 @@ package com.chromia.build.tools
 
 import java.time.Duration
 import net.postchain.client.config.PostchainClientConfig
+import net.postchain.client.core.BlockDetail
+import net.postchain.client.core.BlockRid
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.TransactionInfo
 import net.postchain.client.core.TransactionResult
@@ -9,6 +11,7 @@ import net.postchain.client.core.TxRid
 import net.postchain.client.core.Version
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.BlockchainRid
+import net.postchain.common.rest.HighestBlockHeightAnchoringCheck
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.KeyPair
@@ -28,18 +31,24 @@ open class TestClient(
         val blockHeight: () -> Long,
         private val testConfiguration: TestConfiguration = TestConfiguration()
 ) : PostchainClient {
-    override fun blockAtHeight(height: Long) = TODO()
+    override fun blockAtHeight(height: Long): BlockDetail = TODO("Not yet implemented")
+    override fun blockByRid(blockRid: BlockRid): BlockDetail = TODO("Not yet implemented")
     override fun awaitConfirmation(txRid: TxRid, retries: Int, pollInterval: Duration): TransactionResult =
             TransactionResult(txRid, TransactionStatus.CONFIRMED, null, null)
 
     override fun checkTxStatus(txRid: TxRid) = TODO("Not yet implemented")
     override fun close() = TODO("Not yet implemented")
     override fun confirmationProof(txRid: TxRid) = TODO("Not yet implemented")
-    override fun currentBlockHeight() = blockHeight()
+    override fun currentBlockHeight(container: String?) = blockHeight()
     override fun getTransaction(txRid: TxRid) = TODO("Not yet implemented")
     override fun getTransactionInfo(txRid: TxRid): TransactionInfo = TODO("Not yet implemented")
     override fun getTransactionsCount(): Long = TODO("Not yet implemented")
     override fun getBlockchainRID(chainIID: Long): BlockchainRid = TODO("Not yet implemented")
+    override fun getConfiguration(height: Long?): Gtv = TODO("Not yet implemented")
+
+    override fun getHighestBlockHeightAnchoringCheck(): HighestBlockHeightAnchoringCheck =
+            TODO("Not yet implemented")
+
     override fun getTransactionsInfo(limit: Long, beforeTime: Long, signer: String?): List<TransactionInfo> = TODO("Not yet implemented")
     override fun getVersion(): Version { TODO("Not yet implemented") }
 
