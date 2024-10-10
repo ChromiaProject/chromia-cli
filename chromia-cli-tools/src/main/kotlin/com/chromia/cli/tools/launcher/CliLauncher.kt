@@ -11,7 +11,6 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.TerminalDetection
 import mu.KotlinLogging
 import net.postchain.client.exception.ClientError
 import net.postchain.rell.api.base.RellCliException
@@ -27,9 +26,9 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
 
     init {
         completionOption()
-        val detectedTerminalInfo = TerminalDetection.detectTerminal(null, null, null, null, detectedStdinInteractive = false, detectedStdoutInteractive = false)
+        val detectedTerminal = Terminal()
         context {
-            terminal = Terminal(theme = when (detectedTerminalInfo.ansiLevel) {
+            terminal = Terminal(theme = when (detectedTerminal.terminalInfo.ansiLevel) {
                 AnsiLevel.NONE -> Theme.Plain
                 AnsiLevel.ANSI16 -> Theme.Plain
                 else -> chromiaTheme
