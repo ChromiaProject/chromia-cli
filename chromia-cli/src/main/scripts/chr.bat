@@ -16,25 +16,32 @@ for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 set LOG_FOLDER="%TMP%\chromia"
 set DEFAULT_JVM_OPTS=-Duser.language=en -Duser.country=US -DCHR_LOG_FOLDER=%LOG_FOLDER%
 
-@rem Find java.exe from JAVA_HOME
-if defined JAVA_HOME goto findJavaFromJavaHome
-@rem Find java.exe from RELL_JAVA
+@rem Find java.exe from RELL_JAVA first
 if defined RELL_JAVA goto findJavaFromRellJava
+
+@rem If RELL_JAVA is not set, check for Java in %USERPROFILE%\scoop\apps\openjdk21\current\bin\java.exe
+set SCOOP_JAVA="%USERPROFILE%\scoop\apps\openjdk21\current\bin\java.exe"
+if exist %SCOOP_JAVA% (
+    set JAVA_EXE=%SCOOP_JAVA%
+    goto execute
+)
+
+@rem If neither RELL_JAVA nor SCOOP Java exist, fallback to 'java' in PATH
 set JAVA_EXE=java.exe
 %JAVA_EXE% -version >NUL 2>&1
 if %ERRORLEVEL% equ 0 goto execute
 
 echo.
-echo ERROR: JAVA_HOME or RELL_JAVA is not set and no 'java' command could be found in your PATH.
+echo ERROR: Failed to find a valid java executable
 echo.
-echo Please set the JAVA_HOME or RELL_JAVA variable in your environment to match the
-echo location of your Java installation.
-
+echo Please set the RELL_JAVA variable in your environment to point to a valid Java installation,
+echo or install Java and ensure it is available in your PATH.
+echo This application requires a minimum of Java 21.
 goto fail
 
 :findJavaFromRellJava
 set JAVA_HOME=%RELL_JAVA:"=%
-set JAVA_EXE=%RELL_JAVA%/bin/java.exe
+set JAVA_EXE=%RELL_JAVA%\bin\java.exe
 
 if exist "%JAVA_EXE%" goto execute
 
@@ -43,21 +50,6 @@ echo ERROR: RELL_JAVA is set to an invalid directory: %RELL_JAVA%
 echo.
 echo Please set the RELL_JAVA variable in your environment to match the
 echo location of your Java installation.
-
-goto fail
-
-:findJavaFromJavaHome
-set JAVA_HOME=%JAVA_HOME:"=%
-set JAVA_EXE=%JAVA_HOME%/bin/java.exe
-
-if exist "%JAVA_EXE%" goto execute
-
-echo.
-echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
-echo.
-echo Please set the JAVA_HOME variable in your environment to match the
-echo location of your Java installation.
-
 goto fail
 
 :execute
@@ -72,7 +64,7 @@ for %%F in ("%APP_HOME%\lib\jline-*.jar") do (
 )
 
 @rem Execute chr
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CHR_OPTS%  -classpath "%JLINE_JAR%;%CLASSPATH%" com.chromia.MainKt %*
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %CHR_OPTS% -classpath "%JLINE_JAR%;%CLASSPATH%" com.chromia.MainKt %*
 
 :end
 @rem End local scope for the variables with windows NT shell

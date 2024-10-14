@@ -2,6 +2,32 @@
 
 set -eu
 
+# Known paths where openjdk21 is installed by apt (Linux) and brew (macOS)
+LINUX_JAVA_PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin/java"
+MACOS_JAVA_PATH="/opt/homebrew/opt/openjdk@21/bin/java"
+
+# Determine which Java executable to use, giving precedence to RELL_JAVA if set
+if [ -n "${RELL_JAVA:-}" ] && [ -x "$RELL_JAVA" ]; then
+    JAVA_EXEC="$RELL_JAVA"
+elif [ -x "$LINUX_JAVA_PATH" ]; then
+    JAVA_EXEC="$LINUX_JAVA_PATH"
+elif [ -x "$MACOS_JAVA_PATH" ]; then
+    JAVA_EXEC="$MACOS_JAVA_PATH"
+else
+    JAVA_EXEC="java"
+fi
+
+# Check version compatibility
+JAVA_VERSION=$("$JAVA_EXEC" -XshowSettings:all -version 2>&1 | awk '/java\.specification\.version/ { print $3 }')
+
+if [ "$JAVA_VERSION" -lt 21 ]; then
+  echo "Error: Failed to find a valid java executable
+  Please set the RELL_JAVA variable in your environment to point to a valid Java installation,
+  or install Java and ensure it is available in your PATH.
+  This application requires a minimum of Java 21."
+  exit 1
+fi
+
 app_path=$0
 
 while
@@ -24,4 +50,4 @@ JLINE_JAR=$(find "$APP_HOME/lib" -maxdepth 1 -type f -print | grep -E '/jline-([
 RESOLVED_TMP_DIR=${TMPDIR-/tmp}
 LOG_FOLDER="${RESOLVED_TMP_DIR%/}/chromia"
 
-exec ${RELL_JAVA:-java} ${JAVA_ARGS:-} -Duser.language=en -Duser.country=US -DCHR_LOG_FOLDER="$LOG_FOLDER" -cp "$JAR:$JLINE_JAR:$APP_HOME/lib/*" com.chromia.MainKt "$@"
+exec "$JAVA_EXEC" ${JAVA_ARGS:-} -Duser.language=en -Duser.country=US -DCHR_LOG_FOLDER="$LOG_FOLDER" -cp "$JAR:$JLINE_JAR:$APP_HOME/lib/*" com.chromia.MainKt "$@"
