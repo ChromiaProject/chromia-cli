@@ -15,6 +15,7 @@ import net.postchain.common.rest.HighestBlockHeightAnchoringCheck
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.crypto.KeyPair
+import net.postchain.crypto.PubKey
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
@@ -63,6 +64,8 @@ open class TestClient(
     )
 
     override fun transactionBuilder(signers: List<KeyPair>) = TODO("Not yet implemented")
+    override fun transactionBuilder(initialSigners: List<KeyPair>, remainingRequiredSigners: List<PubKey>)
+        = TODO("Not yet implemented")
 
     override fun query(name: String, args: Gtv): Gtv = when (name) {
         "api_version" -> gtv(28)

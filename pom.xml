@@ -20,12 +20,12 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.14.3</codegen.version>
-        <postchain.version>3.20.1</postchain.version>
+        <postchain.version>3.21.0</postchain.version>
         <postchain.chromia.version>3.16.22</postchain.chromia.version>
-        <postchain.client.version>3.18.1</postchain.client.version>
-        <rell.version>0.14.1</rell.version>
-        <rell.dokka.version>0.2.7</rell.dokka.version>
-        <rell.toolbox.version>0.4.10</rell.toolbox.version>
+        <postchain.client.version>3.18.4</postchain.client.version>
+        <rell.version>0.14.2</rell.version>
+        <rell.dokka.version>0.2.8</rell.dokka.version>
+        <rell.toolbox.version>0.4.12</rell.toolbox.version>
         <eif.version>0.5.37</eif.version>
         <directory.chain.version>1.61.0</directory.chain.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
@@ -477,6 +477,13 @@
                 <version>0.44</version>
             </dependency>
 
+            <!-- Needed by postchain-client -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.17.0</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -501,7 +508,6 @@
                 <version>2.1.6</version>
                 <scope>test</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
