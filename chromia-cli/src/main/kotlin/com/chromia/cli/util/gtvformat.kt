@@ -21,12 +21,12 @@ fun formatXml(gtv: Gtv): String {
                     |""".trimMargin()).dropLast(1)
 }
 
-fun formatRaw(gtv: Gtv) = when (gtv.type) {
+fun formatRaw(gtv: Gtv): String = when (gtv.type) {
     GtvType.NULL -> "null"
     GtvType.BYTEARRAY -> "0x${gtv.asByteArray().toHex().lowercase()}"
     GtvType.STRING -> gtv.asString()
     GtvType.INTEGER -> gtv.asInteger().toString()
     GtvType.BIGINTEGER -> gtv.asBigInteger().toString()
-    GtvType.ARRAY -> gtv.asArray().joinToString("\n") { it.toString() }
-    GtvType.DICT -> gtv.asDict().entries.joinToString("\n") { "${it.key}=${it.value}" }
+    GtvType.ARRAY -> gtv.asArray().joinToString("\n") { formatRaw(it) }
+    GtvType.DICT -> gtv.asDict().entries.joinToString("\n") { "${it.key}=${formatRaw(it.value)}" }
 }

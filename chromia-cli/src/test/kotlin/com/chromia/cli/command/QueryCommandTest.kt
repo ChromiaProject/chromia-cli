@@ -272,11 +272,11 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputString() {
-        withModel(TestModel().withQuery("test_query", GtvString("foo bar"))) {
+        withModel(TestModel().withQuery("test_query", GtvString("""Stockholm Göteborg 😀"""))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
-            |foo bar
+            |Stockholm Göteborg 😀
             |""".trimMargin())
         }
     }
@@ -304,7 +304,7 @@ class QueryCommandTest : IntegrationTestSetup() {
     }
 
     @Test
-    fun rawOutputArray() {
+    fun rawOutputArrayOfInteger() {
         withModel(TestModel().withQuery("test_query", gtv(listOf(gtv(1), gtv(2), gtv(3))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
@@ -317,7 +317,20 @@ class QueryCommandTest : IntegrationTestSetup() {
     }
 
     @Test
-    fun rawOutputDict() {
+    fun rawOutputArrayOfString() {
+        withModel(TestModel().withQuery("test_query", gtv(listOf(gtv("Stockholm"), gtv("Göteborg"), gtv("""😀"""))))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |Stockholm
+            |Göteborg
+            |😀
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputDictOfInteger() {
         withModel(TestModel().withQuery("test_query", gtv(mapOf("a" to gtv(1), "b" to gtv(2), "c" to gtv(3))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
@@ -325,6 +338,19 @@ class QueryCommandTest : IntegrationTestSetup() {
             |a=1
             |b=2
             |c=3
+            |""".trimMargin())
+        }
+    }
+
+    @Test
+    fun rawOutputDictOfString() {
+        withModel(TestModel().withQuery("test_query", gtv(mapOf("a" to gtv("Stockholm"), "b" to gtv("Göteborg"), "ö" to gtv("""😀"""))))) {
+            val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""
+            |a=Stockholm
+            |b=Göteborg
+            |ö=😀
             |""".trimMargin())
         }
     }
