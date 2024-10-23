@@ -1,5 +1,7 @@
 package com.chromia.cli.ft
 
+import com.chromia.directory1.lib.ft4.core.accounts.AuthType
+import com.chromia.directory1.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.mordant.terminal.Terminal
@@ -8,6 +10,7 @@ import net.postchain.client.core.PostchainQuery
 import net.postchain.client.exception.ClientError
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.toHex
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.common.wrap
@@ -20,7 +23,7 @@ import net.postchain.gtv.mapper.toList
 
 
 interface FTAuth {
-    fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, optionalAccountId: String?)
+    fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, optionalAccountId: String? = null, optionalAuthDescriptorId: String? = null)
 
     companion object : FTAuthFactory {
         override fun createFTAuthenticator(client: PostchainQuery, terminal: Terminal): FTAuth {
@@ -48,23 +51,61 @@ interface FTAuthFactory {
 
 class FTAuthenticator internal constructor(private val client: FTAuthQuery, private val terminal: Terminal) : FTAuth {
 
-    override fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, optionalAccountId: String?) {
+    override fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, optionalAccountId: String?, optionalAuthDescriptorId: String?) {
         val account = optionalAccountId?.hexStringToByteArray() ?: findAccountId(pubKey)
-        val authDescriptor = findValidAuthDescriptorForOperation(opName, account, pubKey)
-
-        transactionBuilder.addOperation("ft4.ft_auth", gtv(account), gtv(authDescriptor.id))
+        val authDescriptorId = findValidAuthDescriptorIdForOperation(opName, account, pubKey, optionalAuthDescriptorId)
+    
+        transactionBuilder.addOperation("ft4.ft_auth", gtv(account), gtv(authDescriptorId))
     }
 
-    private fun findValidAuthDescriptorForOperation(opName: String, accountId: ByteArray, pubKey: PubKey): AuthDescriptor {
+    private fun findValidAuthDescriptorIdForOperation(opName: String, accountId: ByteArray, pubKey: PubKey, optionalAuthDescriptorId: String?): WrappedByteArray {
         val flags = getOperationAuthFlags(opName)
-        val authDescriptor = client.findAuthDescriptorQuery(gtv(accountId), pubKey)
-                .toList<AuthDescriptor>()
-                .find { it.args[1].asByteArray().wrap() == pubKey.wData }
-                ?: throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
-        if (!authDescriptor.isValid(flags))
-            throw PrintMessage("No valid account descriptor found. Operation $opName requires the flag(s): $flags, while the flag(s) of the auth descriptor is: ${authDescriptor.flags}", statusCode = 1)
-        return authDescriptor
+
+        return if (client.legacyFTAuth) {
+            val authDescriptor = client.findAuthDescriptorQueryLegacy(accountId, pubKey)
+                    .toList<AuthDescriptor>()
+                    .find { it.args[1].asByteArray().wrap() == pubKey.wData }
+                    ?: throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
+            if (!authDescriptor.isValid(flags)) {
+                throw PrintMessage("No valid account descriptor found. Operation $opName requires the flag(s): $flags, while the flag(s) of the auth descriptor is: ${authDescriptor.flags}", statusCode = 1)
+            }
+            authDescriptor.id
+        } else {
+            val authDescriptor = client.findAuthDescriptorQuery(accountId, pubKey).find { descriptor ->
+                when {
+                    !optionalAuthDescriptorId.isNullOrEmpty() -> {
+                        descriptor.id == optionalAuthDescriptorId.hexStringToWrappedByteArray()
+                    }
+
+                    descriptor.authType == AuthType.S -> {
+                        descriptor.args[1].asByteArray().wrap() == pubKey.wData
+                    }
+
+                    descriptor.authType == AuthType.M -> {
+                        descriptor.args[2].asArray().any { signer ->
+                            signer.asByteArray().wrap() == pubKey.wData
+                        }
+                    }
+
+                    else -> {
+                        throw PrintMessage("Authtype: ${descriptor.authType} is not supported in FTAuthenticator")
+                    }
+                }
+            }
+                    ?: throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
+            if (!isValid(flags, authDescriptor)) {
+                throw PrintMessage("No valid account descriptor found. Operation $opName requires the flag(s): $flags, while the flag(s) of the auth descriptor is: ${authDescriptor.getFlags()}", statusCode = 1)
+            }
+            authDescriptor.id
+        }
     }
+
+    private fun isValid(requiredFlags: List<String>, authDescriptor: Ft4GetAccountAuthDescriptorsBySignerResult): Boolean {
+        val flags = authDescriptor.getFlags()
+        return flags.containsAll(requiredFlags)
+    }
+
+    private fun Ft4GetAccountAuthDescriptorsBySignerResult.getFlags() = this.args.asArray().first().asArray().map { it.asString() }
 
     private fun findAccountId(pubKey: PubKey): ByteArray {
         return client.findAccountsQuery(pubKey).let {
@@ -90,7 +131,7 @@ class FTAuthenticator internal constructor(private val client: FTAuthQuery, priv
             @Name("args") val args: Gtv,
             @Name("created") val created: Long,
             @Name("auth_type") val authType: String,
-            @Name("rules") @Nullable val rules: Gtv?
+            @Name("rules") @Nullable val rules: Gtv?,
     ) {
         val flags by lazy { args.asArray().first().asArray().map { it.asString() } }
 

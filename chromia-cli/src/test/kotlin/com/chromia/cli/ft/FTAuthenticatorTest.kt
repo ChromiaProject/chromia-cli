@@ -22,8 +22,8 @@ class FTAuthenticatorTest {
     fun incompatibleDappTest() {
         assertThrows<CliktError> {
             FTAuth.createFTAuthenticator(
-                { query, _ -> if (query == "ft4.get_version") throw ClientError("", null, "Query not found", null) else GtvNull },
-                Terminal())
+                    { query, _ -> if (query == "ft4.get_version") throw ClientError("", null, "Query not found", null) else GtvNull },
+                    Terminal())
         }
     }
 
@@ -36,7 +36,7 @@ class FTAuthenticatorTest {
 
         )
         assertDoesNotThrow {
-            authenticator.addAuthenticationOperation(mock(), "my_op", pubKey, null)
+            authenticator.addAuthenticationOperation(mock(), "my_op", pubKey)
         }
     }
 
@@ -89,8 +89,9 @@ class FTAuthenticatorTest {
                     "id" to gtv("4".repeat(64).hexStringToByteArray()),
                     "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                     "created" to gtv(System.currentTimeMillis()),
-                    "auth_type" to gtv("A"),
-                    "rules" to GtvNull
+                    "auth_type" to gtv("S"),
+                    "rules" to GtvNull,
+                    "account_id" to gtv("5".repeat(64).hexStringToByteArray())
             )))
 
             "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })
@@ -107,8 +108,9 @@ private fun queryResponseV2(pubKey: PubKey, flags: List<String>, query: String):
                 "id" to gtv("5".repeat(64).hexStringToByteArray()),
                 "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                 "created" to gtv(System.currentTimeMillis()),
-                "auth_type" to gtv("A"),
-                "rules" to GtvNull
+                "auth_type" to gtv("S"),
+                "rules" to GtvNull,
+                "account_id" to gtv("5".repeat(64).hexStringToByteArray())
         )))))
 
         "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })
@@ -124,8 +126,10 @@ private fun queryResponseV4(pubKey: PubKey, flags: List<String>, query: String):
                 "id" to gtv("5".repeat(64).hexStringToByteArray()),
                 "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                 "created" to gtv(System.currentTimeMillis()),
-                "auth_type" to gtv("A"),
-                "rules" to GtvNull
+                "auth_type" to gtv("S"),
+                "rules" to GtvNull,
+                "account_id" to gtv("5".repeat(64).hexStringToByteArray())
+
         )))
 
         "ft4.get_auth_flags" -> gtv(flags.map { gtv(it) })

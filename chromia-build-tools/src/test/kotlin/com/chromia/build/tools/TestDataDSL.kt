@@ -163,17 +163,17 @@ class SecretBuilder {
 
     fun secretFile(target: Path) {
         File(target.toFile(), ".secret").writeText("""
-            pubkey=039B9ED551D5BDCC52FF9418ED77FBA7D761B24B7D06596829771A6DEA50E613AD
-            privkey=D33345577D6E08997D35D3D359DAF6CD4AF91651B2C006F9974E4B73E06574F7
+            pubkey=${TestDataBuilder.keyPair.pubKey.hex()} 
+            privkey=${TestDataBuilder.keyPair.privKey.hex()} 
         """.trimIndent())
     }
 }
 
 class KeyStoreBuilder {
     private val keyIdName: String = "keyIdUsedForTesting"
-    fun createFiles(target: Path) {
+    fun createFiles(target: Path, keyPair: KeyPair = TestDataBuilder.keyPair) {
         EnvironmentVariables("CHROMIA_HOME", target.absolutePathString()).execute {
-            ChromiaKeyStore(keyIdName).saveKeyPair(TestDataBuilder.keyPair)
+            ChromiaKeyStore(keyIdName).saveKeyPair(keyPair)
         }
 
         File(target.toFile(), "/config").also { it.parentFile.mkdirs() }.writeText("""

@@ -64,8 +64,9 @@ open class TestClient(
     )
 
     override fun transactionBuilder(signers: List<KeyPair>) = TODO("Not yet implemented")
-    override fun transactionBuilder(initialSigners: List<KeyPair>, remainingRequiredSigners: List<PubKey>)
-        = TODO("Not yet implemented")
+    override fun transactionBuilder(initialSigners: List<KeyPair>, remainingRequiredSigners: List<PubKey>): TransactionBuilder {
+        TODO("Not yet implemented")
+    }
 
     override fun query(name: String, args: Gtv): Gtv = when (name) {
         "api_version" -> gtv(28)

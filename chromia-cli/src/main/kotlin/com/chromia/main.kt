@@ -2,9 +2,9 @@ package com.chromia
 
 import com.chromia.cli.command.BuildCommand
 import com.chromia.cli.command.CreateRellDappCommand
+import com.chromia.cli.command.FetchConfigCommand
 import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
-import com.chromia.cli.command.FetchConfigCommand
 import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.command.TestCommand
@@ -13,6 +13,7 @@ import com.chromia.cli.command.code.CodeCommand
 import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
+import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
 import com.chromia.cli.tools.launcher.CliLauncher
 import com.github.ajalt.clikt.core.subcommands
@@ -44,5 +45,6 @@ fun main(args: Array<out String>) = CliLauncher("chr")
                 TxCommand(),
                 CodeCommand.commands(),
                 FetchConfigCommand(),
+                MultiSignatureCommand.commands()
         )
         .catchingAllExceptionsMain(args)
