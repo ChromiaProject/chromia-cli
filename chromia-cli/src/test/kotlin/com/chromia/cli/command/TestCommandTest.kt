@@ -666,7 +666,7 @@ internal class TestCommandTest {
                         """.trimIndent()
                 )
             }
-            addFile("testDir/foo.rell", """
+            addSourceFile("testDir/foo.rell", """
                 @test module;
                 
                 function test_iccf_success() {
@@ -702,7 +702,7 @@ internal class TestCommandTest {
                           - test
                 """.trimIndent())
             }
-            addFile("test.rell", """
+            addSourceFile("test.rell", """
                 @test module;
                 
                 function test_iccf_success() {

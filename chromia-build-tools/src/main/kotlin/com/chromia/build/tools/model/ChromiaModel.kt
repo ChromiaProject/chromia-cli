@@ -21,7 +21,7 @@ data class ChromiaModel(
         fun load(data: Map<String, Any>, dir: Path) = ChromiaModel(
                 database = ensureObject<DatabaseModel>(data["database"], DatabaseModel::load, DatabaseModel()),
                 compile = ensureObject<CompileModel>(data["compile"], { CompileModel.load(it, dir) }, CompileModel.default(dir)),
-                blockchains = ensureNamedObject<BlockchainModel>(data["blockchains"], BlockchainModel::load),
+                blockchains = ensureNamedObject<BlockchainModel>(data["blockchains"], { m, a -> BlockchainModel.load(m, a, dir) }),
                 deployments = ensureNamedObject<DeploymentModel>(data["deployments"], DeploymentModel::load),
                 test = ensureObject<TestModel>(data["test"], TestModel::load, TestModel()),
                 libs = ensureNamedObject<RellLibraryModel>(data["libs"], RellLibraryModel::load),

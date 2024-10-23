@@ -4,6 +4,7 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isNotEmpty
@@ -118,6 +119,18 @@ internal class BuildCommandTest {
             contains("Should be: 11")
             contains("Was: ${TestRepositoryCloner.bar.model.rid}")
         }
+    }
+
+    @Test
+    fun standardGtxModules() {
+        command.parse()
+        val outputFile = File(dir, "build/hello.xml")
+        assertTrue(outputFile.exists())
+        val outputGtv = GtvMLParser.parseGtvML(outputFile.readText())
+        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
+                "net.postchain.rell.module.RellPostchainModuleFactory",
+                "net.postchain.gtx.StandardOpsGTXModule"
+        )
     }
 
     @Test

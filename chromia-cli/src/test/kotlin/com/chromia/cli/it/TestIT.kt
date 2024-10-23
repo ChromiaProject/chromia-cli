@@ -11,7 +11,7 @@ class TestIT {
     @Test
     fun startNode(@TempDir dir: Path) {
         testData(dir) {
-            addFile("test/test_code.rell", """
+            addSourceFile("test/test_code.rell", """
                 @test module;
                 import ^^.main;
                 function test_main() { assert_equals(main.hello(), "Hi!"); }

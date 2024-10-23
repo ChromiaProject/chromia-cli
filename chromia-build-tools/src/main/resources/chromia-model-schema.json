@@ -219,6 +219,16 @@
         },
         "config": {
           "$ref": "#/$defs/blockchainConfig"
+        },
+        "webStatic": {
+          "type": "string",
+          "description": "Directory for static web content"
+        },
+        "webCacheTtlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Static web content cache TTL in seconds",
+          "default": 3600
         }
       }
     },

@@ -38,7 +38,7 @@ class IccfIT {
                operation op_to_confirm(msg: text) {}
                query get_latest_tx() = transaction @ {}.tx_rid;
             """.trimIndent())
-            addFile("confirmation.rell", """
+            addSourceFile("confirmation.rell", """
                 module;
                 operation confirmation(tx: gtx_transaction) {
                 require(op_context.get_all_operations()[0].name == "iccf_proof");

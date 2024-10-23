@@ -17,19 +17,34 @@ import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
+import net.postchain.web.WebStaticGTXModuleFactory
+import org.apache.tika.Tika
+import java.nio.file.Files
+import kotlin.io.path.invariantSeparatorsPathString
+import kotlin.io.path.isReadable
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
+import kotlin.io.path.readBytes
+import kotlin.io.path.readText
+
+const val BlockchainConfigurationMaxSize = 26 * 1024 * 1024 // 26 MiB
 
 fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel): List<BlockchainConfiguration> {
     LibraryVerifyer(cliEnv, model.compile.libFolder).verifyLibs(model.libs)
     val (libraries, blockchains) = model.blockchains.toList().partition { it.second.type == BlockchainModel.Type.LIBRARY }
             .let { (libs, chains) -> libs.toMap() to chains.toMap() }
 
-    return blockchains.map { (bc, m) -> blockchainGtv(cliEnv, model.compile, bc, m) } +
+    val tika = Tika()
+
+    return blockchains.map { (bc, m) -> blockchainGtv(cliEnv, tika, model.compile, bc, m) } +
             libraries.map { (lib, m) -> libraryGtv(cliEnv, model.compile, lib, m) }
 }
 
-private fun blockchainGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: String, blockchainModel: BlockchainModel): BlockchainConfiguration {
+private fun blockchainGtv(cliEnv: RellCliEnv, tika: Tika, compileModel: CompileModel, name: String, blockchainModel: BlockchainModel): BlockchainConfiguration {
     val gtv = GtvBuilder().apply {
-        addDefaultEntries(blockchainModel, compileModel)
+        addDefaultEntries(blockchainModel, compileModel,
+                extraModules = if (blockchainModel.webStatic != null) listOf(WebStaticGTXModuleFactory::class.qualifiedName!!) else listOf()
+        )
 
         val config = RellApiCompile.Config.Builder()
                 .cliEnv(cliEnv)
@@ -42,6 +57,27 @@ private fun blockchainGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: 
 
         val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), blockchainModel.module)
         update(rellBcConfig, "gtx", "rell")
+        blockchainModel.webStatic?.let { dir ->
+            val cacheTtlSeconds = blockchainModel.webCacheTtlSeconds ?: 3600
+            update(gtv(mapOf("cache_ttl_seconds" to gtv(cacheTtlSeconds.toLong()))), "web_static")
+
+            var totalSize: Long = 0
+
+            val content = gtv(Files.walk(dir).filter { it.isRegularFile() && it.isReadable() }.map {
+                val size = Files.size(it)
+                if (size > BlockchainConfigurationMaxSize) throw IllegalArgumentException(
+                        "Static web content file ${it.name} is too large: $size (only $BlockchainConfigurationMaxSize allowed)")
+                totalSize += size
+                val contentType = tika.detect(it.name)
+                dir.relativize(it).invariantSeparatorsPathString to gtv(mapOf(
+                        "content_type" to gtv(contentType),
+                        "content" to if (contentType.startsWith("text/")) gtv(it.readText()) else gtv(it.readBytes())))
+            }.toList().toMap())
+            update(gtv(mapOf("content" to content)), "web_static")
+
+            if (totalSize > BlockchainConfigurationMaxSize) throw IllegalArgumentException(
+                    "Total size of static web content is too large: $totalSize (only $BlockchainConfigurationMaxSize allowed)")
+        }
     }.build()
     return BlockchainConfiguration(name, gtv)
 }

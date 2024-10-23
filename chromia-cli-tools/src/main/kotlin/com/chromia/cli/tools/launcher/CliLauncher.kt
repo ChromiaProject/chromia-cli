@@ -18,6 +18,7 @@ import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.nio.file.NoSuchFileException
 import java.sql.SQLException
 import kotlin.system.exitProcess
 
@@ -49,6 +50,7 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             is IllegalStateException -> "The state of the program is invalid."
             is UnsupportedOperationException -> "The operation is not supported."
             is FileNotFoundException -> "The file was not found."
+            is NoSuchFileException -> "The file or directory was not found."
             is IOException -> "An I/O error occurred."
             is ValidationException -> "Invalid blockchain configuration."
             else -> "An error occurred."

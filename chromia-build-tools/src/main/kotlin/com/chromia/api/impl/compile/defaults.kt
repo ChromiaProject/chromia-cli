@@ -5,7 +5,7 @@ import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.MinimalRellVersionStrictGtv
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
 import net.postchain.gtx.StandardOpsGTXModule
@@ -16,25 +16,26 @@ val standardGtxModules = listOf(
         StandardOpsGTXModule::class.qualifiedName!!,
 )
 
-internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, compileModel: CompileModel) = apply {
+internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, compileModel: CompileModel, extraModules: List<String> = listOf()) = apply {
     // TODO: override these from config ([BlockchainModel.config])
-    update(GtvFactory.gtv("name" to GtvFactory.gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
-    update(GtvFactory.gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
-    update(GtvFactory.gtv(true), "add_primary_key_to_header")
-    update(GtvFactory.gtv("HEADER_HASH"), "config_consensus_strategy")
-    update(GtvFactory.gtv(2000), "revolt", "fast_revolt_status_timeout")
-    update(GtvFactory.gtv(true), "revolt", "revolt_when_should_build_block")
-    update(GtvFactory.gtv(1000), "blockstrategy", "mininterblockinterval")
+    update(gtv("name" to gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
+    update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
+    update(gtv(true), "add_primary_key_to_header")
+    update(gtv("HEADER_HASH"), "config_consensus_strategy")
+    update(gtv(2000), "revolt", "fast_revolt_status_timeout")
+    update(gtv(true), "revolt", "revolt_when_should_build_block")
+    update(gtv(1000), "blockstrategy", "mininterblockinterval")
 
-    val modulesGtv: MutableList<Gtv> = standardGtxModules.map { GtvFactory.gtv(it) }.toMutableList()
+    val modulesGtv: MutableList<Gtv> = standardGtxModules.map { gtv(it) }.toMutableList()
     blockchainModel.config["modules"]?.let {
         modulesGtv.add(it)
     }
-    update(GtvFactory.gtv(modulesGtv), "gtx", "modules")
+    extraModules.forEach { modulesGtv.add(gtv(it)) }
+    update(gtv(modulesGtv), "gtx", "modules")
     blockchainModel.config.filterKeys { it != "modules" }
             .forEach { (path, value) -> update(value, path) }
     if (compileModel.langVersion >= MinimalRellVersionStrictGtv) {
-        update(GtvFactory.gtv(compileModel.strictGtvConversion), "gtx", "rell", "strictGtvConversion")
+        update(gtv(compileModel.strictGtvConversion), "gtx", "rell", "strictGtvConversion")
     }
     renameIcmfBrid()
 }
@@ -43,7 +44,7 @@ private fun GtvBuilder.renameIcmfBrid() = apply {
     build()["icmf"]?.get("receiver")?.get("local")?.asArray()
             ?.map { it.asDict().toMutableMap() }
             ?.map(::renameBridKeyName)
-            ?.map { GtvBuilder.GtvNode.decode(GtvFactory.gtv(it)) }
+            ?.map { GtvBuilder.GtvNode.decode(gtv(it)) }
             ?.let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
             ?.apply { update(this, "icmf", "receiver", "local") }
 }

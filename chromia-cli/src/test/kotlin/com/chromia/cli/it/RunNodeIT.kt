@@ -64,8 +64,8 @@ class RunNodeIT {
     @Test
     fun startNodeWithLibraryChain() {
         testData(dir) {
-            addFile("lib/my_lib/module.rell", """module; query hello() = "Hello!";""")
-            addFile("tests/dapp.rell", """module; import lib.my_lib;""")
+            addSourceFile("lib/my_lib/module.rell", """module; query hello() = "Hello!";""")
+            addSourceFile("tests/dapp.rell", """module; import lib.my_lib;""")
             config {
                 blockchains("""
                     blockchains:
@@ -117,13 +117,13 @@ class RunNodeIT {
                             - "net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension"
                 """.trimIndent())
             }
-            addFile("sender.rell", """
+            addSourceFile("sender.rell", """
                 module;
                 operation send_message(text) {
                     op_context.emit_event("icmf_message", (topic = "L_msg", body = text.to_gtv()).to_gtv_pretty());
                 }
             """.trimIndent())
-            addFile("receiver.rell", """
+            addSourceFile("receiver.rell", """
                 module;
                 entity msg {
                   topic: text;
@@ -192,7 +192,7 @@ class RunNodeIT {
                       rellVersion: 0.13.9
                 """.trimIndent())
             }
-            addFile("strictmode.rell", """
+            addSourceFile("strictmode.rell", """
                 module;
                 operation strict_gtv(arg: integer) {}
             """.trimIndent())
@@ -222,7 +222,7 @@ class RunNodeIT {
                       rellVersion: 0.13.9
                 """.trimIndent())
             }
-            addFile("strictmode.rell", """
+            addSourceFile("strictmode.rell", """
                 module;
                 operation strict_gtv(arg: integer) {}
             """.trimIndent())
@@ -250,7 +250,7 @@ class RunNodeIT {
                       rellVersion: 0.13.8
                 """.trimIndent())
             }
-            addFile("strictmode.rell", """
+            addSourceFile("strictmode.rell", """
                 module;
                 operation strict_gtv(arg: integer) {}
             """.trimIndent())

@@ -92,17 +92,17 @@ class GenerateDocsIT {
                         
             """.trimIndent())
             }
-            addFile("customStyleSheet.css", """
+            addSourceFile("customStyleSheet.css", """
                 .navigation {
                     background-color: green;
                 }
             """.trimIndent()
             )
-            addFile("customAsset.png", """
+            addSourceFile("customAsset.png", """
                 I am an image
             """.trimIndent()
             )
-            addFile("customInclude.md", """
+            addSourceFile("customInclude.md", """
                 # Dapp my_dapp
                 My main text
                 # Module main

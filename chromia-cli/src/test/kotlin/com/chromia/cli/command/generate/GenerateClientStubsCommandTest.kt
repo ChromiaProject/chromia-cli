@@ -142,11 +142,11 @@ internal class GenerateClientStubsCommandTest {
                     module: bar.main
                 """.trimIndent())
             }
-            addFile("foo/main.rell", """
+            addSourceFile("foo/main.rell", """
                 module;
                 query hello() = "hello";
             """.trimIndent())
-            addFile("bar/main.rell", """
+            addSourceFile("bar/main.rell", """
                 module;
                 query hello() = "hello";
             """.trimIndent())
@@ -162,7 +162,7 @@ internal class GenerateClientStubsCommandTest {
     @Test
     fun queryWithMixedTupleReturnNonZeroExit() {
         testData(dir.toPath()) {
-            addFile("mixed.rell", """
+            addSourceFile("mixed.rell", """
                 query mixed() = (1, foo="bar");
             """.trimIndent())
         }

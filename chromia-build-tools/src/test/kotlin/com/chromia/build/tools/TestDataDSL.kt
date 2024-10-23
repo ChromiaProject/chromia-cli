@@ -17,6 +17,7 @@ class TestDataBuilder {
         operation call_op(value: integer) {} 
     """.trimIndent()
     private val sourceFiles = mutableMapOf<String, () -> String>("main.rell" to { content })
+    private val extraFiles = mutableMapOf<String, () -> ByteArray>()
     private val configBuilder = ConfigBuilder()
     private var secretBuilder: SecretBuilder? = null
     private var keysStoreBuilder: KeyStoreBuilder? = null
@@ -25,14 +26,25 @@ class TestDataBuilder {
         content = init
     }
 
-    fun addFile(name: String, content: String) {
+    fun addSourceFile(name: String, content: String) {
         sourceFiles[name] = { content }
+    }
+
+    fun addFile(name: String, content: String) {
+        extraFiles[name] = { content.toByteArray() }
+    }
+
+    fun addFile(name: String, content: ByteArray) {
+        extraFiles[name] = { content }
     }
 
     internal fun createFiles(target: Path) {
         val sourceFolder = File(target.toFile(), "src")
         sourceFiles.forEach { (name, content) ->
             File(sourceFolder, name).also { it.parentFile.mkdirs() }.writeText(content())
+        }
+        extraFiles.forEach { (name, content) ->
+            File(target.toFile(), name).also { it.parentFile.mkdirs() }.writeBytes(content())
         }
         configBuilder.createFile(target)
         secretBuilder?.createFile(target)

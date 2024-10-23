@@ -1,6 +1,8 @@
 package com.chromia.api
 
 import assertk.assertThat
+import assertk.assertions.contains
+import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNotNull
@@ -22,6 +24,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.IOException
+import kotlin.test.assertFailsWith
 
 internal class ChromiaCompileApiTest {
     private val cliEnv = RellCliEnv.NULL
@@ -48,8 +52,8 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/module.rell", """module;""")
-            addFile("lib/my/test/module.rell", """@test module;""")
+            addSourceFile("lib/my/module.rell", """module;""")
+            addSourceFile("lib/my/test/module.rell", """@test module;""")
         }
 
         val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
@@ -75,9 +79,9 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/module.rell", """module; import lib.other;""")
-            addFile("lib/other/module.rell", """module;""")
-            addFile("lib/other/broken.rell", """module; import lib.nonexistent;""") // This file is not imported from lib.my
+            addSourceFile("lib/my/module.rell", """module; import lib.other;""")
+            addSourceFile("lib/other/module.rell", """module;""")
+            addSourceFile("lib/other/broken.rell", """module; import lib.nonexistent;""") // This file is not imported from lib.my
         }
         val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         assertThat(result.size).isEqualTo(1)
@@ -97,7 +101,7 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/module.rell", """module;""")
+            addSourceFile("lib/my/module.rell", """module;""")
         }
         val err = assertThrows<IllegalArgumentException> {
             ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
@@ -116,8 +120,8 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/other.rell", """module; function f() =;""")
-            addFile("lib/my/module.rell", """module;""") // Note that *other* is not imported
+            addSourceFile("lib/my/other.rell", """module; function f() =;""")
+            addSourceFile("lib/my/module.rell", """module;""") // Note that *other* is not imported
         }
         val err = assertThrows<RellCliExitException> {
             ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
@@ -136,8 +140,8 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/other.rell", """module; import lib.missing;""")
-            addFile("lib/my/module.rell", """module;""") // Note that *other* is not imported
+            addSourceFile("lib/my/other.rell", """module; import lib.missing;""")
+            addSourceFile("lib/my/module.rell", """module;""") // Note that *other* is not imported
         }
         assertDoesNotThrow {
             ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
@@ -159,10 +163,10 @@ internal class ChromiaCompileApiTest {
                         - tests
                 """.trimIndent())
             }
-            addFile("lib/my/module.rell", """module;""")
-            addFile("lib/my/inner/module.rell", """module;""")
-            addFile("lib/my/test/utils.rell", """@test module;""")
-            addFile("tests/lib_my_test.rell", """@test module; import lib.my.test.utils; function test() {}""")
+            addSourceFile("lib/my/module.rell", """module;""")
+            addSourceFile("lib/my/inner/module.rell", """module;""")
+            addSourceFile("lib/my/test/utils.rell", """@test module;""")
+            addSourceFile("tests/lib_my_test.rell", """@test module; import lib.my.test.utils; function test() {}""")
         }
         val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         assertThat(result.size).isEqualTo(1)
@@ -183,7 +187,7 @@ internal class ChromiaCompileApiTest {
                     type: library
                 """.trimIndent())
             }
-            addFile("lib/my/module.rell", """module; struct module_args { name; }""")
+            addSourceFile("lib/my/module.rell", """module; struct module_args { name; }""")
         }
         val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         assertThat(result.size).isEqualTo(1)
@@ -194,5 +198,51 @@ internal class ChromiaCompileApiTest {
         testData(dir)
         val result = ChromiaCompileApi.verify(cliEnv, parseModel(dir.resolve("chromia.yml")))
         assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `static web content`() {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: main
+                        webStatic: web
+                        webCacheTtlSeconds: 60                    
+                """.trimIndent())
+            }
+            addFile("web/index.html", "<html></html>")
+            addFile("web/img/image.png", byteArrayOf(1, 2, 3, 4))
+        }
+        val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
+        assertThat(result.size).isEqualTo(1)
+        val outputGtv = result[0].config
+        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
+                "net.postchain.rell.module.RellPostchainModuleFactory",
+                "net.postchain.gtx.StandardOpsGTXModule",
+                "net.postchain.web.WebStaticGTXModuleFactory"
+        )
+        assertThat(outputGtv["web_static"]?.get("cache_ttl_seconds")?.asInteger()).isEqualTo(60L)
+        assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content")?.asString()).isEqualTo("<html></html>")
+        assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content_type")?.asString()).isEqualTo("text/html")
+        assertThat(outputGtv["web_static"]?.get("content")?.get("img/image.png")?.get("content")?.asByteArray()?.wrap()).isEqualTo(byteArrayOf(1, 2, 3, 4).wrap())
+        assertThat(outputGtv["web_static"]?.get("content")?.get("img/image.png")?.get("content_type")?.asString()).isEqualTo("image/png")
+    }
+
+    @Test
+    fun `static web content dir not found`() {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        module: main
+                        webStatic: bogus
+                """.trimIndent())
+            }
+        }
+        val e = assertFailsWith<IOException> { ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml"))) }
+        assertThat(e.message!!).contains("bogus")
     }
 }

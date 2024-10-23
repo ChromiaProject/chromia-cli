@@ -37,7 +37,7 @@ class ReplIT {
     @Test
     fun canStartReplWithOperation(@TempDir dir: Path) {
         testData(dir) {
-            addFile("main.rell",
+            addSourceFile("main.rell",
                     """
                     module;
                     
