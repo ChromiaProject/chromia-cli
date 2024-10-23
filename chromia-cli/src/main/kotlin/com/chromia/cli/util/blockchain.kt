@@ -17,7 +17,6 @@ private val knownGtxModules = listOf(
         "net.postchain.d1.icmf.IcmfSenderGTXModule",
         "net.postchain.d1.icmf.IcmfReceiverGTXModule",
         "net.postchain.d1.iccf.IccfGTXModule",
-        "net.postchain.web.WebStaticGTXModuleFactory",
 )
 
 fun BlockchainConfiguration.removeKnownGtxModules(cliEnv: RellCliEnv): BlockchainConfiguration {
