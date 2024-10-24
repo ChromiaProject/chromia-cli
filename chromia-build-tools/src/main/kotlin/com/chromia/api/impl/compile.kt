@@ -9,6 +9,7 @@ import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.CompileModel
 import com.chromia.cli.model.RellLibraryModel
+import net.postchain.common.exception.UserMistake
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 import kotlin.io.path.relativeTo
@@ -58,6 +59,8 @@ private fun blockchainGtv(cliEnv: RellCliEnv, tika: Tika, compileModel: CompileM
         val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), blockchainModel.module)
         update(rellBcConfig, "gtx", "rell")
         blockchainModel.webStatic?.let { dir ->
+            if (!Files.exists(dir)) throw UserMistake("Static web directory ${dir.name} not found")
+
             val cacheTtlSeconds = blockchainModel.webCacheTtlSeconds ?: 3600
             update(gtv(mapOf("cache_ttl_seconds" to gtv(cacheTtlSeconds.toLong()))), "web_static")
 
@@ -65,7 +68,7 @@ private fun blockchainGtv(cliEnv: RellCliEnv, tika: Tika, compileModel: CompileM
 
             val content = gtv(Files.walk(dir).filter { it.isRegularFile() && it.isReadable() }.map {
                 val size = Files.size(it)
-                if (size > BlockchainConfigurationMaxSize) throw IllegalArgumentException(
+                if (size > BlockchainConfigurationMaxSize) throw UserMistake(
                         "Static web content file ${it.name} is too large: $size (only $BlockchainConfigurationMaxSize allowed)")
                 totalSize += size
                 val contentType = tika.detect(it.name)
@@ -75,7 +78,7 @@ private fun blockchainGtv(cliEnv: RellCliEnv, tika: Tika, compileModel: CompileM
             }.toList().toMap())
             update(gtv(mapOf("content" to content)), "web_static")
 
-            if (totalSize > BlockchainConfigurationMaxSize) throw IllegalArgumentException(
+            if (totalSize > BlockchainConfigurationMaxSize) throw UserMistake(
                     "Total size of static web content is too large: $totalSize (only $BlockchainConfigurationMaxSize allowed)")
         }
     }.build()
@@ -96,7 +99,7 @@ private fun libraryGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: Str
     RellApiCompile.compileApp(compileconfig, compileModel.source.toFile(), listOf(library.module), library.test.modules)
 
     val libFolder = compileModel.libFolder.resolve(name)
-    if (!libFolder.exists()) throw IllegalArgumentException("Library $name not found. Please verify that the name of the library matches the folder name in lib folder.")
+    if (!libFolder.exists()) throw UserMistake("Library $name not found. Please verify that the name of the library matches the folder name in lib folder.")
     val rid = DirectoryHashCalculator(compileModel.source).compute(libFolder, RidStrategy.LIST)
 
     val gtv = GtvBuilder().apply {

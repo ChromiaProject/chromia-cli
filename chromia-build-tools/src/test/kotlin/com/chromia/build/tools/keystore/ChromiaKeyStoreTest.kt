@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import net.postchain.common.exception.UserMistake
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import net.postchain.crypto.KeyPair
@@ -48,14 +49,14 @@ class ChromiaKeyStoreTest {
 
     @Test
     fun `loadKeyPair throws when load key pair do not find expected keys`() {
-        val throwable = assertThrows<IllegalArgumentException> { chromiaKeyStore.loadKeyPair() }
+        val throwable = assertThrows<UserMistake> { chromiaKeyStore.loadKeyPair() }
         assertThat(throwable.message).isEqualTo("Could not find key pair with key id: chromia_key in $testDir")
     }
 
     @Test
     fun `saveKeyPair throws when key pair with same id already exists`() {
         chromiaKeyStore.saveKeyPair(keyPair)
-        val throwable = assertThrows<IllegalArgumentException> { chromiaKeyStore.saveKeyPair(keyPair) }
+        val throwable = assertThrows<UserMistake> { chromiaKeyStore.saveKeyPair(keyPair) }
         assertThat(throwable.message).isEqualTo("Key pair with keyId: chromia_key already exists in $testDir")
     }
 }

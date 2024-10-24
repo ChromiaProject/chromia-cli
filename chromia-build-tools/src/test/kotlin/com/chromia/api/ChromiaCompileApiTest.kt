@@ -13,6 +13,7 @@ import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
+import net.postchain.common.exception.UserMistake
 import java.nio.file.Path
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.types.WrappedByteArray
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import java.io.IOException
 import kotlin.test.assertFailsWith
 
 internal class ChromiaCompileApiTest {
@@ -103,7 +103,7 @@ internal class ChromiaCompileApiTest {
             }
             addSourceFile("lib/my/module.rell", """module;""")
         }
-        val err = assertThrows<IllegalArgumentException> {
+        val err = assertThrows<UserMistake> {
             ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         }
         assertThat(err.message).isEqualTo("Library $blockchainName not found. Please verify that the name of the library matches the folder name in lib folder.")
@@ -242,7 +242,7 @@ internal class ChromiaCompileApiTest {
                 """.trimIndent())
             }
         }
-        val e = assertFailsWith<IOException> { ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml"))) }
+        val e = assertFailsWith<UserMistake> { ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml"))) }
         assertThat(e.message!!).contains("bogus")
     }
 }

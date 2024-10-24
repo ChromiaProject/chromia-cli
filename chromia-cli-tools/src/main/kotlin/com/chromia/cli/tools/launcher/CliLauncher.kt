@@ -13,6 +13,7 @@ import com.github.ajalt.mordant.rendering.Theme
 import com.github.ajalt.mordant.terminal.Terminal
 import mu.KotlinLogging
 import net.postchain.client.exception.ClientError
+import net.postchain.common.exception.UserMistake
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.base.RellCliExitException
 import java.io.File
@@ -52,12 +53,10 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             is FileNotFoundException -> "The file was not found."
             is NoSuchFileException -> "The file or directory was not found."
             is IOException -> "An I/O error occurred."
-            is ValidationException -> "Invalid blockchain configuration."
             else -> "An error occurred."
         }
 
-        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "/usr/app/logs"
-        val suffix = "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
+        val suffix = logFolderMessage()
         return "$humanFriendlyMessage ${formatExceptionMessage(exception)}$suffix"
     }
 
@@ -81,6 +80,18 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
         } catch (e: RellCliException) {
             echo(e.message, err = true)
             exitProcess(2)
+        } catch (e: ValidationException) {
+            echo("Invalid blockchain configuration. ${e.message}", err = true)
+            exitProcess(2)
+        } catch (e: UserMistake) {
+            if (e.cause != null) {
+                logger.error(e.message, e)
+                echo("${e.message}. ${logFolderMessage()}", err = true)
+                exitProcess(3)
+            } else {
+                echo(e.message, err = true)
+                exitProcess(2)
+            }
         } catch (e: SQLException) {
             echo("Error connecting to database: ${e.message}", err = true)
             echo("Check your database connection")
@@ -91,5 +102,10 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
             echo(errorMessage, err = true)
             exitProcess(3)
         }
+    }
+
+    private fun logFolderMessage(): String {
+        val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "/usr/app/logs"
+        return "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
     }
 }

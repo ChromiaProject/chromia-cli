@@ -1,5 +1,6 @@
 package com.chromia.build.tools.keystore
 
+import net.postchain.common.exception.UserMistake
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -15,7 +16,7 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
 
     fun saveKeyPair(keyPair: KeyPair) {
         if (findKeyPair() != null) {
-            throw IllegalArgumentException("Key pair with keyId: $keyId already exists in $chromiaHome")
+            throw UserMistake("Key pair with keyId: $keyId already exists in $chromiaHome")
         }
 
         Path(chromiaHome).createDirectories()
@@ -31,7 +32,7 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
 
     fun loadKeyPair(): KeyPair {
         return findKeyPair()
-                ?: throw IllegalArgumentException("Could not find key pair with key id: $keyId in $chromiaHome")
+                ?: throw UserMistake("Could not find key pair with key id: $keyId in $chromiaHome")
     }
 
     fun findKeyPair(): KeyPair? {
