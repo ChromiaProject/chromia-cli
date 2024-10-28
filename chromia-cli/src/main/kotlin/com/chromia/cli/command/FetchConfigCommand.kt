@@ -1,7 +1,6 @@
 package com.chromia.cli.command
 
 import com.chromia.build.tools.gtv.remove
-import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.tools.config.BlockchainOptions
 import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.EXPERIMENTAL_COMMAND
@@ -15,8 +14,10 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.d1.client.ChromiaClientProvider
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
+import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvInteger
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.yaml.GtvYaml
 import java.io.File
@@ -53,22 +54,30 @@ class FetchConfigCommand : ChromiaCommand(help = """
             client.getConfiguration()
         } ?: throw UsageError("Need to specify either --blockchain-config or --blockchain-rid")
 
-        val blockchainConfigWithoutRellSources = (blockchainConfig as? GtvDictionary)?.remove("gtx", "rell", "sources")
+        val blockchainConfigWithoutBloat = (blockchainConfig as? GtvDictionary)
+                ?.remove("gtx", "rell", "sources")
+                ?.remove("web_static", "content")
                 ?: blockchainConfig
-        val gtx = blockchainConfig["gtx"] as? GtvDictionary
-        val rell = gtx?.get("rell") as? GtvDictionary
-        val rellSources = (rell?.get("sources") as? GtvDictionary)?.dict ?: mapOf()
 
         val gtvYaml = GtvYaml()
         if (targetDir != null) {
             targetDir!!.mkdirs()
             echo("Saving blockchain config: blockchain-config.yml")
-            gtvYaml.dump(blockchainConfigWithoutRellSources, File(targetDir!!, "blockchain-config.yml"))
+            gtvYaml.dump(blockchainConfigWithoutBloat, File(targetDir!!, "blockchain-config.yml"))
+
+            val gtx = blockchainConfig["gtx"] as? GtvDictionary
+            val rell = gtx?.get("rell") as? GtvDictionary
+            val rellSources = (rell?.get("sources") as? GtvDictionary)?.dict ?: mapOf()
+            val webStatic = blockchainConfig["web_static"] as? GtvDictionary
+            val webStaticContent = (webStatic?.get("content") as? GtvDictionary)?.dict ?: mapOf()
+            val webStaticCacheTtlSeconds = (webStatic?.get("cache_ttl_seconds") as? GtvInteger)?.integer
+
+            if ((gtx != null && rell != null && rellSources.isNotEmpty()) || webStaticContent.isNotEmpty()) {
+                echo("Creating chromia.yml")
+                createChromiaYml(gtvYaml, rell, webStaticCacheTtlSeconds)
+            }
 
             if (gtx != null && rell != null && rellSources.isNotEmpty()) {
-                echo("Creating chromia.yml")
-                createChromiaYml(rell, gtvYaml)
-
                 val sourceDir = File(targetDir!!, "src")
                 sourceDir.mkdir()
                 rellSources.forEach { (name, source) ->
@@ -80,22 +89,53 @@ class FetchConfigCommand : ChromiaCommand(help = """
                     }
                 }
             }
+
+            if (webStaticContent.isNotEmpty()) {
+                val webDir = File(targetDir!!, "web")
+                webDir.mkdir()
+                webStaticContent.forEach { (name, resource) ->
+                    if (resource is GtvDictionary) {
+                        val content = resource.dict["content"]
+                        if (content != null) {
+                            echo("Saving web resource: web/$name")
+                            val webFile = File(webDir, name)
+                            webFile.parentFile.mkdirs()
+                            when (content) {
+                                is GtvString -> webFile.writeText(content.string)
+                                is GtvByteArray -> webFile.writeBytes(content.bytearray)
+                            }
+                        }
+                    }
+                }
+            }
+
         } else {
-            echo(gtvYaml.dump(blockchainConfigWithoutRellSources))
+            echo(gtvYaml.dump(blockchainConfigWithoutBloat))
         }
     }
 
-    private fun createChromiaYml(rell: GtvDictionary, gtvYaml: GtvYaml) {
-        val moduleName = ((rell["modules"] as? GtvArray)?.array?.firstOrNull() as? GtvString)?.string ?: "bc"
-        val moduleArgs = (rell["moduleArgs"] as? GtvDictionary) ?: gtv(mapOf())
-        val rellVersion = (rell["version"] as? GtvString)?.string ?: DefaultChromiaModelRellVersion
-        val chromiaYaml = gtv(mapOf(
-                "blockchains" to gtv(mapOf(moduleName to gtv(mapOf(
-                        "module" to gtv(moduleName),
-                        "moduleArgs" to moduleArgs
-                )))),
-                "compile" to gtv(mapOf("rellVersion" to gtv(rellVersion))),
-        ))
+    private fun createChromiaYml(gtvYaml: GtvYaml, rell: GtvDictionary?, webStaticCacheTtlSeconds: Long?) {
+        val moduleName = ((rell?.get("modules") as? GtvArray)?.array?.firstOrNull() as? GtvString)?.string
+        val moduleArgs = (rell?.get("moduleArgs") as? GtvDictionary) ?: gtv(mapOf())
+        val rellVersion = (rell?.get("version") as? GtvString)?.string
+        val blockchainName = moduleName ?: "bc"
+        val chromiaYaml = gtv(buildMap {
+            put("blockchains", gtv(mapOf(blockchainName to gtv(buildMap {
+                if (moduleName != null) {
+                    put("module", gtv(moduleName))
+                }
+                if (moduleArgs.dict.isNotEmpty()) {
+                    put("moduleArgs", moduleArgs)
+                }
+                if (webStaticCacheTtlSeconds != null) {
+                    put("webStatic", gtv("web"))
+                    put("webCacheTtlSeconds", gtv(webStaticCacheTtlSeconds))
+                }
+            }))))
+            if (rellVersion != null) {
+                put("compile", gtv(mapOf("rellVersion" to gtv(rellVersion))))
+            }
+        })
         gtvYaml.dump(chromiaYaml, File(targetDir!!, "chromia.yml"))
     }
 }

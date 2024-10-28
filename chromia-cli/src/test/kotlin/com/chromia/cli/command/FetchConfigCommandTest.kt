@@ -76,10 +76,14 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             }    
         """.trimIndent()
 
+    private val sourceHtml = "<html></html>"
+
     private val sourceChromiaYml = """
             blockchains:
               a:
                 module: main
+                webStatic: web
+                webCacheTtlSeconds: 17
                 config:
                   signers:
                     - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
@@ -104,6 +108,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       modules:
       - net.postchain.rell.module.RellPostchainModuleFactory
       - net.postchain.gtx.StandardOpsGTXModule
+      - net.postchain.web.WebStaticGTXModuleFactory
       rell:
         compilerVersion: 0.14.2
         moduleArgs:
@@ -118,6 +123,30 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       revolt_when_should_build_block: 1
     signers:
     - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+    web_static:
+      cache_ttl_seconds: 17
+
+    """.trimIndent()
+
+    private val expectedConfigYmlWithOnlyWeb = """
+    ---
+    add_primary_key_to_header: 1
+    blockstrategy:
+      mininterblockinterval: 1000
+      name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+    config_consensus_strategy: HEADER_HASH
+    configurationfactory: net.postchain.gtx.GTXBlockchainConfigurationFactory
+    gtx:
+      modules:
+      - net.postchain.gtx.StandardOpsGTXModule
+      - net.postchain.web.WebStaticGTXModuleFactory
+    revolt:
+      fast_revolt_status_timeout: 2000
+      revolt_when_should_build_block: 1
+    signers:
+    - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+    web_static:
+      cache_ttl_seconds: 17
 
     """.trimIndent()
 
@@ -129,8 +158,19 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
         moduleArgs:
           main:
             foo: bar
+        webCacheTtlSeconds: 17
+        webStatic: web
     compile:
       rellVersion: 0.13.14
+
+    """.trimIndent()
+
+    private val expectedChromiaYmlWithOnlyWeb = """
+    ---
+    blockchains:
+      bc:
+        webCacheTtlSeconds: 17
+        webStatic: web
 
     """.trimIndent()
 
@@ -139,6 +179,10 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
         with(File(dir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText(sourceRell)
+        }
+        with(File(dir.toFile(), "web/index.html")) {
+            parentFile.mkdirs()
+            writeText(sourceHtml)
         }
         with(File(dir.toFile(), "chromia.yml")) {
             writeText(sourceChromiaYml)
@@ -163,6 +207,10 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             parentFile.mkdirs()
             writeText(sourceRell)
         }
+        with(File(dir.toFile(), "web/index.html")) {
+            parentFile.mkdirs()
+            writeText(sourceHtml)
+        }
         with(File(dir.toFile(), "chromia.yml")) {
             writeText(sourceChromiaYml)
         }
@@ -180,6 +228,10 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             parentFile.mkdirs()
             writeText(sourceRell)
         }
+        with(File(dir.toFile(), "web/index.html")) {
+            parentFile.mkdirs()
+            writeText(sourceHtml)
+        }
         with(File(dir.toFile(), "chromia.yml")) {
             writeText(sourceChromiaYml)
         }
@@ -193,10 +245,102 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             Saving blockchain config: blockchain-config.yml
             Creating chromia.yml
             Saving Rell source: src/main.rell
+            Saving web resource: web/index.html
 
         """.trimIndent())
         assertThat(Files.readString(File(dir.toFile(), "out/blockchain-config.yml"))).isEqualTo(expectedConfigYml)
         assertThat(Files.readString(File(dir.toFile(), "out/chromia.yml"))).isEqualTo(expectedChromiaYml)
         assertThat(Files.readString(File(dir.toFile(), "out/src/main.rell"))).isEqualTo(sourceRell)
+        assertThat(Files.readString(File(dir.toFile(), "out/web/index.html"))).isEqualTo(sourceHtml)
+    }
+
+    @Test
+    fun fromFileToDirWithOnlyWeb(@TempDir dir: Path) {
+        with(File(dir.toFile(), "build/a.xml")) {
+            parentFile.mkdirs()
+            writeText("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <dict>
+                <entry key="add_primary_key_to_header">
+                    <int>1</int>
+                </entry>
+                <entry key="blockstrategy">
+                    <dict>
+                        <entry key="mininterblockinterval">
+                            <int>1000</int>
+                        </entry>
+                        <entry key="name">
+                            <string>net.postchain.devtools.OnDemandBlockBuildingStrategy</string>
+                        </entry>
+                    </dict>
+                </entry>
+                <entry key="config_consensus_strategy">
+                    <string>HEADER_HASH</string>
+                </entry>
+                <entry key="configurationfactory">
+                    <string>net.postchain.gtx.GTXBlockchainConfigurationFactory</string>
+                </entry>
+                <entry key="gtx">
+                    <dict>
+                        <entry key="modules">
+                            <array>
+                                <string>net.postchain.gtx.StandardOpsGTXModule</string>
+                                <string>net.postchain.web.WebStaticGTXModuleFactory</string>
+                            </array>
+                        </entry>
+                    </dict>
+                </entry>
+                <entry key="revolt">
+                    <dict>
+                        <entry key="fast_revolt_status_timeout">
+                            <int>2000</int>
+                        </entry>
+                        <entry key="revolt_when_should_build_block">
+                            <int>1</int>
+                        </entry>
+                    </dict>
+                </entry>
+                <entry key="signers">
+                    <array>
+                        <bytea>03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070</bytea>
+                    </array>
+                </entry>
+                <entry key="web_static">
+                    <dict>
+                        <entry key="cache_ttl_seconds">
+                            <int>17</int>
+                        </entry>
+                        <entry key="content">
+                            <dict>
+                                <entry key="index.html">
+                                    <dict>
+                                        <entry key="content">
+                                            <string>&lt;html&gt;&lt;/html&gt;</string>
+                                        </entry>
+                                        <entry key="content_type">
+                                            <string>text/html</string>
+                                        </entry>
+                                    </dict>
+                                </entry>
+                            </dict>
+                        </entry>
+                    </dict>
+                </entry>
+            </dict>
+            """)
+        }
+        val res = FetchConfigCommand().test(listOf(
+                "--blockchain-config", "${dir.absolutePathString()}/build/a.xml",
+                "--target", "${dir.absolutePathString()}/out"
+        ))
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.stdout).isEqualTo("""
+            Saving blockchain config: blockchain-config.yml
+            Creating chromia.yml
+            Saving web resource: web/index.html
+
+        """.trimIndent())
+        assertThat(Files.readString(File(dir.toFile(), "out/blockchain-config.yml"))).isEqualTo(expectedConfigYmlWithOnlyWeb)
+        assertThat(Files.readString(File(dir.toFile(), "out/chromia.yml"))).isEqualTo(expectedChromiaYmlWithOnlyWeb)
+        assertThat(Files.readString(File(dir.toFile(), "out/web/index.html"))).isEqualTo(sourceHtml)
     }
 }
