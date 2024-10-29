@@ -22,9 +22,11 @@ import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.hexStringToWrappedByteArray
+import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -201,5 +203,35 @@ internal class BuildCommandTest {
         assertThat(localAttribute[1].asDict().containsKey("bc-rid")).isTrue()
         assertThat(localAttribute[1].asDict().containsKey("brid")).isFalse()
         assertThat(outputGtv["shouldStillExist"]).isNotNull()
+    }
+
+    private val rellSourceWithInvalidXmlChar = "\nmodule;\nquery signMessage() = \"\u0019Ethereum Signed Message:\\n\";"
+
+    @Test
+    fun invalidXmlChars() {
+        File(dir, "src/main.rell").writeText(rellSourceWithInvalidXmlChar)
+
+        val res = command.parse()
+        assertThat(res.output).all {
+            contains("Blockchain hello contains Illegal XML content")
+            contains("Character 25 is not allowed in XML")
+        }
+
+        val outputFile = File(dir, "build/hello.xml")
+        assertFalse(outputFile.exists())
+    }
+
+    @Test
+    fun binaryGtvFormatCanHandleInvalidXmlChars() {
+        File(dir, "src/main.rell").writeText(rellSourceWithInvalidXmlChar)
+        BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml"), "--format=GTV"))
+        val outputFile = File(dir, "build/hello.gtv")
+        assertTrue(outputFile.exists())
+        val outputGtv = GtvDecoder.decodeGtv(outputFile.readBytes())
+        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
+                "net.postchain.rell.module.RellPostchainModuleFactory",
+                "net.postchain.gtx.StandardOpsGTXModule"
+        )
+        assertThat(outputGtv["gtx"]?.get("rell")?.get("sources")?.get("main.rell")?.asString()).isEqualTo(rellSourceWithInvalidXmlChar)
     }
 }

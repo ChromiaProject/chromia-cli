@@ -7,9 +7,11 @@ import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.BlockchainRid
 import java.io.File
@@ -105,3 +107,10 @@ fun ParameterHolder.chromiaConfigOption() = option(
 fun ParameterHolder.targetUrlOption() = option("--api-url", help = "Target url")
 
 fun ParameterHolder.blockchainRidOption(help: String) = option("--blockchain-rid", "-brid", help = help)
+
+enum class ConfigurationFormat {
+    GTV, XML
+}
+
+fun ParameterHolder.configurationFormatOption() = option("-f", "--format", help = "Blockchain configuration format")
+        .enum<ConfigurationFormat>().default(ConfigurationFormat.XML)

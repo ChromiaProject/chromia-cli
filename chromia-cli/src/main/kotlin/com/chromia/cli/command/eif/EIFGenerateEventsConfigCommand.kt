@@ -82,7 +82,7 @@ class EIFGenerateEventsConfigCommand : ChromiaCommand(name = "generate-events-co
         echo("Generating events for: $foundEvents")
 
         return when (format) {
-            FileFormat.XML -> GtvMLEncoder.encodeXMLGtv(gtv(events))
+            FileFormat.XML -> GtvMLEncoder.encodeXMLGtvStrict(gtv(events))
             FileFormat.YAML -> GtvYaml().dump(gtv(events))
         }
     }

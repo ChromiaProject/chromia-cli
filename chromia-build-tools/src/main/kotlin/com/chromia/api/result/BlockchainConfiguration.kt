@@ -1,12 +1,12 @@
 package com.chromia.api.result
 
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
+import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfigAsBinaryGtv
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.compile.withSigner
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
-import java.io.File
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
 import net.postchain.gtx.GTXBlockchainConfigurationFactory
@@ -17,7 +17,18 @@ data class BlockchainConfiguration(override val name: String, val config: Gtv): 
 
     fun withSigners(vararg signer: ByteArray) = BlockchainConfiguration(name, withSigner(config, *signer))
 
+    /**
+     * Save configuration as GtvML (XML).
+     *
+     * @throws IllegalArgumentException if any string in [config] contains
+     * [character not allowed in XML](https://www.w3.org/TR/xml/#NT-Char)
+     */
     fun save(target: Path, fileName: String = name) = storeConfig(config, fileName, target)
+
+    /**
+     * Save configuration as binary GTV.
+     */
+    fun saveAsBinaryGtv(target: Path, fileName: String = name) = storeConfigAsBinaryGtv(config, fileName, target)
 
     fun validate() {
         try {

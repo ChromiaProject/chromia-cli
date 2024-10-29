@@ -59,7 +59,6 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
                     .associate {
-                        //TODO remove GTV is no longer supported
                         it.nameWithoutExtension to readBlockchainConfigFile(it)
                     }
                     .map { BlockchainConfiguration(it.key, it.value) }

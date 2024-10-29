@@ -3,18 +3,20 @@ package com.chromia.build.tools.compile
 import com.chromia.api.filterBlockchains
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
 import com.chromia.cli.model.ChromiaModel
-import java.io.File
 import net.postchain.rell.api.base.RellCliEnv
+import java.io.File
 
 @Deprecated("Use the new api instead", replaceWith = ReplaceWith("ChromiaCompileApi", imports = arrayOf("com.chromia.api.ChromiaCompileApi")))
+@Suppress("DEPRECATION")
 object ChromiaCompileApi {
-    @Deprecated("Use the new api instead")
+    @Deprecated("Use the new api instead",
+            ReplaceWith("ChromiaCompileApi.build(cliEnv, model)", "com.chromia.api.ChromiaCompileApi"))
     fun compile(cliEnv: RellCliEnv, model: ChromiaModel, projectFolder: File): Collection<ChromiaCompileResult> {
-        @Suppress("DEPRECATION")
         return compile(cliEnv, model, projectFolder, model.blockchains.keys)
     }
 
-    @Deprecated("Use the new api instead")
+    @Deprecated("Use the new api instead",
+            ReplaceWith("ChromiaCompileApi.build(cliEnv, model.filterBlockchains(blockchains))", "com.chromia.api.ChromiaCompileApi"))
     fun compile(
             cliEnv: RellCliEnv,
             model: ChromiaModel,
