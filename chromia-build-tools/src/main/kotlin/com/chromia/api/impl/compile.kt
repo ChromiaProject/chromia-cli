@@ -8,25 +8,27 @@ import com.chromia.build.tools.lib.LibraryVerifyer
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.CompileModel
+import com.chromia.cli.model.MinimalRellVersionStrictGtv
 import com.chromia.cli.model.RellLibraryModel
 import net.postchain.common.exception.UserMistake
-import kotlin.io.path.exists
-import kotlin.io.path.pathString
-import kotlin.io.path.relativeTo
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliEnv
 import net.postchain.rell.base.utils.RellGtxConfigConstants
+import net.postchain.rell.module.RellPostchainModuleFactory
 import net.postchain.web.WebStaticGTXModuleFactory
 import org.apache.tika.Tika
 import java.nio.file.Files
+import kotlin.io.path.exists
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.isReadable
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
+import kotlin.io.path.pathString
 import kotlin.io.path.readBytes
 import kotlin.io.path.readText
+import kotlin.io.path.relativeTo
 
 const val BlockchainConfigurationMaxSize = 26 * 1024 * 1024 // 26 MiB
 
@@ -43,21 +45,29 @@ fun compileGtv(cliEnv: RellCliEnv, model: ChromiaModel): List<BlockchainConfigur
 
 private fun blockchainGtv(cliEnv: RellCliEnv, tika: Tika, compileModel: CompileModel, name: String, blockchainModel: BlockchainModel): BlockchainConfiguration {
     val gtv = GtvBuilder().apply {
-        addDefaultEntries(blockchainModel, compileModel,
-                extraModules = if (blockchainModel.webStatic != null) listOf(WebStaticGTXModuleFactory::class.qualifiedName!!) else listOf()
+        addDefaultEntries(blockchainModel,
+                extraModules = buildList {
+                    if (blockchainModel.module != null) add(RellPostchainModuleFactory::class.qualifiedName!!)
+                    if (blockchainModel.webStatic != null) add(WebStaticGTXModuleFactory::class.qualifiedName!!)
+                }
         )
 
-        val config = RellApiCompile.Config.Builder()
-                .cliEnv(cliEnv)
-                .moduleArgs(blockchainModel.moduleArgs)
-                .mountConflictError(true)
-                .moduleArgsMissingError(true)
-                .version(compileModel.langVersion)
-                .quiet(compileModel.quiet)
-                .build()
+        blockchainModel.module?.let { module ->
+            if (compileModel.langVersion >= MinimalRellVersionStrictGtv) {
+                update(gtv(compileModel.strictGtvConversion), "gtx", "rell", "strictGtvConversion")
+            }
+            val config = RellApiCompile.Config.Builder()
+                    .cliEnv(cliEnv)
+                    .moduleArgs(blockchainModel.moduleArgs)
+                    .mountConflictError(true)
+                    .moduleArgsMissingError(true)
+                    .version(compileModel.langVersion)
+                    .quiet(compileModel.quiet)
+                    .build()
+            val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), module)
+            update(rellBcConfig, "gtx", "rell")
+        }
 
-        val rellBcConfig = RellApiCompile.compileGtv(config, compileModel.source.toFile(), blockchainModel.module)
-        update(rellBcConfig, "gtx", "rell")
         blockchainModel.webStatic?.let { dir ->
             if (!Files.exists(dir)) throw UserMistake("Static web directory ${dir.name} not found")
 
@@ -96,7 +106,9 @@ private fun libraryGtv(cliEnv: RellCliEnv, compileModel: CompileModel, name: Str
             .quiet(false)
             .build()
 
-    RellApiCompile.compileApp(compileconfig, compileModel.source.toFile(), listOf(library.module), library.test.modules)
+    RellApiCompile.compileApp(compileconfig, compileModel.source.toFile(), listOf(library.module
+            ?: throw UserMistake("Library needs to have a Rell main module")
+    ), library.test.modules)
 
     val libFolder = compileModel.libFolder.resolve(name)
     if (!libFolder.exists()) throw UserMistake("Library $name not found. Please verify that the name of the library matches the folder name in lib folder.")

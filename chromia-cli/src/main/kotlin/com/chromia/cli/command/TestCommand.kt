@@ -137,7 +137,8 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     private fun runTestsForBlockchain(blockchain: String, testReportPath: Path) {
         val chainConfig = getBlockchainConfig(blockchain)
 
-        val appModules = listOf(chainConfig.module)
+        val appModules = listOf(chainConfig.module
+                ?: throw CliktError("Cannot run tests for blockchain $blockchain without main module"))
         val testModules = modules ?: chainConfig.test.modules
         val additionalModules = chainConfig.config["gtx"]?.get("modules")?.asArray()?.map { it.asString() }
 

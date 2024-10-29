@@ -5,6 +5,7 @@ import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.util.targetDirectoryOption
 import com.chromia.rell.dokka.RellDokkaGenerator
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -64,7 +65,9 @@ class GenerateDocsSiteCommand : ChromiaCommand(
         true -> RellDokkaPluginConfigurationBuilder.SYSTEM.includes(systemIncludes)
         else -> RellDokkaPluginConfigurationBuilder(
                 title = model.docs.title,
-                modules = settings.model!!.blockchains.values.map { it.module },
+                modules = settings.model!!.blockchains.map {
+                    it.value.module ?: throw CliktError("Cannot generate docs for ${it.key} without main module")
+                },
                 projectRoot = settings.sourceDir!!
         )
                 .customStyleSheets(model.docs.customStyleSheets)

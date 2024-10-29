@@ -1,8 +1,6 @@
 package com.chromia.api.impl.compile
 
 import com.chromia.cli.model.BlockchainModel
-import com.chromia.cli.model.CompileModel
-import com.chromia.cli.model.MinimalRellVersionStrictGtv
 import net.postchain.base.BaseBlockBuildingStrategy
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
@@ -16,7 +14,7 @@ val standardGtxModules = listOf(
         StandardOpsGTXModule::class.qualifiedName!!,
 )
 
-internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, compileModel: CompileModel, extraModules: List<String> = listOf()) = apply {
+internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, extraModules: List<String> = listOf()) = apply {
     // TODO: override these from config ([BlockchainModel.config])
     update(gtv("name" to gtv(BaseBlockBuildingStrategy::class.qualifiedName!!)), "blockstrategy")
     update(gtv(GTXBlockchainConfigurationFactory::class.qualifiedName!!), "configurationfactory")
@@ -26,17 +24,15 @@ internal fun GtvBuilder.addDefaultEntries(blockchainModel: BlockchainModel, comp
     update(gtv(true), "revolt", "revolt_when_should_build_block")
     update(gtv(1000), "blockstrategy", "mininterblockinterval")
 
-    val modulesGtv: MutableList<Gtv> = standardGtxModules.map { gtv(it) }.toMutableList()
+    val modulesGtv: MutableList<Gtv> = mutableListOf()
+    extraModules.forEach { modulesGtv.add(gtv(it)) }
+    modulesGtv.add(gtv(StandardOpsGTXModule::class.qualifiedName!!))
     blockchainModel.config["modules"]?.let {
         modulesGtv.add(it)
     }
-    extraModules.forEach { modulesGtv.add(gtv(it)) }
     update(gtv(modulesGtv), "gtx", "modules")
     blockchainModel.config.filterKeys { it != "modules" }
             .forEach { (path, value) -> update(value, path) }
-    if (compileModel.langVersion >= MinimalRellVersionStrictGtv) {
-        update(gtv(compileModel.strictGtvConversion), "gtx", "rell", "strictGtvConversion")
-    }
     renameIcmfBrid()
 }
 

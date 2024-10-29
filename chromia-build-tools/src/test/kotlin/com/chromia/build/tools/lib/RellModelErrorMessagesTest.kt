@@ -82,26 +82,6 @@ internal class RellModelErrorMessagesTest {
     }
 
     @Test
-    fun `missing required property in rell model test`(@TempDir dir: Path) {
-        testData(dir) {
-            config {
-                blockchains("""
-                blockchains:
-                    bc1:
-                        invalidName: main
-                """.trimIndent())
-            }
-        }
-        val throwable = assertThrows<ValidationException> { parseModel(dir.resolve("chromia.yml").toFile()) }
-        assertThat(throwable.message!!).contains("""
-            Following errors found in chromia.yml:
-            Additional property 'bc1' found but was invalid (location: blockchains->bc1)
-            Required property "module" not found (location: blockchains->bc1)
-            Additional property 'invalidName' found but was invalid (location: blockchains->bc1->invalidName)
-        """.trimIndent())
-    }
-
-    @Test
     fun `incorrect type of additional property`(@TempDir dir: Path) {
         testData(dir) {
             config {

@@ -13,7 +13,7 @@ data class BlockchainDeploymentResult(
 
 fun List<BlockchainDeploymentResult>.isSuccess() = all { it.success }
 fun List<BlockchainDeploymentResult>.save(target: Path, prefix: String? = null, suffix: String? = null) = forEach { res ->
-    res.blockchain.save(target, buildString {
+    res.blockchain.saveLenient(target, buildString {
         prefix?.let { append("${it}_") }
         append(res.blockchain.name)
         suffix?.let { append("_$it") }

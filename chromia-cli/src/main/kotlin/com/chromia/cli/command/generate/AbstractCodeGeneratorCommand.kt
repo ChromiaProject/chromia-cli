@@ -27,7 +27,9 @@ abstract class AbstractCodeGeneratorCommand(name: String, help: String): Chromia
     final override fun run() {
         val cliEnv = CliktCliEnv(this)
         val generator = CodeGenerator(factory(), codeGeneratorConfig(), cliEnv)
-        val modules = moduleName ?: settings.model.blockchains.map { it.value.module }
+        val modules = moduleName ?: settings.model.blockchains.map {
+            it.value.module ?: throw CliktError("Cannot run tests for blockchain ${it.key} without main module")
+        }
         val sections = modules.flatMap { generator.createSections(settings.sourceDir, listOf(it)) }
         val documents = generator.constructDocuments(sections)
         val targetFolder = target ?: File(settings.targetDir, defaultTargetFolder)

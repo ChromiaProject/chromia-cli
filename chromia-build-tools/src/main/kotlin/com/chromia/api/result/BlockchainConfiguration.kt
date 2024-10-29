@@ -2,6 +2,7 @@ package com.chromia.api.result
 
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfig
 import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfigAsBinaryGtv
+import com.chromia.build.tools.compile.BlockchainConfigurationWriter.storeConfigLenient
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.compile.withSigner
 import net.postchain.common.BlockchainRid
@@ -24,6 +25,13 @@ data class BlockchainConfiguration(override val name: String, val config: Gtv): 
      * [character not allowed in XML](https://www.w3.org/TR/xml/#NT-Char)
      */
     fun save(target: Path, fileName: String = name) = storeConfig(config, fileName, target)
+
+    /**
+     * Save configuration as GtvML (XML).
+     *
+     * Will output ill-formed XML if [config] contains [character not allowed in XML](https://www.w3.org/TR/xml/#NT-Char)
+     */
+    fun saveLenient(target: Path, fileName: String = name) = storeConfigLenient(config, fileName, target)
 
     /**
      * Save configuration as binary GTV.

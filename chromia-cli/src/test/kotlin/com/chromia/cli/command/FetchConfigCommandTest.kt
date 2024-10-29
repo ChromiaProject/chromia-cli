@@ -96,6 +96,20 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
               schema: txcommandtest0_0
         """.trimIndent()
 
+    private val sourceChromiaYmlWithOnlyWeb = """
+            blockchains:
+              a:
+                webStatic: web
+                webCacheTtlSeconds: 17
+                config:
+                  signers:
+                    - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+                  blockstrategy:
+                    name: net.postchain.devtools.OnDemandBlockBuildingStrategy
+            database:
+              schema: txcommandtest0_0
+        """.trimIndent()
+
     private val expectedConfigYml = """
     ---
     add_primary_key_to_header: 1
@@ -107,8 +121,8 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
     gtx:
       modules:
       - net.postchain.rell.module.RellPostchainModuleFactory
-      - net.postchain.gtx.StandardOpsGTXModule
       - net.postchain.web.WebStaticGTXModuleFactory
+      - net.postchain.gtx.StandardOpsGTXModule
       rell:
         compilerVersion: 0.14.2
         moduleArgs:
@@ -138,8 +152,8 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
     configurationfactory: net.postchain.gtx.GTXBlockchainConfigurationFactory
     gtx:
       modules:
-      - net.postchain.gtx.StandardOpsGTXModule
       - net.postchain.web.WebStaticGTXModuleFactory
+      - net.postchain.gtx.StandardOpsGTXModule
     revolt:
       fast_revolt_status_timeout: 2000
       revolt_when_should_build_block: 1
@@ -256,78 +270,14 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
 
     @Test
     fun fromFileToDirWithOnlyWeb(@TempDir dir: Path) {
-        with(File(dir.toFile(), "build/a.xml")) {
+        with(File(dir.toFile(), "web/index.html")) {
             parentFile.mkdirs()
-            writeText("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <dict>
-                <entry key="add_primary_key_to_header">
-                    <int>1</int>
-                </entry>
-                <entry key="blockstrategy">
-                    <dict>
-                        <entry key="mininterblockinterval">
-                            <int>1000</int>
-                        </entry>
-                        <entry key="name">
-                            <string>net.postchain.devtools.OnDemandBlockBuildingStrategy</string>
-                        </entry>
-                    </dict>
-                </entry>
-                <entry key="config_consensus_strategy">
-                    <string>HEADER_HASH</string>
-                </entry>
-                <entry key="configurationfactory">
-                    <string>net.postchain.gtx.GTXBlockchainConfigurationFactory</string>
-                </entry>
-                <entry key="gtx">
-                    <dict>
-                        <entry key="modules">
-                            <array>
-                                <string>net.postchain.gtx.StandardOpsGTXModule</string>
-                                <string>net.postchain.web.WebStaticGTXModuleFactory</string>
-                            </array>
-                        </entry>
-                    </dict>
-                </entry>
-                <entry key="revolt">
-                    <dict>
-                        <entry key="fast_revolt_status_timeout">
-                            <int>2000</int>
-                        </entry>
-                        <entry key="revolt_when_should_build_block">
-                            <int>1</int>
-                        </entry>
-                    </dict>
-                </entry>
-                <entry key="signers">
-                    <array>
-                        <bytea>03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070</bytea>
-                    </array>
-                </entry>
-                <entry key="web_static">
-                    <dict>
-                        <entry key="cache_ttl_seconds">
-                            <int>17</int>
-                        </entry>
-                        <entry key="content">
-                            <dict>
-                                <entry key="index.html">
-                                    <dict>
-                                        <entry key="content">
-                                            <string>&lt;html&gt;&lt;/html&gt;</string>
-                                        </entry>
-                                        <entry key="content_type">
-                                            <string>text/html</string>
-                                        </entry>
-                                    </dict>
-                                </entry>
-                            </dict>
-                        </entry>
-                    </dict>
-                </entry>
-            </dict>
-            """)
+            writeText(sourceHtml)
         }
+        with(File(dir.toFile(), "chromia.yml")) {
+            writeText(sourceChromiaYmlWithOnlyWeb)
+        }
+        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
         val res = FetchConfigCommand().test(listOf(
                 "--blockchain-config", "${dir.absolutePathString()}/build/a.xml",
                 "--target", "${dir.absolutePathString()}/out"

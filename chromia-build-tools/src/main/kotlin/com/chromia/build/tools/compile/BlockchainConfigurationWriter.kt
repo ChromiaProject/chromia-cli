@@ -26,6 +26,21 @@ object BlockchainConfigurationWriter {
     }
 
     /**
+     * Store configuration as GtvML (XML).
+     *
+     * Will output ill-formed XML if any [GtvString] in [gtvConfig] contains
+     * [character not allowed in XML](https://www.w3.org/TR/xml/#NT-Char)
+     */
+    fun storeConfigLenient(
+            gtvConfig: Gtv,
+            outputName: String,
+            outputDir: Path,
+    ) {
+        Files.createDirectories(outputDir)
+        outputDir.resolve("${outputName}.xml").writeText(GtvMLEncoder.encodeXMLGtv(gtvConfig))
+    }
+
+    /**
      * Store configuration as binary GTV.
      */
     fun storeConfigAsBinaryGtv(

@@ -6,7 +6,7 @@ import net.postchain.gtv.listMapAndPrimitivesToGtv
 import java.nio.file.Path
 
 data class BlockchainModel(
-        val module: String,
+        val module: String? = null,
         val type: Type,
         val moduleArgs: Map<String, Map<String, Gtv>> = mapOf(),
         val config: Map<String, Gtv> = mapOf(),
@@ -17,7 +17,7 @@ data class BlockchainModel(
     companion object {
         @Suppress("UNCHECKED_CAST")
         fun load(data: Map<String, Any>, additionalParameter: String, dir: Path) = BlockchainModel(
-                module = ensureType<String>(data["module"], "blockchain", "module"),
+                module = ensureType<String?>(data["module"], "blockchain", "module"),
                 type = ensureType<String?>(data["type"], "blockchain", "library")?.let { Type.valueOf(it.uppercase()) } ?: Type.BLOCKCHAIN,
                 moduleArgs = ensureType<Map<String, Any?>?>(data["moduleArgs"], "blockchain", additionalParameter, "moduleArgs")
                         ?.mapValues { a ->

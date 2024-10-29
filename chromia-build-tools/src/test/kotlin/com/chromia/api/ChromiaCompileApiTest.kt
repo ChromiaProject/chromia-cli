@@ -6,6 +6,7 @@ import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import assertk.assertions.isTrue
 import com.chromia.build.tools.lib.DirectoryHashCalculator
 import com.chromia.build.tools.lib.DirectoryHashCalculator.RidStrategy
@@ -201,7 +202,7 @@ internal class ChromiaCompileApiTest {
     }
 
     @Test
-    fun `static web content`() {
+    fun `Rell and static web content`() {
         testData(dir) {
             config {
                 blockchains("""
@@ -218,11 +219,46 @@ internal class ChromiaCompileApiTest {
         val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
         assertThat(result.size).isEqualTo(1)
         val outputGtv = result[0].config
+
         assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
                 "net.postchain.rell.module.RellPostchainModuleFactory",
+                "net.postchain.web.WebStaticGTXModuleFactory",
                 "net.postchain.gtx.StandardOpsGTXModule",
-                "net.postchain.web.WebStaticGTXModuleFactory"
         )
+
+        assertThat(outputGtv["gtx"]?.get("rell")?.get("modules")?.asArray()?.get(0)?.asString()).isEqualTo("main")
+
+        assertThat(outputGtv["web_static"]?.get("cache_ttl_seconds")?.asInteger()).isEqualTo(60L)
+        assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content")?.asString()).isEqualTo("<html></html>")
+        assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content_type")?.asString()).isEqualTo("text/html")
+        assertThat(outputGtv["web_static"]?.get("content")?.get("img/image.png")?.get("content")?.asByteArray()?.wrap()).isEqualTo(byteArrayOf(1, 2, 3, 4).wrap())
+        assertThat(outputGtv["web_static"]?.get("content")?.get("img/image.png")?.get("content_type")?.asString()).isEqualTo("image/png")
+    }
+
+    @Test
+    fun `Only static web content`() {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      hello:
+                        webStatic: web
+                        webCacheTtlSeconds: 60                    
+                """.trimIndent())
+            }
+            addFile("web/index.html", "<html></html>")
+            addFile("web/img/image.png", byteArrayOf(1, 2, 3, 4))
+        }
+        val result = ChromiaCompileApi.build(cliEnv, parseModel(dir.resolve("chromia.yml")))
+        assertThat(result.size).isEqualTo(1)
+        val outputGtv = result[0].config
+        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
+                "net.postchain.web.WebStaticGTXModuleFactory",
+                "net.postchain.gtx.StandardOpsGTXModule",
+        )
+
+        assertThat(outputGtv["gtx"]?.get("rell")).isNull()
+
         assertThat(outputGtv["web_static"]?.get("cache_ttl_seconds")?.asInteger()).isEqualTo(60L)
         assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content")?.asString()).isEqualTo("<html></html>")
         assertThat(outputGtv["web_static"]?.get("content")?.get("index.html")?.get("content_type")?.asString()).isEqualTo("text/html")

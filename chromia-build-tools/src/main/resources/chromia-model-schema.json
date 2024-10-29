@@ -191,9 +191,6 @@
   "$defs": {
     "blockchain": {
       "type": "object",
-      "required": [
-        "module"
-      ],
       "description": "Name of blockchain (cannot contain hyphens '-')",
       "additionalProperties": false,
       "properties": {
