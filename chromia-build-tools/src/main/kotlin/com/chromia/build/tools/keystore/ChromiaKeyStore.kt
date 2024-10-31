@@ -10,11 +10,11 @@ import net.postchain.crypto.KeyPair
 
 class ChromiaKeyStore(val keyId: String = "chromia_key") {
 
-    private val chromiaHome = System.getenv("CHROMIA_HOME") ?: (System.getProperty("user.home") + "/.chromia")
+    val chromiaHome = System.getenv("CHROMIA_HOME") ?: (System.getProperty("user.home") + "/.chromia")
     private val publicKeyFile = Path("$chromiaHome/$keyId.pubkey")
     private val privateKeyFile = Path("$chromiaHome/$keyId")
 
-    fun saveKeyPair(keyPair: KeyPair) {
+    fun saveKeyPair(keyPair: KeyPair): String {
         if (findKeyPair() != null) {
             throw UserMistake("Key pair with keyId: $keyId already exists in $chromiaHome")
         }
@@ -28,6 +28,7 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
             |Keypair is written to $chromiaHome. To use this key pair, set key.id = $keyId in your configuration file
         """.trimMargin()
         )
+        return chromiaHome
     }
 
     fun loadKeyPair(): KeyPair {
