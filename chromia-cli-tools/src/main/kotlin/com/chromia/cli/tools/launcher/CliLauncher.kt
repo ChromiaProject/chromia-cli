@@ -23,7 +23,7 @@ import java.nio.file.NoSuchFileException
 import java.sql.SQLException
 import kotlin.system.exitProcess
 
-open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
+open class CliLauncher(val name: String) : NoOpCliktCommand(name = name) {
     private val logger = KotlinLogging.logger {}
 
     init {
@@ -106,6 +106,6 @@ open class CliLauncher(name: String) : NoOpCliktCommand(name = name) {
 
     private fun logFolderMessage(): String {
         val logFolder = System.getProperty("CHR_LOG_FOLDER") ?: "/usr/app/logs"
-        return "Please refer to log file for more details: ${logFolder}${File.separator}chromia-cli.log"
+        return "Please refer to log file for more details: ${logFolder}${File.separator}${if (name == "chr") "chromia-cli" else name}.log"
     }
 }
