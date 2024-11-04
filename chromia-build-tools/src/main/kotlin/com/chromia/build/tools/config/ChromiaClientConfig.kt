@@ -47,13 +47,14 @@ class ChromiaClientConfig private constructor(
     fun client(provider: PostchainClientProvider) = provider.createClient(config)
 
     companion object {
+        const val DEFAULT_API_URL = "http://localhost:7740"
 
         val EMPTY = from(PropertiesConfiguration())
 
         fun from(config: Configuration): ChromiaClientConfig = PropertiesConfiguration()
                 .apply {
                     copy(config)
-                    if (!config.containsKey("api.url")) setProperty("api.url", "http://not-set")
+                    if (!config.containsKey("api.url")) setProperty("api.url", DEFAULT_API_URL)
                     if (!config.containsKey("brid")) setProperty("brid", BlockchainRid.ZERO_RID)
                 }
                 .let { PostchainClientConfig.fromConfiguration(it) }

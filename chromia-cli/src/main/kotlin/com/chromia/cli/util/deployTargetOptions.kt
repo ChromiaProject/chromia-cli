@@ -1,6 +1,7 @@
 package com.chromia.cli.util
 
 import com.chromia.build.tools.config.ChromiaClientConfig
+import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.cli.tools.config.blockchainRidOption
@@ -80,7 +81,7 @@ class LocalDeploymentOption(
         get() = if (apiUrl != DEFAULT_API_URL) {
             apiUrl
         } else {
-            config().apiUrls.takeIf { it != "http://not-set" } ?: apiUrl
+            config().apiUrls
         }
 
     override val brid
@@ -99,8 +100,4 @@ class LocalDeploymentOption(
     private fun blockchainRidFromIid(cid: Int) = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(url))), url).fetchBlockchainRid(cid)
 
     override fun createClient(config: ChromiaClientConfig) = config.client(PostchainClientProviderImpl())
-
-    companion object {
-        const val DEFAULT_API_URL = "http://localhost:7740"
-    }
 }
