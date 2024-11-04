@@ -53,6 +53,15 @@ class TxIT {
     }
 
     @Test
+    fun formatHelp() {
+        TestProcess.Builder("tx", "--help")
+                .exitCode(0)
+                .timeout(Duration.ofSeconds(5))
+                .startCondition("Make a transaction towards a node")
+                .start()
+    }
+
+    @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
         testData(dir) {
             config {

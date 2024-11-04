@@ -14,6 +14,7 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.time.Duration
 
 
 class QueryDeploymentModel(val model: Model) : Model by model {
@@ -28,6 +29,15 @@ class QueryDeploymentModel(val model: Model) : Model by model {
 }
 
 class QueryIT {
+
+    @Test
+    fun formatHelp() {
+        TestProcess.Builder("query", "--help")
+                .exitCode(0)
+                .timeout(Duration.ofSeconds(5))
+                .startCondition("Make a query towards a running node")
+                .start()
+    }
 
     @Test
     fun queryTowardsDeployment(@TempDir dir: Path) {
