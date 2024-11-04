@@ -15,6 +15,7 @@ import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
 import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
+import com.chromia.cli.command.tools.ToolsCommand
 import com.chromia.cli.tools.launcher.CliLauncher
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.versionOption
@@ -45,6 +46,7 @@ fun main(args: Array<out String>) = CliLauncher("chr")
                 TxCommand(),
                 CodeCommand.commands(),
                 FetchConfigCommand(),
-                MultiSignatureCommand.commands()
+                MultiSignatureCommand.commands(),
+                ToolsCommand.commands(),
         )
         .catchingAllExceptionsMain(args)

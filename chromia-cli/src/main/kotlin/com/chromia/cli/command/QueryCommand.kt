@@ -8,6 +8,7 @@ import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.formatJson
 import com.chromia.cli.util.formatRaw
 import com.chromia.cli.util.formatXml
+import com.chromia.cli.util.formatYaml
 import com.chromia.cli.util.outputFormat
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -91,6 +92,7 @@ class QueryCommand : ChromiaCommand(help = """
             OutputFormat.raw -> formatRaw(gtv)
             OutputFormat.JSON -> formatJson(gtv)
             OutputFormat.XML -> formatXml(gtv)
+            OutputFormat.YAML -> formatYaml(gtv)
         })
     }
 }

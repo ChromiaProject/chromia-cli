@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class TestProcess private constructor(processBuilder: ProcessBuilder, startCondition: String?, wholeOutput: String?,
                                       shouldFinish: Boolean, expectedExitCode: Int, timeout: Duration,
-                                      val verbose: Boolean, val input: String?) : AutoCloseable {
+                                      val verbose: Boolean, val input: String?, val binaryInput: ByteArray?) : AutoCloseable {
 
     val process = processBuilder.start()
     val reader = BufferedReader(InputStreamReader(process.inputStream))
@@ -21,6 +21,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startCondi
     init {
         if (verbose) println("Starting command " + processBuilder.command().subList(1, processBuilder.command().size))
         if (input != null) process.outputStream.use { it.writer().use { w -> w.write(input) } }
+        if (binaryInput != null) process.outputStream.use { it.write(binaryInput) }
         if (!startCondition.isNullOrBlank()) {
             waitUntil(startCondition, timeout)
         }
@@ -83,6 +84,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startCondi
         private val env = mutableMapOf<String, String>()
         private var workingDir: File? = null
         private var input: String? = null
+        private var binaryInput: ByteArray? = null
         fun setConfig(file: File) = apply { config = file }
         fun setWorkingDir(file: File) = apply { workingDir = file }
         fun awaitCompletion(value: Boolean) = apply { shouldFinish = value }
@@ -93,6 +95,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startCondi
         fun verbose() = apply { verbose = true }
         fun env(vararg envvars: Pair<String, String>) = apply { env.putAll(envvars) }
         fun input(s: String) = apply { input = s }
+        fun binaryInput(b: ByteArray) = apply { binaryInput = b }
 
         fun start() = start {}
 
@@ -115,7 +118,7 @@ class TestProcess private constructor(processBuilder: ProcessBuilder, startCondi
 
                         env.forEach { (k, v) -> environment()[k] = v }
                     }
-            return TestProcess(pb, startCondition, wholeOutput, shouldFinish, exitCode, timeout, verbose, input).use(onCompleted)
+            return TestProcess(pb, startCondition, wholeOutput, shouldFinish, exitCode, timeout, verbose, input, binaryInput).use(onCompleted)
         }
     }
 }

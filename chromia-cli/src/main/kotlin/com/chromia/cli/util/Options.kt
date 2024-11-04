@@ -15,7 +15,7 @@ import net.postchain.rell.base.model.R_ModuleName
 
 @Suppress("EnumEntryName")
 enum class OutputFormat {
-    pretty, raw, JSON, XML
+    pretty, raw, JSON, XML, YAML
 }
 
 @Suppress("EnumEntryName")

@@ -41,7 +41,10 @@ open class CliLauncher(val name: String) : NoOpCliktCommand(name = name) {
     }
 
     override fun aliases() = createAliases() +
-            mapOf("generate-client-stubs" to listOf("generate", "client-stubs")) // Deprecated alias
+            mapOf(
+                    "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
+                    "gtv" to listOf("tools", "gtv"),
+            )
 
     private fun translateExceptionToMessage(exception: Exception): String {
         val humanFriendlyMessage = when (exception) {

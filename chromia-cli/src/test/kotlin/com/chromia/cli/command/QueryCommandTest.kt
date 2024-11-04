@@ -249,6 +249,24 @@ class QueryCommandTest : IntegrationTestSetup() {
     }
 
     @Test
+    fun yamlOutput() {
+        withModel(TestModel().withQuery("test_query", queryResponse)) {
+            val res = QueryCommand().test(listOf("test_query", "-f", "yaml", "--api-url", apiUrl))
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).isEqualTo("""---
+            |a:
+            |- 1
+            |- foo bar
+            |- null
+            |b:
+            |- x"1234ABCD"
+            |- 19223372036854775807L
+            |
+            """.trimMargin())
+        }
+    }
+
+    @Test
     fun rawOutputNull() {
         withModel(TestModel().withQuery("test_query", GtvNull)) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))

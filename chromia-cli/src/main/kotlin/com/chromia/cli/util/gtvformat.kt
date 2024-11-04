@@ -6,6 +6,7 @@ import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvAdapter
 import net.postchain.gtv.GtvType
 import net.postchain.gtv.gtvml.GtvMLEncoder
+import net.postchain.gtv.yaml.GtvYaml
 
 private val PRETTY_GSON = GsonBuilder()
         .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false))
@@ -20,6 +21,8 @@ fun formatXml(gtv: Gtv): String {
     return xml.removePrefix("""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                     |""".trimMargin()).dropLast(1)
 }
+
+fun formatYaml(gtv: Gtv): String = GtvYaml().dump(gtv).dropLast(1)
 
 fun formatRaw(gtv: Gtv): String = when (gtv.type) {
     GtvType.NULL -> "null"

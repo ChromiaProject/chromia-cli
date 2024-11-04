@@ -9,6 +9,7 @@ import com.chromia.cli.util.module
 import com.chromia.cli.util.outputFormat
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.deprecated
@@ -109,6 +110,7 @@ class ReplCommand : ChromiaCommand(help = """
                 OutputFormat.raw -> ReplValueFormat.ONE_ITEM_PER_LINE
                 OutputFormat.JSON -> ReplValueFormat.GTV_JSON
                 OutputFormat.XML -> ReplValueFormat.GTV_XML
+                else -> throw UsageError("Unsupported output format $outputFormat", paramName = "--output-format")
             }
 
         override fun createOutputChannel() = object : ReplOutputChannel {
