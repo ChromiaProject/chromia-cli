@@ -9,7 +9,7 @@ import net.postchain.gtv.gtvml.GtvMLEncoder
 import net.postchain.gtv.yaml.GtvYaml
 
 private val PRETTY_GSON = GsonBuilder()
-        .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false))
+        .registerTypeAdapter(Gtv::class.java, GtvAdapter(strict = false, supportBigInteger = true))
         .serializeNulls()
         .setPrettyPrinting()
         .create()!!
