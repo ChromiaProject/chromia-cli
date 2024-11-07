@@ -10,12 +10,12 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import java.io.File
+import java.io.FileOutputStream
+import java.util.Properties
 import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
-import java.io.File
-import java.io.FileOutputStream
-import java.util.*
 
 class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/private key pair") {
 
@@ -28,66 +28,71 @@ class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/p
     )
             .default("")
 
-    private val fileToGenerate: GeneratedFile? by mutuallyExclusiveOptions(name = "File format",
+    private val keygenOutputMode: KeygenOutputMode? by mutuallyExclusiveOptions(
+            name = "File format",
             option1 = option("-f", "--file", help = "Set file to save keypair to explicitly")
                     .file(canBeDir = false)
-                    .convert { GeneratedFile.PropertiesFile(it.name, it.parentFile, it) },
+                    .convert { KeygenOutputMode.PropertiesFile(it.name, it.parentFile, it) },
+
             option2 = option("--key-id", help = "Name the generated key with an id")
-                    .convert { GeneratedFile.KeyIdFile(it) }
-    )
-            .single()
-            .required()
+                    .convert { KeygenOutputMode.KeyIdFile(it) },
 
-
-    private val dry by option("--dry", help = "Perform dry run, prints keys in terminal and does not save keys to disk").flag()
+            options = arrayOf(
+                    option("--dry", help = "Perform dry run, prints keys in terminal and does not save keys to disk").flag()
+                            .convert { KeygenOutputMode.DryRun }
+            )
+    ).single().required()
 
     /**
      * Cryptographic key generator. Will generate a pair of public and private keys and print to stdout.
      */
     override fun run() {
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
-        if (dry) {
-            echo("""
-                    |mnemonic:  $mnemonic 
-                    |pubkey:    ${keyPair.pubKey.data.toHex()}
-                    |privkey:   ${keyPair.privKey.data.toHex()}
-                """.trimMargin())
-        } else {
-            when (fileToGenerate) {
-                is GeneratedFile.KeyIdFile -> {
-                    val name = (fileToGenerate as GeneratedFile.KeyIdFile).name
-                    val chromiaKeyStore = ChromiaKeyStore(name)
-                    val existingKeyPair = chromiaKeyStore.findKeyPair()
-                    if (existingKeyPair != null) {
-                        throw PrintMessage("Keypair with id: ${chromiaKeyStore.keyId} already exists", 1)
-                    }
-                    val target = chromiaKeyStore.saveKeyPair(keyPair)
-                    val mnemonicFile = saveSecp256k1Mnemonic(mnemonic, File("$target/${name}_mnemonic"), keyPair)
-                    echo("""
+
+        when (keygenOutputMode) {
+            is KeygenOutputMode.KeyIdFile -> {
+                val name = (keygenOutputMode as KeygenOutputMode.KeyIdFile).name
+                val chromiaKeyStore = ChromiaKeyStore(name)
+                val existingKeyPair = chromiaKeyStore.findKeyPair()
+                if (existingKeyPair != null) {
+                    throw PrintMessage("Keypair with id: ${chromiaKeyStore.keyId} already exists", 1)
+                }
+                val target = chromiaKeyStore.saveKeyPair(keyPair)
+                val mnemonicFile = saveSecp256k1Mnemonic(mnemonic, File("$target/${name}_mnemonic"), keyPair)
+                echo("""
                 |Mnemonic is written to ${mnemonicFile.absolutePath}, take appropriate action on the content of the file to make sure it is kept safe
                 |pubkey:    ${keyPair.pubKey.data.toHex()}
             """.trimMargin()
-                    )
-                }
+                )
+            }
 
-                is GeneratedFile.PropertiesFile -> {
-                    val fileObject = (fileToGenerate as GeneratedFile.PropertiesFile)
-                    saveSecp256k1KeyPair(keyPair, fileObject.file)
-                    val mnemonicFilePath = if (fileObject.directory == null) {
-                        "${fileObject.name}_mnemonic"
-                    } else {
-                        "${fileObject.directory}/${fileObject.name}_mnemonic"
-                    }
-                    val mnemonicFile = saveSecp256k1Mnemonic(mnemonic, File(mnemonicFilePath), keyPair)
-                    echo("""
+            is KeygenOutputMode.PropertiesFile -> {
+                val fileObject = (keygenOutputMode as KeygenOutputMode.PropertiesFile)
+                saveSecp256k1KeyPair(keyPair, fileObject.file)
+                val mnemonicFilePath = if (fileObject.directory == null) {
+                    "${fileObject.name}_mnemonic"
+                } else {
+                    "${fileObject.directory}/${fileObject.name}_mnemonic"
+                }
+                val mnemonicFile = saveSecp256k1Mnemonic(mnemonic, File(mnemonicFilePath), keyPair)
+                echo("""
                     |Keypair is written to ${fileObject.file.absolutePath}
                     |Mnemonic is written to ${mnemonicFile.absolutePath}, take appropriate action on the content of the file to make sure it is kept safe
                     |pubkey:    ${keyPair.pubKey.data.toHex()}
                 """.trimMargin()
-                    )
-                }
+                )
+            }
 
-                null -> {}
+            is KeygenOutputMode.DryRun -> {
+                echo("""
+                    |mnemonic:  $mnemonic 
+                    |pubkey:    ${keyPair.pubKey.data.toHex()}
+                    |privkey:   ${keyPair.privKey.data.toHex()}
+                """.trimMargin())
+            }
+
+            else -> {
+                PrintMessage("No keypair was generated, must provide one of --file, --key-id, --dry")
             }
         }
     }
@@ -128,7 +133,8 @@ private fun saveSecp256k1Mnemonic(mnemonic: String, file: File, keyPair: KeyPair
     return file
 }
 
-sealed class GeneratedFile {
-    data class PropertiesFile(val name: String, val directory: File?, val file: File) : GeneratedFile()
-    data class KeyIdFile(val name: String) : GeneratedFile()
+sealed class KeygenOutputMode {
+    data class PropertiesFile(val name: String, val directory: File?, val file: File) : KeygenOutputMode()
+    data class KeyIdFile(val name: String) : KeygenOutputMode()
+    data object DryRun : KeygenOutputMode()
 }

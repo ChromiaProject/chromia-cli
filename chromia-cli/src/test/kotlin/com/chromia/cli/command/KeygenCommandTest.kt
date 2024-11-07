@@ -6,12 +6,6 @@ import assertk.assertions.exists
 import assertk.assertions.isEqualTo
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import net.postchain.common.PropertiesFileLoader
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.io.TempDir
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
@@ -19,6 +13,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.readText
+import net.postchain.common.PropertiesFileLoader
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 class KeygenCommandTest {
 
@@ -70,7 +70,7 @@ class KeygenCommandTest {
             val error = KeygenCommand().test(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train"
             ))
-            assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: must provide one of --file, --key-id\n")
+            assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: must provide one of --file, --key-id, --dry\n")
         }
     }
 
@@ -122,7 +122,7 @@ class KeygenCommandTest {
                         "--key-id", "myKeyId",
                         "--file", ".secret",
                 ))
-        assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: option --file cannot be used with --key-id\n")
+        assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: option --file cannot be used with --key-id or --dry\n")
     }
 
     @Test
@@ -133,7 +133,6 @@ class KeygenCommandTest {
         EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
             val output = KeygenCommand().test(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train",
-                    "--key-id", myKeyId,
                     "--dry"
             ))
 
