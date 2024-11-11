@@ -54,7 +54,7 @@ class FTAuthenticator internal constructor(private val client: FTAuthQuery, priv
     override fun addAuthenticationOperation(transactionBuilder: TransactionBuilder, opName: String, pubKey: PubKey, optionalAccountId: String?, optionalAuthDescriptorId: String?) {
         val account = optionalAccountId?.hexStringToByteArray() ?: findAccountId(pubKey)
         val authDescriptorId = findValidAuthDescriptorIdForOperation(opName, account, pubKey, optionalAuthDescriptorId)
-    
+
         transactionBuilder.addOperation("ft4.ft_auth", gtv(account), gtv(authDescriptorId))
     }
 
@@ -107,14 +107,16 @@ class FTAuthenticator internal constructor(private val client: FTAuthQuery, priv
 
     private fun Ft4GetAccountAuthDescriptorsBySignerResult.getFlags() = this.args.asArray().first().asArray().map { it.asString() }
 
-    private fun findAccountId(pubKey: PubKey): ByteArray {
-        return client.findAccountsQuery(pubKey).let {
-            if (it.isEmpty()) throw PrintMessage("No FT4 Account found for public key: $pubKey")
-            if (it.size == 1) it.first()
-            else
-                terminal.prompt("More than one account found, which one should we use: ", choices = it.map { ac -> ac.toHex() })
-                        ?.hexStringToByteArray()
-                        ?: throw Abort()
+    private fun findAccountId(pubKey: PubKey): ByteArray = client.findAccountsQuery(pubKey).let {
+        if (it.isEmpty()) throw PrintMessage("No FT4 Account found for public key: $pubKey", statusCode = 1)
+        if (it.size == 1) it.first()
+        else if (terminal.terminalInfo.inputInteractive) {
+            terminal.prompt("More than one account found, which one should we use: ", choices = it.map { ac -> ac.toHex() })
+                    ?.hexStringToByteArray()
+                    ?: throw Abort()
+        } else {
+            throw PrintMessage("More than one account found, please specify which one to use with --ft-account-id option",
+                    statusCode = 1)
         }
     }
 
