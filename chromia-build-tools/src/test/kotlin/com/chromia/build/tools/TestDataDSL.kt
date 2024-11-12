@@ -2,11 +2,11 @@ package com.chromia.build.tools
 
 import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.cli.model.RellLibraryModel
+import net.postchain.crypto.KeyPair
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
-import net.postchain.crypto.KeyPair
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 
 class TestDataBuilder {
 

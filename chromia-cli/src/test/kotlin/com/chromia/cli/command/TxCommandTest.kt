@@ -84,6 +84,14 @@ class TxCommandTest : IntegrationTestSetup() {
     }
 
     @Test
+    fun wrongFormatOfbridForIccfSourceThrowsError() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--iccf-source", "00"))
+            assertThat(res.stderr).contains("invalid value for --iccf-source: Wrong size of Blockchain RID, was 1 should be 32 (64 characters)")
+        }
+    }
+
+    @Test
     fun noAwaitTxGivesCorrectStatusCode() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--no-await"))

@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import com.chromia.cli.ft.FTAuth
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
@@ -15,13 +14,12 @@ import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
-import com.github.ajalt.clikt.parameters.types.int
-import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.TxRid
-import net.postchain.client.defaultHttpHandler
+import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.GtvDecoder
@@ -69,7 +67,10 @@ class TxCommand : ChromiaCommand(help = """
         val ftAccountId by option(help = "Explicitly specify which account to use")
     }
     private val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as first argument to the operation").validate { it.hexStringToWrappedByteArray() }
-    private val iccfSource by option(help = "Chain id for the chain which the tx to be confirmed has taken place").int()
+    private val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place")
+            .convert {
+                BlockchainRid.buildFromHex(it)
+            }
 
     private val opName by argument(help = "name of the operation to execute.")
 
@@ -100,12 +101,11 @@ class TxCommand : ChromiaCommand(help = """
         val transactionBuilder = client.transactionBuilder()
         val args = if (iccfTx != null) {
             require(iccfSource != null) { "Chain id for iccf transaction must be specified" }
-            val sourceBrid = bridFetcher(client.config).fetchBlockchainRid(iccfSource!!)
-            val sourceClient = target.createClient(postchainClientConfig.setBrid(sourceBrid))
+            val sourceClient = target.createClient(postchainClientConfig.setBrid(iccfSource!!))
             val proof = sourceClient.confirmationProof(TxRid(iccfTx!!))
             val txHash = GtvDecoder.decodeGtv(proof)["hash"]!!
             val tx = sourceClient.getTransaction(TxRid(iccfTx!!))
-            transactionBuilder.addOperation("iccf_proof", GtvFactory.gtv(sourceBrid), txHash, GtvFactory.gtv(proof))
+            transactionBuilder.addOperation("iccf_proof", GtvFactory.gtv(iccfSource!!), txHash, GtvFactory.gtv(proof))
             listOf(GtvFactory.decodeGtv(tx)) + args
         } else args
         if (ftAuthOptions.ftAuth) {
@@ -125,6 +125,4 @@ class TxCommand : ChromiaCommand(help = """
             throw PrintMessage("Transaction Failed with code ${res.httpStatusCode}: ${res.rejectReason}", statusCode = 1)
         echo("transaction with rid ${res.txRid.rid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
     }
-
-    private fun bridFetcher(clientConfig: PostchainClientConfig) = BridFetcher(defaultHttpHandler(clientConfig), clientConfig.endpointPool.first().url)
 }

@@ -17,6 +17,7 @@ class IccfIT {
 
     @Test
     fun iccfIT(@TempDir dir: Path) {
+        //If you change the code, verify the new brids to be used in the test
         testData(dir) {
             config {
                 blockchains(
@@ -55,7 +56,7 @@ class IccfIT {
                     val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 0)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", "0", "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", "F2C0294AB201841551E86DB31E650B0479749432CC713782BAB280C7C6264597", "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
                 }
     }
 }

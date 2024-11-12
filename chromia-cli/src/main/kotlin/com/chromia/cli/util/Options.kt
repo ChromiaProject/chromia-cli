@@ -40,8 +40,6 @@ fun ParameterHolder.blockchainOption(help: String, metavar: String? = null) =
 fun CliktCommand.wipeDatabaseOption() =
         option("--wipe", help = "If a database should be wiped before startup").flag("--no-wipe")
 
-fun CliktCommand.showBridOption() = option(help = "Show blockchain rid").flag()
-
 fun ParameterHolder.publicKeyOption(help: String = "Set public key explicitly") = option("-pk", "--pubkey", help = help)
         .validate {
             require(it.matches(Regex("[0-9A-Fa-f]+"))) { "Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f." }
