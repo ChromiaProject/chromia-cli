@@ -1,17 +1,21 @@
 package com.chromia.cli.command.deployment.voterset
 
 import assertk.assertThat
+import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import com.chromia.directory1.common.queries.ContainerData
+import com.chromia.directory1.common.queries.GET_CONTAINER_DATA
 import com.chromia.directory1.common.queries.GET_VOTER_SET_INFO
 import com.chromia.directory1.common.queries.GetVoterSetInfoResult
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.google.gson.Gson
@@ -38,6 +42,17 @@ class VotersetInfoModel(val model: Model) : Model by model {
         return when (query.name) {
             "api_version" -> gtv(33)
             CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(RestApiInstance.apiUrl)))
+            GET_CONTAINER_DATA -> GtvObjectMapper.toGtvDictionary(ContainerData(
+                    name = "c1",
+                    cluster = "cluster1",
+                    deployer = "vs1",
+                    proposedByPubkey = "00".hexStringToWrappedByteArray(),
+                    proposedByName = "name",
+                    system = false,
+                    state = null,
+                    subnodeImage = null
+            ))
+
             GET_VOTER_SET_INFO -> GtvObjectMapper.toGtvDictionary(
                     GetVoterSetInfoResult(
                             name = "vs1",
@@ -84,5 +99,25 @@ internal class VotersetInfoCommandTest {
         assertThat(voterset["Governed by"].asString).isEqualTo("vs1")
         assertThat(voterset["Threshold"].asString).isEqualTo("super majority (>66.66%)")
         assertThat(voterset["members"].asJsonArray.size()).isEqualTo(2)
+    }
+
+    @Test
+    fun votersetInfoDataFromContainerIdentifierTest() {
+        RestApiInstance.withModel(VotersetInfoModel(model.blockchainRid)) {
+            VotersetInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--container", "c1"))
+        }
+        val voterset = gson.fromJson(logger.output(), JsonObject::class.java).asJsonObject
+        assertThat(voterset["Voter set"].asString).isEqualTo("vs1")
+        assertThat(voterset["Governed by"].asString).isEqualTo("vs1")
+        assertThat(voterset["Threshold"].asString).isEqualTo("super majority (>66.66%)")
+        assertThat(voterset["members"].asJsonArray.size()).isEqualTo(2)
+    }
+
+    @Test
+    fun votersetInfoDataContainerIdentifierAndVotersetFailsTest() {
+        RestApiInstance.withModel(VotersetInfoModel(model.blockchainRid)) {
+            val result = VotersetInfoCommand().context { terminal = testTerminal }.test(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--name", "vs1", "--container", "c1"))
+            assertThat(result.stderr).contains("Error: option --name cannot be used with --container")
+        }
     }
 }

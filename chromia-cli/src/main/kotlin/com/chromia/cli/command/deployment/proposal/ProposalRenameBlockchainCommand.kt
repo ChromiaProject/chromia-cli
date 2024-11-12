@@ -3,7 +3,6 @@ package com.chromia.cli.command.deployment.proposal
 import com.chromia.build.tools.util.apiVersion
 import com.chromia.build.tools.util.snakeCaseName
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.command.deployment.voterset.nameOption
 import com.chromia.cli.command.deployment.voterset.proposalDescriptionOption
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -13,6 +12,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.required
 import net.postchain.common.tx.TransactionStatus
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainRenameOperation
+import com.github.ajalt.clikt.parameters.options.option
 
 class ProposalRenameBlockchainCommand : ChromiaCommand(
         name = "rename",
@@ -27,7 +27,7 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
         "Renaming blockchain with BRID: ${networkTarget.brid} to '$name'"
     }
 
-    private val name by nameOption("New name of the blockchain").required()
+    private val name by option("-n", "--name", help = "New name of the blockchain").required()
 
     override fun run() {
         secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
