@@ -29,6 +29,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.defaultLazy
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.ColumnWidth
@@ -65,9 +66,11 @@ class DeployInspectCommand(
     private val filter: Filter by mutuallyExclusiveOptions(
             option("-l", "--list-modules", help = "List all module names").flag().convert { Filter.ModuleNamesOnly },
             option("--module-args", help = "Show module_args").flag().convert { Filter.ModuleArgs },
-            option("--definitions", help = "List definitions of this kind (comma separated), default: all").convert {
-                Filter.Definitions(it.split(',').map(RellKind::valueOf).toSet())
-            },
+            option("--definitions", help = "List definitions of this kind (comma separated), default: all")
+                    .choice(*RellKind.entries.map { it.toString() }.toTypedArray())
+                    .convert {
+                        Filter.Definitions(it.split(',').map(RellKind::valueOf).toSet())
+                    },
             option("--signature", help = "Show the signature of the specified definition and exit").convert { Filter.Signature(it) },
     ).single().default(Filter.All)
 
