@@ -5,4 +5,5 @@ enum class TemplateProject(val displayName: String) {
     PLAIN_MULTI("Plain Multi"),
     MINIMAL("Minimal"),
     PLAIN_LIBRARY("Plain Library"),
+    ASSET_MANAGEMENT("Asset Management"),
 }

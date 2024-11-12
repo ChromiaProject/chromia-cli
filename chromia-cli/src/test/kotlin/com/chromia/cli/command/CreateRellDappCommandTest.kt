@@ -90,6 +90,38 @@ internal class CreateRellDappCommandTest {
         BuildCommand().test(listOf("-s", projectDir.absolutePath))
     }
 
+    //need to package the project after making changes on the resource
+    @Test
+    fun assetManagementTemplate() {
+        val directoryName = "my-dapp"
+        CreateRellDappCommand().test(listOf("-d", dir.absolutePath, "--template", "asset-management", directoryName))
+        val projectDir = File(dir, directoryName)
+
+        assertTrue(projectDir.resolve("README.md").exists())
+        assertTrue(projectDir.resolve("chromia.yml").exists())
+        assertTrue(projectDir.resolve(".rell_lint").exists())
+        assertTrue(projectDir.resolve(".rell_format").exists())
+        assertTrue(projectDir.resolve(".gitignore").exists())
+        assertTrue(projectDir.resolve("tsconfig.json").exists())
+        assertTrue(projectDir.resolve("package.json").exists())
+        assertTrue(projectDir.resolve(".eslintrc.json").exists())
+        assertTrue(projectDir.resolve(".env.example").exists())
+        assertTrue(projectDir.resolve("next.config.mjs").exists())
+        assertTrue(projectDir.resolve("pnpm-lock.yaml").exists())
+        assertTrue(projectDir.resolve("postcss.config.mjs").exists())
+        assertTrue(projectDir.resolve("prettier.config.js").exists())
+        assertTrue(projectDir.resolve("tailwind.config.ts").exists())
+        assertTrue(projectDir.resolve("src").isDirectory)
+        assertTrue(projectDir.resolve("public").isDirectory)
+        assertTrue(projectDir.resolve("src/README.md").exists())
+        assertTrue(projectDir.resolve("src/wagmi-config.ts").exists())
+
+        val rellDir = File(projectDir, "rell")
+        assertTrue(rellDir.resolve("src/main.rell").exists())
+        assertTrue(rellDir.resolve("src/test").isDirectory)
+        assertTrue(rellDir.resolve("README.md").exists())
+    }
+
     @Test
     fun minimalTemplateCreatesNewFilesWithCustomName() {
         val dappName = "new_name"

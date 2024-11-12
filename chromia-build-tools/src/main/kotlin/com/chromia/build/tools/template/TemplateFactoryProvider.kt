@@ -7,6 +7,7 @@ object TemplateFactoryProvider {
             TemplateProject.PLAIN_MULTI -> PlainMultiTemplateFactory()
             TemplateProject.MINIMAL -> MinimalTemplateFactory()
             TemplateProject.PLAIN_LIBRARY -> PlainLibraryTemplateFactory()
+            TemplateProject.ASSET_MANAGEMENT -> AssetManagementTemplateFactory()
         }
     }
 }
