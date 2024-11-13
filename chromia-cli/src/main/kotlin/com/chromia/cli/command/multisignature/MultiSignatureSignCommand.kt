@@ -5,6 +5,7 @@ import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.secretOption
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
@@ -17,6 +18,7 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
 
     private val transactionFile by option("-f", "--file", help = "Path to file of transaction")
             .file(canBeDir = false, mustExist = true, mustBeReadable = true)
+            .convert { it.absoluteFile }
             .required()
 
     private val chromiaConfig by chromiaConfigOption()
@@ -25,6 +27,8 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
 
     private val outputFolder by option("--target", help = "Path where file should be saved")
             .file()
+
+    private val outputFileName by option("--file-name", help = "Override default name of output file")
 
     override fun run() {
         secret?.let { chromiaConfig.config.setSignerFromSecret(it.toPath()) }
@@ -37,7 +41,8 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
     private fun saveTransactionToFile(transaction: ByteArray) {
         val transactionName = transactionFile.name.substringBeforeLast("_")
         val targetFolder = outputFolder ?: transactionFile.parentFile.path
-        val file = File("$targetFolder/${transactionName}_${getFormattedUtcDateTime()}")
+        val fileName = outputFileName ?: "${transactionName}_signed_${getFormattedUtcDateTime()}"
+        val file = File("$targetFolder/$fileName")
         file.writeText(transaction.toHex())
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
