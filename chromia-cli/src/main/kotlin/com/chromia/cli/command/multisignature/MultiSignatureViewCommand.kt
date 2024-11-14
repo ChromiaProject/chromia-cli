@@ -7,6 +7,9 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
+import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvArray
+import net.postchain.gtv.GtvDictionary
 import net.postchain.gtx.Gtx
 
 class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a existing transaction") {
@@ -29,7 +32,7 @@ class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a e
                         transactionGtx.gtxBody.operations.map { op ->
                             mapOf(
                                     "operation" to op.opName,
-                                    "arguments" to op.args.map { arg -> arg.getRawGtv().toString() }
+                                    "arguments" to op.args.map { arg -> argumentParser(arg) }
 
                             )
                         },
@@ -38,5 +41,11 @@ class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a e
         )
     }
 
-
+    private fun argumentParser(arg: Gtv): Any {
+        return when (arg) {
+            is GtvArray -> arg.array.map { argumentParser(it) }
+            is GtvDictionary -> arg.asDict().mapValues { (_, v) -> argumentParser(v) }
+            else -> arg.getRawGtv().toString()
+        }
+    }
 }
