@@ -1,7 +1,6 @@
 package com.chromia.cli.command
 
 import com.chromia.cli.tools.config.chromiaModelOption
-import com.chromia.cli.tools.launcher.createAliases
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
@@ -24,8 +23,6 @@ import kotlin.io.path.writeText
 class LintCommand : ChromiaCommand(help = "Analyze Rell code to find potential issue and coding style violations. Configurable using .rell_lint file") {
     override val invokeWithoutSubcommand: Boolean
         get() = true
-
-    override fun aliases() = createAliases()
 
     private val settings by chromiaModelOption()
     private val sourceDir by option(help = "source directory").path(

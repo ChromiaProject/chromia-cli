@@ -17,7 +17,7 @@ class GenerateDocsIT {
     @Test
     fun `Test that command runs with default values for docs`(@TempDir dir: Path) {
         testData(dir)
-        TestProcess.Builder("generate", "docs")
+        TestProcess.Builder("generate", "docs-site")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
                 .startCondition("Documentation generated at")
@@ -39,7 +39,7 @@ class GenerateDocsIT {
             }
         }
 
-        TestProcess.Builder("generate", "docs")
+        TestProcess.Builder("generate", "docs-site")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
                 .startCondition("Documentation generated at")
@@ -66,7 +66,7 @@ class GenerateDocsIT {
             }
         }
 
-        TestProcess.Builder("generate", "docs")
+        TestProcess.Builder("generate", "docs-site")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
                 .startCondition("Documentation generated at")
@@ -112,7 +112,7 @@ class GenerateDocsIT {
         }
 
         val targetDir = "${dir.toAbsolutePath()}/build"
-        TestProcess.Builder("generate", "docs")
+        TestProcess.Builder("generate", "docs-site")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
                 .startCondition("Documentation generated at")
@@ -127,7 +127,7 @@ class GenerateDocsIT {
 
     @Test
     fun `Generating system docs requires target folder`(@TempDir dir: Path) {
-        TestProcess.Builder("generate", "docs", "--system")
+        TestProcess.Builder("generate", "docs-site", "--system")
                 .exitCode(3)
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(true)
@@ -144,7 +144,7 @@ class GenerateDocsIT {
             """.trimIndent())
         }
 
-        TestProcess.Builder("generate", "docs", "--system", "--target", "${dir.absolutePathString()}/site", "--system-include", docFile.absolutePath)
+        TestProcess.Builder("generate", "docs-site", "--system", "--target", "${dir.absolutePathString()}/site", "--system-include", docFile.absolutePath)
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(true)
                 .start()

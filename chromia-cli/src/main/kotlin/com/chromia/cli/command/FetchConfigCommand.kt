@@ -2,7 +2,6 @@ package com.chromia.cli.command
 
 import com.chromia.build.tools.gtv.remove
 import com.chromia.cli.tools.config.BlockchainOptions
-import com.chromia.cli.tools.launcher.createAliases
 import com.chromia.cli.util.EXPERIMENTAL_COMMAND
 import com.chromia.cli.util.readBlockchainConfigFile
 import com.chromia.cli.util.targetDirectoryOption
@@ -32,8 +31,6 @@ class FetchConfigCommand : ChromiaCommand(help = """
 
     override val hiddenFromHelp: Boolean
         get() = true
-
-    override fun aliases() = createAliases()
 
     private val blockchainOptions by BlockchainOptions { echo(it, err = true) }.cooccurring()
 

@@ -40,7 +40,7 @@ open class CliLauncher(val name: String) : NoOpCliktCommand(name = name) {
         }
     }
 
-    override fun aliases() = createAliases() +
+    override fun aliases() =
             mapOf(
                     "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
                     "gtv" to listOf("tools", "gtv"),
