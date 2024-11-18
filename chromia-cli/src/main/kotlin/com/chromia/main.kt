@@ -23,8 +23,13 @@ import net.postchain.PostchainNode
 import net.postchain.eif.EifGTXModule
 import net.postchain.rell.base.utils.RellVersions
 
-fun main(args: Array<out String>) = CliLauncher("chr")
-        .versionOption("""
+fun main(args: Array<out String>) = object : CliLauncher("chr") {
+    override fun aliases() =
+            mapOf(
+                    "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
+                    "gtv" to listOf("tools", "gtv"),
+            )
+}.versionOption("""
             ${CliLauncher::class.java.`package`.implementationVersion}
             rell version ${RellVersions::class.java.`package`.implementationVersion ?: "(unknown)"}
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
