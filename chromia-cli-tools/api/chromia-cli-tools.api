@@ -1,0 +1,385 @@
+public final class com/chromia/cli/tools/blockchain/BridFetcher {
+	public fun <init> (Lkotlin/jvm/functions/Function1;Ljava/lang/String;)V
+	public final fun fetchBlockchainRid (I)Lnet/postchain/common/BlockchainRid;
+}
+
+public class com/chromia/cli/tools/config/BlockchainOptions : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getBlockchainRid ()Lnet/postchain/common/BlockchainRid;
+	public final fun getConfig ()Lcom/chromia/build/tools/config/ChromiaClientConfig;
+	public final fun getUrl ()Ljava/lang/String;
+}
+
+public final class com/chromia/cli/tools/config/BlockchainOptions$special$$inlined$convert$default$1 : kotlin/jvm/functions/Function1 {
+	public static final field INSTANCE Lcom/chromia/cli/tools/config/BlockchainOptions$special$$inlined$convert$default$1;
+	public fun <init> ()V
+	public final fun invoke (Lcom/github/ajalt/clikt/core/Context;)Ljava/lang/String;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/chromia/cli/tools/config/BlockchainOptions$special$$inlined$convert$default$2 : kotlin/jvm/functions/Function2 {
+	public fun <init> (Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;)V
+	public final fun invoke (Lcom/github/ajalt/clikt/parameters/options/OptionCallTransformContext;Ljava/lang/String;)Ljava/lang/Object;
+	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public class com/chromia/cli/tools/config/ChromiaConfigOption : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getConfig ()Lcom/chromia/build/tools/config/ChromiaClientConfig;
+	public final fun getConfigFile ()Ljava/io/File;
+}
+
+public class com/chromia/cli/tools/config/ChromiaModelConfigOption : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getConfig ()Lcom/chromia/build/tools/config/ChromiaClientConfig;
+	public final fun getConfigFile ()Ljava/io/File;
+	public final fun getModel ()Lcom/chromia/cli/model/ChromiaModel;
+	public final fun getModelFile ()Ljava/io/File;
+	public final fun getProjectFolder ()Ljava/io/File;
+	public final fun getSourceDir ()Ljava/io/File;
+	public final fun getTargetDir ()Ljava/io/File;
+}
+
+public class com/chromia/cli/tools/config/ChromiaModelOption : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getModel ()Lcom/chromia/cli/model/ChromiaModel;
+	public final fun getProjectFolder ()Ljava/io/File;
+	public final fun getSourceDir ()Ljava/io/File;
+	public final fun getTargetDir ()Ljava/io/File;
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt {
+	public static final fun blockchainRidOption (Lcom/github/ajalt/clikt/core/ParameterHolder;Ljava/lang/String;)Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;
+	public static final fun chromiaConfigOption (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/config/ChromiaConfigOption;
+	public static final fun chromiaConfigOption (Lcom/github/ajalt/clikt/core/ParameterHolder;)Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;
+	public static final fun chromiaModelConfigOption (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/config/ChromiaModelConfigOption;
+	public static final fun chromiaModelOption (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/config/ChromiaModelOption;
+	public static final fun configurationFormatOption (Lcom/github/ajalt/clikt/core/ParameterHolder;)Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;
+	public static final fun optionalChromiaModelConfigOption (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/config/OptionalChromiaModelConfigOption;
+	public static final fun optionalChromiaModelOption (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/config/OptionalChromiaModelOption;
+	public static final fun targetUrlOption (Lcom/github/ajalt/clikt/core/ParameterHolder;)Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOption$$inlined$convert$default$1 : kotlin/jvm/functions/Function1 {
+	public static final field INSTANCE Lcom/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOption$$inlined$convert$default$1;
+	public fun <init> ()V
+	public final fun invoke (Lcom/github/ajalt/clikt/core/Context;)Ljava/lang/String;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOption$$inlined$convert$default$2 : kotlin/jvm/functions/Function2 {
+	public fun <init> (Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;)V
+	public final fun invoke (Lcom/github/ajalt/clikt/parameters/options/OptionCallTransformContext;Ljava/lang/String;)Ljava/lang/Object;
+	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun invoke (Ljava/lang/Object;)V
+}
+
+synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun invoke (Ljava/lang/Object;)V
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$$inlined$convert$default$1 : kotlin/jvm/functions/Function1 {
+	public static final field INSTANCE Lcom/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$$inlined$convert$default$1;
+	public fun <init> ()V
+	public final fun invoke (Lcom/github/ajalt/clikt/core/Context;)Ljava/lang/String;
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$$inlined$convert$default$2 : kotlin/jvm/functions/Function2 {
+	public fun <init> (Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;)V
+	public final fun invoke (Lcom/github/ajalt/clikt/parameters/options/OptionCallTransformContext;Ljava/lang/String;)Ljava/lang/Object;
+	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun invoke (Ljava/lang/Object;)V
+}
+
+synthetic class com/chromia/cli/tools/config/ConfigOptionKt$optionalChromiaModelConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun invoke (Ljava/lang/Object;)V
+}
+
+synthetic class com/chromia/cli/tools/config/ConfigOptionKt$optionalChromiaModelOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
+	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
+	public final fun invoke (Ljava/lang/Object;)V
+}
+
+public final class com/chromia/cli/tools/config/ConfigOptionKt$requiredChromiaModelOption$$inlined$defaultLazy$default$1 : kotlin/jvm/functions/Function2 {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun invoke (Lcom/github/ajalt/clikt/parameters/options/OptionTransformContext;Ljava/util/List;)Ljava/lang/Object;
+	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+}
+
+public final class com/chromia/cli/tools/config/ConfigurationFormat : java/lang/Enum {
+	public static final field GTV Lcom/chromia/cli/tools/config/ConfigurationFormat;
+	public static final field XML Lcom/chromia/cli/tools/config/ConfigurationFormat;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lcom/chromia/cli/tools/config/ConfigurationFormat;
+	public static fun values ()[Lcom/chromia/cli/tools/config/ConfigurationFormat;
+}
+
+public class com/chromia/cli/tools/config/OptionalChromiaModelConfigOption : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getConfig ()Lcom/chromia/build/tools/config/ChromiaClientConfig;
+	public final fun getConfigFile ()Ljava/io/File;
+	public final fun getModel ()Lcom/chromia/cli/model/ChromiaModel;
+	public final fun getProjectFolder ()Ljava/io/File;
+}
+
+public class com/chromia/cli/tools/config/OptionalChromiaModelOption : com/github/ajalt/clikt/parameters/groups/OptionGroup {
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public final fun getModel ()Lcom/chromia/cli/model/ChromiaModel;
+	public final fun getProjectFolder ()Ljava/io/File;
+	public final fun getSourceDir ()Ljava/io/File;
+	public final fun getTargetDir ()Ljava/io/File;
+}
+
+public final class com/chromia/cli/tools/env/CliktCliEnv : net/postchain/rell/api/base/RellCliEnv {
+	public fun <init> (Lcom/github/ajalt/clikt/core/CliktCommand;)V
+	public fun error (Ljava/lang/String;)V
+	public final fun getCommand ()Lcom/github/ajalt/clikt/core/CliktCommand;
+	public final fun getHasError ()Z
+	public fun print (Ljava/lang/String;)V
+}
+
+public final class com/chromia/cli/tools/env/CliktCliEnvKt {
+	public static final fun cliEnv (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/chromia/cli/tools/env/CliktCliEnv;
+}
+
+public final class com/chromia/cli/tools/formatter/JsonKt {
+	public static final fun fixKey (Ljava/lang/String;)Ljava/lang/String;
+	public static final fun json (Ljava/lang/Object;)Ljava/lang/String;
+	public static final fun jsonTable (Ljava/util/List;Ljava/util/List;)Ljava/lang/String;
+	public static final fun jsonTable (Lkotlin/jvm/functions/Function1;)Ljava/lang/String;
+}
+
+public final class com/chromia/cli/tools/formatter/PanelHelpFormatter : com/github/ajalt/clikt/output/MordantHelpFormatter {
+	public fun <init> (Lcom/github/ajalt/clikt/core/Context;)V
+	public synthetic fun renderParameters (Ljava/util/List;)Ljava/lang/Object;
+}
+
+public final class com/chromia/cli/tools/formatter/ThemeKt {
+	public static final fun defaultTable (Lcom/github/ajalt/clikt/core/CliktCommand;Lkotlin/jvm/functions/Function1;)Lcom/github/ajalt/mordant/table/Table;
+	public static final fun defaultTable (Lcom/github/ajalt/mordant/rendering/Theme;Lkotlin/jvm/functions/Function1;)Lcom/github/ajalt/mordant/table/Table;
+	public static final fun getChromiaTheme ()Lcom/github/ajalt/mordant/rendering/Theme;
+	public static final fun getDanger (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public static final fun getHeader (Lcom/github/ajalt/mordant/rendering/Theme;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public static final fun getInfo (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public static final fun getMuted (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public static final fun getSuccess (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public static final fun getWarning (Lcom/github/ajalt/clikt/core/CliktCommand;)Lcom/github/ajalt/mordant/rendering/TextStyle;
+}
+
+public class com/chromia/cli/tools/launcher/CliLauncher : com/github/ajalt/clikt/core/NoOpCliktCommand {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun catchingAllExceptionsMain ([Ljava/lang/String;)V
+	public final fun getName ()Ljava/lang/String;
+}
+
+public synthetic class com/chromia/cli/tools/launcher/CliLauncher$WhenMappings {
+	public static final synthetic field $EnumSwitchMapping$0 [I
+}
+
+public final class com/chromia/cli/tools/mordant/CellBuilderInstance : com/github/ajalt/mordant/table/CellBuilder, com/github/ajalt/mordant/table/CellStyleBuilder {
+	public fun <init> (Lcom/chromia/cli/tools/mordant/CellContent;)V
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public fun getColumnSpan ()I
+	public final fun getContent ()Lcom/chromia/cli/tools/mordant/CellContent;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public fun getRowSpan ()I
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setColumnSpan (I)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public fun setRowSpan (I)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
+public abstract class com/chromia/cli/tools/mordant/CellContent {
+}
+
+public final class com/chromia/cli/tools/mordant/CellContent$TextContent : com/chromia/cli/tools/mordant/CellContent {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lcom/chromia/cli/tools/mordant/CellContent$TextContent;
+	public static synthetic fun copy$default (Lcom/chromia/cli/tools/mordant/CellContent$TextContent;Ljava/lang/String;ILjava/lang/Object;)Lcom/chromia/cli/tools/mordant/CellContent$TextContent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getText ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class com/chromia/cli/tools/mordant/CellContent$WidgetContent : com/chromia/cli/tools/mordant/CellContent {
+	public fun <init> (Lcom/github/ajalt/mordant/rendering/Widget;)V
+	public final fun component1 ()Lcom/github/ajalt/mordant/rendering/Widget;
+	public final fun copy (Lcom/github/ajalt/mordant/rendering/Widget;)Lcom/chromia/cli/tools/mordant/CellContent$WidgetContent;
+	public static synthetic fun copy$default (Lcom/chromia/cli/tools/mordant/CellContent$WidgetContent;Lcom/github/ajalt/mordant/rendering/Widget;ILjava/lang/Object;)Lcom/chromia/cli/tools/mordant/CellContent$WidgetContent;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getWidget ()Lcom/github/ajalt/mordant/rendering/Widget;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+final class com/chromia/cli/tools/mordant/CellStyleBuilderMixin : com/github/ajalt/mordant/table/CellStyleBuilder {
+	public fun <init> ()V
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
+public final class com/chromia/cli/tools/mordant/ColumnBuilderInstance : com/github/ajalt/mordant/table/CellStyleBuilder, com/github/ajalt/mordant/table/ColumnBuilder {
+	public fun <init> ()V
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun getWidth ()Lcom/github/ajalt/mordant/table/ColumnWidth;
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun setWidth (Lcom/github/ajalt/mordant/table/ColumnWidth;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
+public final class com/chromia/cli/tools/mordant/MordantKt {
+}
+
+public final class com/chromia/cli/tools/mordant/RowBuilderInstance : com/github/ajalt/mordant/table/CellStyleBuilder, com/github/ajalt/mordant/table/RowBuilder {
+	public fun <init> (Ljava/util/List;)V
+	public fun cell (Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)V
+	public fun cells (Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)V
+	public fun cellsFrom (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)V
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public final fun getCells ()Ljava/util/List;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
+public final class com/chromia/cli/tools/mordant/SectionBuilderInstance : com/github/ajalt/mordant/table/CellStyleBuilder, com/github/ajalt/mordant/table/SectionBuilder {
+	public fun <init> ()V
+	public fun column (ILkotlin/jvm/functions/Function1;)V
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public final fun getColumns ()Ljava/util/Map;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public final fun getRowStyles ()Ljava/util/List;
+	public final fun getRows ()Ljava/util/List;
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun row (Lkotlin/jvm/functions/Function1;)V
+	public fun row ([Ljava/lang/Object;Lkotlin/jvm/functions/Function1;)V
+	public fun rowFrom (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)V
+	public fun rowStyles (Lcom/github/ajalt/mordant/rendering/TextStyle;Lcom/github/ajalt/mordant/rendering/TextStyle;[Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public final fun setRowStyles (Ljava/util/List;)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
+public final class com/chromia/cli/tools/mordant/TableBuilderInstance : com/github/ajalt/mordant/table/CellStyleBuilder, com/github/ajalt/mordant/table/TableBuilder {
+	public fun <init> ()V
+	public fun body (Lkotlin/jvm/functions/Function1;)V
+	public fun captionBottom (Lcom/github/ajalt/mordant/rendering/Widget;)V
+	public fun captionBottom (Ljava/lang/String;Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun captionTop (Lcom/github/ajalt/mordant/rendering/Widget;)V
+	public fun captionTop (Ljava/lang/String;Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun column (ILkotlin/jvm/functions/Function1;)V
+	public fun footer (Lkotlin/jvm/functions/Function1;)V
+	public fun getAddPaddingWidthToFixedWidth ()Z
+	public fun getAlign ()Lcom/github/ajalt/mordant/rendering/TextAlign;
+	public final fun getBodySection ()Lcom/chromia/cli/tools/mordant/SectionBuilderInstance;
+	public fun getBorderStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getBorderType ()Lcom/github/ajalt/mordant/rendering/BorderType;
+	public final fun getCaptionBottom ()Lcom/github/ajalt/mordant/rendering/Widget;
+	public final fun getCaptionTop ()Lcom/github/ajalt/mordant/rendering/Widget;
+	public fun getCellBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public final fun getColumns ()Ljava/util/Map;
+	public final fun getFooterSection ()Lcom/chromia/cli/tools/mordant/SectionBuilderInstance;
+	public final fun getHeaderSection ()Lcom/chromia/cli/tools/mordant/SectionBuilderInstance;
+	public fun getOverflowWrap ()Lcom/github/ajalt/mordant/rendering/OverflowWrap;
+	public fun getPadding ()Lcom/github/ajalt/mordant/widgets/Padding;
+	public fun getStyle ()Lcom/github/ajalt/mordant/rendering/TextStyle;
+	public fun getTableBorders ()Lcom/github/ajalt/mordant/table/Borders;
+	public fun getVerticalAlign ()Lcom/github/ajalt/mordant/rendering/VerticalAlign;
+	public fun getWhitespace ()Lcom/github/ajalt/mordant/rendering/Whitespace;
+	public fun header (Lkotlin/jvm/functions/Function1;)V
+	public fun padding (I)V
+	public fun padding (Lkotlin/jvm/functions/Function1;)V
+	public fun setAddPaddingWidthToFixedWidth (Z)V
+	public fun setAlign (Lcom/github/ajalt/mordant/rendering/TextAlign;)V
+	public fun setBorderStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setBorderType (Lcom/github/ajalt/mordant/rendering/BorderType;)V
+	public fun setCellBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setOverflowWrap (Lcom/github/ajalt/mordant/rendering/OverflowWrap;)V
+	public fun setPadding (Lcom/github/ajalt/mordant/widgets/Padding;)V
+	public fun setStyle (Lcom/github/ajalt/mordant/rendering/TextStyle;)V
+	public fun setTableBorders (Lcom/github/ajalt/mordant/table/Borders;)V
+	public fun setVerticalAlign (Lcom/github/ajalt/mordant/rendering/VerticalAlign;)V
+	public fun setWhitespace (Lcom/github/ajalt/mordant/rendering/Whitespace;)V
+	public fun style (Lcom/github/ajalt/colormath/Color;Lcom/github/ajalt/colormath/Color;ZZZZZZLjava/lang/String;)V
+}
+
