@@ -1,7 +1,7 @@
 package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.FTAuth
+import com.chromia.cli.ft.createFTAuthenticator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
@@ -87,7 +87,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
         if (ftAuthOptions.ftAuth) {
             require(ftAuthOptions.ftAuthDescriptorId != null) { "Must specify auth descriptor id when using ft auth for multi signature" }
-            val authenticator = FTAuth.createFTAuthenticator(client, terminal)
+            val authenticator = createFTAuthenticator(client, terminal)
 
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))

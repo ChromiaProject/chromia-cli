@@ -1,7 +1,7 @@
 package com.chromia.cli.command.deployment.voterset
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.FTAuth
+import com.chromia.cli.ft.createFTAuthenticator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
@@ -46,10 +46,10 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
         val economyClient = createEconomyChainClient(d1Client)
         val transactionBuilder = economyClient.transactionBuilder()
 
-        val authenticator = FTAuth.createFTAuthenticator(economyClient, terminal)
+        val authenticator = createFTAuthenticator(economyClient, terminal)
         val signerPubkey = (economyClient.config.signers.singleOrNull()?.pubKey
                 ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-        authenticator.addAuthenticationOperation(transactionBuilder, REGISTER_DAPP_PROVIDER, signerPubkey, null)
+        authenticator.addAuthenticationOperation(transactionBuilder, REGISTER_DAPP_PROVIDER, signerPubkey)
 
         val res = transactionBuilder
                 .registerDappProviderOperation(containerId, newProviderPubKey!!.hexStringToByteArray())

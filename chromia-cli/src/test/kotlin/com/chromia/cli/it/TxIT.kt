@@ -9,9 +9,10 @@ import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
-import java.nio.file.Path
-import java.time.Duration
-import kotlin.io.path.absolutePathString
+import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
+import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
+import com.chromia.directory1.lib.ft4.external.auth.GET_AUTH_FLAGS
+import com.chromia.directory1.lib.ft4.version.GET_VERSION
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -27,6 +28,9 @@ import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.nio.file.Path
+import java.time.Duration
+import kotlin.io.path.absolutePathString
 
 
 class AlwaysFailingModel(val model: Model, val status: TransactionStatus) : Model by model {
@@ -40,7 +44,7 @@ class AlwaysFailingModel(val model: Model, val status: TransactionStatus) : Mode
 class Ft4Model(val model: Model, val version: String, val responses: Map<String, Gtv> = mapOf()) : Model by model {
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
-            "ft4.get_version" -> gtv(version)
+            GET_VERSION -> gtv(version)
             else -> responses[query.name] ?: throw UserMistake("Query ${query.name} not found in Ft4Model")
         }
     }
@@ -153,60 +157,16 @@ class TxIT {
                     .setWorkingDir(dir.toFile())
                     .awaitCompletion(false)
                     .start { process ->
-                        process.waitUntil("FT version 0.1.0r not supported", Duration.ofSeconds(5))
+                        process.waitUntil("Versions before release 0.4.0 are not supported, current FT4 version 0.1.0r is to old", Duration.ofSeconds(5))
                         process.close()
                         assertThat(process.process.exitValue()).isEqualTo(1)
                     }
         }
     }
 
-    @Test
-    fun queryWithFtAuthV1(@TempDir dir: Path) {
-        testData(dir) {
-            secret()
-            config {
-                compile("""
-                compile:
-                    strictGtvConversion: false
-            """.trimIndent())
-            }
-
-        }
-
-        val pubKey = TestDataBuilder.keyPair.pubKey
-
-        val txRecorderModel = TxRecorderModel(testBrid)
-        withModel(Ft4Model(
-                txRecorderModel,
-                "0.1.0",
-                mapOf(
-                        "ft4.get_accounts_by_participant_id" to gtv(gtv("1".repeat(64).hexStringToByteArray())),
-                        "ft4.get_account_auth_descriptors_by_participant_id" to gtv(gtv(mapOf(
-                                "id" to gtv("2".repeat(64).hexStringToByteArray()),
-                                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
-                                "created" to gtv(System.currentTimeMillis()),
-                                "auth_type" to gtv("A"),
-                                "rules" to GtvNull
-                        ))
-                        ),
-                        "ft4.get_auth_flags" to gtv(gtv("A"))
-                )
-        )) {
-            TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth", "--no-await")
-                    .setWorkingDir(dir.toFile())
-                    .start()
-
-            val gtx = Gtx.decode(txRecorderModel.txList.single())
-            val operations = gtx.gtxBody.operations
-            assertThat(operations[0].opName).isEqualTo("ft4.ft_auth")
-            assertThat(operations[0].args).containsExactly(gtv("1".repeat(64).hexStringToByteArray()), gtv("2".repeat(64).hexStringToByteArray()))
-            assertThat(operations[1].opName).isEqualTo("call_op")
-        }
-    }
-
 
     @Test
-    fun queryWithFtAuthV2(@TempDir dir: Path) {
+    fun queryWithFtAuthV4(@TempDir dir: Path) {
         testData(dir) {
             secret()
         }
@@ -215,17 +175,19 @@ class TxIT {
         val txRecorderModel = TxRecorderModel(testBrid)
         withModel(Ft4Model(
                 txRecorderModel,
-                "0.2.0",
+                "0.4.0",
                 mapOf(
-                        "ft4.get_accounts_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))),
-                        "ft4.get_account_auth_descriptors_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf(
+                        GET_ACCOUNTS_BY_SIGNER to gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))),
+                        GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER to gtv(gtv(mapOf(
                                 "id" to gtv("4".repeat(64).hexStringToByteArray()),
                                 "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
                                 "created" to gtv(System.currentTimeMillis()),
-                                "auth_type" to gtv("A"),
-                                "rules" to GtvNull
-                        ))))),
-                        "ft4.get_auth_flags" to gtv(gtv("A"))
+                                "auth_type" to gtv("S"),
+                                "rules" to GtvNull,
+                                "account_id" to gtv("5".repeat(64).hexStringToByteArray())
+
+                        ))),
+                        GET_AUTH_FLAGS to gtv(gtv("A"))
                 )
         )) {
             TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--ft-auth", "--no-await")

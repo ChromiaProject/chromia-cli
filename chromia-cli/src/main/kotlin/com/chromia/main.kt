@@ -52,6 +52,6 @@ fun main(args: Array<out String>) = object : CliLauncher("chr") {
                 CodeCommand.commands(),
                 FetchConfigCommand(),
                 MultiSignatureCommand.commands(),
-                ToolsCommand.commands(),
+                ToolsCommand.commands()
         )
         .catchingAllExceptionsMain(args)

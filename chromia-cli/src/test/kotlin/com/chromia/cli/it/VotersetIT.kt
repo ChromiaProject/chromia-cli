@@ -8,16 +8,27 @@ import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.testData
-import java.io.File
-import java.nio.file.Path
+import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import com.chromia.directory1.economy_chain_in_directory_chain.GET_ECONOMY_CHAIN_RID
+import com.chromia.directory1.lib.ft4.core.accounts.AuthType
+import com.chromia.directory1.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
+import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
+import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
+import com.chromia.directory1.lib.ft4.external.auth.GET_AUTH_FLAGS
+import com.chromia.directory1.lib.ft4.utils.PagedResult
+import com.chromia.directory1.lib.ft4.version.GET_VERSION
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
+import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtx.Gtx
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 
 class VotersetIT {
@@ -51,24 +62,29 @@ class VotersetIT {
         val economyChainBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")
 
         val directoryChainTxRecorder = TxRecorderModel(BlockchainRid.ZERO_RID, mapOf(
-                "get_economy_chain_rid" to gtv(economyChainBrid),
-                "cm_get_blockchain_api_urls" to gtv(listOf(gtv(apiUrl)))
+                GET_ECONOMY_CHAIN_RID to gtv(economyChainBrid),
+                CM_GET_BLOCKCHAIN_API_URLS to gtv(listOf(gtv(apiUrl)))
         ))
 
         val economyChainTxRecorder = TxRecorderModel(
                 economyChainBrid,
                 mapOf(
-                        "ft4.get_accounts_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))),
-                        "ft4.get_account_auth_descriptors_by_signer" to gtv(mapOf("data" to gtv(gtv(mapOf(
-                                "id" to gtv("4".repeat(64).hexStringToByteArray()),
-                                "args" to gtv(gtv(gtv("A")), gtv(pubKey.data)),
-                                "created" to gtv(System.currentTimeMillis()),
-                                "auth_type" to gtv("A"),
-                                "rules" to GtvNull
-                        ))))),
-                        "ft4.get_auth_flags" to gtv(gtv("A")),
-                        "get_economy_chain_rid" to gtv(economyChainBrid),
-                        "ft4.get_version" to gtv("0.2.0")
+                        GET_ACCOUNTS_BY_SIGNER to GtvObjectMapper.toGtvDictionary(PagedResult(
+                                nextCursor = null,
+                                data = listOf(gtv((mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))
+
+                        )),
+                        GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER to gtv(GtvObjectMapper.toGtvDictionary(Ft4GetAccountAuthDescriptorsBySignerResult(
+                                id = "4".repeat(64).hexStringToWrappedByteArray(),
+                                args = gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                                created = System.currentTimeMillis(),
+                                authType = AuthType.S,
+                                rules = GtvNull,
+                                accountId = "5".repeat(64).hexStringToWrappedByteArray()
+                        ))),
+                        GET_AUTH_FLAGS to gtv(gtv("A")),
+                        GET_ECONOMY_CHAIN_RID to gtv(economyChainBrid),
+                        GET_VERSION to gtv("0.4.0")
                 )
         )
 

@@ -1,6 +1,6 @@
 package com.chromia.cli.command
 
-import com.chromia.cli.ft.FTAuth
+import com.chromia.cli.ft.createFTAuthenticator
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
@@ -67,10 +67,9 @@ class TxCommand : ChromiaCommand(help = """
         val ftAccountId by option(help = "Explicitly specify which account to use")
     }
     private val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as first argument to the operation").validate { it.hexStringToWrappedByteArray() }
-    private val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place")
-            .convert {
-                BlockchainRid.buildFromHex(it)
-            }
+    private val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place").convert {
+        BlockchainRid.buildFromHex(it)
+    }
 
     private val opName by argument(help = "name of the operation to execute.")
 
@@ -80,8 +79,8 @@ class TxCommand : ChromiaCommand(help = """
             "string" to "foo, \"bar\"",
             "bytearray" to "will be encoded using the rell notation x\"<myByteArray>\" and will initially be interpreted as a hex-string.",
             "array" to "[foo,123]",
-            "dict" to """["key1":value1,"key2":value2]"""
-    ))
+            "dict" to """["key1":value1,"key2":value2]""")
+    )
             .multiple()
             .transformAll { args ->
                 args.map {
@@ -109,20 +108,22 @@ class TxCommand : ChromiaCommand(help = """
             listOf(GtvFactory.decodeGtv(tx)) + args
         } else args
         if (ftAuthOptions.ftAuth) {
-            val authenticator = FTAuth.createFTAuthenticator(client, terminal)
+            val authenticator = createFTAuthenticator(client, terminal)
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-            authenticator.addAuthenticationOperation(transactionBuilder, opName, signerPubkey, ftAuthOptions.ftAccountId)
+            authenticator.addAuthenticationOperation(
+                    transactionBuilder,
+                    opName,
+                    signerPubkey,
+                    ftAuthOptions.ftAccountId,
+            )
         }
 
-        val res = transactionBuilder
-                .addOperation(opName, *args.toTypedArray())
-                .run {
-                    if (nop) addNop()
-                    if (awaitConfirmation) postAwaitConfirmation() else post()
-                }
-        if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)
-            throw PrintMessage("Transaction Failed with code ${res.httpStatusCode}: ${res.rejectReason}", statusCode = 1)
+        val res = transactionBuilder.addOperation(opName, *args.toTypedArray()).run {
+            if (nop) addNop()
+            if (awaitConfirmation) postAwaitConfirmation() else post()
+        }
+        if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN) throw PrintMessage("Transaction Failed with code ${res.httpStatusCode}: ${res.rejectReason}", statusCode = 1)
         echo("transaction with rid ${res.txRid.rid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
     }
 }
