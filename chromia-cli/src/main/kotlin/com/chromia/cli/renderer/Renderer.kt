@@ -6,7 +6,7 @@ import com.chromia.cli.command.deployment.voterset.VotersetInfoCommand
 import com.chromia.cli.command.deployment.voterset.VotersetListCommand
 import com.chromia.cli.util.TableOutputFormat
 import com.chromia.directory1.model.Provider
-import com.chromia.directory1.proposal.GetProposalResult
+import com.chromia.directory1.proposal.ProposalData
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.terminal
 import net.postchain.client.core.PostchainClient
@@ -14,7 +14,7 @@ import net.postchain.client.core.PostchainClient
 abstract class AbstractRenderData
 
 interface Renderer<T : AbstractRenderData> {
-    fun display(client: PostchainClient, proposal: GetProposalResult, apiVersion: Long, proposedBy: Provider) {}
+    fun display(client: PostchainClient, proposal: ProposalData, apiVersion: Long, proposedBy: Provider) {}
     fun display(data: T) {}
 }
 

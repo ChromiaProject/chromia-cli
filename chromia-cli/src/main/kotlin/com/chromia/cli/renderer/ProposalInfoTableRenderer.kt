@@ -4,7 +4,7 @@ import com.chromia.cli.command.deployment.proposal.dataprovider.ProposalDataProv
 import com.chromia.cli.command.deployment.proposal.formatThreshold
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.directory1.model.Provider
-import com.chromia.directory1.proposal.GetProposalResult
+import com.chromia.directory1.proposal.ProposalData
 import com.chromia.directory1.proposal.ProposalState
 import com.chromia.directory1.proposal.ProposalType
 import com.chromia.directory1.proposal.ProposalVotingResults
@@ -29,7 +29,7 @@ class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<Abstr
     private fun formatProvider(providerPubKey: WrappedByteArray, providerName: String) =
             "${providerPubKey.toHex()}${if (providerName.isNotEmpty()) " - $providerName" else ""}"
 
-    private fun SectionBuilder.printVotingInfo(client: PostchainClient, proposal: GetProposalResult, apiVersion: Long) {
+    private fun SectionBuilder.printVotingInfo(client: PostchainClient, proposal: ProposalData, apiVersion: Long) {
         if (proposal.state == ProposalState.PENDING) {
             printVotingResults(client.getProposalVotingResults(proposal.id))
         }
@@ -49,7 +49,7 @@ class ProposalInfoTableRenderer(val cliktCommand: CliktCommand) : Renderer<Abstr
         row("Status", votingResults.votingResult.toString())
     }
 
-    override fun display(client: PostchainClient, proposal: GetProposalResult, apiVersion: Long, proposedBy: Provider) {
+    override fun display(client: PostchainClient, proposal: ProposalData, apiVersion: Long, proposedBy: Provider) {
         cliktCommand.echo(cliktCommand.defaultTable {
             body {
                 printProposalHeader(proposal.id, proposal.type, proposal.timestamp, proposedBy.pubkey, proposedBy.name)

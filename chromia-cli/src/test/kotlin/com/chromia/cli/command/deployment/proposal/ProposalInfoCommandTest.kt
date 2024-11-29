@@ -17,7 +17,7 @@ import com.chromia.directory1.model.Provider
 import com.chromia.directory1.model.ProviderTier
 import com.chromia.directory1.proposal.GET_PROPOSAL
 import com.chromia.directory1.proposal.GET_PROPOSAL_VOTING_RESULTS
-import com.chromia.directory1.proposal.GetProposalResult
+import com.chromia.directory1.proposal.ProposalData
 import com.chromia.directory1.proposal.ProposalState
 import com.chromia.directory1.proposal.ProposalType
 import com.chromia.directory1.proposal.ProposalVotingResults
@@ -70,13 +70,16 @@ class PendingProposalModel(val model: Model, private val proposalResponse: Gtv, 
             "api_version" -> gtv(33)
             CM_GET_BLOCKCHAIN_API_URLS -> gtv(gtv(RestApiInstance.apiUrl))
             GET_PROPOSAL -> GtvObjectMapper.toGtvDictionary(
-                    GetProposalResult(
+                    ProposalData(
                             id = RowId(1),
                             timestamp = 9999999,
                             type = proposalType,
                             proposedBy = pubkey.hexStringToWrappedByteArray(),
                             description = "description",
-                            state = ProposalState.PENDING
+                            state = ProposalState.PENDING,
+                            applyAt = null,
+                           	voterSetName = null,
+                           	txRid = null,
                     ))
 
             GET_PROVIDER_DATA -> GtvObjectMapper.toGtvDictionary(Provider(
@@ -93,7 +96,8 @@ class PendingProposalModel(val model: Model, private val proposalResponse: Gtv, 
                     negativeVotes = 0,
                     maxVotes = 1,
                     threshold = 1,
-                    votingResult = VotingResult.approved
+                    votingResult = VotingResult.approved,
+                    voterSetName = null,
             ))
 
             else -> proposalResponse

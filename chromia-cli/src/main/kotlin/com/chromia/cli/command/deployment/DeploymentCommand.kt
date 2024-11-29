@@ -18,7 +18,8 @@ class DeploymentCommand private constructor() : NoOpChromiaCommand(help = "Creat
                 DeployRemoveCommand(),
                 DeployInspectLeaseCommand(),
                 ProposalCommand.commands(),
-                VotersetCommand.commands()
+                VotersetCommand.commands(),
+                RemoveContainerCommand(),
         )
     }
 }
