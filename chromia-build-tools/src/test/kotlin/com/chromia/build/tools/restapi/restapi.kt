@@ -6,7 +6,7 @@ import net.postchain.common.exception.UserMistake
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.d1.cluster.ClusterManagement
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.GtxQuery
 import net.postchain.rell.base.model.R_LangVersion
 
@@ -25,7 +25,7 @@ fun CachedModel.withInvalidConfiguration() = object : CachedModel by this {
 }
 
 fun CachedModel.withRellVersion(version: String) = withRellVersion(R_LangVersion.of(version))
-fun CachedModel.withRellVersion(version: R_LangVersion) = withQuery("rell.get_rell_version", GtvFactory.gtv(version.str()))
+fun CachedModel.withRellVersion(version: R_LangVersion) = withQuery("rell.get_rell_version", gtv(version.str()))
 
 fun CachedModel.withQuery(name: String, response: Gtv) = withQuery(name) { response }
 

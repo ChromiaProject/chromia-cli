@@ -15,7 +15,7 @@ import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.BeforeAll
@@ -30,7 +30,7 @@ class SuccessfulDeploymentActionModel(val model: Model) : Model by model {
     override fun postTransaction(tx: ByteArray) {}
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
-            "get_compressed_configuration_parts" -> GtvFactory.gtv(listOf())
+            "get_compressed_configuration_parts" -> gtv(listOf())
             else -> GtvNull
         }
     }

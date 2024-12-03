@@ -4,7 +4,7 @@ import mu.KLogging
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtx.data.OpData
 
 // Original implementation and format found in
@@ -38,5 +38,5 @@ data class IcmfMessageOp(
         }
     }
 
-    fun toOpData() = OpData(OP_NAME, arrayOf(GtvFactory.gtv(sender), GtvFactory.gtv(topic), body))
+    fun toOpData() = OpData(OP_NAME, arrayOf(gtv(sender), gtv(topic), body))
 }

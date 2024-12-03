@@ -4,7 +4,7 @@ import com.chromia.api.impl.compile.standardGtxModules
 import com.chromia.api.result.BlockchainConfiguration
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDecoder
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.builder.GtvBuilder
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliEnv
@@ -42,7 +42,7 @@ fun BlockchainConfiguration.keepOnlyStandardGtxModules(): BlockchainConfiguratio
     val gtvBuilder = GtvBuilder()
     gtvBuilder.update(config)
     val gtxModules = standardGtxModules
-            .map { GtvBuilder.GtvNode.decode(GtvFactory.gtv(it)) }
+            .map { GtvBuilder.GtvNode.decode(gtv(it)) }
             .let { GtvBuilder.GtvArrayNode(it, GtvBuilder.GtvArrayMerge.REPLACE) }
 
     gtvBuilder.update(gtxModules, "gtx", "modules")

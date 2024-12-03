@@ -25,6 +25,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 
+
 class FTAuthenticatorTest {
 
     @Test
@@ -75,7 +76,36 @@ class FTAuthenticatorTest {
         )
         val authenticator = createFTAuthenticator(
                 { query, _ -> queryResponseV4(listOf("A"), query, descriptor) },
-                Terminal()
+                Terminal(interactive = false)
+
+        )
+        assertDoesNotThrow {
+            authenticator.addAuthenticationOperation(mock(), "my_op", pubKey, null)
+        }
+    }
+
+    @Test
+    fun validV4AuthDescriptorTypeSMultiDescriptor() {
+        val pubKey = PubKey("1".repeat(64).hexStringToByteArray())
+        val descriptor = Ft4GetAccountAuthDescriptorsBySignerResult(
+                id = "5".repeat(64).hexStringToWrappedByteArray(),
+                args = gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                created = System.currentTimeMillis(),
+                authType = AuthType.S,
+                rules = GtvNull,
+                accountId = "5".repeat(64).hexStringToWrappedByteArray()
+        )
+        val descriptor2 = Ft4GetAccountAuthDescriptorsBySignerResult(
+                id = "6".repeat(64).hexStringToWrappedByteArray(),
+                args = gtv(gtv(gtv("A")), gtv(pubKey.data)),
+                created = System.currentTimeMillis(),
+                authType = AuthType.S,
+                rules = GtvNull,
+                accountId = "5".repeat(64).hexStringToWrappedByteArray()
+        )
+        val authenticator = createFTAuthenticator(
+                { query, _ -> queryResponseV4MultipleDescriptors(listOf("A"), query, listOf(descriptor, descriptor2)) },
+                Terminal(interactive = false)
 
         )
         assertDoesNotThrow {
@@ -97,7 +127,7 @@ class FTAuthenticatorTest {
 
         val authenticator = createFTAuthenticator(
                 { query, _ -> queryResponseV4(listOf("A"), query, descriptor) },
-                Terminal()
+                Terminal(interactive = false)
 
         )
         assertDoesNotThrow {
@@ -151,6 +181,20 @@ class FTAuthenticatorTest {
             ))
 
             GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER -> gtv(GtvObjectMapper.toGtvDictionary(authDescriptor))
+            GET_AUTH_FLAGS -> gtv(flags.map { gtv(it) })
+            else -> GtvNull
+        }
+    }
+
+    private fun queryResponseV4MultipleDescriptors(flags: List<String>, query: String, authDescriptors: List<Ft4GetAccountAuthDescriptorsBySignerResult>): Gtv {
+        return when (query) {
+            GET_VERSION -> gtv("0.4.0")
+            GET_ACCOUNTS_BY_SIGNER -> GtvObjectMapper.toGtvDictionary(PagedResult(
+                    nextCursor = null,
+                    data = listOf(gtv((mapOf("id" to gtv("3".repeat(64).hexStringToByteArray())))))
+            ))
+
+            GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER -> gtv(authDescriptors.map { GtvObjectMapper.toGtvDictionary((it)) })
             GET_AUTH_FLAGS -> gtv(flags.map { gtv(it) })
             else -> GtvNull
         }

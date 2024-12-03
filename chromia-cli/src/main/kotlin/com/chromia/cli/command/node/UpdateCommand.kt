@@ -18,7 +18,7 @@ class UpdateCommand(
 ) : AbstractNodeCommand(help = """
     Updates a running test node
     
-    Will add a configuration to a block height 5 higher that current height for the running blockchain. 
+    Will add a configuration to a block height 2 higher than current height for the running blockchain. 
     Make sure this command is executed with exactly the same chromia.yml and arguments as was used when starting the node using `chr node start` to make sure configurations are added to the correct chain ids.
 """.trimIndent()) {
 

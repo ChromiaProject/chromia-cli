@@ -23,7 +23,8 @@ import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.GtvDecoder
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.decodeGtv
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 
@@ -104,8 +105,8 @@ class TxCommand : ChromiaCommand(help = """
             val proof = sourceClient.confirmationProof(TxRid(iccfTx!!))
             val txHash = GtvDecoder.decodeGtv(proof)["hash"]!!
             val tx = sourceClient.getTransaction(TxRid(iccfTx!!))
-            transactionBuilder.addOperation("iccf_proof", GtvFactory.gtv(iccfSource!!), txHash, GtvFactory.gtv(proof))
-            listOf(GtvFactory.decodeGtv(tx)) + args
+            transactionBuilder.addOperation("iccf_proof", gtv(iccfSource!!), txHash, gtv(proof))
+            listOf(decodeGtv(tx)) + args
         } else args
         if (ftAuthOptions.ftAuth) {
             val authenticator = createFTAuthenticator(client, terminal)

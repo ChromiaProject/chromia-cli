@@ -18,7 +18,7 @@ import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 import net.postchain.gtv.pretty
@@ -68,7 +68,7 @@ class QueryCommand : ChromiaCommand(help = """
 
     private fun createDict(args: List<String>): Gtv {
         return when {
-            args.isEmpty() -> GtvFactory.gtv(mapOf())
+            args.isEmpty() -> gtv(mapOf())
             args.size == 1 && args[0].startsWith("[") && args[0].endsWith("]") -> GtvParser.parse(args[0])
             else -> GtvDictionary.build(args.associate {
                 val (key, value) = it.split("=", limit = 2)

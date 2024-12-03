@@ -17,7 +17,7 @@ import java.nio.file.Path
 import net.postchain.common.hexStringToByteArray
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvByteArray
-import net.postchain.gtv.GtvFactory
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvInteger
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.GtvString
@@ -101,7 +101,7 @@ internal class ChromiaModelTest {
             }
         }
         val model = parseModel(dir.resolve("chromia.yml").toFile())
-        assertThat(model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]).isEqualTo(GtvFactory.gtv("hello"))
+        assertThat(model.blockchains["bc1"]!!.moduleArgs["arg"]!!["foo"]).isEqualTo(gtv("hello"))
     }
 
     @Test

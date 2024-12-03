@@ -9,6 +9,7 @@ import com.chromia.directory1.lib.ft4.external.auth.getAuthFlags
 import com.chromia.directory1.lib.ft4.utils.PagedResult
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.mordant.input.receiveEvents
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.prompt
 import net.postchain.client.core.PostchainQuery
@@ -29,21 +30,19 @@ class FTAuthenticator internal constructor(private val client: PostchainQuery, p
         transactionBuilder.ftAuthOperation(account, authDescriptorId.data)
     }
 
-    private fun findAuthDescriptor(descriptors: List<Ft4GetAccountAuthDescriptorsBySignerResult>, optionalAuthDescriptorId: String?, pubKey: PubKey): Ft4GetAccountAuthDescriptorsBySignerResult? {
-        return descriptors.find { descriptor ->
+    private fun findAuthDescriptors(descriptors: List<Ft4GetAccountAuthDescriptorsBySignerResult>, optionalAuthDescriptorId: String?, pubKey: PubKey): List<Ft4GetAccountAuthDescriptorsBySignerResult> {
+        return descriptors.filter { descriptor ->
             when {
                 !optionalAuthDescriptorId.isNullOrEmpty() -> {
                     descriptor.id == optionalAuthDescriptorId.hexStringToWrappedByteArray()
                 }
 
                 descriptor.authType == AuthType.S -> {
-                    //Second argument in gtv of AuthType.S has the public key
-                    descriptor.args[1].asByteArray().wrap() == pubKey.wData
+                    descriptor.getSingleKey().wrap() == pubKey.wData
                 }
 
                 descriptor.authType == AuthType.M -> {
-                    //Third argument in gtv of AuthType.M has the public key
-                    descriptor.args[2].asArray().any { signer ->
+                    descriptor.getMultiKeys().any { signer ->
                         signer.asByteArray().wrap() == pubKey.wData
                     }
                 }
@@ -58,8 +57,23 @@ class FTAuthenticator internal constructor(private val client: PostchainQuery, p
     private fun findValidAuthDescriptorIdForOperation(opName: String, accountId: ByteArray, pubKey: PubKey, optionalAuthDescriptorId: String?): WrappedByteArray {
         val flags = client.getAuthFlags(opName)
         val authDescriptors = client.getAccountAuthDescriptorsBySigner(accountId, signer = pubKey.data)
-        val authDescriptor = findAuthDescriptor(authDescriptors, optionalAuthDescriptorId, pubKey)
-                ?: throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
+
+        val authDescriptorsCandidates = findAuthDescriptors(authDescriptors, optionalAuthDescriptorId, pubKey)
+        if (authDescriptorsCandidates.isEmpty()) {
+            throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
+        }
+
+        val authDescriptor = if (authDescriptorsCandidates.size == 1) {
+            authDescriptorsCandidates.first()
+        } else {
+            val picker = FTAuthPicker(terminal, authDescriptorsCandidates)
+            //if the terminal is interactive the picker is invoked, else the first descriptor is defaulted to
+            if (terminal.terminalInfo.inputInteractive) {
+                picker.render()
+                picker.receiveEvents()
+            }
+            picker.selectedDescriptor
+        }
 
         if (!isValid(flags, authDescriptor)) {
             throw PrintMessage("No valid account descriptor found. Operation $opName requires the flag(s): $flags, while the flag(s) of the auth descriptor is: ${authDescriptor.getFlags()}", statusCode = 1)
