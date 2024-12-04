@@ -12,6 +12,7 @@ import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.deprecated
@@ -21,6 +22,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.inputStream
 import com.google.common.base.Throwables
+import net.postchain.gtv.GtvString
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
 import net.postchain.rell.base.compiler.base.utils.C_Message
@@ -67,6 +69,8 @@ class ReplCommand : ChromiaCommand(help = """
     private val script by argument(name = "script", help = "Script file")
             .inputStream()
             .optional()
+
+    private val args by argument(name = "args", help = "Arguments to script").multiple()
 
     override fun run() {
         if (module != null && settings.model == null) {
@@ -124,15 +128,20 @@ class ReplCommand : ChromiaCommand(help = """
     private inner class ScriptCommandInputChannelFactory(val reader: BufferedReader) : ReplInputChannelFactory {
         override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
             private var first = true
+            private var line: String? = null
             override fun readLine(prompt: String): String? {
-                var line = reader.readLine()
                 if (first) {
-                    if (line != null && line.startsWith("#!")) {
-                        line = reader.readLine()
-                    }
                     first = false
+                    line = reader.readLine()
+                    if (line != null && line!!.startsWith("#!")) {
+                        line = ""
+                    }
+                    return "val args: list<text> = [${args.joinToString(", ") { GtvString(it).toString() }}];"
+                } else {
+                    val lastLine = line
+                    line = reader.readLine()
+                    return lastLine
                 }
-                return line
             }
         }
     }

@@ -55,11 +55,23 @@ class ReplCommandTest {
     }
 
     @Test
-    fun commandLineInputWithError() {
-        val res = ReplCommand().test("-c 'print(17); bogus()'")
+    fun commandLineInputWithCompileError() {
+        val res = ReplCommand().test("-c 'print(17); bogus(); print(18)'")
         assertThat(res.statusCode).isEqualTo(1)
         assertThat(res.output).isEqualTo("""
             <console>(1:12) ERROR: Unknown name: 'bogus'
+
+        """.trimIndent())
+    }
+
+    @Test
+    fun commandLineInputWithRuntimeError() {
+        val res = ReplCommand().test("""-c 'print(17); require(false, "the error"); print(18)'""")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).isEqualTo("""
+            17
+            Run-time error: the error
+                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
@@ -204,9 +216,32 @@ class ReplCommandTest {
     }
 
     @Test
-    fun scriptFileWithError() {
+    fun scriptFileWithArguments() {
         with(File(dir, "script.rell")) {
             writeText("""
+                #!/usr/bin/env -S chr repl
+                print(args.size());
+                print(args[0]);
+                print(args[1]);
+                print(args[2]);
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("""${dir.absolutePath}/script.rell one "foo bar" three""")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.output).isEqualTo("""
+            3
+            one
+            foo bar
+            three
+            
+        """.trimIndent())
+    }
+
+    @Test
+    fun scriptFileWithCompileError() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                #!/usr/bin/env -S chr repl
                 print("Foo bar");
                 bogus();
                 print("Bar foo");                
@@ -217,6 +252,26 @@ class ReplCommandTest {
         assertThat(res.output).isEqualTo("""
             Foo bar
             <console>(1:1) ERROR: Unknown name: 'bogus'
+
+        """.trimIndent())
+    }
+
+    @Test
+    fun scriptFileWithRuntimeError() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                #!/usr/bin/env -S chr repl
+                print("Foo bar");
+                require(false, "the error");
+                print("Bar foo");                
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).isEqualTo("""
+            Foo bar
+            Run-time error: the error
+                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
