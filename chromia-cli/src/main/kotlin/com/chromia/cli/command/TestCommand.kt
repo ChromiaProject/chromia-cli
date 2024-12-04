@@ -23,15 +23,12 @@ import com.github.ajalt.clikt.parameters.options.optionalValueLazy
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.file
-import com.github.ajalt.mordant.rendering.TextColors
 import com.github.ajalt.mordant.rendering.TextStyle
 import com.github.ajalt.mordant.terminal.success
 import net.postchain.gtv.Gtv
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.base.RellCliException
 import net.postchain.rell.api.gtx.RellApiRunTests
-import net.postchain.rell.base.runtime.Rt_Exception
-import net.postchain.rell.base.runtime.utils.Rt_Utils
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 import net.postchain.rell.base.utils.UnitTestResult
@@ -39,7 +36,6 @@ import net.postchain.rell.base.utils.UnitTestRunnerResults
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -203,59 +199,43 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     }
 
     private fun printResults(results: UnitTestRunnerResults) {
-        val (okTests, failedTests) = results.getResults().partition { it.res.error == null }
+        val failedTests = results.getResults().filter { it.res.error != null }
 
-        if (failedTests.isNotEmpty()) {
-            echo()
-            echo("-".repeat(60))
-            echo("FAILED TESTS:")
-            for (r in failedTests) {
-                echo()
-                echo(r.case.name)
-                printException(r.res.error!!)
-            }
+        results.print { msg ->
+            val decorated = decorateMessage(msg, mapOf(
+                    "OK" to success,
+                    "***** OK *****" to success,
+                    "Error:" to danger,
+                    "FAILED TESTS:" to info,
+                    "FAILED" to danger,
+                    "***** FAILED *****" to danger,
+                    "Actual:" to success,
+                    "Expected:" to danger,
+                    "Diff:" to warning,
+                    "Stack trace:" to info
+            ))
+            echo(decorated)
         }
 
-        echo()
-        echo("-".repeat(60))
-        echo("TEST RESULTS:")
-
-        printResults(okTests, success)
-        printResults(failedTests, danger)
-
-        val nTests = results.getResults().size
-        val nOk = okTests.size
-        val nFailed = failedTests.size
-        val duration = results.getResults().fold(Duration.ZERO) { acc, res -> acc.plus(res.res.duration) }
-
-        echo("\nSUMMARY: $nFailed FAILED / $nOk PASSED / $nTests TOTAL (${UnitTestResult.durationToString(duration)})\n")
-
-        if (nFailed == 0) {
-            currentContext.terminal.success("***** OK *****")
+        if (failedTests.isEmpty()) {
+            currentContext.terminal.success("")
         } else {
-            throw CliktError(TextColors.red("***** FAILED *****"))
+            throw CliktError("")
         }
     }
 
-    private fun printResults(list: List<UnitTestCaseResult>, color: TextStyle) {
-        if (list.isNotEmpty()) {
-            echo()
-            for (r in list) {
-                echo("${color(r.res.toString())} ${r.case}")
-            }
+    private fun decorateMessage(msg: String, colors: Map<String, TextStyle>): String {
+        return msg.lines().joinToString(separator = System.lineSeparator()) {
+            decorateLineStart(it, colors)
         }
     }
 
-    private fun printException(e: Throwable) {
-        when (e) {
-            is Rt_Exception -> {
-                val msg = Rt_Utils.appendStackTrace("${TextColors.red("ERROR:")} ${e.message}", e.info.stack)
-                echo(msg)
-            }
-
-            else -> {
-                echo(e.stackTraceToString())
+    private fun decorateLineStart(line: String, colors: Map<String, TextStyle>): String {
+        for ((prefix, style) in colors) {
+            if (line.startsWith(prefix)) {
+                return line.replaceFirst(prefix, style(prefix))
             }
         }
+        return line
     }
 }

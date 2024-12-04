@@ -5,6 +5,9 @@ import assertk.assertions.any
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import com.chromia.build.tools.testData
+import com.chromia.cli.tools.formatter.danger
+import com.chromia.cli.tools.formatter.info
+import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.util.captureLog4jLoggerOutput
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
@@ -377,6 +380,55 @@ internal class TestCommandTest {
             TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error"))
         }
         assertThat(logger.output()).contains("SUMMARY: 1 FAILED / 1 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun failingTestColors() {
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_a() {}
+                function test_b() { assert_equals(1, 2); }
+            """.trimIndent())
+        }
+
+        val testCommand = TestCommand()
+        assertThrows<CliktError> {
+            testCommand.context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error"))
+        }
+
+        val output = logger.output()
+        assertThat(output).contains("${testCommand.success("OK")} test:test_a")
+        assertThat(output).contains(testCommand.info("FAILED TESTS:"))
+        assertThat(output).contains("${testCommand.danger("FAILED")} test:test_b")
+        assertThat(output).contains(testCommand.danger("***** FAILED *****"))
+        assertThat(output).contains("${testCommand.danger("Error:")} System function 'rell.test.assert_equals'")
+        assertThat(output).contains(testCommand.info("Stack trace:"))
+        assertThat(output).contains(testCommand.danger("Expected:"))
+        assertThat(output).contains(testCommand.success("Actual:"))
+    }
+
+    @Test
+    fun okTestsColors() {
+        with(File(testDir.toFile(), "src/test.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                @test module;
+
+                function test_a() {}
+                function test_b() { assert_equals(1, 1); }
+            """.trimIndent())
+        }
+
+        val testCommand = TestCommand()
+        testCommand.context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--fail-on-error"))
+
+        val output = logger.output()
+        assertThat(output).contains("${testCommand.success("OK")} test:test_a")
+        assertThat(output).contains("${testCommand.success("OK")} test:test_b")
+        assertThat(output).contains(testCommand.success("***** OK *****"))
     }
 
     @Test
