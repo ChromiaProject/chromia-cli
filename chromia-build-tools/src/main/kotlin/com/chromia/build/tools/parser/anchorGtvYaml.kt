@@ -73,9 +73,10 @@ fun createChromiaYamlParser(file: File): Yaml {
 fun loadAnchor(src: File, schema: JSONSchema? = null): Map<String, Any> {
     val yaml = createChromiaYamlParser(src)
 
-    val loaded = src.inputStream().use {
+    val loaded: Map<String, Any> = src.inputStream().use {
         yaml.load<Map<String, Any>>(it)
-    }
+    } ?: emptyMap()
+
     schema?.let {
         val objectMapper = ObjectMapper()
         val formattedLoaded = mapByteArraysToHexString(loaded)
