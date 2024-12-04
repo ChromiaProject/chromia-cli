@@ -50,7 +50,18 @@ class ReplCommandTest {
     @Test
     fun commandLineInput() {
         val res = ReplCommand().test("-c '5+5'")
+        assertThat(res.statusCode).isEqualTo(0)
         assertThat(res.output).isEqualTo("10\n")
+    }
+
+    @Test
+    fun commandLineInputWithError() {
+        val res = ReplCommand().test("-c 'print(17); bogus()'")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).isEqualTo("""
+            <console>(1:12) ERROR: Unknown name: 'bogus'
+
+        """.trimIndent())
     }
 
     @Test
@@ -151,5 +162,82 @@ class ReplCommandTest {
             terminal = Terminal(terminalInterface = recorder)
         }.parse(listOf())
         assertThat(recorder.stdout()).isEqualTo("10\n")
+    }
+
+    @Test
+    fun scriptFile() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                print("Foo bar");
+                5+6;
+                print("Bar foo");                
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.output).isEqualTo("""
+            Foo bar
+            11
+            Bar foo
+            
+        """.trimIndent())
+    }
+
+    @Test
+    fun scriptFileIgnoresShebang() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                #!/usr/bin/env -S chr repl
+                print("Foo bar");
+                5+6;
+                print("Bar foo");                
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.output).isEqualTo("""
+            Foo bar
+            11
+            Bar foo
+            
+        """.trimIndent())
+    }
+
+    @Test
+    fun scriptFileWithError() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                print("Foo bar");
+                bogus();
+                print("Bar foo");                
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.output).isEqualTo("""
+            Foo bar
+            <console>(1:1) ERROR: Unknown name: 'bogus'
+
+        """.trimIndent())
+    }
+
+    @Test
+    fun scriptFileNotFound() {
+        val res = ReplCommand().test("${dir.absolutePath}/not_there.rell")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.stderr).contains("does not exist")
+    }
+
+    @Test
+    fun scriptFileAndCommandIsNotAllowed() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                print("Foo bar");
+                print("Bar foo");                
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("-c 'print(17)' ${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.stderr).contains("Cannot use -c when specifying script file")
     }
 }
