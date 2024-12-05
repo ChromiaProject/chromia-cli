@@ -53,6 +53,12 @@ class ReplCommand : ChromiaCommand(help = """
     When a operation is executed from the repl shell, the database connection and a module needs to be defined from the start of the repl command,
     to be able to execute  an operation it needs added to a transaction. 
     This can be done by wrapping it with a test transaction like this: `rell.test.tx(<your operation>..).run()`
+    
+    Rell scripts:
+    You can specify a file with Rell statements which will be read and executed (specifying `-` will read from standard input).
+    Command line arguments can be specified and will be available as `args: list<text>`.
+    This can not be combined with the `-c` option.
+    Support for Rell scripts is experimental and may be changed or removed at any time.
 """.trimIndent()) {
     private val settings by optionalChromiaModelOption()
     private val sourceDir by lazy { settings.sourceDir ?: File(System.getProperty("user.dir")) }
