@@ -73,16 +73,6 @@ public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOpti
 	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 }
 
-synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun invoke (Ljava/lang/Object;)V
-}
-
-synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun invoke (Ljava/lang/Object;)V
-}
-
 public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$$inlined$convert$default$1 : kotlin/jvm/functions/Function1 {
 	public static final field INSTANCE Lcom/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$$inlined$convert$default$1;
 	public fun <init> ()V
@@ -94,21 +84,6 @@ public final class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOptio
 	public fun <init> (Lcom/github/ajalt/clikt/parameters/options/OptionWithValues;)V
 	public final fun invoke (Lcom/github/ajalt/clikt/parameters/options/OptionCallTransformContext;Ljava/lang/String;)Ljava/lang/Object;
 	public synthetic fun invoke (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-}
-
-synthetic class com/chromia/cli/tools/config/ConfigOptionKt$chromiaModelOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun invoke (Ljava/lang/Object;)V
-}
-
-synthetic class com/chromia/cli/tools/config/ConfigOptionKt$optionalChromiaModelConfigOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun invoke (Ljava/lang/Object;)V
-}
-
-synthetic class com/chromia/cli/tools/config/ConfigOptionKt$optionalChromiaModelOption$1 : kotlin/jvm/internal/AdaptedFunctionReference, kotlin/jvm/functions/Function1 {
-	public synthetic fun invoke (Ljava/lang/Object;)Ljava/lang/Object;
-	public final fun invoke (Ljava/lang/Object;)V
 }
 
 public final class com/chromia/cli/tools/config/ConfigOptionKt$requiredChromiaModelOption$$inlined$defaultLazy$default$1 : kotlin/jvm/functions/Function2 {

@@ -18,19 +18,19 @@ import java.io.File
 
 
 // Optional Client Configuration. Reads from file system if not set
-fun CliktCommand.chromiaConfigOption() = ChromiaConfigOption(::echo)
+fun CliktCommand.chromiaConfigOption() = ChromiaConfigOption { msg -> echo(msg, err = true) }
 
 // Chromia model must be found or explicitly set
-fun CliktCommand.chromiaModelOption() = ChromiaModelOption(::echo)
+fun CliktCommand.chromiaModelOption() = ChromiaModelOption { msg -> echo(msg, err = true) }
 
 // Chromia model is optional. Will not throw if model file is not found
-fun CliktCommand.optionalChromiaModelOption() = OptionalChromiaModelOption(::echo)
+fun CliktCommand.optionalChromiaModelOption() = OptionalChromiaModelOption { msg -> echo(msg, err = true) }
 
 // Chromia model must be found or explicitly set. Client config is read from system if not set
-fun CliktCommand.chromiaModelConfigOption() = ChromiaModelConfigOption(::echo)
+fun CliktCommand.chromiaModelConfigOption() = ChromiaModelConfigOption { msg -> echo(msg, err = true) }
 
 // Chromia model if optional. Client config is read from system if not set
-fun CliktCommand.optionalChromiaModelConfigOption() = OptionalChromiaModelConfigOption(::echo)
+fun CliktCommand.optionalChromiaModelConfigOption() = OptionalChromiaModelConfigOption { msg -> echo(msg, err = true) }
 
 open class ChromiaConfigOption(logger: (String) -> Unit) : OptionGroup("Configuration Properties") {
     val configFile by chromiaConfigOption()
