@@ -66,7 +66,6 @@ class ReplCommandTest {
         assertThat(res.output).isEqualTo("""
             17
             Run-time error: the error
-                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
@@ -259,7 +258,6 @@ class ReplCommandTest {
         assertThat(res.output).isEqualTo("""
             Foo bar
             Run-time error: the error
-                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
