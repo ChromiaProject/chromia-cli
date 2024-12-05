@@ -61,7 +61,6 @@ class ReplCommand : ChromiaCommand(help = """
     Support for Rell scripts is experimental and may be changed or removed at any time.
 """.trimIndent()) {
     private val settings by optionalChromiaModelOption()
-    private val sourceDir by lazy { settings.sourceDir ?: File(System.getProperty("user.dir")) }
     private val module by module()
     private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
@@ -79,11 +78,6 @@ class ReplCommand : ChromiaCommand(help = """
     private val args by argument(name = "args", help = "Arguments to script").multiple()
 
     override fun run() {
-        if (module != null && settings.model == null) {
-            echo("To find the module \"$module\", specifying the settings file is required")
-            return
-        }
-
         if (script != null && command != null) {
             throw UsageError("Cannot use -c when specifying script file")
         }
@@ -92,6 +86,7 @@ class ReplCommand : ChromiaCommand(help = """
             throw CliktError("To correctly connect to the database, specifying the settings file is required")
         }
         val localModel = settings.model ?: ChromiaModel.default()
+        val sourceDir = settings.sourceDir ?: localModel.compile.source.toFile()
         val compileConfig = RellApiCompile.Config.Builder()
                 .cliEnv(CliktCliEnv(this))
                 .mountConflictError(false)

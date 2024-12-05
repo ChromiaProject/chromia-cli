@@ -34,15 +34,10 @@ class ReplCommandTest {
     }
 
     @Test
-    fun testCanNotFindModuleWithoutSettings() {
-        val res = ReplCommand().test("--module=main")
-        assertThat(res.output).contains("To find the module \"main\", specifying the settings file is required")
-    }
-
-    @Test
     fun testCanNotConnectToDbWithoutSettings() {
         EnvironmentVariables("CHR_DB_URL", "").execute {
             val res = ReplCommand().test("--use-db")
+            assertThat(res.statusCode).isEqualTo(1)
             assertThat(res.stderr).contains("To correctly connect to the database, specifying the settings file is required")
         }
     }
