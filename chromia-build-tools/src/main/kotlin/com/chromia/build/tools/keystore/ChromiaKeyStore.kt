@@ -38,7 +38,7 @@ class ChromiaKeyStore(val keyId: String = "chromia_key") {
 
     fun findKeyPair(): KeyPair? {
         if (publicKeyFile.exists() && privateKeyFile.exists()) {
-            return KeyPair.of(publicKeyFile.readText(), privateKeyFile.readText())
+            return KeyPair.of(publicKeyFile.readText().trim(), privateKeyFile.readText().trim())
         }
         return null
     }
