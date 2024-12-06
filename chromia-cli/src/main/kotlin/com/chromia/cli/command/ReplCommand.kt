@@ -26,6 +26,7 @@ import net.postchain.gtv.GtvString
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
 import net.postchain.rell.base.compiler.base.utils.C_Message
+import net.postchain.rell.base.compiler.base.utils.C_Parser
 import net.postchain.rell.base.repl.ReplInputChannel
 import net.postchain.rell.base.repl.ReplInputChannelFactory
 import net.postchain.rell.base.repl.ReplOutputChannel
@@ -118,31 +119,50 @@ class ReplCommand : ChromiaCommand(help = """
             val shellConfig = shellConfigBuilder.apply {
                 if (command != null)
                     inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
-                else if (!terminal.terminalInfo.inputInteractive)
-                    inputChannelFactory(NonInteractiveCommandInputChannelFactory())
             }
                     .build()
             RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
         }
     }
 
-    private inner class ScriptCommandInputChannelFactory(val reader: BufferedReader) : ReplInputChannelFactory {
+    private inner class ScriptCommandInputChannelFactory(rawReader: BufferedReader) : ReplInputChannelFactory {
+        private val reader = ScriptReader(rawReader)
         override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
-            private var first = true
-            private var line: String? = null
             override fun readLine(prompt: String): String? {
-                if (first) {
-                    first = false
-                    line = reader.readLine()
-                    if (line != null && line!!.startsWith("#!")) {
-                        line = ""
+                val line = reader.readLine()
+                if (line == null) return null
+                val statement = StringBuilder(line)
+                while (shouldReadMore(statement.toString())) {
+                    val nextLine = reader.readLine()
+                    if (nextLine != null) {
+                        statement.append(nextLine)
                     }
-                    return "val args: list<text> = [${args.joinToString(", ") { GtvString(it).toString() }}];"
-                } else {
-                    val lastLine = line
-                    line = reader.readLine()
-                    return lastLine
                 }
+                return statement.toString()
+            }
+
+            // TODO using internal Rell API, replace with public API when available
+            private fun shouldReadMore(line: String): Boolean =
+                    line.isNotBlank() && C_Parser.checkEofErrorRepl(line) != null
+        }
+    }
+
+    private inner class ScriptReader(val reader: BufferedReader) {
+        private var first = true
+        private var line: String? = null
+
+        fun readLine(): String? {
+            if (first) {
+                first = false
+                line = reader.readLine()
+                if (line != null && line!!.startsWith("#!")) {
+                    line = ""
+                }
+                return "val args: list<text> = [${args.joinToString(", ") { GtvString(it).toString() }}];"
+            } else {
+                val lastLine = line
+                line = reader.readLine()
+                return lastLine
             }
         }
     }
@@ -151,12 +171,6 @@ class ReplCommand : ChromiaCommand(help = """
         override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
             val commandIterator = commands.iterator()
             override fun readLine(prompt: String) = if (commandIterator.hasNext()) commandIterator.next() else null
-        }
-    }
-
-    private inner class NonInteractiveCommandInputChannelFactory : ReplInputChannelFactory {
-        override fun createInputChannel(historyFile: File?) = object : ReplInputChannel {
-            override fun readLine(prompt: String): String? = terminal.readLineOrNull(hideInput = false)
         }
     }
 

@@ -18,14 +18,6 @@ class ReplIT {
     }
 
     @Test
-    fun canRunNoninteractiveReplSession() {
-        TestProcess.Builder("repl")
-                .input("5+5\n5*5\n")
-                .wholeOutput("10\n25")
-                .start()
-    }
-
-    @Test
     fun canStartReplWithQuery(@TempDir dir: Path) {
         testData(dir)
         TestProcess.Builder("repl", "--module", "main", "-c", "hello()")

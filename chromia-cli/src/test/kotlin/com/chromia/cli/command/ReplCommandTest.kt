@@ -151,16 +151,6 @@ class ReplCommandTest {
     }
 
     @Test
-    fun nonInteractiveReplSession() {
-        val recorder = TerminalRecorder(inputInteractive = false, outputInteractive = false)
-        recorder.inputLines = mutableListOf("5+5")
-        ReplCommand().context {
-            terminal = Terminal(terminalInterface = recorder)
-        }.parse(listOf())
-        assertThat(recorder.stdout()).isEqualTo("10\n")
-    }
-
-    @Test
     @Disabled("Cannot send input to JLine")
     fun interactiveReplSession() {
         val recorder = TerminalRecorder(inputInteractive = true, outputInteractive = true)
@@ -175,17 +165,20 @@ class ReplCommandTest {
     fun scriptFile() {
         with(File(dir, "script.rell")) {
             writeText("""
-                print("Foo bar");
+                function foo() {
+                  print("FOO");
+                }  
                 5+6;
-                print("Bar foo");                
+                print("Bar foo");
+                foo();                
             """.trimIndent())
         }
         val res = ReplCommand().test("${dir.absolutePath}/script.rell")
         assertThat(res.statusCode).isEqualTo(0)
         assertThat(res.output).isEqualTo("""
-            Foo bar
             11
             Bar foo
+            FOO
             
         """.trimIndent())
     }
