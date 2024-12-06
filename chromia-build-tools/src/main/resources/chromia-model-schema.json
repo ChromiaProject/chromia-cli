@@ -321,6 +321,10 @@
           "type": "boolean",
           "default": true,
           "description": "If enabled primary node will add its public key to the block header. Please note that this value is **not** validated and can only be trusted for features that incentivize nodes to add their own key."
+        },
+        "features": {
+          "type": "object",
+          "description": "Blockchain features"
         }
       }
     },
