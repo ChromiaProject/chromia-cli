@@ -169,15 +169,20 @@ class ReplCommandTest {
                 }  
                 5+6;
                 print("Bar foo");
+                log("Logging this");
                 foo();                
             """.trimIndent())
         }
         val res = ReplCommand().test("${dir.absolutePath}/script.rell")
         assertThat(res.statusCode).isEqualTo(0)
-        assertThat(res.output).isEqualTo("""
+        assertThat(res.stdout).isEqualTo("""
             11
             Bar foo
             FOO
+            
+        """.trimIndent())
+        assertThat(res.stderr).isEqualTo("""
+            Logging this
             
         """.trimIndent())
     }

@@ -78,6 +78,8 @@ class ReplCommand : ChromiaCommand(help = """
 
     private val args by argument(name = "args", help = "Arguments to script").multiple()
 
+    private val logPrefix = "[:<console>(<console>:1)] "
+
     override fun run() {
         if (script != null && command != null) {
             throw UsageError("Cannot use -c when specifying script file")
@@ -99,7 +101,10 @@ class ReplCommand : ChromiaCommand(help = """
                 .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
                 .historyFile(historyFile)
                 .outPrinter(::echo)
-                .logPrinter(::echo)
+                .logPrinter {
+                    val msg = if (it.startsWith(logPrefix)) it.substring(logPrefix.length) else it
+                    echo(msg, err = true)
+                }
                 .outputChannelFactory(CliktOutputChannelFactory(
                         !terminal.terminalInfo.outputInteractive || command != null || script != null
                 ))
