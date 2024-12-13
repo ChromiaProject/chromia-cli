@@ -9,9 +9,8 @@ import com.chromia.directory1.lib.ft4.external.auth.getAuthFlags
 import com.chromia.directory1.lib.ft4.utils.PagedResult
 import com.github.ajalt.clikt.core.Abort
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.mordant.input.receiveEvents
+import com.github.ajalt.mordant.input.interactiveSelectList
 import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.prompt
 import net.postchain.client.core.PostchainQuery
 import net.postchain.client.transaction.TransactionBuilder
 import net.postchain.common.hexStringToByteArray
@@ -59,20 +58,25 @@ class FTAuthenticator internal constructor(private val client: PostchainQuery, p
         val authDescriptors = client.getAccountAuthDescriptorsBySigner(accountId, signer = pubKey.data)
 
         val authDescriptorsCandidates = findAuthDescriptors(authDescriptors, optionalAuthDescriptorId, pubKey)
-        if (authDescriptorsCandidates.isEmpty()) {
+        val authDescriptor = if (authDescriptorsCandidates.isEmpty()) {
             throw PrintMessage("No valid account descriptor found. User not authorized for operation $opName", statusCode = 1)
-        }
-
-        val authDescriptor = if (authDescriptorsCandidates.size == 1) {
+        } else if (authDescriptorsCandidates.size == 1) {
             authDescriptorsCandidates.first()
+        } else if (terminal.terminalInfo.inputInteractive) {
+            val candidateMap = authDescriptorsCandidates.associateBy { it.id.toHex() }
+            (terminal.interactiveSelectList(
+                    entries = authDescriptorsCandidates.map {
+                        """id: ${it.id}
+                                |flags: ${it.getFlags()}
+                                |signatures needed: ${it.getNumberOfSigners()} 
+                                |keys: ${it.getKeysAsFormattedString()}
+                                |""".trimMargin()
+                    },
+                    title = "Please select a valid auth descriptor"
+            )
+                    ?: throw Abort()).let { candidateMap[it.substring(4, it.indexOf("\n"))]!! }
         } else {
-            val picker = FTAuthPicker(terminal, authDescriptorsCandidates)
-            //if the terminal is interactive the picker is invoked, else the first descriptor is defaulted to
-            if (terminal.terminalInfo.inputInteractive) {
-                picker.render()
-                picker.receiveEvents()
-            }
-            picker.selectedDescriptor
+            authDescriptorsCandidates.first()
         }
 
         if (!isValid(flags, authDescriptor)) {
@@ -101,7 +105,10 @@ class FTAuthenticator internal constructor(private val client: PostchainQuery, p
             if (it.isEmpty()) throw PrintMessage("No FT4 Account found for public key: $pubKey", statusCode = 1)
             if (it.size == 1) it.first()
             else if (terminal.terminalInfo.inputInteractive) {
-                terminal.prompt("More than one account found, which one should we use: ", choices = it.map { ac -> ac.toHex() })
+                terminal.interactiveSelectList(
+                        entries = it.map { ac -> ac.toHex() }.toSet(),
+                        title = "More than one account found, which one should we use?"
+                )
                         ?.hexStringToByteArray()
                         ?: throw Abort()
             } else {
