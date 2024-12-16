@@ -1,6 +1,7 @@
 package com.chromia
 
 import com.chromia.cli.command.BuildCommand
+import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.CreateRellDappCommand
 import com.chromia.cli.command.FetchConfigCommand
 import com.chromia.cli.command.InstallCommand
@@ -30,7 +31,7 @@ fun main(args: Array<out String>) = object : CliLauncher("chr") {
                     "gtv" to listOf("tools", "gtv"),
             )
 }.versionOption("""
-            ${CliLauncher::class.java.`package`.implementationVersion}
+            ${ChromiaCommand::class.java.`package`.implementationVersion ?: "(unknown)"}
             rell version ${RellVersions::class.java.`package`.implementationVersion ?: "(unknown)"}
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
             EIF version ${EifGTXModule::class.java.`package`.implementationVersion ?: "(unknown)"}

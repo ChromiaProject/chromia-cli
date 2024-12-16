@@ -43,6 +43,8 @@
                 <artifactId>rell-maven-plugin</artifactId>
                 <configuration>
                     <source>${directory.source}</source>
+                    <packageName/>
+                    <testModule/>
                 </configuration>
                 <executions>
                     <execution>
@@ -182,18 +184,21 @@
         </dependency>
 
         <dependency>
-            <groupId>com.chromia.cli</groupId>
+            <groupId>com.chromia.cli.tools</groupId>
             <artifactId>chromia-build-tools</artifactId>
+            <version>${chromia.cli.tools.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.chromia.cli</groupId>
+            <groupId>com.chromia.cli.tools</groupId>
             <artifactId>chromia-build-tools</artifactId>
+            <version>${chromia.cli.tools.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.chromia.cli</groupId>
+            <groupId>com.chromia.cli.tools</groupId>
             <artifactId>chromia-cli-tools</artifactId>
+            <version>${chromia.cli.tools.version}</version>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
@@ -260,10 +265,22 @@
         <dependency>
             <groupId>net.postchain.rell.toolbox</groupId>
             <artifactId>indexer</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.chromia.cli</groupId>
+                    <artifactId>chromia-build-tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell.toolbox</groupId>
             <artifactId>common</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.chromia.cli</groupId>
+                    <artifactId>chromia-build-tools</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

@@ -16,19 +16,10 @@
 
     <dependencies>
         <!-- Postchain modules to aggregate coverage reports -->
-        <dependency>
-            <groupId>com.chromia.cli</groupId>
-            <artifactId>chromia-build-tools</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>com.chromia.cli</groupId>
             <artifactId>chromia-cli</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.chromia.cli</groupId>
-            <artifactId>chromia-cli-tools</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

@@ -10,8 +10,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>chromia-cli</module>
-        <module>chromia-cli-tools</module>
-        <module>chromia-build-tools</module>
         <module>coverage-report-aggregate</module>
     </modules>
 
@@ -28,6 +26,7 @@
         <rell.toolbox.version>0.4.12</rell.toolbox.version>
         <eif.version>0.6.5</eif.version>
         <directory.chain.version>1.74.0</directory.chain.version>
+        <chromia.cli.tools.version>0.0.2</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <jgit.version>6.9.0.202403050737-r</jgit.version>
@@ -89,6 +88,11 @@
             <id>rell-toolbox</id>
             <name>Rell Toolbox</name>
             <url>https://gitlab.com/api/v4/projects/51303085/packages/maven</url>
+        </repository>
+        <repository>
+            <id>chromia-cli-tools</id>
+            <name>Chromia CLI Tools Registry</name>
+            <url>https://gitlab.com/api/v4/projects/64941451/packages/maven</url>
         </repository>
         <repository>
             <id>mavenCentral</id>
@@ -341,24 +345,18 @@
             </dependency>
             <dependency>
                 <groupId>com.chromia.cli</groupId>
-                <artifactId>chromia-cli-tools</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.chromia.cli</groupId>
                 <artifactId>chromia-cli</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.chromia.cli</groupId>
-                <artifactId>chromia-build-tools</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.chromia.cli.tools</groupId>
+                <artifactId>chromia-cli-tools</artifactId>
+                <version>${chromia.cli.tools.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.chromia.cli</groupId>
+                <groupId>com.chromia.cli.tools</groupId>
                 <artifactId>chromia-build-tools</artifactId>
-                <version>${project.version}</version>
-                <type>test-jar</type>
+                <version>${chromia.cli.tools.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.postchain.rell</groupId>
@@ -507,11 +505,11 @@
                 <version>0.44</version>
             </dependency>
             <dependency>
-              <groupId>org.apache.tika</groupId>
-              <artifactId>tika-core</artifactId>
-              <version>3.0.0</version>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-core</artifactId>
+                <version>3.0.0</version>
             </dependency>
-            
+
             <!-- Needed by postchain-client -->
             <dependency>
                 <groupId>commons-io</groupId>
