@@ -13,10 +13,10 @@ import net.postchain.gtv.gtvml.GtvMLParser
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
-import org.web3j.utils.Files
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
+import kotlin.io.path.readText
 
 class FetchConfigCommandTest : IntegrationTestSetup() {
     @TempDir
@@ -262,10 +262,10 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             Saving web resource: web/index.html
 
         """.trimIndent())
-        assertThat(Files.readString(File(dir.toFile(), "out/blockchain-config.yml"))).isEqualTo(expectedConfigYml)
-        assertThat(Files.readString(File(dir.toFile(), "out/chromia.yml"))).isEqualTo(expectedChromiaYml)
-        assertThat(Files.readString(File(dir.toFile(), "out/src/main.rell"))).isEqualTo(sourceRell)
-        assertThat(Files.readString(File(dir.toFile(), "out/web/index.html"))).isEqualTo(sourceHtml)
+        assertThat(dir.resolve("out/blockchain-config.yml").readText()).isEqualTo(expectedConfigYml)
+        assertThat(dir.resolve("out/chromia.yml").readText()).isEqualTo(expectedChromiaYml)
+        assertThat(dir.resolve("out/src/main.rell").readText()).isEqualTo(sourceRell)
+        assertThat(dir.resolve("out/web/index.html").readText()).isEqualTo(sourceHtml)
     }
 
     @Test
@@ -289,8 +289,8 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             Saving web resource: web/index.html
 
         """.trimIndent())
-        assertThat(Files.readString(File(dir.toFile(), "out/blockchain-config.yml"))).isEqualTo(expectedConfigYmlWithOnlyWeb)
-        assertThat(Files.readString(File(dir.toFile(), "out/chromia.yml"))).isEqualTo(expectedChromiaYmlWithOnlyWeb)
-        assertThat(Files.readString(File(dir.toFile(), "out/web/index.html"))).isEqualTo(sourceHtml)
+        assertThat(dir.resolve("out/blockchain-config.yml").readText()).isEqualTo(expectedConfigYmlWithOnlyWeb)
+        assertThat(dir.resolve("out/chromia.yml").readText()).isEqualTo(expectedChromiaYmlWithOnlyWeb)
+        assertThat(dir.resolve("out/web/index.html").readText()).isEqualTo(sourceHtml)
     }
 }
