@@ -1,7 +1,8 @@
 package com.chromia.cli.command.deployment.voterset
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.createFTAuthenticator
+import com.chromia.cli.ft.addFtAuthenticationOperation
+import com.chromia.cli.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
@@ -12,7 +13,6 @@ import com.chromia.directory1.economy_chain.REGISTER_DAPP_PROVIDER
 import com.chromia.directory1.economy_chain.registerDappProviderOperation
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -46,10 +46,10 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
         val economyClient = createEconomyChainClient(d1Client)
         val transactionBuilder = economyClient.transactionBuilder()
 
-        val authenticator = createFTAuthenticator(economyClient, terminal)
+        initFtAuth(economyClient)
         val signerPubkey = (economyClient.config.signers.singleOrNull()?.pubKey
                 ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-        authenticator.addAuthenticationOperation(transactionBuilder, REGISTER_DAPP_PROVIDER, signerPubkey)
+        addFtAuthenticationOperation(economyClient, transactionBuilder, REGISTER_DAPP_PROVIDER, signerPubkey.data)
 
         val res = transactionBuilder
                 .registerDappProviderOperation(containerId, newProviderPubKey!!.hexStringToByteArray())

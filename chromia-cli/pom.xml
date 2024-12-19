@@ -297,6 +297,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
             <scope>runtime</scope>
@@ -308,16 +313,25 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.http4k</groupId>
-            <artifactId>http4k-core</artifactId>
-        </dependency>
-        <dependency>
             <groupId>dev.forkhandles</groupId>
             <artifactId>result4k</artifactId>
         </dependency>
         <dependency>
             <groupId>org.http4k</groupId>
+            <artifactId>http4k-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.http4k</groupId>
+            <artifactId>http4k-server-netty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.http4k</groupId>
             <artifactId>http4k-format-jackson</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>ethers</artifactId>
         </dependency>
 
         <dependency>

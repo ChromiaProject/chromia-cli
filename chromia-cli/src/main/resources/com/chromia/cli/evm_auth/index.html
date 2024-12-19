@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>EVM auth</title>
+    <script type="module">
+        import {ethers} from "/webjars/ethers/6.13.1/dist/ethers.min.js";
+
+        const myAddress = "{{address}}";
+        const message = "{{message}}";
+
+        async function signIt(ethereum) {
+            const provider = new ethers.BrowserProvider(ethereum)
+            await provider.send("eth_requestAccounts", []);
+            const signer = await provider.getSigner();
+            const signerAddress = await signer.getAddress();
+            if (myAddress.toUpperCase() !== signerAddress.toUpperCase()) {
+                const err = `Wrong address, expected ${myAddress} but was ${signerAddress}`;
+                window.alert(err);
+                throw new Error(err);
+            }
+            const signature = await signer.signMessage(message);
+            const jsonSignature = ethers.Signature.from(signature).toJSON();
+            await fetch("/signature", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(jsonSignature)
+            });
+        }
+
+        try {
+            if (window.ethereum == null) {
+                window.alert("No EVM wallet found");
+                throw new Error("No EVM wallet found");
+            } else {
+                await signIt(window.ethereum);
+                window.alert("Signing done, please close this window");
+            }
+        } catch (err) {
+            await fetch("/error", {
+                method: "POST",
+                body: err.message
+            });
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

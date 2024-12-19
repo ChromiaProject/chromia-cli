@@ -1,7 +1,8 @@
 package com.chromia.cli.command.deployment
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.createFTAuthenticator
+import com.chromia.cli.ft.addFtAuthenticationOperation
+import com.chromia.cli.ft.initFtAuth
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.containerIdOption
@@ -10,7 +11,6 @@ import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRi
 import com.chromia.directory1.economy_chain_remove_container.REMOVE_CONTAINER
 import com.chromia.directory1.economy_chain_remove_container.removeContainerOperation
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -44,10 +44,10 @@ class RemoveContainerCommand : ChromiaCommand(
         val economyClient = createEconomyChainClient(client)
         val transactionBuilder = economyClient.transactionBuilder()
 
-        val authenticator = createFTAuthenticator(economyClient, terminal)
+        initFtAuth(economyClient)
         val signerPubkey = (economyClient.config.signers.singleOrNull()?.pubKey
                 ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-        authenticator.addAuthenticationOperation(transactionBuilder, REMOVE_CONTAINER, signerPubkey)
+        addFtAuthenticationOperation(economyClient, transactionBuilder, REMOVE_CONTAINER, signerPubkey.data)
 
         val res = transactionBuilder
                 .removeContainerOperation(containerId)

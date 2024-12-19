@@ -1,13 +1,15 @@
 package com.chromia.cli.command
 
-import com.chromia.cli.ft.createFTAuthenticator
+import com.chromia.cli.ft.addEvmAuthOperation
+import com.chromia.cli.ft.addFtAuthOperation
+import com.chromia.cli.ft.findFtAccountIdAndAuthDescriptorId
+import com.chromia.cli.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.secretOption
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -20,6 +22,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.TxRid
 import net.postchain.common.BlockchainRid
+import net.postchain.common.hexStringToByteArray
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.GtvDecoder
@@ -66,6 +69,11 @@ class TxCommand : ChromiaCommand(help = """
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
         val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
         val ftAccountId by option(help = "Explicitly specify which account to use")
+        val evmAuth by option(help = "Adds ft4.evm_auth operation for FT-compatible dapps", metavar = "address")
+                .convert {
+                    (if (it.startsWith("0x")) it.drop(2) else it).hexStringToByteArray()
+                }
+                .validate { require(it.size == 20) { "EVM address must be 20 bytes" } }
     }
     private val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as first argument to the operation").validate { it.hexStringToWrappedByteArray() }
     private val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place").convert {
@@ -87,7 +95,7 @@ class TxCommand : ChromiaCommand(help = """
                 args.map {
                     try {
                         GtvParser.parse(it)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         GtvString(it)
                     }
                 }
@@ -108,16 +116,26 @@ class TxCommand : ChromiaCommand(help = """
             transactionBuilder.addOperation("iccf_proof", gtv(iccfSource!!), txHash, gtv(proof))
             listOf(decodeGtv(tx)) + args
         } else args
-        if (ftAuthOptions.ftAuth) {
-            val authenticator = createFTAuthenticator(client, terminal)
-            val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
-                    ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-            authenticator.addAuthenticationOperation(
-                    transactionBuilder,
-                    opName,
-                    signerPubkey,
+
+        if (ftAuthOptions.ftAuth || ftAuthOptions.evmAuth != null) {
+            val signer = ftAuthOptions.evmAuth
+                    ?: (postchainClientConfig.signers.singleOrNull()?.pubKey?.data
+                            ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
+
+            initFtAuth(client)
+
+            val (accountId, authDescriptorId) = findFtAccountIdAndAuthDescriptorId(
+                    client,
                     ftAuthOptions.ftAccountId,
-            )
+                    signer,
+                    opName,
+                    null)
+
+            if (ftAuthOptions.evmAuth != null) {
+                addEvmAuthOperation(client, transactionBuilder, opName, args, ftAuthOptions.evmAuth!!, accountId, authDescriptorId)
+            } else {
+                addFtAuthOperation(transactionBuilder, accountId, authDescriptorId)
+            }
         }
 
         val res = transactionBuilder.addOperation(opName, *args.toTypedArray()).run {

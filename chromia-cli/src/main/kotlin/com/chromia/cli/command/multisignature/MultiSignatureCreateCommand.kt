@@ -1,7 +1,8 @@
 package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.createFTAuthenticator
+import com.chromia.cli.ft.addFtAuthenticationOperation
+import com.chromia.cli.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
@@ -9,7 +10,6 @@ import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.secretOption
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -64,7 +64,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
                 args.map {
                     try {
                         GtvParser.parse(it)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (_: IllegalArgumentException) {
                         GtvString(it)
                     }
                 }
@@ -87,11 +87,11 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
         if (ftAuthOptions.ftAuth) {
             require(ftAuthOptions.ftAuthDescriptorId != null) { "Must specify auth descriptor id when using ft auth for multi signature" }
-            val authenticator = createFTAuthenticator(client, terminal)
+            initFtAuth(client)
 
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-            authenticator.addAuthenticationOperation(transactionBuilder, opName, signerPubkey, ftAuthOptions.ftAccountId, ftAuthOptions.ftAuthDescriptorId)
+            addFtAuthenticationOperation(client, transactionBuilder, opName, signerPubkey.data, ftAuthOptions.ftAccountId, ftAuthOptions.ftAuthDescriptorId)
         }
 
         val transaction = transactionBuilder.addOperation(opName, *args.toTypedArray())
