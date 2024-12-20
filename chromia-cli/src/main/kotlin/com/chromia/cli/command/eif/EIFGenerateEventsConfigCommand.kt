@@ -1,6 +1,7 @@
 package com.chromia.cli.command.eif
 
 import com.chromia.cli.command.ChromiaCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.default
@@ -46,9 +47,15 @@ class EIFGenerateEventsConfigCommand : ChromiaCommand(name = "generate-events-co
 
     override fun run() {
         val targetFile = target ?: File("build/eif-events.${fileFormat.name.lowercase()}")
-        if (targetFile.exists() && YesNoPrompt("Target file: $targetFile already exists. Do you want to overwrite its content?",
-                        terminal, default = false
-                ).ask() != true) throw PrintMessage("Generation of events was aborted")
+        if (targetFile.exists()) {
+            if (terminal.terminalInfo.inputInteractive) {
+                if (YesNoPrompt("Target file: $targetFile already exists. Do you want to overwrite its content?",
+                                terminal, default = false
+                        ).ask() != true) throw PrintMessage("Generation of events was aborted")
+            } else {
+                throw CliktError("Target file: $targetFile already exists.")
+            }
+        }
 
         val abiJson = readAbiSource()
         val eventsConfig = generate(abiJson, eventNames, fileFormat)

@@ -6,6 +6,7 @@ import com.chromia.api.result.BlockchainDeploymentResult
 import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.flag
@@ -24,9 +25,15 @@ class DeployCreateCommand(
     override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
         compiledChains.forEach { chain ->
             if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain '${chain.name}' is already defined in the configuration file: '${settings.modelFile}' under the deployment: '$target'")
-            if (!confirm && YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
-                            terminal, default = false
-                    ).ask() != true) throw PrintMessage("Deployment was aborted")
+            if (!confirm) {
+                if (terminal.terminalInfo.inputInteractive) {
+                    if (YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
+                                    terminal, default = false
+                            ).ask() != true) throw PrintMessage("Deployment was aborted")
+                } else {
+                    throw CliktError("Please specify -y option to force deployment")
+                }
+            }
         }
     }
 
