@@ -12,12 +12,15 @@ import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
+import java.util.concurrent.TimeUnit
 
+@Timeout(10, unit = TimeUnit.SECONDS)
 class ReplCommandTest {
     @JvmField
     @RegisterExtension
@@ -165,7 +168,7 @@ class ReplCommandTest {
         with(File(dir, "script.rell")) {
             writeText("""
                 function foo() {
-                  print("FOO");
+                  print("FOO"); // this is a comment
                 }  
                 5+6;
                 print("Bar foo");

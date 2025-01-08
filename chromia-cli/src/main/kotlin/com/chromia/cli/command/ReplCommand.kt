@@ -141,6 +141,7 @@ class ReplCommand : ChromiaCommand(help = """
                     val nextLine = reader.readLine()
                     if (nextLine != null) {
                         statement.append(nextLine)
+                        statement.append('\n')
                     }
                 }
                 return statement.toString()
