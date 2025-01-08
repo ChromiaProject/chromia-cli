@@ -191,6 +191,22 @@ class ReplCommandTest {
     }
 
     @Test
+    fun scriptFileWithTiming() {
+        with(File(dir, "script.rell")) {
+            writeText("""
+                print("Bar foo");
+            """.trimIndent())
+        }
+        val res = ReplCommand().test("--duration ${dir.absolutePath}/script.rell")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.stdout).isEqualTo("""
+            Bar foo
+            
+        """.trimIndent())
+        assertThat(res.stderr).contains("Script took")
+    }
+
+    @Test
     fun scriptFileIgnoresShebang() {
         with(File(dir, "script.rell")) {
             writeText("""

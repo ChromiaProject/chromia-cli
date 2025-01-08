@@ -38,6 +38,7 @@ import net.postchain.rell.base.runtime.Rt_Value
 import net.postchain.rell.base.runtime.utils.Rt_Utils
 import java.io.BufferedReader
 import java.io.File
+import kotlin.time.measureTime
 
 
 class ReplCommand : ChromiaCommand(help = """
@@ -71,6 +72,7 @@ class ReplCommand : ChromiaCommand(help = """
     private val rawOutput by option("-r", "--raw-output", help = "Will print large object line by line and strings without quotes").flag()
             .deprecated("Use `--output-format raw` instead")
     private val outputFormat by outputFormat()
+    private val printDuration by option("-d", "--duration", help = "Print duration of the execution").flag()
 
     private val script by argument(name = "script", help = "Script file")
             .inputStream()
@@ -81,52 +83,58 @@ class ReplCommand : ChromiaCommand(help = """
     private val logPrefix = "[:<console>(<console>:1)] "
 
     override fun run() {
-        if (script != null && command != null) {
-            throw UsageError("Cannot use -c when specifying script file")
-        }
+        val duration = measureTime {
+            if (script != null && command != null) {
+                throw UsageError("Cannot use -c when specifying script file")
+            }
 
-        if (useDB && settings.model == null) {
-            throw CliktError("To correctly connect to the database, specifying the settings file is required")
-        }
-        val localModel = settings.model ?: ChromiaModel.default()
-        val sourceDir = settings.sourceDir ?: localModel.compile.source.toFile()
-        val compileConfig = RellApiCompile.Config.Builder()
-                .cliEnv(CliktCliEnv(this))
-                .mountConflictError(false)
-                .quiet(localModel.compile.quiet)
-                .build()
+            if (useDB && settings.model == null) {
+                throw CliktError("To correctly connect to the database, specifying the settings file is required")
+            }
+            val localModel = settings.model ?: ChromiaModel.default()
+            val sourceDir = settings.sourceDir ?: localModel.compile.source.toFile()
+            val compileConfig = RellApiCompile.Config.Builder()
+                    .cliEnv(CliktCliEnv(this))
+                    .mountConflictError(false)
+                    .quiet(localModel.compile.quiet)
+                    .build()
 
-        val shellConfigBuilder = RellApiRunShell.Config.Builder()
-                .compileConfig(compileConfig)
-                .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
-                .historyFile(historyFile)
-                .outPrinter(::echo)
-                .logPrinter {
-                    val msg = if (it.startsWith(logPrefix)) it.substring(logPrefix.length) else it
-                    echo(msg, err = true)
+            val shellConfigBuilder = RellApiRunShell.Config.Builder()
+                    .compileConfig(compileConfig)
+                    .databaseUrl(if (useDB) "${localModel.databaseUrl}&currentSchema=${localModel.databaseSchema}" else null)
+                    .historyFile(historyFile)
+                    .outPrinter(::echo)
+                    .logPrinter {
+                        val msg = if (it.startsWith(logPrefix)) it.substring(logPrefix.length) else it
+                        echo(msg, err = true)
+                    }
+                    .outputChannelFactory(CliktOutputChannelFactory(
+                            !terminal.terminalInfo.outputInteractive || command != null || script != null
+                    ))
+                    .sqlErrorLog(localModel.logSqlErrors)
+                    .sqlLog(sqlLog)
+                    .printIntroMessage(terminal.terminalInfo.outputInteractive && command == null && script == null)
+
+            if (script != null) {
+                script!!.bufferedReader().use { reader ->
+                    val shellConfig = shellConfigBuilder.apply {
+                        inputChannelFactory(ScriptCommandInputChannelFactory(reader))
+                    }
+                            .build()
+                    RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
                 }
-                .outputChannelFactory(CliktOutputChannelFactory(
-                        !terminal.terminalInfo.outputInteractive || command != null || script != null
-                ))
-                .sqlErrorLog(localModel.logSqlErrors)
-                .sqlLog(sqlLog)
-                .printIntroMessage(terminal.terminalInfo.outputInteractive && command == null && script == null)
-
-        if (script != null) {
-            script!!.bufferedReader().use { reader ->
+            } else {
                 val shellConfig = shellConfigBuilder.apply {
-                    inputChannelFactory(ScriptCommandInputChannelFactory(reader))
+                    if (command != null)
+                        inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
                 }
                         .build()
                 RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
             }
-        } else {
-            val shellConfig = shellConfigBuilder.apply {
-                if (command != null)
-                    inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
-            }
-                    .build()
-            RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
+        }
+
+        if (printDuration) {
+            echo("Script took $duration to run.", err = true)
         }
     }
 
