@@ -213,10 +213,7 @@ class ReplCommand : ChromiaCommand(help = """
 
             override fun printRuntimeError(e: Rt_Exception) {
                 val baseMessage = "Run-time error: ${e.message}"
-                val message = if (e.info.stack.firstOrNull()?.file?.file == "<console>")
-                    baseMessage
-                else
-                    Rt_Utils.appendStackTrace(baseMessage, e.info.stack)
+                val message = Rt_Utils.appendStackTrace(baseMessage, e.info.stack)
                 if (failOnError) throw PrintMessage(message, 1)
                 echo(message)
             }

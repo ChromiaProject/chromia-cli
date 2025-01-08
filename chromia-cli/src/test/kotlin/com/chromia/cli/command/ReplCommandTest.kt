@@ -69,6 +69,7 @@ class ReplCommandTest {
         assertThat(res.output).isEqualTo("""
             17
             Run-time error: the error
+                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
@@ -272,8 +273,11 @@ class ReplCommandTest {
         with(File(dir, "script.rell")) {
             writeText("""
                 #!/usr/bin/env -S chr repl
+                function foo() {
+                    require(false, "the error");                
+                }                
                 print("Foo bar");
-                require(false, "the error");
+                foo();
                 print("Bar foo");                
             """.trimIndent())
         }
@@ -282,6 +286,8 @@ class ReplCommandTest {
         assertThat(res.output).isEqualTo("""
             Foo bar
             Run-time error: the error
+                    at :foo(<console>:1)
+                    at :<console>(<console>:1)
 
         """.trimIndent())
     }
