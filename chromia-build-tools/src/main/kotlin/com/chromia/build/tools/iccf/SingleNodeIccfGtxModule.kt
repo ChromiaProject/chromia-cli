@@ -9,7 +9,7 @@ import net.postchain.gtx.PostchainContextAware
  *
  * NOT TO BE USED IN PRODUCTION!
  *
- * Production implemenetation found here:
+ * Production implementation found here:
  * https://gitlab.com/chromaway/postchain-chromia/-/blob/3.14.11/chromia-infrastructure/src/main/kotlin/net/postchain/d1/iccf/IccfGTXModule.kt
  */
 class SingleNodeIccfGtxModule : AbstractTestIccfGtxModule<SingleNodeIccfGtxModule.Config>(

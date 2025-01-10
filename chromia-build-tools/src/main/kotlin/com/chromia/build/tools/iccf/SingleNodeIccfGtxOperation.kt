@@ -22,7 +22,7 @@ import net.postchain.gtx.data.ExtOpData
 import net.postchain.rell.base.utils.PostchainGtvUtils.cryptoSystem
 
 /**
- * Verifies the vitnesses and confirmationProof of a iccf-operation where the tx has been processed on the same node.
+ * Verifies the witnesses and confirmationProof of a iccf-operation where the tx has been processed on the same node.
  *
  * NOT TO BE USED IN PRODUCTION!
  *
