@@ -37,21 +37,38 @@ class TxCommandTest : IntegrationTestSetup() {
         return setup.blockchainMap[0]!!.rid
     }
 
+
     @Test
     fun arguments(@TempDir dir: Path) {
         with(File(dir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
-                module;
-                struct my_struct { name; }
-                operation test_op(s1: text, s2: text, my_struct, n: integer?) {
-                    require(s1 == "foobar");
-                    require(s2 == "Hello, world!");
-                    require(my_struct.name == "foo bar");
-                    require(n == null);
-                }
+            module;
+            struct my_struct { name; }
+            operation test_text(s1: text, s2: text) {
+                require(s1 == "foobar");
+                require(s2 == "foo bar");
+            }
+            operation test_numeric(s1: integer, s2: big_integer, s3: decimal) {
+                require(s1 == 1);
+                require(s2 == 2);
+                require(s3 == 1.2);
+            }
+            operation test_nullable(s1: integer?) {
+                require(s1 == null);
+            }
+            operation test_collection(s1: list<text>, s2: set<text>, s3: map<text, integer>) {
+                require(s1 == ["foo", "bar"]);
+                require(s3["foo"] == 1);
+            }
+            operation test_struct(s1: my_struct) {
+                require(s1.name == "foo bar");
+            }       
+            operation test_byte_array(s1: byte_array) {
+            }
             """.trimIndent())
         }
+
         with(File(dir.toFile(), "chromia.yml")) {
             writeText("""
                 blockchains:
@@ -69,9 +86,17 @@ class TxCommandTest : IntegrationTestSetup() {
         BuildCommand().test(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
         val brid = launchBlockchainInTestNode("${dir.absolutePathString()}/build/a.xml")
         TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
-                "test_op", "foobar", "\"Hello, world!\"", "[\"foo bar\"]", "null",
-                "-brid", "$brid"))
-
+                "test_text", "foobar", "\"foo bar\"", "-brid", "$brid"))
+        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+                "test_numeric", "1", "2L", "\"1.2\"", "-brid", "$brid"))
+        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+                "test_nullable", "null", "-brid", "$brid"))
+        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+                "test_collection", "[\"foo\", \"bar\"]", "[\"foo\", \"bar\"]", "[\"foo\": 1]", "-brid", "$brid"))
+        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+                "test_struct", "[\"foo bar\"]", "-brid", "$brid"))
+        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+                "test_byte_array", "x\"0373599a61cc6b3bc02a78c34313e1737ae9cfd56b9bb24360b437d469efdf3b15\"", "-brid", "$brid"))
         assertThat(logger.output()).contains("CONFIRMED")
     }
 

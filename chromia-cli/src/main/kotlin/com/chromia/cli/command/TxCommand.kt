@@ -50,7 +50,7 @@ class TxCommand : ChromiaCommand(help = """
     Examples:
     ```
     # operation primitive_args(arg1: integer, arg2: name, arg3: text, arg4: byte_array, arg5: my_enum)
-    chr tx primitive_args 123 Alice \"My Neighbor\" x\"AB12\" 0
+    chr tx primitive_args 123 Alice "My Neighbor" 'x"AB12"' 0
     # operation dict_arg(arg: map<text, integer>)
     chr tx dict_arg '["key": 12]'
     # operation map_arg(arg: map<my_enum, text>)
@@ -80,15 +80,19 @@ class TxCommand : ChromiaCommand(help = """
         BlockchainRid.buildFromHex(it)
     }
 
-    private val opName by argument(help = "name of the operation to execute.")
+    private val opName by argument(help = "Name of the operation to execute.")
 
-    private val args by argument(help = "arguments to pass to the operation.", helpTags = mapOf(
+    private val args by argument(help = "Types and their format as arguments to pass to the operation.", helpTags = mapOf(
             "integer" to "123",
             "big_integer" to "1234L",
-            "string" to "foo, \"bar\"",
-            "bytearray" to "will be encoded using the rell notation x\"<myByteArray>\" and will initially be interpreted as a hex-string.",
-            "array" to "[foo,123]",
-            "dict" to """["key1":value1,"key2":value2]""")
+            "decimal" to "\"1.2\"",
+            "text" to "foo, \"bar\"",
+            "byte_array" to "'x\"<myByteArray>\"'",
+            "list" to "'[\"foo\",123]'",
+            "map<text, ...>" to "'[\"text_key\":value1,\"text_key2\":value2]'",
+            "map<non_text_key_type, ...>" to "'[[non_text_key, value1], [non_text_key, value2]]'",
+            "struct" to "'[\"foo\"]'"
+    )
     )
             .multiple()
             .transformAll { args ->
