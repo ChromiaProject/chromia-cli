@@ -20,7 +20,7 @@ import net.postchain.crypto.CryptoSystem
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.mapper.GtvObjectMapper
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
 import net.postchain.gtx.PostchainContextAware
 import net.postchain.gtx.SimpleGTXModule
 
@@ -95,7 +95,7 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
 
         private fun getBlockAtHeight(bq: BlockQueries, height: Long, brid: BlockchainRid): GtvDictionary {
             val block = bq.getBlockAtHeight(height).get()!!
-            val decodedHeader = BaseBlockHeader(block.header.rawData, GtvMerkleHashCalculator(cryptoSystem))
+            val decodedHeader = BaseBlockHeader(block.header.rawData, makeMerkleHashCalculator(1))
             val aBlock = AnchorBlock(
                     transaction = RowId(0), // Rell entity rowid (not used)
                     blockchainRid = brid.wData,

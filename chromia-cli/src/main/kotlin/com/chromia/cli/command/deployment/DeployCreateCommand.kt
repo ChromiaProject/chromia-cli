@@ -3,7 +3,6 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
-import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.github.ajalt.clikt.core.CliktError
@@ -38,7 +37,7 @@ class DeployCreateCommand(
     }
 
     override fun performDeploymentOperation(configurations: List<BlockchainConfiguration>): List<BlockchainDeploymentResult> {
-        return ChromiaDeploymentApi.create(cliEnv(), deployModel, settings.config, configurations, !noCompression)
+        return ChromiaDeploymentApi.create(::printer, deployModel, settings.config, configurations, !noCompression)
     }
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
@@ -60,5 +59,9 @@ class DeployCreateCommand(
 
     companion object : ClusterManagementFactory {
         override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
+    }
+
+    private fun printer(isError: Boolean, message: String) {
+
     }
 }

@@ -33,7 +33,7 @@ import net.postchain.common.wrap
 import net.postchain.crypto.sha256Digest
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
 import net.postchain.gtv.merkleHash
 import org.apache.commons.text.StringEscapeUtils
 import org.http4k.core.Method.GET
@@ -189,7 +189,7 @@ fun CoreCliktCommand.fetchEvmSignature(client: PostchainClient,
             gtv(opName),
             gtv(opArgs),
             gtv(counter),
-    )).merkleHash(GtvMerkleHashCalculator(::sha256Digest))
+    )).merkleHash(makeMerkleHashCalculator(1))
     val authMessage = authMessageTemplate
             .replace("{blockchain_rid}", client.config.blockchainRid.toHex().uppercase())
             .replace("{nonce}", nonce.toHex().uppercase())

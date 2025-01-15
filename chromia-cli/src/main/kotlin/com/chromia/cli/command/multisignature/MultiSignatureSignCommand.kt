@@ -13,6 +13,7 @@ import java.io.File
 import net.postchain.client.transaction.signTransaction
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
 
 class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a existing transaction with your key") {
 
@@ -34,7 +35,7 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
         secret?.let { chromiaConfig.config.setSignerFromSecret(it.toPath()) }
         val signer = chromiaConfig.config.signers
         val transaction = transactionFile.readText().hexStringToByteArray()
-        val signedTransaction = signTransaction(transaction, signer)
+        val signedTransaction = signTransaction(transaction, signer, makeMerkleHashCalculator(1))
         saveTransactionToFile(signedTransaction)
     }
 

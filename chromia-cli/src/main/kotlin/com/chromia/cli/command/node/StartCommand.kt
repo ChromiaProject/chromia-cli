@@ -15,6 +15,7 @@ import net.postchain.common.BlockchainRid
 import net.postchain.core.EContext
 import net.postchain.crypto.Secp256K1CryptoSystem
 import net.postchain.crypto.sha256Digest
+import net.postchain.gtv.mapper.toObject
 import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
@@ -30,7 +31,6 @@ class StartCommand : AbstractNodeCommand(help = """
 """.trimIndent()) {
     private val sqlLog by logSqlOption()
     private val wipe by wipeDatabaseOption()
-    val cryptoSystem = Secp256K1CryptoSystem()
 
     override fun run() {
         startPostchainNode()
@@ -47,7 +47,7 @@ class StartCommand : AbstractNodeCommand(help = """
 
             extractConfigs().toList().forEachIndexed { index, (name, gtv) ->
                 val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
-                val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, ::sha256Digest)
+                val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject())
                 val iid = index.toLong()
                 echo("Starting blockchain $name with brid $brid on id $iid")
                 chainsToStart.add(iid)
@@ -69,7 +69,7 @@ class StartCommand : AbstractNodeCommand(help = """
                                     .toMutableList()
 
                             val lastBlockchainRid = previousBlockchainRids.removeAt(previousBlockchainRids.lastIndex)
-                            val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners, cryptoSystem)
+                            val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject())
 
                             if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
                             if (blockchainRid != lastBlockchainRid) BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)

@@ -10,6 +10,7 @@ import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.command.TestCommand
 import com.chromia.cli.command.TxCommand
+import com.chromia.cli.command.TxStatusCommand
 import com.chromia.cli.command.code.CodeCommand
 import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand

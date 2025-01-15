@@ -9,12 +9,12 @@ import net.postchain.common.types.RowId
 import net.postchain.common.types.WrappedByteArray
 import net.postchain.common.wrap
 import net.postchain.gtv.GtvDecoder
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 import net.postchain.gtv.merkleHash
 
 class BlockchainProposalDataProvider : ProposalDataProvider<GetBlockchainProposalResult> {
     private fun getDataHash(configData: WrappedByteArray) = GtvDecoder.decodeGtv(configData.data)
-            .merkleHash(GtvMerkleHashCalculator(NopAnchoringGTXModule.cryptoSystem))
+            .merkleHash(GtvMerkleHashCalculatorV1(NopAnchoringGTXModule.cryptoSystem))
             .wrap()
 
     override fun formatData(data: GetBlockchainProposalResult, cliktCommand: CliktCommand): Any {

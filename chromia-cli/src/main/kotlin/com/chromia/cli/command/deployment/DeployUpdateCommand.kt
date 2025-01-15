@@ -3,7 +3,6 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
-import com.chromia.cli.tools.env.cliEnv
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
 import com.github.ajalt.clikt.core.PrintMessage
@@ -44,7 +43,7 @@ class DeployUpdateCommand(
     }
 
     override fun performDeploymentOperation(configurations: List<BlockchainConfiguration>): List<BlockchainDeploymentResult> {
-        return ChromiaDeploymentApi.update(cliEnv(), deployModel, settings.config, configurations, !noCompression, height)
+        return ChromiaDeploymentApi.update(::printer, deployModel, settings.config, configurations, !noCompression, height)
     }
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
@@ -69,7 +68,7 @@ class DeployUpdateCommand(
         val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
         try {
-           nodeClient.validateConfiguration(chain.config)
+            nodeClient.validateConfiguration(chain.config)
             echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
         } catch (e: ClientError) {
             return when (e.status) {
@@ -83,6 +82,10 @@ class DeployUpdateCommand(
 
     companion object : ClusterManagementFactory {
         override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
+
+    }
+
+    private fun printer(isError: Boolean, message: String) {
 
     }
 }
