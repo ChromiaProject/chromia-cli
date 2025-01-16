@@ -19,8 +19,8 @@
         <revision>dev</revision>
         <codegen.version>0.15.0</codegen.version>
         <postchain.version>3.26.0</postchain.version>
-        <postchain.chromia.version>3.20.1</postchain.chromia.version>
-        <postchain.client.version>3.19.0</postchain.client.version>
+        <postchain.chromia.version>3.22.7</postchain.chromia.version>
+        <postchain.client.version>3.21.0</postchain.client.version>
         <rell.version>0.14.3</rell.version>
         <rell.dokka.version>0.2.8</rell.dokka.version>
         <rell.toolbox.version>0.4.12</rell.toolbox.version>
@@ -394,9 +394,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>net.postchain</groupId>
+                <groupId>net.postchain.client</groupId>
                 <artifactId>chromia-client</artifactId>
-                <version>${postchain.chromia.version}</version>
+                <version>${postchain.client.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.postchain.rell</groupId>

@@ -215,14 +215,13 @@
         <dependency>
             <groupId>net.postchain.client</groupId>
             <artifactId>postchain-client</artifactId>
-            <version>3.19.0</version>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>postchain-base</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.postchain</groupId>
+            <groupId>net.postchain.client</groupId>
             <artifactId>chromia-client</artifactId>
         </dependency>
         <dependency>
