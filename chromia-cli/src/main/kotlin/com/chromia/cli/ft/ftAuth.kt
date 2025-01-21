@@ -33,7 +33,7 @@ import net.postchain.common.wrap
 import net.postchain.crypto.sha256Digest
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 import net.postchain.gtv.merkleHash
 import org.apache.commons.text.StringEscapeUtils
 import org.http4k.core.Method.GET
@@ -184,12 +184,13 @@ fun CoreCliktCommand.fetchEvmSignature(client: PostchainClient,
     val authMessageTemplate = client.getAuthMessageTemplate(opName, gtv(opArgs))
     val counter = client.getAuthDescriptorCounter(accountId, authDescriptorId)
     if (counter == null) throw CliktError("Invalid auth descriptor counter. Was the auth descriptor too close to expiration?")
+    // TODO [use-new-algo] use new hash version here
     val nonce = gtv(listOf(
             gtv(client.config.blockchainRid),
             gtv(opName),
             gtv(opArgs),
             gtv(counter),
-    )).merkleHash(GtvMerkleHashCalculator(::sha256Digest))
+    )).merkleHash(GtvMerkleHashCalculatorV1(::sha256Digest))
     val authMessage = authMessageTemplate
             .replace("{blockchain_rid}", client.config.blockchainRid.toHex().uppercase())
             .replace("{nonce}", nonce.toHex().uppercase())
@@ -211,7 +212,7 @@ fun CoreCliktCommand.fetchEvmSignature(client: PostchainClient,
                 Response(OK)
             },
             webJars()
-    ).asServer(Netty(port = 0, stopMode = Immediate)).start()
+    ).asServer(Netty(port = 0)).start()
     val url = "http://localhost:${server.port()}"
     if (launchWebBrowser) {
         openWebLink(url)

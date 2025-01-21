@@ -175,7 +175,7 @@ class RunNodeIT {
         TestProcess.Builder("node", "start", "--wipe")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
-                .startCondition("Invalid blockchain configuration. Could not find Gtx module: net.postchain.UnknownGTXModule")
+                .startCondition("Module class was not found: net.postchain.UnknownGTXModule")
                 .start()
     }
 

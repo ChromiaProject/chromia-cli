@@ -222,7 +222,7 @@
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
-            <artifactId>chromia-client</artifactId>
+            <artifactId>chromia-core</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>

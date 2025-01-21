@@ -5,8 +5,8 @@ import com.chromia.cli.d1.NopAnchoringOperation.Companion.ANCHOR_BLOCK_HEADER
 import com.chromia.directory1.anchoring_chain_common.AnchorBlock
 import com.chromia.directory1.anchoring_chain_common.AnchoringTxWithOpIndex
 import net.postchain.PostchainContext
-import net.postchain.base.BaseBlockHeader
 import net.postchain.base.data.PostgreSQLDatabaseAccess
+import net.postchain.base.gtv.BlockHeaderData
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.NotFound
 import net.postchain.common.types.RowId
@@ -20,7 +20,6 @@ import net.postchain.crypto.CryptoSystem
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.mapper.GtvObjectMapper
-import net.postchain.gtv.merkle.GtvMerkleHashCalculator
 import net.postchain.gtx.PostchainContextAware
 import net.postchain.gtx.SimpleGTXModule
 
@@ -95,7 +94,7 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
 
         private fun getBlockAtHeight(bq: BlockQueries, height: Long, brid: BlockchainRid): GtvDictionary {
             val block = bq.getBlockAtHeight(height).get()!!
-            val decodedHeader = BaseBlockHeader(block.header.rawData, GtvMerkleHashCalculator(cryptoSystem))
+            val decodedHeader = BlockHeaderData.fromBinary(block.header.rawData)
             val aBlock = AnchorBlock(
                     transaction = RowId(0), // Rell entity rowid (not used)
                     blockchainRid = brid.wData,
@@ -103,7 +102,7 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
                     blockHeader = block.header.rawData.wrap(),
                     blockRid = block.header.blockRID.wrap(),
                     witness = block.witness.getRawData().wrap(),
-                    timestamp = decodedHeader.timestamp,
+                    timestamp = decodedHeader.getTimestamp(),
                     anchoringTxOpIndex = 0
             )
             return GtvObjectMapper.toGtvDictionary(aBlock)

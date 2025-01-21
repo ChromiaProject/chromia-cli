@@ -17,6 +17,8 @@ import net.postchain.client.transaction.signTransaction
 import net.postchain.common.exception.UserMistake
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
+import net.postchain.crypto.sha256Digest
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 
 class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a fully signed transaction") {
 
@@ -37,8 +39,9 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
         val transactionBuilder = target.createClient(postchainClientConfig).transactionBuilder()
         val transaction = transactionFile.readText().hexStringToByteArray()
 
+        // TODO use-new-algo choose merkle hash version
         val signedTransaction = try {
-            signTransaction(transaction, postchainClientConfig.signers)
+            signTransaction(transaction, postchainClientConfig.signers, GtvMerkleHashCalculatorV1(::sha256Digest))
         } catch (e: UserMistake) {
             if (e.message == "No empty signature found for the given subject ID") {
                 transaction

@@ -101,18 +101,18 @@ class TxCommandTest : IntegrationTestSetup() {
     }
 
     @Test
-    fun awaitTxByDefault() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
-            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl))
-            assertThat(res.stdout).contains("CONFIRMED")
-        }
-    }
-
-    @Test
     fun wrongFormatOfbridForIccfSourceThrowsError() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--iccf-source", "00"))
             assertThat(res.stderr).contains("invalid value for --iccf-source: Wrong size of Blockchain RID, was 1 should be 32 (64 characters)")
+        }
+    }
+
+    @Test
+    fun awaitTxByDefault() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl))
+            assertThat(res.stdout).contains("CONFIRMED")
         }
     }
 
@@ -123,7 +123,6 @@ class TxCommandTest : IntegrationTestSetup() {
             assertThat(res.stdout).contains("WAITING")
         }
     }
-
 
     @Test
     fun underscoreArgumentIsParsed() {

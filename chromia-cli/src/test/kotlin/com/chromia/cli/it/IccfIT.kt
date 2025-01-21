@@ -57,7 +57,7 @@ class IccfIT {
                     val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 0)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", "7B8AA87E2A87860E49B0463D865985940BECA97087EDC1629296BA35EC2642DA", "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", "B573C6BC8A0BE6A2AE8406314A1A9BE3517C29B536D18B251B61A3E0105CD781", "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
                 }
     }
 }
