@@ -1,8 +1,8 @@
 package com.chromia.cli.command.deployment
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.ft.addFtAuthenticationOperation
-import com.chromia.cli.ft.initFtAuth
+import com.chromia.cli.tools.ft.addFtAuthenticationOperation
+import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.containerIdOption

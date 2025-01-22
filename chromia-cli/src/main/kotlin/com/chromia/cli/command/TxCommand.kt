@@ -1,9 +1,9 @@
 package com.chromia.cli.command
 
-import com.chromia.cli.ft.addEvmAuthOperation
-import com.chromia.cli.ft.addFtAuthOperation
-import com.chromia.cli.ft.findFtAccountIdAndAuthDescriptorId
-import com.chromia.cli.ft.initFtAuth
+import com.chromia.cli.tools.ft.addEvmAuthOperation
+import com.chromia.cli.tools.ft.addFtAuthOperation
+import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
+import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
