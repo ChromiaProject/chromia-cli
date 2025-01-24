@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotEqualTo
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectory
 import kotlin.io.path.readText
 
@@ -265,5 +267,163 @@ internal class LintCommandTest {
 
         assertThat(logger.output()).contains("Fixing: main/module.rell... fixed")
         assertThat(fixDir.resolve("src/main/module.rell").readText()).isEqualTo(expectedContent)
+    }
+
+    @Test
+    fun testFixWithArgumentFilter() {
+        val fixDir = testDir.resolve("fix").createDirectory()
+        val fileContent = """
+            module;
+             query Hello() {
+            var x = 5;
+                  val y = 'wrong quotes';
+                var z = 'more ' + y;
+             return "Hi!";
+            }  
+        """.trimIndent()
+
+        with(File(fixDir.toFile(), "src/main/module.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(fixDir.toFile(), "src/main/doNotFix.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(fixDir.toFile(), ".rell_lint")) {
+            writeText("""
+                [*.rell]
+                rule_quote_format=double
+                rule_formatter=true
+            """.trimIndent())
+        }
+
+        val settingsFile = File(fixDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+            """.trimIndent())
+        }
+
+        LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--fix", "**/module.rell"))
+        val expectedContent = """
+            module;
+            
+            query Hello() {
+                var x = 5;
+                val y = "wrong quotes";
+                var z = "more " + y;
+                return "Hi!";
+            }
+            
+        """.trimIndent()
+
+        assertThat(logger.output()).contains("Fixing: main/module.rell... fixed")
+        assertThat(logger.output()).doesNotContain("Fixing: main/doNotFix.rell... fixed")
+        assertThat(fixDir.resolve("src/main/module.rell").readText()).isEqualTo(expectedContent)
+        assertThat(fixDir.resolve("src/main/doNotFix.rell").readText()).isNotEqualTo(expectedContent)
+    }
+
+
+    @Test
+    fun testLintWithArgumentFilter() {
+        val fixDir = testDir.resolve("fix").createDirectory()
+        val fileContent = """
+            module;
+             query Hello() {
+            }  
+        """.trimIndent()
+
+        with(File(fixDir.toFile(), "src/main/module.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(fixDir.toFile(), "src/main/second.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(fixDir.toFile(), "src/main/doNotShow.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+
+        with(File(fixDir.toFile(), ".rell_lint")) {
+            writeText("""
+                [*.rell]
+                rule_quote_format=double
+                rule_formatter=true
+            """.trimIndent())
+        }
+
+        val settingsFile = File(fixDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+            """.trimIndent())
+        }
+
+        assertThrows<RellCliExitException> {
+            LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "**/module.rell", "**/second.rell"))
+        }
+        assertThat(logger.output()).contains("main/module.rell")
+        assertThat(logger.output()).contains("main/second.rell")
+        assertThat(logger.output()).doesNotContain("main/doNotShow.rell")
+    }
+
+    @Test
+    fun testLintWithArgumentFilterForDirectory() {
+        val fixDir = testDir.resolve("fix").createDirectory()
+        val noFixDir = testDir.resolve("noFix").createDirectory()
+        val fileContent = """
+            module;
+             query Hello() {
+            }  
+        """.trimIndent()
+
+        with(File(fixDir.toFile(), "src/main/module.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(fixDir.toFile(), "src/main/second.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+        with(File(noFixDir.toFile(), "src/main/doNotShow.rell")) {
+            parentFile.mkdirs()
+            writeText(fileContent)
+        }
+
+
+        with(File(fixDir.toFile(), ".rell_lint")) {
+            writeText("""
+                [*.rell]
+                rule_quote_format=double
+                rule_formatter=true
+            """.trimIndent())
+        }
+
+        val settingsFile = File(fixDir.toFile(), "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                    hello:
+                        module: main
+            """.trimIndent())
+        }
+
+        assertThrows<RellCliExitException> {
+            LintCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "**/fix/src/main/*"))
+        }
+        assertThat(logger.output()).contains("main/module.rell")
+        assertThat(logger.output()).contains("main/second.rell")
+        assertThat(logger.output()).doesNotContain("main/doNotShow.rell")
     }
 }

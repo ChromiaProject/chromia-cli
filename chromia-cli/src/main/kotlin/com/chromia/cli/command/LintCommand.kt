@@ -1,6 +1,9 @@
 package com.chromia.cli.command
 
 import com.chromia.cli.tools.config.chromiaModelOption
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
@@ -15,7 +18,10 @@ import net.postchain.rell.toolbox.linter.FormattingStyleLinter
 import net.postchain.rell.toolbox.linter.LinterOptions
 import net.postchain.rell.toolbox.linter.RellLinter
 import java.io.File
+import java.net.URI
+import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.nio.file.PathMatcher
 import kotlin.io.path.readText
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
@@ -47,6 +53,16 @@ class LintCommand : ChromiaCommand(help = "Analyze Rell code to find potential i
     )
     private val fix by option("--fix", help = "Fix all auto-fixable issues").flag()
 
+    private val globMatchers by argument(
+            "files",
+            help = "Files or dirs to show/fix linter issues from.",
+            helpTags = mapOf(
+                    "*.rell" to "All files ending with rell extension",
+                    "main/*" to "Matches all files in main directory on explicit path",
+                    "**/main/*" to "Matches all files in main directory independent on parent paths"
+            ))
+            .multiple(required = false)
+            .transformAll { it.map { pattern -> FileSystems.getDefault().getPathMatcher("glob:$pattern") } }
     private val autoFixer = AutoFixer()
 
     override fun run() {
@@ -76,7 +92,7 @@ class LintCommand : ChromiaCommand(help = "Analyze Rell code to find potential i
 
     private fun fixAutoFixableIssues(indexer: WorkspaceIndexer, sourceDir: Path) {
         indexer.getAllLintAndFormatIssues().forEach { (fileUri, issues) ->
-            if (issues.isNotEmpty()) {
+            if (issues.isNotEmpty() && hasCandidates(fileUri)) {
                 val filePath = fileUri.toPath()
                 echo("Fixing: ${sourceDir.relativize(filePath)}... ", trailingNewline = false)
                 val sourceText = filePath.readText()
@@ -92,11 +108,20 @@ class LintCommand : ChromiaCommand(help = "Analyze Rell code to find potential i
         }
     }
 
+
+    private fun hasCandidates(fileUri: URI): Boolean {
+        if (globMatchers.isEmpty()) return true
+        return globMatchers.any {
+            it.matches(FileSystems.getDefault().getPath(fileUri.path))
+        }
+    }
+
     private fun reportIssues(indexer: WorkspaceIndexer, sourceDir: Path) {
         val allIssues = indexer.getAllIssues()
+
         var issuesFound = false
         allIssues.forEach { (fileUri, fileIssues) ->
-            if (fileIssues.isNotEmpty()) {
+            if (fileIssues.isNotEmpty() && hasCandidates(fileUri)) {
                 echo("${sourceDir.relativize(fileUri.toPath())}")
                 issuesFound = true
                 fileIssues.forEach { issue ->
