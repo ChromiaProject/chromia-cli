@@ -2,6 +2,7 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.tools.config.safeOptionalChromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.logSqlOption
@@ -62,7 +63,7 @@ class ReplCommand : ChromiaCommand(help = """
     This can not be combined with the `-c` option.
     Support for Rell scripts is experimental and may be changed or removed at any time.
 """.trimIndent()) {
-    private val settings by optionalChromiaModelOption()
+    private val settings by safeOptionalChromiaModelOption()
     private val module by module()
     private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
