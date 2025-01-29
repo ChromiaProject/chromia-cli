@@ -1,30 +1,41 @@
 package com.chromia.cli.it
 
+import com.chromia.api.ChromiaCompileApi
+import com.chromia.api.filterBlockchains
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.compile.withSigner
 import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.build.tools.testData
+import com.chromia.cli.compile.NodeConfig
+import com.chromia.cli.model.BlockchainModel
+import com.chromia.cli.model.parseModel
+import net.postchain.base.gtv.GtvToBlockchainRidFactory
 import java.nio.file.Path
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.request.SingleEndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.common.toHex
+import net.postchain.crypto.KeyPair
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.mapper.toObject
+import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 
 class IccfIT {
 
+    private val sourceChainName = "source_chain"
+
     @Test
     fun iccfIT(@TempDir dir: Path) {
-        // If you change the code or update the rell version, verify the new brids to be used in the test
-        // adding .verbose() before start will print the output of the command including new brids
+
         testData(dir) {
             config {
                 blockchains(
                         """
                            blockchains:
-                                source_chain:
+                                $sourceChainName:
                                     module: main
                                 confirming:
                                     module: confirmation
@@ -48,6 +59,10 @@ class IccfIT {
                 }
             """.trimIndent())
         }
+
+        // If test fails verify that we are getting the correct brid from getSourceChainBrid, by adding .verbose()
+        // option to the outer most TestProcess.Builder(...) and look for the brid for source_chain.
+        val sourceChainBrid = getSourceChainBrid(dir)
         TestProcess.Builder("node", "start", "--wipe")
                 .awaitCompletion(false)
                 .startCondition(INITILIZED_LOG)
@@ -57,7 +72,26 @@ class IccfIT {
                     val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 0)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", "FD4E6FDDF9842524C83557183440047BD70E19EA93C5BB579C3C4E16880860E0", "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
                 }
     }
+
+    private fun getSourceChainBrid(dir: Path): String {
+        val cliEnv = RellCliEnv.DEFAULT
+        val chromiaYml = dir.resolve("chromia.yml")
+
+        val sourceChainModel = parseModel(chromiaYml).filterBlockchains { bc, model ->
+            model.type == BlockchainModel.Type.BLOCKCHAIN && bc == sourceChainName
+        }
+
+        // In StartCommand we are using the default key pairs from node config to add as signers to the gtv
+        val defaultNodeConfigUsedInStartCommand = NodeConfig.getDefaultNodeConfig(sourceChainModel)
+        val keypair = KeyPair.of(defaultNodeConfigUsedInStartCommand.pubKey, defaultNodeConfigUsedInStartCommand.privKey)
+
+        return ChromiaCompileApi.build(cliEnv, sourceChainModel).toList().map { (_, gtv) ->
+            val gtvWithSigners = withSigner(gtv, keypair.pubKey.data)
+            GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject()).toHex()
+        }.first()
+    }
 }
+
