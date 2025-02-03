@@ -19,16 +19,20 @@ import com.chromia.build.tools.testData
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
+import com.chromia.cli.util.DeploymentTestModel
 import com.chromia.cli.util.TestClusterManagement
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import net.postchain.PostchainContext
+import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.PostchainModel
+import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.BaseCryptoSystem
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.managed.ManagedNodeDataSource
 import net.postchain.managed.config.ManagedBlockchainConfiguration
@@ -46,7 +50,7 @@ import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.test.assertNotNull
-
+import net.postchain.gtv.GtvEncoder
 
 class DeployUpdateCommandTest {
     @TempDir
@@ -146,8 +150,8 @@ class DeployUpdateCommandTest {
             override fun getBlockchainApiUrls(blockchainRid: BlockchainRid): List<String> {
                 return listOf(RestApiInstance.apiUrl)
             }
-            
-        }), TestModel(BlockchainRid.buildRepeat(34)).withValidConfiguration(), TestModel(BlockchainRid.buildRepeat(17)).withInvalidConfiguration()
+
+        }), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(34))).withValidConfiguration(), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(17))).withInvalidConfiguration()
         ) {
             testData(testDir) {
                 config {
@@ -229,7 +233,6 @@ class DeployUpdateCommandTest {
         }
     }
 
-
     @Test
     fun skipVerification() {
         withModel(model.withCompression(), DeploymentTestDataCreator.deployedChainModel.withInvalidConfiguration()) {
@@ -280,6 +283,27 @@ class DeployUpdateCommandTest {
         }
     }
 
+    @Test
+    fun detectUnsafeEntityChanges() {
+        withModel(model.withCompression(), SuccessfulDeploymentUpdateModel(deployedChainBrid)) {
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            assertThat(res.output).contains("Attribute 'last_name' added to 'person'.")
+            assertThat(res.output).contains("WARNING: Attribute 'card_number' removed from 'card'.")
+            assertThat(res.output).contains("Attribute 'number' added to 'card'.")
+            assertThat(res.output).contains("WARNING: Entity 'book' removed. Please note that the corresponding table isn't physically dropped.")
+            assertThat(res.output).contains("Please specify --skip-verification option to skip update verification")
+        }
+    }
+
+    @Test
+    fun noSchemaChanges() {
+        withModel(model.withCompression(), DeploymentTestDataCreator.deployedChainModel.withValidConfiguration()) {
+            val res = DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
+            assertThat(res.output).contains("No schema changes detected for deployed on network test")
+            assertThat(res.output).contains("Blockchain deployed was successfully updated on network test")
+        }
+    }
+
     private fun createManagedModeMockModel(bcRid: BlockchainRid, verifyDigestValue: Boolean): PostchainModel {
         return mock<PostchainModel> {
             on { live } doReturn true
@@ -304,5 +328,37 @@ class DeployUpdateCommandTest {
                 }
             }
         }
+    }
+}
+
+
+class SuccessfulDeploymentUpdateModel(val model: Model) : Model by model {
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
+
+    override fun validateBlockchainConfiguration(configuration: Gtv) {}
+
+    override fun getBlockchainConfiguration(height: Long): ByteArray? {
+        val config = DeploymentTestDataCreator.buildGtvConfig(
+                mapOf("a_file.rell" to "module;",
+                       "main.rell" to """
+                                       module;
+                                       import a_file.*;
+                                       query hello() = "Hi!";
+                                       operation call_op(value: integer) {}
+                                       entity person {
+                                           first_name: text;
+                                       }
+                                       entity card {
+                                           card_number: text;
+                                           owner: person;
+                                       }
+                                       entity book {
+                                           title: text;
+                                           isbn: text;
+                                           author: person;
+                                       }
+                            """.trimIndent()))
+
+        return GtvEncoder.encodeGtv(config)
     }
 }

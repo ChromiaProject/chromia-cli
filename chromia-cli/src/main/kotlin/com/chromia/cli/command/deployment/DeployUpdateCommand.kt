@@ -3,13 +3,19 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
+import com.chromia.cli.schema.BlockchainConfigSchemaParser
+import com.chromia.cli.schema.SchemaComparator
+import com.chromia.cli.schema.ReportGenerator
 import com.chromia.cli.util.CliktClusterManagement
 import com.chromia.cli.util.ClusterManagementFactory
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.long
+import com.github.ajalt.mordant.terminal.YesNoPrompt
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.core.PostchainQuery
@@ -22,7 +28,6 @@ import org.http4k.core.Status
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
         private val clusterManagementFactory: ClusterManagementFactory = Companion,
-
         ) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
@@ -67,6 +72,7 @@ class DeployUpdateCommand(
         val clusterManagement = clusterManagementFactory.buildClusterManagement(directoryChainClient)
         val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
+
         try {
             nodeClient.validateConfiguration(chain.config)
             echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
@@ -77,7 +83,41 @@ class DeployUpdateCommand(
                 else -> "Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}"
             }
         }
+
+        validateSchema(chain, nodeClient)
+
         return null
+    }
+
+    private fun validateSchema(chain: BlockchainConfiguration, nodeClient: PostchainClient) {
+        val newConfig = chain.config
+        val deployedConfig = nodeClient.getConfiguration()
+
+        val configSchemaParser = BlockchainConfigSchemaParser()
+        val newSchema = configSchemaParser.parse(newConfig)
+        val deployedSchema = configSchemaParser.parse(deployedConfig)
+
+        val schemaComparator = SchemaComparator()
+        val diff = schemaComparator.compareSchemas(deployedSchema, newSchema)
+        if (diff.isEmpty()) {
+            echo("No schema changes detected for ${chain.name} on network $target")
+            return
+        }
+
+        val reportGenerator = ReportGenerator()
+        val schemaChangesReport = reportGenerator.getSchemaChangesReport(diff, chain.name)
+        echo(schemaChangesReport.report)
+
+        if (schemaChangesReport.containsUnsafeChanges && !verifyOnly) {
+            if (terminal.terminalInfo.inputInteractive) {
+                if (YesNoPrompt("This update of ${chain.name} on network ${target} includes potentially dangerous database schema modifications that could result in data loss or corruption. " +
+                                "Are you sure you want to proceed?",
+                                terminal, default = false
+                        ).ask() != true) throw PrintMessage("Deployment update was aborted")
+            } else {
+                throw CliktError("Please specify --skip-verification option to skip update verification")
+            }
+        }
     }
 
     private fun printer(isError: Boolean, message: String) {
