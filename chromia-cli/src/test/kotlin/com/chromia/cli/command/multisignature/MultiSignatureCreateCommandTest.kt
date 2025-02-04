@@ -12,7 +12,6 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.testData
-import com.chromia.cli.util.TestClusterManagement
 import com.chromia.directory1.lib.ft4.core.accounts.AuthType
 import com.chromia.directory1.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
 import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
@@ -277,7 +276,7 @@ class MultiSignatureCreateCommandTest {
 
     @Test
     fun createTransactionFromDeploymentSetting(@TempDir tempDir: Path) {
-        val model = DirectoryChainModel().withClusterManagement(TestClusterManagement())
+        val model = DirectoryChainModel()
         withModel(model) {
 
             val deploymentBrid = "1111111111111111111111111111111111111111111111111111111111111111"

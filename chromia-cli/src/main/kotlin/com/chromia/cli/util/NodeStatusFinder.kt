@@ -6,9 +6,9 @@ import dev.forkhandles.result4k.map
 import dev.forkhandles.result4k.mapFailure
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClientProvider
+import net.postchain.client.core.PostchainQuery
 import net.postchain.client.request.Endpoint
 import net.postchain.common.BlockchainRid
-import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.HttpHandler
@@ -20,10 +20,10 @@ import org.http4k.lens.asResult
 class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this should be removed when PostchainClient provides an official API for `my_status`
                        clientProvider: PostchainClientProvider,
                        templateConfig: PostchainClientConfig,
-                       clusterManagement: ClusterManagement,
+                       directoryChain: PostchainQuery,
                        private val verbose: Boolean) {
 
-    private val heightFinder = HeightFinder(clientProvider, templateConfig, clusterManagement)
+    private val heightFinder = HeightFinder(clientProvider, templateConfig, directoryChain)
 
     fun tableHeaders() = if (verbose) verboseTableHeaders else tableHeaders
 
@@ -38,7 +38,7 @@ class NodeStatusFinder(private val httpHandler: HttpHandler, // TODO: this shoul
         return try {
             val result = httpHandler(request)
             statusLens(result).map { StatusResult.VerboseOk(endpoint.url, it) }.mapFailure { StatusResult.VerboseError(endpoint.url, errorLens(result)) }.get()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             StatusResult.VerboseError(endpoint.url, NodeStatus.Error("Node Unreachable"))
         }
     }

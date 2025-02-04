@@ -3,11 +3,10 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
+import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.chromia.cli.schema.BlockchainConfigSchemaParser
 import com.chromia.cli.schema.SchemaComparator
 import com.chromia.cli.schema.ReportGenerator
-import com.chromia.cli.util.CliktClusterManagement
-import com.chromia.cli.util.ClusterManagementFactory
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
@@ -18,16 +17,13 @@ import com.github.ajalt.clikt.parameters.types.long
 import com.github.ajalt.mordant.terminal.YesNoPrompt
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
-import net.postchain.client.core.PostchainQuery
 import net.postchain.client.exception.ClientError
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
-import net.postchain.cm.cm_api.ClusterManagementImpl
 import org.http4k.core.Status
 
 class DeployUpdateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
-        private val clusterManagementFactory: ClusterManagementFactory = Companion,
         ) : AbstractDeploymentCommand(name = "update", help = "Update configuration of a deployed blockchain", clientProvider) {
     private val height by option(help = "Deploy configuration at a specific height").long().validate {
         require(blockchain?.size == 1 || deployModel.chains.size == 1) { "When deploying to a specific height, only one blockchain can be updated at a time. use --blockchain flag to specify" }
@@ -69,8 +65,7 @@ class DeployUpdateCommand(
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
 
-        val clusterManagement = clusterManagementFactory.buildClusterManagement(directoryChainClient)
-        val endpoint = EndpointPool.default(clusterManagement.getBlockchainApiUrls(blockchainRid).toList())
+        val endpoint = EndpointPool.default(directoryChainClient.cmGetBlockchainApiUrls(blockchainRid).toList())
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
 
         try {
@@ -126,10 +121,5 @@ class DeployUpdateCommand(
         } else {
             echo(message)
         }
-    }
-
-    companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
-
     }
 }

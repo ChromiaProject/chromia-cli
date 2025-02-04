@@ -9,7 +9,7 @@ import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withStatus
 import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
-import com.chromia.cli.util.TestClusterManagement
+import com.chromia.cli.util.ClusterManagementStub
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
@@ -41,7 +41,7 @@ internal class ProposalRevokeCommandTest {
     @Test
     fun canNotFindIdentityToSignProposalRevokeActionWithTest() {
         assertThrows<CanNotFindPubkeyException> {
-            withModel(model.withClusterManagement(TestClusterManagement())) {
+            withModel(model.withClusterManagement(ClusterManagementStub())) {
                 ProposalRevokeCommand().parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
             }
         }
@@ -54,7 +54,7 @@ internal class ProposalRevokeCommandTest {
         }
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             val response = assertThrows<PrintMessage> {
-                withModel(model.withClusterManagement(TestClusterManagement()).withStatus(TransactionStatus.REJECTED, "message")) {
+                withModel(model.withClusterManagement(ClusterManagementStub()).withStatus(TransactionStatus.REJECTED, "message")) {
                     ProposalRevokeCommand().parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
                 }
             }
@@ -70,7 +70,7 @@ internal class ProposalRevokeCommandTest {
         }
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
 
-            withModel(model.withClusterManagement(TestClusterManagement())) {
+            withModel(model.withClusterManagement(ClusterManagementStub())) {
                 val res = ProposalRevokeCommand().test(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1"))
                 assertThat(res.stdout).contains("Proposal 1 was successfully revoked")
             }

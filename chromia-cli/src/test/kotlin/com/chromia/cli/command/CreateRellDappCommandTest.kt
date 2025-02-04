@@ -166,7 +166,7 @@ internal class CreateRellDappCommandTest {
               ${dappName}:
                 module: main
             compile:
-              rellVersion: 0.13.14
+              rellVersion: $DefaultChromiaModelRellVersion
             database:
               schema: schema_${dappName}
             test:

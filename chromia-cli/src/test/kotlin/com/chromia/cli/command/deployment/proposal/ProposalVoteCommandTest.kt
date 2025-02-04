@@ -9,7 +9,7 @@ import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withStatus
 import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
-import com.chromia.cli.util.TestClusterManagement
+import com.chromia.cli.util.ClusterManagementStub
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
@@ -29,7 +29,7 @@ internal class ProposalVoteCommandTest {
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
 
-    val model = DirectoryChainModel()
+    val model = DirectoryChainModel().withClusterManagement(ClusterManagementStub())
 
 
     @BeforeEach
@@ -41,7 +41,7 @@ internal class ProposalVoteCommandTest {
     @Test
     fun canNotFindIdentityToSignProposalVoteActionWithTest() {
         assertThrows<CanNotFindPubkeyException> {
-            withModel(model.withClusterManagement(TestClusterManagement())) {
+            withModel(model.withClusterManagement(ClusterManagementStub())) {
                 ProposalVoteCommand().parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--accept"))
             }
         }
@@ -54,7 +54,7 @@ internal class ProposalVoteCommandTest {
         }
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
             val response = assertThrows<PrintMessage> {
-                withModel(model.withClusterManagement(TestClusterManagement()).withStatus(TransactionStatus.REJECTED, "message")) {
+                withModel(model.withClusterManagement(ClusterManagementStub()).withStatus(TransactionStatus.REJECTED, "message")) {
                     ProposalVoteCommand().parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--accept"))
                 }
             }
@@ -70,7 +70,7 @@ internal class ProposalVoteCommandTest {
         }
         EnvironmentVariables("CHROMIA_HOME", dir.absolutePathString()).execute {
 
-            withModel(model.withClusterManagement(TestClusterManagement())) {
+            withModel(model.withClusterManagement(ClusterManagementStub())) {
                 val res = ProposalVoteCommand().test(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--id", "1", "--accept"))
                 assertThat(res.stdout).contains("Successfully voted on proposal 1")
             }

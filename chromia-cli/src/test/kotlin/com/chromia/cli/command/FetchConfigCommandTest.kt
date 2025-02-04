@@ -3,6 +3,7 @@ package com.chromia.cli.command
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
+import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
 import net.postchain.client.exception.ClientError
@@ -131,7 +132,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
         modules:
         - main
         strictGtvConversion: 1
-        version: 0.13.14
+        version: $DefaultChromiaModelRellVersion
     revolt:
       fast_revolt_status_timeout: 2000
       revolt_when_should_build_block: 1
@@ -175,7 +176,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
         webCacheTtlSeconds: 17
         webStatic: web
     compile:
-      rellVersion: 0.13.14
+      rellVersion: $DefaultChromiaModelRellVersion
 
     """.trimIndent()
 

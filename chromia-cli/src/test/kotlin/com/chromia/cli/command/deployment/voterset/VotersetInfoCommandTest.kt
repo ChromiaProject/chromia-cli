@@ -5,6 +5,7 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
@@ -91,7 +92,7 @@ internal class VotersetInfoCommandTest {
 
     @Test
     fun votersetInfoDataTest() {
-        RestApiInstance.withModel(VotersetInfoModel(model.blockchainRid)) {
+        withModel(VotersetInfoModel(model.blockchainRid)) {
             VotersetInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--name", "vs1"))
         }
         val voterset = gson.fromJson(logger.output(), JsonObject::class.java).asJsonObject
@@ -103,7 +104,7 @@ internal class VotersetInfoCommandTest {
 
     @Test
     fun votersetInfoDataFromContainerIdentifierTest() {
-        RestApiInstance.withModel(VotersetInfoModel(model.blockchainRid)) {
+        withModel(VotersetInfoModel(model.blockchainRid)) {
             VotersetInfoCommand().context { terminal = testTerminal }.parse(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--container", "c1"))
         }
         val voterset = gson.fromJson(logger.output(), JsonObject::class.java).asJsonObject
@@ -115,7 +116,7 @@ internal class VotersetInfoCommandTest {
 
     @Test
     fun votersetInfoDataContainerIdentifierAndVotersetFailsTest() {
-        RestApiInstance.withModel(VotersetInfoModel(model.blockchainRid)) {
+        withModel(VotersetInfoModel(model.blockchainRid)) {
             val result = VotersetInfoCommand().context { terminal = testTerminal }.test(listOf("--settings", settingsFile.absolutePath, "--network", "test", "--name", "vs1", "--container", "c1"))
             assertThat(result.stderr).contains("Error: option --name cannot be used with --container")
         }

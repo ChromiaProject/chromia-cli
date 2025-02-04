@@ -3,8 +3,6 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
-import com.chromia.cli.util.CliktClusterManagement
-import com.chromia.cli.util.ClusterManagementFactory
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
@@ -12,9 +10,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.mordant.terminal.YesNoPrompt
 import net.postchain.client.core.PostchainClientProvider
-import net.postchain.client.core.PostchainQuery
 import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.cm.cm_api.ClusterManagementImpl
 
 class DeployCreateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
@@ -63,9 +59,5 @@ class DeployCreateCommand(
         } else {
             echo(message)
         }
-    }
-
-    companion object : ClusterManagementFactory {
-        override fun buildClusterManagement(client: PostchainQuery) = CliktClusterManagement(ClusterManagementImpl(client))
     }
 }

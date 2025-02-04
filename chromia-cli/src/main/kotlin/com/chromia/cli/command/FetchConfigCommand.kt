@@ -5,12 +5,14 @@ import com.chromia.cli.tools.config.BlockchainOptions
 import com.chromia.cli.util.EXPERIMENTAL_COMMAND
 import com.chromia.cli.util.readBlockchainConfigFile
 import com.chromia.cli.util.targetDirectoryOption
+import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.impl.PostchainClientProviderImpl
-import net.postchain.d1.client.ChromiaClientProvider
+import net.postchain.client.request.EndpointPool
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvByteArray
@@ -46,8 +48,9 @@ class FetchConfigCommand : ChromiaCommand(help = """
             val client = it.url?.let { url ->
                 it.config.setBrid(it.blockchainRid).setApiUrls(url).client(PostchainClientProviderImpl())
             }
-                    ?: ChromiaClientProvider.fromClientConfig(it.config.client(PostchainClientProviderImpl()).config)
-                            .blockchain(it.blockchainRid)
+                    ?: it.config.client(PostchainClientProviderImpl()).let { directoryClient ->
+                        PostchainClientImpl(directoryClient.config.copy(it.blockchainRid, EndpointPool.default(directoryClient.cmGetBlockchainApiUrls(it.blockchainRid))))
+                    }
             client.getConfiguration()
         } ?: throw UsageError("Need to specify either --blockchain-config or --blockchain-rid")
 

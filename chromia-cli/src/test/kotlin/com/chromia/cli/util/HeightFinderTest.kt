@@ -8,13 +8,12 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.exception.ClientError
 import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
-import net.postchain.d1.cluster.ClusterManagement
 import org.http4k.core.Status
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
+import kotlin.test.Test
 
 class HeightFinderTest {
     val testBrid = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000001")
@@ -22,14 +21,14 @@ class HeightFinderTest {
 
     @Test
     fun tenHigherThatnHighest() {
-        val hc = HeightFinder(testClientProvider(), testConfigTemplate, TestClusterManagement("http://host1", "http://host2", "http://host3"))
+        val hc = HeightFinder(testClientProvider(), testConfigTemplate, ClusterManagementStub("http://host1", "http://host2", "http://host3"))
         assertThat(hc.findSafeHeight(testBrid)).isEqualTo(7L + 10L)
     }
 
     @Test
     fun noAvailableNodes() {
         assertThrows<IllegalArgumentException> {
-            val hc = HeightFinder(testClientProvider(), testConfigTemplate, TestClusterManagement("http://host2", "http://wronghost"))
+            val hc = HeightFinder(testClientProvider(), testConfigTemplate, ClusterManagementStub("http://host2", "http://wronghost"))
             hc.findSafeHeight(testBrid)
         }
     }
@@ -46,20 +45,5 @@ class HeightFinderTest {
                 else -> mock { on { currentBlockHeight() } doThrow ClientError("", Status.NOT_FOUND, "Can't find blockchain", endpoint) }
             }
         }
-    }
-
-
-    class TestClusterManagement(vararg val apiUrls: String) : ClusterManagement {
-
-        override fun getClusterOfBlockchain(blockchainRid: BlockchainRid) = if (!blockchainRid.toHex().endsWith("1")) "my_cluster" else "system"
-        override fun getRemovedClusterAnhcoringChains(removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
-        override fun getRemovedClusterBlockchains(clusterName: String, removedAfter: Long): Collection<BlockchainRid> = TODO("Not yet implemented")
-        override fun getBlockchainApiUrls(blockchainRid: BlockchainRid) = apiUrls.toList()
-        override fun getActiveBlockchains(clusterName: String) = TODO("Not yet implemented")
-        override fun getBlockchainPeers(blockchainRid: BlockchainRid, height: Long) = TODO("Not yet implemented")
-        override fun getClusterInfo(clusterName: String) = TODO("Not yet implemented")
-        override fun getClusterNames() = TODO("Not yet implemented")
-        override fun getClusterAnchoringChains() = TODO("Not yet implemented")
-        override fun getSystemAnchoringChain() = TODO("Not yet implemented")
     }
 }

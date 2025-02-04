@@ -7,7 +7,6 @@ import assertk.assertions.containsExactly
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.DirectoryChainModel
-import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
@@ -20,7 +19,7 @@ import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
 import com.chromia.cli.util.DeploymentTestModel
-import com.chromia.cli.util.TestClusterManagement
+import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
@@ -28,11 +27,11 @@ import com.github.ajalt.clikt.testing.test
 import net.postchain.PostchainContext
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.PostchainModel
-import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.BaseCryptoSystem
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.managed.ManagedNodeDataSource
 import net.postchain.managed.config.ManagedBlockchainConfiguration
@@ -50,7 +49,6 @@ import java.nio.file.Path
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.test.assertNotNull
-import net.postchain.gtv.GtvEncoder
 
 class DeployUpdateCommandTest {
     @TempDir
@@ -58,7 +56,7 @@ class DeployUpdateCommandTest {
     private lateinit var settingsFile: File
     private lateinit var secret: File
 
-    val model = DirectoryChainModel().withClusterManagement(TestClusterManagement())
+    val model = DirectoryChainModel().withClusterManagement(ClusterManagementStub())
 
     @BeforeEach
     fun setup() {
@@ -146,12 +144,7 @@ class DeployUpdateCommandTest {
 
     @Test
     fun verifyOnlyMultipleChains() {
-        withModel(model.withValidConfiguration().withClusterManagement(object : TestClusterManagement() {
-            override fun getBlockchainApiUrls(blockchainRid: BlockchainRid): List<String> {
-                return listOf(RestApiInstance.apiUrl)
-            }
-
-        }), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(34))).withValidConfiguration(), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(17))).withInvalidConfiguration()
+        withModel(model.withValidConfiguration(), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(34))).withValidConfiguration(), DeploymentTestModel(TestModel(BlockchainRid.buildRepeat(17))).withInvalidConfiguration()
         ) {
             testData(testDir) {
                 config {
@@ -340,7 +333,7 @@ class SuccessfulDeploymentUpdateModel(val model: Model) : Model by model {
     override fun getBlockchainConfiguration(height: Long): ByteArray? {
         val config = DeploymentTestDataCreator.buildGtvConfig(
                 mapOf("a_file.rell" to "module;",
-                       "main.rell" to """
+                        "main.rell" to """
                                        module;
                                        import a_file.*;
                                        query hello() = "Hi!";
