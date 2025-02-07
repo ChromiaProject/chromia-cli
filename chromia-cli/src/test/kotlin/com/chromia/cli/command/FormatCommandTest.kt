@@ -131,6 +131,17 @@ internal class FormatCommandTest {
     }
 
     @Test
+    fun testFormatWithFilter() {
+        FormatCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "**/lib/my_lib/**"))
+
+        assertThat(logger.output()).doesNotContain("Formatting test/test.rell... no changes")
+        assertThat(logger.output()).contains("Formatting lib/my_lib/module.rell... changed")
+        assertThat(logger.output()).doesNotContain("Formatting main/module.rell... changed")
+        assertThat(logger.output()).doesNotContain("lib/other_lib/module.rell")
+        assertThat(testDir.resolve("src/main/module.rell").readText()).isEqualTo(mainRellContent)
+    }
+
+    @Test
     fun testFormatSourceDir() {
         FormatCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--source-dir", testDir.resolve("src/main").toString()))
         assertThat(logger.output()).isEqualTo("""
