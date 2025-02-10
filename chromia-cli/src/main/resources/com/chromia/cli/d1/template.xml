@@ -37,6 +37,7 @@
                     <string>com.chromia.cli.d1.ClusterManagementGTXModule</string>
                     <string>com.chromia.cli.d1.NopAnchoringGTXModule</string>
                     <string>net.postchain.gtx.StandardOpsGTXModule</string>
+                    <string>net.postchain.d1.iccf.IccfGTXModule</string> <!-- Will be replaced by the in-memory model -->
                 </array>
             </entry>
         </dict>
