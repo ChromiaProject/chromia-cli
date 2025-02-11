@@ -8,7 +8,8 @@ class ToolsCommand : NoOpChromiaCommand(help = "Miscellaneous tools") {
     companion object {
         fun commands() = ToolsCommand().subcommands(
                 GtvCommand(),
-                ValidateModelCommand()
+                ValidateModelCommand(),
+                GenerateLibModelCommand()
         )
     }
 
