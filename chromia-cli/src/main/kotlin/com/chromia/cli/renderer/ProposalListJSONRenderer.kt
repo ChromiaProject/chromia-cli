@@ -1,7 +1,7 @@
 package com.chromia.cli.renderer
 
+import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.deployment.proposal.ProposalListRenderData
-import com.chromia.cli.tools.formatter.json
 import com.github.ajalt.clikt.core.CliktCommand
 
 class ProposalListJSONRenderer(val cliktCommand: CliktCommand) : Renderer<ProposalListRenderData> {

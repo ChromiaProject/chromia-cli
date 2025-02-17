@@ -1,11 +1,11 @@
 package com.chromia.cli.command.deployment
 
+import com.chromia.cli.base.formatter.fixKey
+import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
-import com.chromia.cli.tools.formatter.fixKey
-import com.chromia.cli.tools.formatter.json
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.NodeStatusFinder
 import com.chromia.cli.util.RemoteDeploymentOption

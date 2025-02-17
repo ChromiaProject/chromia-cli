@@ -1,10 +1,9 @@
 package com.chromia.cli.util
 
+import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.config.ChromiaClientConfig
 import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
-import com.chromia.cli.command.deployment.DeployInfoCommand
 import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.cli.tools.config.blockchainRidOption
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.github.ajalt.clikt.parameters.groups.OptionGroup

@@ -1,7 +1,7 @@
 package com.chromia.cli.command.multisignature
 
+import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.tools.formatter.json
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file

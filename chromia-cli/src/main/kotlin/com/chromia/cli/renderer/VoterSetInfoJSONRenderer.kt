@@ -1,8 +1,8 @@
 package com.chromia.cli.renderer
 
+import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.deployment.voterset.VotersetInfoCommand
 import com.chromia.cli.command.deployment.voterset.VotersetInfoRenderData
-import com.chromia.cli.tools.formatter.json
 
 class VoterSetInfoJSONRenderer(val cliktCommand: VotersetInfoCommand) : Renderer<VotersetInfoRenderData> {
 

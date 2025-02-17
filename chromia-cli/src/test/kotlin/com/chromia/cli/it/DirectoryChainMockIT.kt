@@ -11,8 +11,8 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
 import assertk.assertions.startsWith
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.cli.command.node.INITILIZED_LOG
-import com.chromia.cli.tools.blockchain.BridFetcher
 import com.chromia.build.tools.testData
 import com.chromia.directory1.anchoring_chain_common.getAnchoringTransactionForBlockRid
 import com.chromia.directory1.anchoring_chain_common.getLastAnchoredBlock

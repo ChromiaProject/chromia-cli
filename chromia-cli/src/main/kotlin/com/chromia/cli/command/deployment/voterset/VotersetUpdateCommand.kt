@@ -3,6 +3,7 @@ package com.chromia.cli.command.deployment.voterset
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
+import com.chromia.cli.tools.util.thresholdOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.util.pubkey
 import com.chromia.cli.util.secretOption
@@ -18,7 +19,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
-import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.common.tx.TransactionStatus
@@ -55,7 +55,7 @@ class VotersetUpdateCommand : ChromiaCommand(
             help = "Name of existing voter set to update"
     ).required()
 
-    private val threshold by option("--threshold", help = "New threshold").long()
+    private val threshold by thresholdOption()
     private val newMember by option("--add-member", help = "Provider pubkey(s) to add to voter set. Separate keys with ','")
             .convert { it.hexStringToByteArray() }
             .split(",")
