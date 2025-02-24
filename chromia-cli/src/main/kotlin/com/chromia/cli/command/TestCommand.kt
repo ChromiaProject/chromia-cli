@@ -2,6 +2,8 @@ package com.chromia.cli.command
 
 import com.chromia.build.tools.test.xmlTestReport
 import com.chromia.cli.model.BlockchainModel
+import com.chromia.cli.sql.SqlStatisticsCollector
+import com.chromia.cli.sql.SqlStatisticsRenderer
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
@@ -63,6 +65,9 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val timestamp by option("-ts", "--timestamp", help = "Timestamp on logs").flag()
 
+    private val sqlStatisticsCollector = SqlStatisticsCollector()
+    private val sqlStatisticsRenderer = SqlStatisticsRenderer(this)
+
     override fun run() {
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
         if (testReport) {
@@ -101,6 +106,9 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         if (testReport) {
             Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
+        }
+        if (sqlLog) {
+            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
         }
         printResults(res)
     }
@@ -146,6 +154,9 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         if (testReport) {
             Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
         }
+        if (sqlLog) {
+            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
+        }
         printResults(res)
     }
 
@@ -171,9 +182,20 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                 .logPrinter { s -> echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}$s") }
                 .outPrinter(::echo)
                 .printTestCases(false)
-                .onTestCaseStart { case -> case.print() }
-                .onTestCaseFinished { res -> res.print() }
-                .sqlLog(sqlLog)
+                .onTestCaseStart { case ->
+                    case.print()
+                    sqlStatisticsCollector.onTestCaseStart(case)
+                }
+                .onTestCaseFinished { res ->
+                    res.print()
+                    sqlStatisticsCollector.onTestCaseFinished(res)
+                }
+                .sqlLog(false)
+                .apply {
+                    if (sqlLog) {
+                        onSqlExecutionFinished(sqlStatisticsCollector::onSqlExecutionFinished)
+                    }
+                }
                 .build()
     }
 

@@ -1,14 +1,12 @@
 package com.chromia.cli.command
 
 import assertk.assertThat
-import assertk.assertions.any
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import com.chromia.build.tools.testData
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
-import com.chromia.cli.util.captureLog4jLoggerOutput
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
@@ -16,7 +14,6 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import net.postchain.rell.base.sql.SqlConnectionLogger
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -31,7 +28,7 @@ import kotlin.test.assertEquals
 
 internal class TestCommandTest {
 
-    private val logger = TerminalRecorder()
+    private val logger = TerminalRecorder(width = 1000, outputInteractive = true)
     private val testTerminal = Terminal(terminalInterface = logger)
 
     @TempDir
@@ -351,17 +348,12 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        val sqlLoggerOutput = captureLog4jLoggerOutput(SqlConnectionLogger::class.java) {
-            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log"))
-        }
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log"))
 
-        assertThat(sqlLoggerOutput).any {
-            it.contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
-        }
-        assertThat(sqlLoggerOutput).any {
-            it.contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ?""")
-        }
-        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+        val output = logger.output()
+        assertThat(output).contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
+        assertThat(output).contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ?""")
+        assertThat(output).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
     }
 
     @Test

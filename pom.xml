@@ -18,9 +18,9 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.16.1</codegen.version>
-        <postchain.version>3.27.4</postchain.version>
+        <postchain.version>3.27.8</postchain.version>
         <postchain.client.version>3.25.0</postchain.client.version>
-        <rell.version>0.14.6</rell.version>
+        <rell.version>0.14.7</rell.version>
         <rell.dokka.version>0.2.9</rell.dokka.version>
         <rell.toolbox.version>0.4.18</rell.toolbox.version>
         <eif.version>0.8.0</eif.version>
@@ -360,6 +360,11 @@
             <dependency>
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-api-gtx</artifactId>
+                <version>${rell.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.rell</groupId>
+                <artifactId>rell-gtx</artifactId>
                 <version>${rell.version}</version>
             </dependency>
             <dependency>
