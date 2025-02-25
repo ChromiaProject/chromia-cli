@@ -5,14 +5,7 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
-import com.chromia.cli.util.EXPERIMENTAL_COMMAND
-import com.chromia.cli.util.ExplicitRemoteSystemOption
-import com.chromia.cli.util.RemoteSystemOption
-import com.chromia.cli.util.SystemOption
-import com.chromia.cli.util.TableOutputFormat
-import com.chromia.cli.util.containerIdOption
-import com.chromia.cli.util.publicKeyOption
-import com.chromia.cli.util.tableOutputFormat
+import com.chromia.cli.util.*
 import com.chromia.directory1.economy_chain.LeaseData
 import com.chromia.directory1.economy_chain.getLeaseByContainerName
 import com.chromia.directory1.economy_chain.getLeasesByAccount
@@ -26,6 +19,7 @@ import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.toHex
 
 class DeployInspectLeaseCommand : ChromiaCommand(name = "lease-info", help = """
     Information about a leases of for a given owner    
@@ -41,16 +35,16 @@ class DeployInspectLeaseCommand : ChromiaCommand(name = "lease-info", help = """
     private val deploymentTarget by RemoteSystemOption {
         (settings.model ?: ChromiaModel.default()) to settings.config
     }.cooccurring()
-    private val ownerOfLeasePubkey by publicKeyOption()
+    private val ownerOfLeaseAccountId by accountIdOption()
     private val containerId by containerIdOption()
     private val outputFormat by tableOutputFormat()
 
     override fun run() {
-        val (pubkey, container, leaseData) = getLeaseData()
+        val (accountId, container, leaseData) = getLeaseData()
 
         when (outputFormat ?: if (terminal.terminalInfo.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON) {
             TableOutputFormat.table -> {
-                if (pubkey != null) echo("Getting active leases for user with public key: $pubkey")
+                if (accountId != null) echo("Getting active leases for account id: $accountId")
                 if (container != null) echo("Getting lease information for container: $container")
                 echo(defaultTable {
                     header {
@@ -66,7 +60,7 @@ class DeployInspectLeaseCommand : ChromiaCommand(name = "lease-info", help = """
 
             TableOutputFormat.JSON ->
                 echo(json(mapOf(
-                        "pubkey" to pubkey,
+                        "account id" to accountId,
                         "container" to container,
                         "leases" to leaseData.map {
                             mapOf(
@@ -86,13 +80,13 @@ class DeployInspectLeaseCommand : ChromiaCommand(name = "lease-info", help = """
         val target = deploymentTarget ?: explicitTarget
         require(target != null) { "Must specify network target from config or set it explicitly" }
         val container = containerId ?: target.containerId
-        require(ownerOfLeasePubkey != null || container != null) { "Option pubkey or container name needs to be specified." }
+        require(ownerOfLeaseAccountId != null || container != null) { "Option account id or container name needs to be specified." }
         val client = createEconomyChainClient(target)
 
-        return if (ownerOfLeasePubkey != null) {
-            val leaseData = client.getLeasesByAccount(ownerOfLeasePubkey!!.hexStringToByteArray())
-            if (leaseData.isEmpty()) throw PrintMessage("No active leases for user: $ownerOfLeasePubkey", 0)
-            Triple(ownerOfLeasePubkey, null, leaseData)
+        return if (ownerOfLeaseAccountId != null) {
+            val leaseData = client.getLeasesByAccount(ownerOfLeaseAccountId!!)
+            if (leaseData.isEmpty()) throw PrintMessage("No active leases for user: $ownerOfLeaseAccountId", 0)
+            Triple(ownerOfLeaseAccountId!!.toHex(), null, leaseData)
 
         } else {
             val leaseData = client.getLeaseByContainerName(container!!)

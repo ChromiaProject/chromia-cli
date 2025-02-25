@@ -80,7 +80,7 @@ class DeployInspectLeaseCommandTest {
             val res = assertThrows<Exception> {
                 command.parse(listOf("--network", "test_network", "-s", settingsFile.absolutePath))
             }
-            assertThat(res.message).isEqualTo("Option pubkey or container name needs to be specified.")
+            assertThat(res.message).isEqualTo("Option account id or container name needs to be specified.")
         }
     }
 
@@ -105,7 +105,7 @@ class DeployInspectLeaseCommandTest {
     }
 
     @Test
-    fun `Pubkey takes precedence over container id`() {
+    fun `Account id takes precedence over container id`() {
         settingsFile.appendText("""
             \n
             deployments:
@@ -120,10 +120,10 @@ class DeployInspectLeaseCommandTest {
         withModel(directoryChainModel, economyChainModel.withQuery(
                 "get_leases_by_account", gtv(listOf(gtv(getLeaseData()), gtv(getLeaseData())))
         )) {
-            val pubkey = "0000000000000000000000000000000000000000000000000000000000000003"
+            val accountId = "0000000000000000000000000000000000000000000000000000000000000003"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
-            command.parse(listOf("--network", "test_network", "--pubkey", pubkey, "-s", settingsFile.absolutePath))
-            assertThat(logger.output()).contains(""""pubkey": "$pubkey"""")
+            command.parse(listOf("--network", "test_network", "--account-id", accountId, "-s", settingsFile.absolutePath))
+            assertThat(logger.output()).contains(""""account id": "$accountId"""")
         }
     }
 
@@ -136,21 +136,21 @@ class DeployInspectLeaseCommandTest {
             val res = assertThrows<Exception> {
                 command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid))
             }
-            assertThat(res.message).isEqualTo("Option pubkey or container name needs to be specified.")
+            assertThat(res.message).isEqualTo("Option account id or container name needs to be specified.")
         }
     }
 
     @Test
-    fun `Explicit setting system option using pubkey to get lease data`() {
+    fun `Explicit setting system option using account id to get lease data`() {
         withModel(directoryChainModel, economyChainModel.withQuery(
                 "get_leases_by_account", gtv(listOf(gtv(getLeaseData()), gtv(getLeaseData())))
         )) {
-            val pubkey = "03DD65032C7BEE117FFDAA94C8DADAE79ADBA2A3A17C8D4A5239AA2DC2E93D845E"
+            val accountId = "03DD65032C7BEE117FFDAA94C8DADAE79ADBA2A3A17C8D4A5239AA2DC2E93D845E"
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
-            command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid, "--pubkey", pubkey))
-            assertThat(logger.output()).contains(""""pubkey": "$pubkey"""")
+            command.parse(listOf("--api-url", "http://localhost:7745", "--blockchain-rid", brid, "--account-id", accountId))
+            assertThat(logger.output()).contains(""""account id": "$accountId"""")
         }
     }
 
@@ -167,25 +167,25 @@ class DeployInspectLeaseCommandTest {
 
     @Test
     fun `Invalid public key with illegal characters`() {
-        val pubkey = "000000000000000000000000000000000000000000000000000000000000000G"
+        val accountId = "000000000000000000000000000000000000000000000000000000000000000G"
         val brid = "0000000000000000000000000000000000000000000000000000000000000000"
         val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
         val res = assertThrows<Exception> {
-            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
+            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--account-id", accountId))
         }
-        assertThat(res.message.toString()).contains("Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f.")
+        assertThat(res.message.toString()).contains("Account id contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f.")
     }
 
     @Test
     fun `Invalid public key of uneven length`() {
-        val pubkey = "00000000000000000000000000000000000000000000000000000000000000034"
+        val accountId = "00000000000000000000000000000000000000000000000000000000000000034"
         val brid = "0000000000000000000000000000000000000000000000000000000000000000"
         val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
         val res = assertThrows<Exception> {
-            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--pubkey", pubkey))
+            command.parse(listOf("--api-url", "http://localhost:7740", "--blockchain-rid", brid, "--account-id", accountId))
         }
-        assertThat(res.message.toString()).contains("The public key must be a hex string with even length. Length was: ${pubkey.length}")
+        assertThat(res.message.toString()).contains("The account id must be a hex string with even length. Length was: ${accountId.length}")
     }
 }

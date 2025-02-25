@@ -92,7 +92,7 @@ class DeployInspectLeaseIT {
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .wholeOutput("""
                         {
-                          "pubkey": null,
+                          "account id": null,
                           "container": "containerName",
                           "leases": [
                             {
@@ -109,11 +109,11 @@ class DeployInspectLeaseIT {
                     """.trimIndent())
                     .start()
 
-            TestProcess.Builder("deployment", "lease-info", "--network", "test", "--pubkey", accountId)
+            TestProcess.Builder("deployment", "lease-info", "--network", "test", "--account-id", accountId)
                     .setConfig(dir.resolve("chromia.yml").toFile())
                     .wholeOutput("""
                         {
-                          "pubkey": "$accountId",
+                          "account id": "$accountId",
                           "container": null,
                           "leases": [
                             {

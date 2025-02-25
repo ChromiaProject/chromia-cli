@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
+import net.postchain.common.hexStringToByteArray
 import net.postchain.rell.base.model.R_ModuleName
 
 @Suppress("EnumEntryName")
@@ -44,6 +45,17 @@ fun ParameterHolder.publicKeyOption(help: String = "Set public key explicitly") 
         .validate {
             require(it.matches(Regex("[0-9A-Fa-f]+"))) { "Public key contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f." }
             require(it.length % 2 == 0) { "The public key must be a hex string with even length. Length was: ${it.length}" }
+        }
+
+fun ParameterHolder.accountIdOption(help: String = "Set FT4 account id explicitly") = option("-ai", "--account-id", help = help)
+        .convert { hexString ->
+            require(hexString.matches(Regex("[0-9A-Fa-f]+"))) {
+                "Account id contains one ore more illegal character. Supported Characters are: 0-9, A-F, a-f."
+            }
+            require(hexString.length % 2 == 0) {
+                "The account id must be a hex string with even length. Length was: ${hexString.length}"
+            }
+            hexString.hexStringToByteArray()
         }
 
 fun CliktCommand.secretOption() =
