@@ -12,9 +12,14 @@ import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.types.long
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.toHex
 import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.GtvException
+import net.postchain.gtv.merkle.makeMerkleHashCalculator
+import net.postchain.gtv.merkleHash
 import net.postchain.gtv.pretty
 
 class GtvCommand : ChromiaCommand(help = """
@@ -31,6 +36,8 @@ class GtvCommand : ChromiaCommand(help = """
 ) {
     private val hex by option("--hex", help = "Hex encoded GTV data", metavar = "hex").convert { it.hexStringToByteArray() }
     private val outputFormat by outputFormat()
+    private val hash by option("--hash", help = "Calculate Merkle hash of the GTV data", metavar = "version").long()
+            .validate { require(it >0) { "Merkle hash version must be greater than 0"} }
 
     override fun run() {
         val data = hex ?: if (terminal.terminalInfo.inputInteractive) {
@@ -54,12 +61,16 @@ class GtvCommand : ChromiaCommand(help = """
             throw CliktError("Invalid GTV data: ${e.message!!}")
         }
 
-        echo(when (outputFormat) {
-            OutputFormat.pretty -> gtv.pretty()
-            OutputFormat.raw -> formatRaw(gtv)
-            OutputFormat.JSON -> formatJson(gtv)
-            OutputFormat.XML -> formatXml(gtv)
-            OutputFormat.YAML -> formatYaml(gtv)
-        })
+        if (hash != null) {
+            echo(gtv.merkleHash(makeMerkleHashCalculator(hash!!)).toHex())
+        } else {
+            echo(when (outputFormat) {
+                OutputFormat.pretty -> gtv.pretty()
+                OutputFormat.raw -> formatRaw(gtv)
+                OutputFormat.JSON -> formatJson(gtv)
+                OutputFormat.XML -> formatXml(gtv)
+                OutputFormat.YAML -> formatYaml(gtv)
+            })
+        }
     }
 }

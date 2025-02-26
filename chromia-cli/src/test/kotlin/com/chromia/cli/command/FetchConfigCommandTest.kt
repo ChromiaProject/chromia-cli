@@ -238,6 +238,27 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
     }
 
     @Test
+    fun fromFileShowHash(@TempDir dir: Path) {
+        with(File(dir.toFile(), "src/main.rell")) {
+            parentFile.mkdirs()
+            writeText(sourceRell)
+        }
+        with(File(dir.toFile(), "web/index.html")) {
+            parentFile.mkdirs()
+            writeText(sourceHtml)
+        }
+        with(File(dir.toFile(), "chromia.yml")) {
+            writeText(sourceChromiaYml)
+        }
+        BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
+        val res = FetchConfigCommand().test(listOf(
+                "--blockchain-config", "${dir.absolutePathString()}/build/a.xml", "--hash"
+        ))
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.stdout).isEqualTo("B38ADE82B896F900DE715169BDFA8749B42CA69BC4B9B40AAD5DA6E68F21118E\n")
+    }
+
+    @Test
     fun fromFileToDir(@TempDir dir: Path) {
         with(File(dir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()

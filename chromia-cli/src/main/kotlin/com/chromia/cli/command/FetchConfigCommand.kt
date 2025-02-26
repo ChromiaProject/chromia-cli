@@ -8,11 +8,14 @@ import com.chromia.cli.util.targetDirectoryOption
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.parameters.groups.cooccurring
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.file
+import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
+import net.postchain.common.toHex
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvByteArray
@@ -41,6 +44,8 @@ class FetchConfigCommand : ChromiaCommand(help = """
 
     private val targetDir by targetDirectoryOption(help = "Directory to save blockchain config and Rell sources in")
 
+    private val hash by option("--hash", help = "Calculate Merkle hash of the blockchain configuration").flag()
+
     override fun run() {
         val blockchainConfig: Gtv = fileOption?.let {
             readBlockchainConfigFile(it)
@@ -53,6 +58,11 @@ class FetchConfigCommand : ChromiaCommand(help = """
                     }
             client.getConfiguration()
         } ?: throw UsageError("Need to specify either --blockchain-config or --blockchain-rid")
+
+        if (hash) {
+            val configHash = BlockchainConfigurationData.merkleHash(blockchainConfig)
+            echo(configHash.toHex())
+        }
 
         val blockchainConfigWithoutBloat = (blockchainConfig as? GtvDictionary)
                 ?.remove("gtx", "rell", "sources")
@@ -108,8 +118,7 @@ class FetchConfigCommand : ChromiaCommand(help = """
                     }
                 }
             }
-
-        } else {
+        } else if (!hash) {
             echo(gtvYaml.dump(blockchainConfigWithoutBloat))
         }
     }
