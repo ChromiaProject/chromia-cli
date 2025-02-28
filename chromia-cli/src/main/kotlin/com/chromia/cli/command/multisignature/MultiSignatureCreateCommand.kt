@@ -1,14 +1,11 @@
 package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.tools.ft.addFtAuthenticationOperation
-import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.util.LocalDeploymentOption
-import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.getFormattedUtcDateTime
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.tools.ft.addFtAuthenticationOperation
+import com.chromia.cli.tools.ft.initFtAuth
+import com.chromia.cli.util.*
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -21,12 +18,12 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import java.nio.file.Paths
 import net.postchain.common.PropertiesFileLoader
 import net.postchain.common.toHex
 import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
+import java.nio.file.Paths
 
 class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Creates a new transaction for multi signature and signs it with your key") {
 
@@ -39,7 +36,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         val ftAccountId by option(help = "Explicitly specify which account to use")
         val ftAuthDescriptorId by option("--auth-descriptor-id", "-id", help = "Explicitly specify which auth descriptor id to use")
     }
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
 
     private val fileWithSigners by option("--signers-file", help = "Path to file containing public keys of signers (pubkey1=x,pubkey2=y,...)")
             .file(canBeDir = false, mustExist = true, mustBeReadable = true)
@@ -73,12 +70,12 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
         val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        secret?.let { postchainClientConfig.setSignerFromSecret(it.toPath()) }
+        postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
 
         val signers = getSignersFromFile()
         val initialSigner = postchainClientConfig.signers
-        require(initialSigner.isNotEmpty()) { "No initial signer found. Either set one in your configuration or specify path to secret file" }
+        require(initialSigner.isNotEmpty()) { "No initial signer found. Either set one in your configuration or specify path to secret file or key ID" }
 
         val signersWithoutInitialSigner = signers.filter { it != initialSigner.first().pubKey }.toList()
 

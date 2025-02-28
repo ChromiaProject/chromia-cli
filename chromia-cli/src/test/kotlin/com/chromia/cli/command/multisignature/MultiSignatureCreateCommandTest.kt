@@ -271,7 +271,7 @@ class MultiSignatureCreateCommandTest {
                     "call_op", opName
             ))
         }
-        assertThat(res.message).isEqualTo("No initial signer found. Either set one in your configuration or specify path to secret file")
+        assertThat(res.message).isEqualTo("No initial signer found. Either set one in your configuration or specify path to secret file or key ID")
     }
 
     @Test

@@ -4,8 +4,9 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
+import com.chromia.cli.util.configureSigners
+import com.chromia.cli.util.keyPairSourceOption
 import com.chromia.cli.util.pubkey
-import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal.revokeProposalOperation
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -21,11 +22,10 @@ class ProposalRevokeCommand : ChromiaCommand(
     private val settings by optionalChromiaModelConfigOption()
     private val networkTarget by DeployedNetworkOption { settings.model ?: ChromiaModel.default() }
     private val idx by proposalIndexOption().required()
-    private val secret by secretOption()
-
+    private val keyPairSource by keyPairSourceOption()
 
     override fun run() {
-        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        settings.config.configureSigners(keyPairSource)
         val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
 

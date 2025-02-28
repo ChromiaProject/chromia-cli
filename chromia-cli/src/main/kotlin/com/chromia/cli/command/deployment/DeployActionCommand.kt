@@ -5,16 +5,13 @@ import com.chromia.api.filterChains
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.configureSigners
 import com.chromia.cli.util.deployTargetOption
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.keyPairSourceOption
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.options.*
 
 sealed class DeployActionCommand(
         private val action: BlockchainAction,
@@ -22,7 +19,7 @@ sealed class DeployActionCommand(
 ) : ChromiaCommand(name = action.name, help = help) {
 
     protected val settings by chromiaModelConfigOption()
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     private val description by option(help = "Description on why the blockchain is being acted on").default("")
 
     protected val target by deployTargetOption().required()
@@ -41,7 +38,7 @@ sealed class DeployActionCommand(
         }
         val deployModel = settings.model.deployments[target]!!.filterChains(blockchain)
 
-        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        settings.config.configureSigners(keyPairSource)
         val (res, msg) = ChromiaDeploymentApi.action(deployModel, settings.config, action, description)
         if (res) {
             echo("${action.name} of blockchain ${deployModel.chains.keys} was successful")

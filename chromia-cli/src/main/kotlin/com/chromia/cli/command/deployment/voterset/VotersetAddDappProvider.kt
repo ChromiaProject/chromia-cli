@@ -1,14 +1,11 @@
 package com.chromia.cli.command.deployment.voterset
 
 import com.chromia.cli.command.ChromiaCommand
-import com.chromia.cli.tools.ft.addFtAuthenticationOperation
-import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.util.DeployedNetworkOption
-import com.chromia.cli.util.containerIdOption
-import com.chromia.cli.util.publicKeyOption
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.tools.ft.addFtAuthenticationOperation
+import com.chromia.cli.tools.ft.initFtAuth
+import com.chromia.cli.util.*
 import com.chromia.directory1.economy_chain.REGISTER_DAPP_PROVIDER
 import com.chromia.directory1.economy_chain.registerDappProviderOperation
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
@@ -32,14 +29,14 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
     private val networkTarget by DeployedNetworkOption { settings.model ?: ChromiaModel.default() }
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val newProviderPubKey by publicKeyOption(help = "The public key of the dApp provider to be added")
     private val containerId by containerIdOption(help = "Container Identifier to add dapp provider too").required()
 
     override fun run() {
         require(newProviderPubKey != null) { "Missing value for dApp provider public key" }
-        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        settings.config.configureSigners(keyPairSource)
         val d1ClientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val d1Client = networkTarget.createClient(d1ClientConfig)
 

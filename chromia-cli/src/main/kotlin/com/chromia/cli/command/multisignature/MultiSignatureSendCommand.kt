@@ -5,7 +5,8 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.configureSigners
+import com.chromia.cli.util.keyPairSourceOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -23,7 +24,7 @@ import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
 class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a fully signed transaction") {
 
     private val settings by optionalChromiaModelConfigOption()
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
@@ -34,7 +35,7 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
         val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        secret?.let { postchainClientConfig.setSignerFromSecret(it.toPath()) }
+        postchainClientConfig.configureSigners(keyPairSource)
 
         val transactionBuilder = target.createClient(postchainClientConfig).transactionBuilder()
         val transaction = transactionFile.readText().hexStringToByteArray()

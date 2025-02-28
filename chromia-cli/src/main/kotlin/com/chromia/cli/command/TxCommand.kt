@@ -1,14 +1,15 @@
 package com.chromia.cli.command
 
+import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addEvmAuthOperation
 import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
-import com.chromia.cli.model.ChromiaModel
-import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.configureSigners
+import com.chromia.cli.util.keyPairSourceOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -61,7 +62,7 @@ class TxCommand : ChromiaCommand(help = """
 """.trimIndent()) {
 
     private val settings by optionalChromiaModelConfigOption()
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
@@ -108,7 +109,7 @@ class TxCommand : ChromiaCommand(help = """
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
         val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
-        secret?.let { postchainClientConfig.setSignerFromSecret(it.toPath()) }
+        postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
         val transactionBuilder = client.transactionBuilder()
         val args = if (iccfTx != null) {

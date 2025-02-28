@@ -1,12 +1,13 @@
 package com.chromia.cli.command.deployment
 
 import com.chromia.cli.command.ChromiaCommand
+import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addFtAuthenticationOperation
 import com.chromia.cli.tools.ft.initFtAuth
-import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.configureSigners
 import com.chromia.cli.util.containerIdOption
-import com.chromia.cli.util.secretOption
+import com.chromia.cli.util.keyPairSourceOption
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
 import com.chromia.directory1.economy_chain_remove_container.REMOVE_CONTAINER
 import com.chromia.directory1.economy_chain_remove_container.removeContainerOperation
@@ -31,14 +32,14 @@ class RemoveContainerCommand : ChromiaCommand(
 
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val containerId by containerIdOption(help = "Container Identifier to add dapp provider too").required()
 
     override fun run() {
         val postchainClientConfig = settings.config.setApiUrls(explicitTarget.url).setBrid(explicitTarget.brid)
-        secret?.let { postchainClientConfig.setSignerFromSecret(it.toPath()) }
+        postchainClientConfig.configureSigners(keyPairSource)
         val client = explicitTarget.createClient(postchainClientConfig)
 
         val economyClient = createEconomyChainClient(client)

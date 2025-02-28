@@ -5,20 +5,14 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.util.thresholdOption
 import com.chromia.cli.util.DeployedNetworkOption
+import com.chromia.cli.util.configureSigners
+import com.chromia.cli.util.keyPairSourceOption
 import com.chromia.cli.util.pubkey
-import com.chromia.cli.util.secretOption
 import com.chromia.directory1.proposal_voter_set.proposeUpdateVoterSetOperation
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.OptionTransformContext
-import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.defaultLazy
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.options.*
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.common.tx.TransactionStatus
@@ -48,7 +42,7 @@ class VotersetUpdateCommand : ChromiaCommand(
 ) {
     private val settings by optionalChromiaModelConfigOption()
     private val networkTarget by DeployedNetworkOption { settings.model ?: ChromiaModel.default() }
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
 
     private val voterSet by option(
             "-vs", "--voter-set",
@@ -72,7 +66,7 @@ class VotersetUpdateCommand : ChromiaCommand(
     }
 
     override fun run() {
-        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        settings.config.configureSigners(keyPairSource)
         val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
 

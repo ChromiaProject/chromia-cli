@@ -10,10 +10,11 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.configureSigners
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.keepOnlyStandardGtxModules
-import com.chromia.cli.util.secretOption
 import com.chromia.cli.util.getFormattedUtcDateTime
+import com.chromia.cli.util.keyPairSourceOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
@@ -35,7 +36,7 @@ import net.postchain.client.request.Endpoint
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : ChromiaCommand(name = name, help = help) {
 
     protected val settings by chromiaModelConfigOption()
-    private val secret by secretOption()
+    private val keyPairSource by keyPairSourceOption()
     protected val target by deployTargetOption().required()
             .validate { require(settings.model.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
@@ -45,7 +46,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     protected val client by lazy {
         val client = createClient()
         if (client.config.signers.isEmpty()) {
-            throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or in the config.", statusCode = 1)
+            throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or --key-id or in the config.", statusCode = 1)
         }
         client
     }
@@ -60,7 +61,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val model = settings.model.deployments[target]
         require(model != null) { "Network $target is not a configured deployment" }
         settings.config.setDeployment(model)
-        secret?.let { settings.config.setSignerFromSecret(it.toPath()) }
+        settings.config.configureSigners(keyPairSource)
         return settings.config.client(clientProvider)
     }
 
