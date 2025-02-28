@@ -22,11 +22,27 @@ image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java
     expire_in: 1 week
 
 stages:
+  - version-check
   - build
   - code-coverage
   - deploy
   - dependency-check
   - release
+
+validate-version:
+  stage: version-check
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
+  script:
+    - |
+      # Check if this version is documented in the changelog
+      if ! grep -q "## *\[$CI_COMMIT_TAG\]" CHANGELOG.md; then
+        echo "ERROR: Version $CI_COMMIT_TAG is not documented in the changelog!"
+        echo "Please add release notes for this version to the changelog before proceeding."
+        exit 1
+      fi
+      
+      echo "Version validation passed. Version found in changelog. Proceeding with the release process."
 
 build:
   extends:
@@ -143,6 +159,7 @@ update-docs:
     cd docs-repo
     bash generate-chromia-cli-docs.sh
     bash generate-rell-docs.sh
+    bash chromia-cli-release-notes.sh ../CHANGELOG.md docs/cli/cli-release-notes.mdx
     
     # Check if there are changes
     if [ `git status --porcelain | wc -l` -gt 0 ]; then
