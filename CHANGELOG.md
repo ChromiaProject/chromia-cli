@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.24.1] - 2025-03-04
+### Added
+- **Streamline usage of key IDs**
+  - Option `--key-id` was added to all commands that required keys to be used, making it easier to manage keys.
+- **Calculate Merkle hash of the blockchain configuration**
+  - Option `--hash` was added to fetch config command to calculate the Merkle hash of the blockchain configuration. 
 
 ## [0.24.0] - 2025-02-25
 ### Added
