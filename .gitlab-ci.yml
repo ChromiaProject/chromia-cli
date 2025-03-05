@@ -22,17 +22,13 @@ image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java
     expire_in: 1 week
 
 stages:
-  - version-check
   - build
   - code-coverage
   - deploy
   - dependency-check
   - release
 
-validate-version:
-  extends: release-patch
-  stage: version-check
-  script: echo "test"
+release-patch:
   before_script: |
     git fetch --unshallow || true
     git fetch --tags
@@ -43,6 +39,28 @@ validate-version:
     EOF
     
      NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+    
+    echo "Checking if version $NEXT_VERSION is documented in changelog..."
+    if ! grep -q "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
+      echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
+      echo "Please add release notes for this version to the changelog before creating a release tag."
+      exit 1
+    else
+      echo "Version validation passed. Version $NEXT_VERSION found in changelog."
+      exit 1
+    fi
+
+release-minor:
+  before_script: |
+    git fetch --unshallow || true
+    git fetch --tags
+    CURRENT_VERSION=$(git describe --tags --abbrev=0)
+    
+    IFS=. read -r MAJOR MINOR PATCH <<EOF
+      $CURRENT_VERSION
+    EOF
+    
+     NEXT_VERSION="$MAJOR.$((MINOR + 1).0)"
     
     echo "Checking if version $NEXT_VERSION is documented in changelog..."
     if ! grep -q "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
