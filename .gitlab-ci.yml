@@ -47,7 +47,6 @@ release-patch:
       exit 1
     else
       echo "Version validation passed. Version $NEXT_VERSION found in changelog."
-      exit 1
     fi
 
 release-minor:
@@ -69,7 +68,6 @@ release-minor:
       exit 1
     else
       echo "Version validation passed. Version $NEXT_VERSION found in changelog."
-      exit 1
     fi
 
 build:
