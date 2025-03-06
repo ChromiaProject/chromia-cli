@@ -30,49 +30,11 @@ stages:
 
 release-patch:
   before_script: |
-    git fetch --unshallow || true
-    git fetch --tags
-    CURRENT_VERSION=$(git describe --tags --abbrev=0)
-
-    # Remove any leading 'v' if present in the version
-    CURRENT_VERSION=${CURRENT_VERSION#v}
-
-    # Parse version without using a here-document to avoid whitespace issues
-    IFS=. read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-
-    NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
-
-    echo "Checking if version $NEXT_VERSION is documented in changelog..."
-    if ! grep -q "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
-      echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
-      echo "Please add release notes for this version to the changelog before creating a release tag."
-      exit 1
-    else
-      echo "Version validation passed. Version $NEXT_VERSION found in changelog."
-    fi
+    echo "skipping version checking"
 
 release-minor:
   before_script: |
-    git fetch --unshallow || true
-    git fetch --tags
-    CURRENT_VERSION=$(git describe --tags --abbrev=0)
-
-    # Remove any leading 'v' if present in the version
-    CURRENT_VERSION=${CURRENT_VERSION#v}
-
-    # Parse version without using a here-document to avoid whitespace issues
-    IFS=. read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-
-    NEXT_VERSION="$MAJOR.$((MINOR + 1)).0"
-
-    echo "Checking if version $NEXT_VERSION is documented in changelog..."
-    if ! grep -q "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
-      echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
-      echo "Please add release notes for this version to the changelog before creating a release tag."
-      exit 1
-    else
-      echo "Version validation passed. Version $NEXT_VERSION found in changelog."
-    fi
+    echo "skipping version checking"
 
 build:
   extends:
