@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.24.2] - 2025-03-06
+### Added
+- Chromia-cli-tools version 0.4.2
+
 ## [0.24.1] - 2025-03-04
 ### Added
 - **Streamline usage of key IDs**
