@@ -28,14 +28,6 @@ stages:
   - dependency-check
   - release
 
-release-patch:
-  before_script: |
-    echo "skipping version checking"
-
-release-minor:
-  before_script: |
-    echo "skipping version checking"
-
 build:
   extends:
     - .setup
