@@ -201,3 +201,49 @@ services:
 cache:
   paths:
     - .m2/repository
+
+release-patch:
+  extends: .release
+  stage: release
+  script:
+    - |
+      NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
+      echo "Current version is $CURRENT_VERSION"
+      echo "Will create new version $NEXT_VERSION"
+
+      echo "Checking if version $NEXT_VERSION is documented in changelog..."
+      if ! grep -Eq "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
+        echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
+        echo "Please add release notes for this version to the changelog before triggering a release"
+        exit 1
+      else
+        echo "Version validation passed."
+      fi
+      git tag $MAJOR.$MINOR.$((PATCH + 1))
+      git push --tags
+  only:
+    - dev
+    - /^support\/.*$/
+
+release-minor:
+  extends: .release
+  stage: release
+  script:
+    - |
+      NEXT_VERSION="$MAJOR.$((MINOR + 1)).0"
+      echo "Current version is $CURRENT_VERSION"
+      echo "Will create new version $NEXT_VERSION"
+
+      echo "Checking if version $NEXT_VERSION is documented in changelog..."
+      if ! grep -Eq "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
+        echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
+        echo "Please add release notes for this version to the changelog before triggering a release"
+        exit 1
+      else
+        echo "Version validation passed."
+      fi
+      git tag $MAJOR.$((MINOR + 1)).0
+      git push --tags
+  only:
+    - dev
+    - /^support\/.*$/
