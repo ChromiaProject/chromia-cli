@@ -5,9 +5,9 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addFtAuthenticationOperation
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.LocalDeploymentOption
-import com.chromia.cli.util.configureSigners
+import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.containerIdOption
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
 import com.chromia.directory1.economy_chain_remove_container.REMOVE_CONTAINER
 import com.chromia.directory1.economy_chain_remove_container.removeContainerOperation

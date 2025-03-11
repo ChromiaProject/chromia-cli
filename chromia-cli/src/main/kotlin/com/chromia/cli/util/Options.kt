@@ -1,11 +1,8 @@
 package com.chromia.cli.util
 
-import com.chromia.cli.command.KeyPairSource
 import com.chromia.cli.compile.NodeConfig.getNodeConfig
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.ParameterHolder
-import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
-import com.github.ajalt.clikt.parameters.groups.single
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -60,18 +57,6 @@ fun ParameterHolder.accountIdOption(help: String = "Set FT4 account id explicitl
             }
             hexString.hexStringToByteArray()
         }
-
-fun CliktCommand.secretOption() =
-        option("--secret", help = "Path to secret file (pubkey/privkey)").file(canBeDir = false, mustExist = true, mustBeReadable = true)
-
-fun CliktCommand.keyIdOption() =
-        option("--key-id", help = "Key ID of the keypair to use", metavar = "KEY_ID")
-
-fun CliktCommand.keyPairSourceOption() = mutuallyExclusiveOptions(
-        name = "Key pair source",
-        option1 = secretOption().convert { KeyPairSource.SecretFile(it) },
-        option2 = keyIdOption().convert { KeyPairSource.KeyId(it) },
-).single()
 
 fun CliktCommand.modulesOption(help: String) =
         option("-m", "--modules", help = help, metavar = "MODULES")

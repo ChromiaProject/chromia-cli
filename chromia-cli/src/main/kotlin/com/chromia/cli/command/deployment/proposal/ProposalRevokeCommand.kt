@@ -4,8 +4,8 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
-import com.chromia.cli.util.configureSigners
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal.revokeProposalOperation
 import com.github.ajalt.clikt.core.PrintMessage
@@ -32,7 +32,7 @@ class ProposalRevokeCommand : ChromiaCommand(
         val pubkey: ByteArray
         try {
             pubkey = client.pubkey.data
-        } catch (e: NoSuchElementException) {
+        } catch (_: NoSuchElementException) {
             throw CanNotFindPubkeyException()
         }
 

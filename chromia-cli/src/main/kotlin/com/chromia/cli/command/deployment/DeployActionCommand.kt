@@ -5,9 +5,9 @@ import com.chromia.api.filterChains
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.util.blockchainOption
-import com.chromia.cli.util.configureSigners
+import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.deployTargetOption
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate

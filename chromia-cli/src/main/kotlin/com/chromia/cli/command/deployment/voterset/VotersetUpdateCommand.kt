@@ -5,8 +5,8 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.util.thresholdOption
 import com.chromia.cli.util.DeployedNetworkOption
-import com.chromia.cli.util.configureSigners
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_voter_set.proposeUpdateVoterSetOperation
 import com.github.ajalt.clikt.core.CliktCommand

@@ -2,6 +2,8 @@ package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addFtAuthenticationOperation
 import com.chromia.cli.tools.ft.initFtAuth

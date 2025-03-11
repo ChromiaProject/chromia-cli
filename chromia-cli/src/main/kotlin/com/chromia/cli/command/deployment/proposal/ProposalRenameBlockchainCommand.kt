@@ -7,8 +7,8 @@ import com.chromia.cli.command.deployment.voterset.proposalDescriptionOption
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
-import com.chromia.cli.util.configureSigners
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainRenameOperation
 import com.github.ajalt.clikt.core.PrintMessage
@@ -47,7 +47,7 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
         val pubKey: ByteArray
         try {
             pubKey = client.config.pubkey.data
-        } catch (e: NoSuchElementException) {
+        } catch (_: NoSuchElementException) {
             throw CanNotFindPubkeyException()
         }
 

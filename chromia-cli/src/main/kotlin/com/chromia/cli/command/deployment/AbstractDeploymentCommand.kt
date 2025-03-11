@@ -10,11 +10,11 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
-import com.chromia.cli.util.configureSigners
+import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.keepOnlyStandardGtxModules
 import com.chromia.cli.util.getFormattedUtcDateTime
-import com.chromia.cli.util.keyPairSourceOption
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder

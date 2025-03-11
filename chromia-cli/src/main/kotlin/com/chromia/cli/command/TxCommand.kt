@@ -1,6 +1,8 @@
 package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addEvmAuthOperation
 import com.chromia.cli.tools.ft.addFtAuthOperation
@@ -8,8 +10,6 @@ import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.configureSigners
-import com.chromia.cli.util.keyPairSourceOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
