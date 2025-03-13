@@ -10,6 +10,7 @@ import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.evmAuthOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -23,7 +24,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.TxRid
 import net.postchain.common.BlockchainRid
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
 import net.postchain.gtv.GtvDecoder
@@ -70,11 +70,7 @@ class TxCommand : ChromiaCommand(help = """
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
         val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
         val ftAccountId by option(help = "Explicitly specify which account to use")
-        val evmAuth by option(help = "Adds ft4.evm_auth operation for FT-compatible dapps", metavar = "address")
-                .convert {
-                    (if (it.startsWith("0x")) it.drop(2) else it).hexStringToByteArray()
-                }
-                .validate { require(it.size == 20) { "EVM address must be 20 bytes" } }
+        val evmAuth by evmAuthOption()
     }
     private val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as first argument to the operation").validate { it.hexStringToWrappedByteArray() }
     private val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place").convert {

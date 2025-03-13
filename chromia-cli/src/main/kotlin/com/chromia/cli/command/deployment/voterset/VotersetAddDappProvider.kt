@@ -5,23 +5,22 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.tools.ft.addFtAuthenticationOperation
-import com.chromia.cli.tools.ft.initFtAuth
+import com.chromia.cli.tools.ft.*
 import com.chromia.cli.util.*
 import com.chromia.directory1.economy_chain.REGISTER_DAPP_PROVIDER
 import com.chromia.directory1.economy_chain.registerDappProviderOperation
 import com.chromia.directory1.economy_chain_in_directory_chain.getEconomyChainRid
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.*
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
+import net.postchain.gtv.GtvByteArray
+import net.postchain.gtv.GtvString
 
 
 class VotersetAddDappProviderCommand : ChromiaCommand(
@@ -35,6 +34,7 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val newProviderPubKey by publicKeyOption(help = "The public key of the dApp provider to be added")
     private val containerId by containerIdOption(help = "Container Identifier to add dapp provider too").required()
+    private val evmAuth by evmAuthOption()
 
     override fun run() {
         require(newProviderPubKey != null) { "Missing value for dApp provider public key" }
@@ -46,9 +46,22 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
         val transactionBuilder = economyClient.transactionBuilder()
 
         initFtAuth(economyClient)
-        val signerPubkey = (economyClient.config.signers.singleOrNull()?.pubKey
+        val signerPubKey = evmAuth ?: (economyClient.config.signers.singleOrNull()?.pubKey?.data
                 ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-        addFtAuthenticationOperation(economyClient, transactionBuilder, REGISTER_DAPP_PROVIDER, signerPubkey.data)
+
+        val (accountId, authDescriptorId) = findFtAccountIdAndAuthDescriptorId(
+                economyClient,
+                null,
+                signerPubKey,
+                REGISTER_DAPP_PROVIDER,
+                null)
+
+        if (evmAuth != null) {
+            val args = listOf(GtvString(containerId), GtvByteArray(newProviderPubKey!!.hexStringToByteArray()))
+            addEvmAuthOperation(economyClient, transactionBuilder, REGISTER_DAPP_PROVIDER, args, evmAuth!!, accountId, authDescriptorId)
+        } else {
+            addFtAuthOperation(transactionBuilder, accountId, authDescriptorId)
+        }
 
         val res = transactionBuilder
                 .registerDappProviderOperation(containerId, newProviderPubKey!!.hexStringToByteArray())

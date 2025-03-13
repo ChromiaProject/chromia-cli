@@ -72,3 +72,9 @@ fun ParameterHolder.containerIdOption(help: String = "Set container id explicitl
 
 fun ParameterHolder.targetDirectoryOption(help: String) = option("-d", "--target", help = help)
         .file(canBeFile = false)
+
+fun ParameterHolder.evmAuthOption() = option(help = "Adds ft4.evm_auth operation for FT-compatible dapps", metavar = "address")
+        .convert {
+            (if (it.startsWith("0x")) it.drop(2) else it).hexStringToByteArray()
+        }
+        .validate { require(it.size == 20) { "EVM address must be 20 bytes" } }

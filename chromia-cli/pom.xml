@@ -331,6 +331,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-jvm</artifactId>
+            <version>1.13.13</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>postchain-devtools</artifactId>
             <scope>test</scope>
