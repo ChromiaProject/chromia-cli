@@ -4,8 +4,8 @@ import net.postchain.rell.api.gtx.SqlExecutionEvent
 import net.postchain.rell.base.utils.UnitTestCase
 import net.postchain.rell.base.utils.UnitTestCaseResult
 
-
 class SqlStatisticsCollector {
+
     private val sqlStatistics = mutableListOf<SqlStatisticsEntry>()
 
     private var currentTestCaseName: String? = null

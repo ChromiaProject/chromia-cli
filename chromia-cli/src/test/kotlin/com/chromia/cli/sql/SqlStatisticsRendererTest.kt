@@ -114,8 +114,8 @@ class SqlStatisticsRendererTest {
 
         val output = logger.output()
 
-        assertThat(output).contains(TextColors.gray("SYSTEM".padEnd(10)))
-        assertThat(output).contains(TextColors.green("USER".padEnd(10)))
+        assertThat(output).contains(TextColors.gray("SYSTEM".padEnd(11)))
+        assertThat(output).contains(TextColors.green("USER".padEnd(11)))
     }
 
     @Test
@@ -138,10 +138,38 @@ class SqlStatisticsRendererTest {
                 SqlStatisticsEntry(event2, "TestCase")
         ))
 
-        val output = logger.output()
+        val output = logger.output().stripAnsiCodes()
         assertThat(output).contains("Total Queries: 2")
         assertThat(output).contains("Total Time: 250ms")
         assertThat(output).contains("Total Affected Rows: 8")
+    }
+
+
+    @Test
+    fun `should display statistics for user and system queries correctly`() {
+        val event1 = createSqlEvent(
+                sql = "SELECT 1",
+                startTimeMs = 1000L,
+                durationMs = 100L,
+                rowCount = 5,
+                isSystem = true
+        )
+        val event2 = createSqlEvent(
+                sql = "SELECT 2",
+                startTimeMs = 2000L,
+                durationMs = 150L,
+                rowCount = 3
+        )
+
+        renderer.display(listOf(
+                SqlStatisticsEntry(event1, "TestCase"),
+                SqlStatisticsEntry(event2, "TestCase")
+        ))
+
+        val output = logger.output().stripAnsiCodes()
+
+        assertThat(output).contains("User Queries: 1, User Time: 150ms, User Affected Rows: 3")
+        assertThat(output).contains("System Queries: 1, System Time: 100ms, System Affected Rows: 5")
     }
 
     private fun createSqlEvent(
@@ -161,4 +189,8 @@ class SqlStatisticsRendererTest {
             isSystem = isSystem,
             error = error
     )
+
+
+    private fun String.stripAnsiCodes() = replace("\u001B\\[[;\\d]*m".toRegex(), "")
+
 }

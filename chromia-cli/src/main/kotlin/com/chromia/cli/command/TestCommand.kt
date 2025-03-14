@@ -12,7 +12,6 @@ import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
 import com.chromia.cli.util.addWhitelistedGTXModules
 import com.chromia.cli.util.blockchainOption
-import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
@@ -23,7 +22,9 @@ import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.optionalValueLazy
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.types.boolean
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.mordant.rendering.TextStyle
 import com.github.ajalt.mordant.terminal.success
@@ -43,13 +44,28 @@ import java.time.format.DateTimeFormatter
 
 val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")
 
+enum class SqlLoggingType {
+    USER,
+    SYSTEM,
+    BOTH,
+    NONE;
+}
+
 class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s). Can only be a single chain if used together with -m", metavar = "BLOCKCHAIN")
             .multiple()
     private val modules by modulesOption("Run tests in this module(s) only. Must be the part of the specified modules or its submodules. Comma delimited, will default to all modules either under each selected blockchain or test")
     private val settings by chromiaModelOption()
-    private val sqlLog by logSqlOption()
+
+    private val sqlLogType by option("--sql-log", help = "Enable SQL query logging. Optional value: 'user' (only user queries) or 'system' (only system queries). Without value, logs both types.")
+        .choice(
+            "user" to SqlLoggingType.USER,
+            "system" to SqlLoggingType.SYSTEM,
+        )
+        .optionalValueLazy { SqlLoggingType.BOTH }
+        .default(SqlLoggingType.NONE)
+
     private val tests by option(help = "test method pattern", metavar = "").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
@@ -65,8 +81,8 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val timestamp by option("-ts", "--timestamp", help = "Timestamp on logs").flag()
 
-    private val sqlStatisticsCollector = SqlStatisticsCollector()
-    private val sqlStatisticsRenderer = SqlStatisticsRenderer(this)
+    private val sqlStatisticsCollector by lazy { SqlStatisticsCollector() }
+    private val sqlStatisticsRenderer by lazy { SqlStatisticsRenderer(this, sqlLogType) }
 
     override fun run() {
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
@@ -107,7 +123,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         if (testReport) {
             Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
         }
-        if (sqlLog) {
+        if (sqlLogType != SqlLoggingType.NONE) {
             sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
         }
         printResults(res)
@@ -154,7 +170,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         if (testReport) {
             Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
         }
-        if (sqlLog) {
+        if (sqlLogType != SqlLoggingType.NONE) {
             sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
         }
         printResults(res)
@@ -192,7 +208,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                 }
                 .sqlLog(false)
                 .apply {
-                    if (sqlLog) {
+                    if (sqlLogType != SqlLoggingType.NONE) {
                         onSqlExecutionFinished(sqlStatisticsCollector::onSqlExecutionFinished)
                     }
                 }

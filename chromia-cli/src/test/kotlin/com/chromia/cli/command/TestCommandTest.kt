@@ -354,6 +354,14 @@ internal class TestCommandTest {
         assertThat(output).contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
         assertThat(output).contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ?""")
         assertThat(output).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
+
+        logger.clearOutput()
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log", "user"))
+        assertThat(logger.output()).doesNotContain("c0.sys.classes")
+
+        logger.clearOutput()
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log", "system"))
+        assertThat(logger.output()).contains("c0.sys.classes")
     }
 
     @Test
