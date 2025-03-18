@@ -211,10 +211,10 @@ class DeployInfoCommandTest {
                 }
             }
             DeployInfoCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "not_deployed", "--network", "test"))
-            assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
+            assertThat(logger.stdout()).contains("Cluster not found for blockchain rid 00:004")
             logger.clearOutput()
             DeployInfoCommand { testClient() }.context { terminal = testTerminal }.parse(listOf("-brid", "0000000000000000000000000000000000000000000000000000000000000004", "--api-url", "http://localhost:7745"))
-            assertThat(logger.output()).contains("Cluster not found for blockchain rid 00:004")
+            assertThat(logger.stdout()).contains("Cluster not found for blockchain rid 00:004")
             logger.clearOutput()
         }
     }
@@ -316,19 +316,19 @@ class DeployInfoCommandTest {
                 }
             }
             DeployInfoCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--blockchain", "ok", "--network", "test", "--output-format", "table"))
-            assertThat(logger.output()).contains("╭")
+            assertThat(logger.stdout()).contains("╭")
         }
     }
 
     private fun assertBlockchainTableContainsRow(blockchain: String, blockchainRid: String, cluster: String) {
-        val info = gson.fromJson(logger.output(), JsonObject::class.java)["blockchain"].asJsonObject
+        val info = gson.fromJson(logger.stdout(), JsonObject::class.java)["blockchain"].asJsonObject
         assertThat(info["Blockchain"].asString).isEqualTo(blockchain)
         assertThat(info["Blockchain_Rid"].asString).isEqualTo(blockchainRid)
         assertThat(info["Cluster"].asString).isEqualTo(cluster)
     }
 
     private fun assertNodeTableContainsRow(nodeUrl: String, height: String, status: String) {
-        val nodes = gson.fromJson(logger.output(), JsonObject::class.java)["nodes"].asJsonArray
+        val nodes = gson.fromJson(logger.stdout(), JsonObject::class.java)["nodes"].asJsonArray
         val response = nodes[0].asJsonObject
         assertThat(response["Node_url"].asString).isEqualTo(nodeUrl)
         assertThat(response["Height"].asString).isEqualTo(height)
@@ -336,7 +336,7 @@ class DeployInfoCommandTest {
     }
 
     private fun assertVerboseNodeTableContainsRow(nodeUrl: String, height: String, state: String, round: String, revolting: String, status: String) {
-        val nodes = gson.fromJson(logger.output(), JsonObject::class.java)["nodes"].asJsonArray
+        val nodes = gson.fromJson(logger.stdout(), JsonObject::class.java)["nodes"].asJsonArray
         val response = nodes[0].asJsonObject
         assertThat(response["Node_url"].asString).isEqualTo(nodeUrl)
         assertThat(response["Height"].asString).isEqualTo(height)
