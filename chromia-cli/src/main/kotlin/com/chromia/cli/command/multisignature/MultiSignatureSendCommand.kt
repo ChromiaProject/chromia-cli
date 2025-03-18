@@ -34,7 +34,7 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
+        val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
 
         val transactionBuilder = target.createClient(postchainClientConfig).transactionBuilder()

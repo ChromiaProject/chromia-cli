@@ -71,7 +71,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val postchainClientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
+        val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
 

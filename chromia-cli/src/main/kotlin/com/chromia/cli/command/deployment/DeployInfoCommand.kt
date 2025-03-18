@@ -39,7 +39,7 @@ class DeployInfoCommand(
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val clientConfig = settings.config.setApiUrls(target.url)
+        val clientConfig = settings.config.setApiUrls(target.urls)
         val directoryClient = target.createDirectoryClient(clientConfig)
 
         val nodeStatusFinder = NodeStatusFinder(httpHandlerFactory(directoryClient.config), PostchainClientProviderImpl(), directoryClient.config, directoryClient, verbose)

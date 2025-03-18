@@ -39,7 +39,7 @@ class VotersetAddDappProviderCommand : ChromiaCommand(
     override fun run() {
         require(newProviderPubKey != null) { "Missing value for dApp provider public key" }
         settings.config.configureSigners(keyPairSource)
-        val d1ClientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
+        val d1ClientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         val d1Client = networkTarget.createClient(d1ClientConfig)
 
         val economyClient = createEconomyChainClient(d1Client)

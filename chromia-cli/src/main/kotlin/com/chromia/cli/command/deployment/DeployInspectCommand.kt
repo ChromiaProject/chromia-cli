@@ -79,7 +79,7 @@ class DeployInspectCommand(
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val clientConfig = settings.config.setApiUrls(target.url).setBrid(target.brid)
+        val clientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         val client = target.createClient(clientConfig)
 
         val definitionsFilter = (filter as? Filter.Definitions)?.kinds ?: RellKind.entries.toSet()

@@ -38,7 +38,7 @@ class RemoveContainerCommand : ChromiaCommand(
     private val containerId by containerIdOption(help = "Container Identifier to add dapp provider too").required()
 
     override fun run() {
-        val postchainClientConfig = settings.config.setApiUrls(explicitTarget.url).setBrid(explicitTarget.brid)
+        val postchainClientConfig = settings.config.setApiUrls(explicitTarget.urls).setBrid(explicitTarget.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = explicitTarget.createClient(postchainClientConfig)
 

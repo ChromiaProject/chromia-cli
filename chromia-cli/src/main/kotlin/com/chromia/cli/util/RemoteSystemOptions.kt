@@ -42,7 +42,7 @@ class ExplicitRemoteSystemOption(config: () -> ChromiaClientConfig) : SystemOpti
 
     val brid get() = BlockchainRid.buildFromHex(targetBrid)
     override val client: PostchainClient by lazy {
-        config().setBrid(brid).setApiUrls(url).client(PostchainClientProviderImpl())
+        config().setBrid(brid).setApiUrls(listOf(url)).client(PostchainClientProviderImpl())
     }
 
     override val containerId: String? = null

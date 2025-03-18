@@ -51,7 +51,7 @@ class FetchConfigCommand : ChromiaCommand(help = """
             readBlockchainConfigFile(it)
         } ?: blockchainOptions?.let {
             val client = it.url?.let { url ->
-                it.config.setBrid(it.blockchainRid).setApiUrls(url).client(PostchainClientProviderImpl())
+                it.config.setBrid(it.blockchainRid).setApiUrls(listOf(url)).client(PostchainClientProviderImpl())
             }
                     ?: it.config.client(PostchainClientProviderImpl()).let { directoryClient ->
                         PostchainClientImpl(directoryClient.config.copy(it.blockchainRid, EndpointPool.default(directoryClient.cmGetBlockchainApiUrls(it.blockchainRid))))

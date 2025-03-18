@@ -29,7 +29,7 @@ class VotersetListCommand : ChromiaCommand(
     )
 
     override fun run() {
-        val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
+        val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
         val render = RendererFactory.createRenderer<VotersetListRenderData>(outputFormat, this)
         if (container != null) {

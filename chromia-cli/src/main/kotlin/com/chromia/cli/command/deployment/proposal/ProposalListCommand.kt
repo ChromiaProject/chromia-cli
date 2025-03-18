@@ -41,7 +41,7 @@ class ProposalListCommand : ChromiaCommand(
     private val outputFormat by tableOutputFormat()
 
     override fun run() {
-        val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
+        val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
         val render = RendererFactory.createRenderer<ProposalListRenderData>(outputFormat, this)
 

@@ -67,7 +67,7 @@ class VotersetUpdateCommand : ChromiaCommand(
 
     override fun run() {
         settings.config.configureSigners(keyPairSource)
-        val clientConfig = settings.config.setApiUrls(networkTarget.url).setBrid(networkTarget.brid)
+        val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
 
         val res = client.transactionBuilder()
