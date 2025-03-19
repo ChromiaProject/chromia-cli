@@ -103,7 +103,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
         val targetVersions = clusterNodeUrls.mapNotNull {
             try {
-                rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid)
+                rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid!!)
             } catch (e: CanNotFindBlockchainException) {
                 throw e
             } catch (e: RuntimeException) {

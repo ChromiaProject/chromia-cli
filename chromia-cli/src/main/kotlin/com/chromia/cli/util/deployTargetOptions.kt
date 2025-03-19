@@ -90,8 +90,8 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
             val deploymentModel = settings().deployments[network]
             require(deploymentModel != null) { "Deployment named $network not found in configuration" }
 
-            return if(deploymentModel.blockchainRid != null) {
-                deploymentModel.blockchainRid
+            return if (deploymentModel.blockchainRid != null) {
+                deploymentModel.blockchainRid!!
             } else {
                 fetchBridFromChainID()
             }
