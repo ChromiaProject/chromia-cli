@@ -36,9 +36,9 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 
     protected fun createDirectoryClientFromBrid(
         config: ChromiaClientConfig,
-        d1BridFromModel: BlockchainRid?
+        d1BridFromModel: BlockchainRid
     ): PostchainClient {
-        if (d1BridFromModel != null) {
+        if (d1BridFromModel != BlockchainRid.ZERO_RID) {
             return config.setBrid(d1BridFromModel).client(PostchainClientProviderImpl())
         }
         val d1BridFetched = fetchBridFromChainID()
@@ -90,8 +90,8 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
             val deploymentModel = settings().deployments[network]
             require(deploymentModel != null) { "Deployment named $network not found in configuration" }
 
-            return if (deploymentModel.blockchainRid != null) {
-                deploymentModel.blockchainRid!!
+            return if (deploymentModel.blockchainRid != BlockchainRid.ZERO_RID) {
+                deploymentModel.blockchainRid
             } else {
                 fetchBridFromChainID()
             }
