@@ -65,7 +65,7 @@ fun configurationAtProposal(data: WrappedByteArray) = GtvObjectMapper.toGtvDicti
 
 fun configurationForceProposal(data: WrappedByteArray) = GtvObjectMapper.toGtvDictionary(GetProposedForcedConfigurationResult(
         currentConf = BlockchainConfigurationData(height = 1, blockchain = RowId(1), data = data),
-        forcedConf = ProposedForcedConfigurationData(proposal = RowId(22), blockchain = RowId(1), height = 10, configData = data)
+        forcedConf = ProposedForcedConfigurationData(proposal = RowId(22), blockchain = RowId(1), height = 10, configData = data, resumeChain = false)
 ))
 
 fun votersetUpdateProposal() = GtvObjectMapper.toGtvDictionary(GetVoterSetUpdateProposalResult(

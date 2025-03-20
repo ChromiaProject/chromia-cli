@@ -80,6 +80,7 @@ class PendingProposalModel(val model: Model, private val proposalResponse: Gtv, 
                             applyAt = null,
                            	voterSetName = null,
                            	txRid = null,
+                            scheduledAt = null,
                     ))
 
             GET_PROVIDER_DATA -> GtvObjectMapper.toGtvDictionary(Provider(
