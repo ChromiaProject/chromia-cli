@@ -9,13 +9,20 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.testData
+import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
+import net.postchain.api.rest.controller.Model
+import net.postchain.api.rest.model.ApiStatus
+import net.postchain.api.rest.model.TxRid
 import net.postchain.client.exception.ClientError
+import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
+import net.postchain.common.tx.TransactionStatus
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvFactory.gtv
@@ -24,6 +31,7 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.parse.GtvParser
+import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -373,4 +381,49 @@ class QueryCommandTest : IntegrationTestSetup() {
         }
     }
 
+    @Test
+    fun testQueryWithBlockchainAndNetworkWithoutBrid() {
+        val chainBrid = BlockchainRid.buildRepeat(8)
+        with(File(testDir.toFile(), "chromia.yml")) {
+            writeText("""
+                blockchains:
+                  my_library:
+                    module: library
+                deployments:
+                  testnet: 
+                    url: $apiUrl
+                    chains:
+                      my_library: x"$chainBrid"
+            """.trimIndent())
+        }
+
+        withModel(TestQueryModel(chainBrid)) {
+            val res = QueryCommand().test(listOf(
+                    "--settings", settingsFile.absolutePath,
+                    "--blockchain", "my_library",
+                    "--network", "testnet",
+                    "test_query"
+            ))
+
+            assertThat(res.statusCode).isEqualTo(0)
+            assertThat(res.stdout).contains("SUCCESS")
+            assertThat(res.stderr).isEmpty()
+        }
+    }
+}
+
+
+internal class TestQueryModel(val model: Model = TestModel()) : Model by model {
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
+
+    override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
+    override fun postTransaction(tx: ByteArray) {}
+
+    override fun query(query: GtxQuery): Gtv {
+        return when (query.name) {
+            CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(apiUrl)))
+            "test_query" -> gtv("SUCCESS")
+            else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
+        }
+    }
 }

@@ -36,9 +36,9 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 
     protected fun createDirectoryClientFromBrid(
         config: ChromiaClientConfig,
-        d1BridFromModel: BlockchainRid
+        d1BridFromModel: BlockchainRid?
     ): PostchainClient {
-        if (isLocalDeployment() || d1BridFromModel != BlockchainRid.ZERO_RID) {
+        if (d1BridFromModel != null) {
             return config.setBrid(d1BridFromModel).client(PostchainClientProviderImpl())
         }
         val d1BridFetched = fetchBridFromChainID()
@@ -52,8 +52,6 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
         // TODO: make BridFetcher takes multiple URLS
         return BridFetcher(httpHandler, urls.first()).fetchBlockchainRid(cid)
     }
-
-    private fun isLocalDeployment() = urls.size == 1 && urls.first().startsWith("http://localhost")
 }
 
 class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment") {
@@ -92,11 +90,7 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
             val deploymentModel = settings().deployments[network]
             require(deploymentModel != null) { "Deployment named $network not found in configuration" }
 
-            return if (deploymentModel.blockchainRid != BlockchainRid.ZERO_RID) {
-                deploymentModel.blockchainRid
-            } else {
-                fetchBridFromChainID()
-            }
+            return deploymentModel.blockchainRid ?: fetchBridFromChainID()
         }
 
     override val urls: List<String>
