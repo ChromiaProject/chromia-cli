@@ -18,8 +18,8 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.16.2</codegen.version>
-        <postchain.version>3.27.8</postchain.version>
-        <postchain.client.version>3.26.2</postchain.client.version>
+        <postchain.version>3.29.0</postchain.version>
+        <postchain.client.version>3.27.0</postchain.client.version>
         <rell.version>0.14.7</rell.version>
         <rell.dokka.version>0.2.10</rell.dokka.version>
         <rell.toolbox.version>0.5.3</rell.toolbox.version>

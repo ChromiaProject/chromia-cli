@@ -225,6 +225,10 @@
             <artifactId>postchain-gtv</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>postchain-gtx-data</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>codegen-kotlin</artifactId>
         </dependency>
