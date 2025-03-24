@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.24.3] - 2025-03-06
+### Added
+- Adds --evm-auth option to `chr deployment voterset add-dapp-provider` command to support signing transaction with metamask
+- Adds the ability to filter on system or user sql queries when logging sql queries while running tests
+- ChromiaClientConfig.apiUrls now take list of urls instead of single url to sync with chromia-cli-tools
+- **Version Bumps**
+  - postchain-client 3.26.2
+  - chromia-cli-tools 0.4.7
+
+
 ## [0.24.2] - 2025-03-06
 ### Added
 - Chromia-cli-tools version 0.4.2
