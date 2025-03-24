@@ -223,7 +223,7 @@ class DeployInspectCommand(
                     }
             }
         } catch (e: ClientError) {
-            echo("Blockchain not found ${client.config.blockchainRid!!.toShortHex()}: ${e.message}")
+            echo("Blockchain not found ${client.config.blockchainRid.toShortHex()}: ${e.message}")
         }
     }
 

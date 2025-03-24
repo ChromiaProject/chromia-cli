@@ -11,10 +11,10 @@ import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.tools.config.configureSigners
-import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.util.keepOnlyStandardGtxModules
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
@@ -26,7 +26,6 @@ import com.github.ajalt.clikt.core.ProgramResult
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.PostchainClient
@@ -37,14 +36,16 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     protected val settings by chromiaModelConfigOption()
     private val keyPairSource by keyPairSourceOption()
-    protected val target by deployTargetOption().required()
-            .validate { require(settings.model.deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     protected val blockchain by blockchainOption(help = "Name of blockchain to deploy").split(",")
             .validate { require(settings.model.blockchains.keys.containsAll(it)) { "Specified blockchain(s) $it does not exist" } }
     protected val noCompression by option("--no-compression", help = "If compression on rell sources should not be done").flag()
 
+    val networkTarget by DeployedNetworkOption { settings.model }
+
     protected val client by lazy {
-        val client = createClient()
+        val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
+        clientConfig.configureSigners(keyPairSource)
+        val client = networkTarget.createClient(clientConfig)
         if (client.config.signers.isEmpty()) {
             throw PrintMessage("To be able to deploy, you must specify signer keys. Either using --secret file or --key-id or in the config.", statusCode = 1)
         }
@@ -52,17 +53,15 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     protected val deployModel by lazy {
-        val deployModel = settings.model.deployments[target]
-        if (deployModel!!.container == null) throw PrintMessage("No container specified on network $target")
-        deployModel
-    }
-
-    private fun createClient(): PostchainClient {
-        val model = settings.model.deployments[target]
-        require(model != null) { "Network $target is not a configured deployment" }
-        settings.config.setDeployment(model)
-        settings.config.configureSigners(keyPairSource)
-        return settings.config.client(clientProvider)
+        settings.model.deployments[networkTarget.network].let { model ->
+            when {
+                model?.container == null -> {
+                    throw PrintMessage("No container specified on network ${networkTarget.network}")
+                }
+                model.blockchainRid == null -> model.copy(blockchainRid = networkTarget.brid)
+                else -> model
+            }
+        }
     }
 
     final override fun run() {
@@ -77,7 +76,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 .apply {
                     save(
                         settings.targetDir.toPath(),
-                        prefix = target,
+                        prefix = networkTarget.network,
                         suffix = getFormattedUtcDateTime()
                     )
                 }

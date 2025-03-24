@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -55,7 +56,7 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 }
 
 class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment") {
-    private val network by deployTargetOption()
+    val network by deployTargetOption()
     override val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
     override val brid: BlockchainRid
         get() {
@@ -82,7 +83,8 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
 }
 
 class DeployedNetworkOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment network") {
-    private val network by deployTargetOption().required()
+    val network by deployTargetOption().required()
+            .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     override val blockchain: String
         get() = brid.toHex()
     override val brid: BlockchainRid
