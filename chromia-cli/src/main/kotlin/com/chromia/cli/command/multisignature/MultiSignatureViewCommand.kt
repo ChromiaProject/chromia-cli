@@ -2,15 +2,19 @@ package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.ChromiaCommand
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
+import net.postchain.crypto.sha256Digest
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvDictionary
+import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV2
 import net.postchain.gtx.Gtx
+import net.postchain.rell.toolbox.indexer.sha256
 
 class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a existing transaction") {
 
@@ -19,14 +23,16 @@ class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a e
             .required()
 
     override fun run() {
-        val transaction = transactionFile.readText().hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction)
-
-        echo(json(parseTransactionGtxForJson(transactionGtx)))
+        val txData = parseTransactionFile(transactionFile)
+        echo(json(parseTransactionGtxForJson(txData)))
     }
 
-    private fun parseTransactionGtxForJson(transactionGtx: Gtx): Map<String, Any> {
+    private fun parseTransactionGtxForJson(txData: MultiSignatureTxData): Map<String, Any> {
+        val transaction = txData.transaction
+        val transactionGtx = Gtx.decode(transaction)
+
         return mapOf(
+                "transactionRID" to txData.txRid.toHex(),
                 "blockchainRID" to transactionGtx.gtxBody.blockchainRid.toHex(),
                 "operations" to
                         transactionGtx.gtxBody.operations.map { op ->

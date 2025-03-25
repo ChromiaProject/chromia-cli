@@ -26,7 +26,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.PropertiesFileLoader
 import net.postchain.common.data.Hash
 import net.postchain.common.hexStringToByteArray
-import net.postchain.common.toHex
 import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvString
@@ -91,7 +90,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         echo("Creating transaction with signers: ${listOf(initialSigner.firstOrNull()?.pubKey) + signersWithoutInitialSigner}")
         val transactionBuilder = GtxBuilder(
                 client.config.blockchainRid,
-                signers = signers.map { it.data },
+                signers = initialSigner.map { it.pubKey.data  } +  signersWithoutInitialSigner.map { it.data },
                 client.config.cryptoSystem,
                 client.merkleHashCalculator
         )
@@ -141,9 +140,9 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
     }
 
     private fun saveTransactionToFile(transaction: ByteArray, txRid: Hash) {
-        // TODO save txRid in file
         val file = outputFolder.resolve("${opName}_transaction_${getFormattedUtcDateTime()}")
-        file.writeText(transaction.toHex())
+        val txData = MultiSignatureTxData(transaction, txRid)
+        file.writeText(txData.encode())
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
 }

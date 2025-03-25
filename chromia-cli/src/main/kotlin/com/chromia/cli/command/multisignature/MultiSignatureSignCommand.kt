@@ -5,16 +5,14 @@ import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.client.transaction.signTransaction
-import net.postchain.common.hexStringToByteArray
-import net.postchain.common.toHex
-import net.postchain.crypto.sha256Digest
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
+import net.postchain.common.data.Hash
+import net.postchain.gtx.signTransaction
 import java.io.File
 
 class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a existing transaction with your key") {
@@ -36,18 +34,18 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
     override fun run() {
         chromiaConfig.config.configureSigners(keyPairSource)
         val signer = chromiaConfig.config.signers
-        val transaction = transactionFile.readText().hexStringToByteArray()
-        // TODO use-new-algo choose merkle hash version
-        val signedTransaction = signTransaction(transaction, signer, GtvMerkleHashCalculatorV1(::sha256Digest))
-        saveTransactionToFile(signedTransaction)
+        val txData = parseTransactionFile(transactionFile)
+        val signedTransaction = signTransaction(txData.transaction, txData.txRid, signer)
+        saveTransactionToFile(signedTransaction, txData.txRid)
     }
 
-    private fun saveTransactionToFile(transaction: ByteArray) {
+    private fun saveTransactionToFile(transaction: ByteArray, txRid: Hash) {
+        val txData = MultiSignatureTxData(transaction, txRid)
         val transactionName = transactionFile.name.substringBeforeLast("_")
         val targetFolder = outputFolder ?: transactionFile.parentFile.path
         val fileName = outputFileName ?: "${transactionName}_signed_${getFormattedUtcDateTime()}"
         val file = File("$targetFolder/$fileName")
-        file.writeText(transaction.toHex())
+        file.writeText(txData.encode())
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
 }

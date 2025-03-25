@@ -10,7 +10,6 @@ import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
-import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.testData
 import com.chromia.directory1.lib.ft4.core.accounts.AuthType
 import com.chromia.directory1.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
@@ -26,7 +25,6 @@ import kotlin.io.path.absolutePathString
 import net.postchain.api.rest.controller.Model
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.toHex
 import net.postchain.common.wrap
@@ -105,8 +103,10 @@ class MultiSignatureCreateCommandTest {
                 "call_op", opName
         ))
 
-        val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction!!)
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val transactionGtx = Gtx.decode(txData!!.transaction)
 
         assertThat(transactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
         assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
@@ -145,8 +145,10 @@ class MultiSignatureCreateCommandTest {
         }
 
 
-        val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction!!)
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val transactionGtx = Gtx.decode(txData!!.transaction)
 
         assertThat(transactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
         assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
@@ -193,8 +195,10 @@ class MultiSignatureCreateCommandTest {
             ))
         }
 
-        val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction!!)
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val transactionGtx = Gtx.decode(txData!!.transaction)
         val ft4Operations = transactionGtx.gtxBody.operations.filter { it.opName == "ft4.ft_auth" }
 
         assertThat(transactionGtx.gtxBody.blockchainRid.toHex()).isEqualTo(ft4Model.blockchainRid.toHex())
@@ -322,8 +326,10 @@ class MultiSignatureCreateCommandTest {
                     "call_op", opName
             ))
 
-            val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-            val transactionGtx = Gtx.decode(transaction!!)
+            val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+                MultiSignatureTxData.decode(it)
+            }
+            val transactionGtx = Gtx.decode(txData!!.transaction)
 
             assertThat(transactionGtx.gtxBody.blockchainRid.toHex()).isEqualTo(deploymentBrid)
             assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
@@ -392,8 +398,10 @@ class MultiSignatureCreateCommandTest {
                 "call_op", opName
         ))
 
-        val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction!!)
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val transactionGtx = Gtx.decode(txData!!.transaction)
         assertThat(transactionGtx.gtxBody.signers.size).isEqualTo(2)
         assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
         assertThat(transactionGtx.gtxBody.signers.last().toHex()).isEqualTo(secondSignerPubkey)
@@ -426,9 +434,10 @@ class MultiSignatureCreateCommandTest {
                 "--secret", secret.absolutePath,
                 "call_op", opName
         ))
-
-        val transaction = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.hexStringToByteArray()
-        val transactionGtx = Gtx.decode(transaction!!)
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val transactionGtx = Gtx.decode(txData!!.transaction)
         assertThat(transactionGtx.gtxBody.signers.size).isEqualTo(1)
         assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
         assertThat(transactionGtx.signatures.size).isEqualTo(1)
