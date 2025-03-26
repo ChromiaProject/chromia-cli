@@ -48,8 +48,8 @@ class MultiSignatureSignCommandTest {
         assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(MultiSignatureCreateCommandTest.opName, "nop")
         assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
         assertThat(transactionGtx.gtxBody.signers.last().toHex()).isEqualTo(MultiSignatureCreateCommandTest.secondSignerPubkey)
-        assertThat(transactionGtx.signatures.first().toHex()).isEqualTo("F06B4C8E4C22126C69A347191A5DC78311F1A94947D19C5C733D0839D7011E9B66F6A0C086CCC38CD899F56958D2B8CB4563735CFB68DBC6F74966D3FC143C01")
-        assertThat(transactionGtx.signatures.last().toHex()).isEqualTo("15E5B6972F256F167AB043D3910EBBF3BCA043C51611ECD09CFE2C135BEA17C158C78D0EB71CA12639A2151B7FF925083C100D383BF30671D857CF5057F3EA41")
+        assertThat(transactionGtx.signatures.first().toHex()).isEqualTo("0334F97591929260337B411FE1DA988C3736DA693558DDFE87A007442D1586D44B9EE7776CE19C483548DA1BB357F9387215F277F6C1D536461086BE9CE311EE")
+        assertThat(transactionGtx.signatures.last().toHex()).isEqualTo("2E109CB60EA43895363400DC17EB477AFDCA24EC23C48228F07A52889DFC8D8439CDD4B9FC2F76CD0D6544342BBE85A1B684B52760521613D6DCBD698498C1BB")
     }
 
     @Test
@@ -94,8 +94,8 @@ class MultiSignatureSignCommandTest {
         assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(MultiSignatureCreateCommandTest.opName, "nop")
         assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
         assertThat(transactionGtx.gtxBody.signers.last().toHex()).isEqualTo(MultiSignatureCreateCommandTest.secondSignerPubkey)
-        assertThat(transactionGtx.signatures.first().toHex()).isEqualTo("F06B4C8E4C22126C69A347191A5DC78311F1A94947D19C5C733D0839D7011E9B66F6A0C086CCC38CD899F56958D2B8CB4563735CFB68DBC6F74966D3FC143C01")
-        assertThat(transactionGtx.signatures.last().toHex()).isEqualTo("15E5B6972F256F167AB043D3910EBBF3BCA043C51611ECD09CFE2C135BEA17C158C78D0EB71CA12639A2151B7FF925083C100D383BF30671D857CF5057F3EA41")
+        assertThat(transactionGtx.signatures.first().toHex()).isEqualTo("0334F97591929260337B411FE1DA988C3736DA693558DDFE87A007442D1586D44B9EE7776CE19C483548DA1BB357F9387215F277F6C1D536461086BE9CE311EE")
+        assertThat(transactionGtx.signatures.last().toHex()).isEqualTo("2E109CB60EA43895363400DC17EB477AFDCA24EC23C48228F07A52889DFC8D8439CDD4B9FC2F76CD0D6544342BBE85A1B684B52760521613D6DCBD698498C1BB")
     }
 
     @Test

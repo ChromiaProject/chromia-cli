@@ -25,7 +25,7 @@ class MultiSignatureViewCommandTest {
         MultiSignatureViewCommand().context { terminal = testTerminal }.parse(listOf("--file", transactionFile.absolutePath))
         assertThat(logger.output()).isEqualTo("""    
             {
-              "transactionRID": "7332425466F8B41ADAD4FB044EBEC482105098BC1AAAF4DB5E26C3A2C766BF42",
+              "transactionRID": "A96D1B62A761ACFC9FBC25E1AF55C4DCA483653DD2A45CA95D525C4FD7911335",
               "blockchainRID": "0505050505050505050505050505050505050505050505050505050505050505",
               "operations": [
                 {
@@ -37,7 +37,7 @@ class MultiSignatureViewCommandTest {
                 {
                   "operation": "nop",
                   "arguments": [
-                    "integer: 1742898014522"
+                    "integer: 1742972037215"
                   ]
                 }
               ],
@@ -46,7 +46,7 @@ class MultiSignatureViewCommandTest {
                 "027C95A328CF7F91EA670D31A527D1C3BA6D04EF72AB4DE034C9C79A74189ECB10"
               ],
               "signatures": [
-                "F06B4C8E4C22126C69A347191A5DC78311F1A94947D19C5C733D0839D7011E9B66F6A0C086CCC38CD899F56958D2B8CB4563735CFB68DBC6F74966D3FC143C01",
+                "0334F97591929260337B411FE1DA988C3736DA693558DDFE87A007442D1586D44B9EE7776CE19C483548DA1BB357F9387215F277F6C1D536461086BE9CE311EE",
                 ""
               ]
             }

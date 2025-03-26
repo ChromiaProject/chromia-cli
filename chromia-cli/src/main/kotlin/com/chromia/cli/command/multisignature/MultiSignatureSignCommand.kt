@@ -5,7 +5,6 @@ import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
