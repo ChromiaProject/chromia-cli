@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.25.0] - 2025-04-02
+### Updated
+- Integrated merkle hash calculator v2
+- Revised multi signature workflow to new merkle hash calculator
+
+### Added
+- Implemented an automatic fetch for brid in commands where it is required and not defined in `chromia.yml`
+- **Version Bumps**
+  - rell 0.14.8
+  - postchain 3.29.0
+  - postchain-client 3.27.0
+  - chromia-cli-tools 0.4.15
+  - rell-toolbox 0.6.0
+  - rell-codegen 0.16.3
+  - rell-dokka 0.2.11
+  - eif 0.13.1
+  - directory-chain 1.83.0
+
+
 ## [0.24.3] - 2025-03-06
 ### Added
 - Adds --evm-auth option to `chr deployment voterset add-dapp-provider` command to support signing transaction with metamask
