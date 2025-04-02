@@ -11,6 +11,7 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.testData
 import com.chromia.cli.command.multisignature.MultiSignatureCreateCommand
 import com.chromia.cli.command.multisignature.MultiSignatureSignCommand
+import com.chromia.cli.command.multisignature.MultiSignatureTxData
 import com.github.ajalt.clikt.core.parse
 import java.nio.file.Path
 import java.time.Duration
@@ -56,8 +57,10 @@ class MultiSignatureSendIT {
 
 
         val createdTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }
-        val createdTransaction = createdTransactionFile?.readText()?.hexStringToByteArray()
-        val createdTransactionGtx = Gtx.decode(createdTransaction!!)
+        val txData = createdTransactionFile?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val createdTransactionGtx = Gtx.decode(txData!!.transaction)
 
         assertThat(createdTransactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
         assertThat(createdTransactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
@@ -85,8 +88,10 @@ class MultiSignatureSendIT {
         createdTransactionFile.delete()
 
         val createdSignedTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }
-        val signedTransaction = createdSignedTransactionFile?.readText()?.hexStringToByteArray()
-        val signedTransactionGtx = Gtx.decode(signedTransaction!!)
+        val signedTransaction = createdSignedTransactionFile?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        val signedTransactionGtx = Gtx.decode(signedTransaction!!.transaction)
 
         assertThat(signedTransactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
         assertThat(signedTransactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")

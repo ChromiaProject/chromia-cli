@@ -80,6 +80,29 @@ class MultiSignatureSendCommandTest {
     }
 
     @Test
+    fun unsupportedTransactionFormat(@TempDir tempDir: Path) {
+        val transactionFile = File(this.javaClass.classLoader.getResource("call_op_transaction_hex_signed_unsupported")!!.file)
+        val secretFile = tempDir.resolve(".secret").toFile()
+        secretFile.writeText(
+                """
+                    pubkey=${MultiSignatureCreateCommandTest.secondSignerPubkey},
+                    privkey=${MultiSignatureCreateCommandTest.secondSignerPrivkey},
+                """.trimIndent()
+        )
+
+        val res = assertThrows<PrintMessage> {
+            RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+                MultiSignatureSendCommand().parse(listOf(
+                        "--blockchain-rid", MultiSignatureCreateCommandTest.testBrid.toString(),
+                        "--api-url", RestApiInstance.apiUrl,
+                        "--file", transactionFile.absolutePath,
+                        "--secret", secretFile.absolutePath
+                ))
+            }
+        }
+        assertThat(res.message).isEqualTo("Transaction file is incompatible with current CLI version")
+    }
+    @Test
     fun differentTargetBridThanWhatIsConfiguredInTransaction(@TempDir tempDir: Path) {
         val transactionFile = File(this.javaClass.classLoader.getResource("call_op_transaction_hex_signed")!!.file)
         val secretFile = tempDir.resolve(".secret").toFile()

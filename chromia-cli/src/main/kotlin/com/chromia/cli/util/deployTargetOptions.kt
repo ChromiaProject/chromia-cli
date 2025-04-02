@@ -10,6 +10,7 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
@@ -26,10 +27,37 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     abstract val urls: List<String>
     abstract fun createClient(config: ChromiaClientConfig): PostchainClient
     abstract fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient
+
+    protected fun createClientFromDirectoryChain(config: ChromiaClientConfig): PostchainClient {
+        val directoryChain = createDirectoryClient(config)
+        val apiUrls = directoryChain.cmGetBlockchainApiUrls(brid)
+        val updatedConfig = directoryChain.config.copy(brid, EndpointPool.default(apiUrls))
+        return PostchainClientImpl(updatedConfig)
+    }
+
+    protected fun createDirectoryClientFromBrid(
+        config: ChromiaClientConfig,
+        d1BridFromModel: BlockchainRid?
+    ): PostchainClient {
+        if (d1BridFromModel != null) {
+            return config.setBrid(d1BridFromModel).client(PostchainClientProviderImpl())
+        }
+        val d1BridFetched = fetchBridFromChainID()
+        return config.setBrid(d1BridFetched).client(PostchainClientProviderImpl())
+    }
+
+    protected fun fetchBridFromChainID(
+        cid: Int = 0,
+        httpHandler: HttpHandler = defaultHttpHandler(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls)))
+    ): BlockchainRid {
+        // TODO: make BridFetcher takes multiple URLS
+        return BridFetcher(httpHandler, urls.first()).fetchBlockchainRid(cid)
+    }
 }
 
 class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment") {
-    private val network by deployTargetOption()
+    val network by deployTargetOption().required()
+            .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     override val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
     override val brid: BlockchainRid
         get() {
@@ -47,25 +75,25 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
             return deploymentModel.urls
         }
 
-    override fun createClient(config: ChromiaClientConfig): PostchainClient {
-        val directoryChain = createDirectoryClient(config)
-        return PostchainClientImpl(directoryChain.config.copy(brid, EndpointPool.default(directoryChain.cmGetBlockchainApiUrls(brid))))
-    }
+    override fun createClient(config: ChromiaClientConfig) = createClientFromDirectoryChain(config)
 
     override fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient {
-        return config.setBrid(settings().deployments[network]!!.blockchainRid).client(PostchainClientProviderImpl())
+        val d1BridFromModel = settings().deployments[network]!!.blockchainRid
+        return createDirectoryClientFromBrid(config, d1BridFromModel)
     }
 }
 
 class DeployedNetworkOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment network") {
-    private val network by deployTargetOption().required()
+    val network by deployTargetOption().required()
+            .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
     override val blockchain: String
         get() = brid.toHex()
     override val brid: BlockchainRid
         get() {
             val deploymentModel = settings().deployments[network]
             require(deploymentModel != null) { "Deployment named $network not found in configuration" }
-            return deploymentModel.blockchainRid
+
+            return deploymentModel.blockchainRid ?: fetchBridFromChainID()
         }
 
     override val urls: List<String>
@@ -75,19 +103,19 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
             return deploymentModel.urls
         }
 
-    override fun createClient(config: ChromiaClientConfig): PostchainClient {
-        val directoryChain = createDirectoryClient(config)
-        return PostchainClientImpl(directoryChain.config.copy(brid, EndpointPool.default(directoryChain.cmGetBlockchainApiUrls(brid))))
-    }
+    override fun createClient(config: ChromiaClientConfig) = createClientFromDirectoryChain(config)
 
     override fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient {
-        return config.setBrid(settings().deployments[network]!!.blockchainRid).client(PostchainClientProviderImpl())
+        val d1BridFromModel = settings().deployments[network]!!.blockchainRid
+        return createDirectoryClientFromBrid(config, d1BridFromModel)
     }
 }
 
 class LocalDeploymentOption(
-        private val config: () -> ChromiaClientConfig,
-        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }) : DeploymentOption("Node", help = "Target a test node") {
+    private val config: () -> ChromiaClientConfig,
+    private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }
+) : DeploymentOption("Node", help = "Target a test node") {
+
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
     private val cid by option(help = "Target Blockchain IID").int()
     private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)
@@ -107,19 +135,23 @@ class LocalDeploymentOption(
         // 3. config (local/global)
         // 4. cid = 0
         get(): BlockchainRid {
-            if (blockchainRid != null) return BlockchainRid.buildFromHex(blockchainRid!!)
-            if (cid != null) return blockchainRidFromIid(cid!!)
-            val bridFromConfig = config().blockchainRid
-            if (bridFromConfig != BlockchainRid.ZERO_RID) return bridFromConfig
-            return blockchainRidFromIid(0)
+            val initialConfig = PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls))
+            val httpHandler = httpHandlerFactory(initialConfig)
+            return when {
+                blockchainRid != null -> BlockchainRid.buildFromHex(blockchainRid!!)
+                cid != null -> fetchBridFromChainID(cid!!, httpHandler)
+                config().blockchainRid != BlockchainRid.ZERO_RID -> config().blockchainRid
+                else -> fetchBridFromChainID(httpHandler = httpHandler)
+            }
         }
 
-    private fun blockchainRidFromIid(cid: Int) = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(urls.first()))), urls.first()).fetchBlockchainRid(cid)
 
     override fun createClient(config: ChromiaClientConfig) = config.client(PostchainClientProviderImpl())
+
     override fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient {
-        val directoryBrid = BridFetcher(httpHandlerFactory(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls))), urls.first())
-                .fetchBlockchainRid(0)
+        val initialConfig = PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls))
+        val httpHandler = httpHandlerFactory(initialConfig)
+        val directoryBrid = fetchBridFromChainID(httpHandler = httpHandler)
         return config.setBrid(directoryBrid).client(PostchainClientProviderImpl())
     }
 }

@@ -35,6 +35,7 @@ class SuccessfulDeploymentModel(val model: Model) : Model by model {
             "get_container_data" -> gtv(getContainerDataResult("name"))
             "get_cluster_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
             "get_compressed_configuration_parts" -> gtv(listOf())
+            "cm_get_blockchain_api_urls" -> gtv(listOf(gtv("http://localhost:7745")))
             else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }

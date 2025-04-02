@@ -49,27 +49,17 @@ class DeployInspectLeaseIT {
         val d1Brid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
         val economyChainBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000002".hexStringToByteArray())
         val accountId = "0000000000000000000000000000000000000000000000000000000000000003"
-        val containerName = "containerName"
-        val clusterName = "clusterName"
-        val containerUnits = 2L
-        val extraStorageGib = 4L
-        val expireTimeMillis = 6L
+        val containerName = "Container Name"
+        val clusterName = "Cluster Name"
+        val containerUnits = 1L
+        val extraStorageGib = 1L
+        val expireTimeMillis = 50L
         val expired = false
-        val autoRenew = true
+        val autoRenew = false
 
-        val lease = mapOf(
-                "container_name" to gtv(containerName),
-                "cluster_name" to gtv(clusterName),
-                "container_units" to gtv(containerUnits),
-                "extra_storage_gib" to gtv(extraStorageGib),
-                "expire_time_millis" to gtv(expireTimeMillis),
-                "expired" to gtv(expired),
-                "auto_renew" to gtv(autoRenew),
-                "subnode_image_name" to gtv("")
-        )
-
-        val leaseByAccountId = mapOf(accountId.hexStringToWrappedByteArray() to gtv(listOf(gtv(lease))))
-        val leaseByContainerName = mapOf(containerName to gtv(lease))
+        val leaseData = com.chromia.build.tools.getLeaseData()
+        val leaseByAccountId = mapOf(accountId.hexStringToWrappedByteArray() to gtv(listOf(leaseData)))
+        val leaseByContainerName = mapOf(containerName to leaseData)
 
         testData(dir) {
             config {
@@ -93,7 +83,7 @@ class DeployInspectLeaseIT {
                     .wholeOutput("""
                         {
                           "account id": null,
-                          "container": "containerName",
+                          "container": "Container Name",
                           "leases": [
                             {
                               "Cluster": "$clusterName",

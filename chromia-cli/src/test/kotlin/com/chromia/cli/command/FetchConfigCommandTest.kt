@@ -125,7 +125,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       - net.postchain.web.WebStaticGTXModuleFactory
       - net.postchain.gtx.StandardOpsGTXModule
       rell:
-        compilerVersion: 0.14.7
+        compilerVersion: 0.14.8
         moduleArgs:
           main:
             foo: bar
@@ -255,7 +255,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
                 "--blockchain-config", "${dir.absolutePathString()}/build/a.xml", "--hash"
         ))
         assertThat(res.statusCode).isEqualTo(0)
-        assertThat(res.stdout).isEqualTo("B38ADE82B896F900DE715169BDFA8749B42CA69BC4B9B40AAD5DA6E68F21118E\n")
+        assertThat(res.stdout).isEqualTo("F33F2D859E48FD178C9F6F818E6CD5B05910C1B2E9B1CBD814C488BE229358C9\n")
     }
 
     @Test

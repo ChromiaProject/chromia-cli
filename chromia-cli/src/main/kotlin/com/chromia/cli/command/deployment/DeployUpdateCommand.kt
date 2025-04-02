@@ -3,10 +3,10 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
-import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.chromia.cli.schema.BlockchainConfigSchemaParser
 import com.chromia.cli.schema.SchemaComparator
 import com.chromia.cli.schema.ReportGenerator
+import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
@@ -49,33 +49,33 @@ class DeployUpdateCommand(
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
         for (tx in deployTxs) {
-            echo("Blockchain ${tx.blockchain.name} ${if (tx.success) "was successfully updated" else "failed update"} on network $target")
+            echo("Blockchain ${tx.blockchain.name} ${if (tx.success) "was successfully updated" else "failed update"} on network ${networkTarget.network}")
         }
     }
 
     override fun explicitChainsToDeploy(): Collection<String> {
-        val chains = settings.model.deployments[target]?.chains?.keys
+        val chains = settings.model.deployments[networkTarget.network]?.chains?.keys
         if (chains.isNullOrEmpty()) {
-            throw PrintMessage("No chains found in deployment $target", 1)
+            throw PrintMessage("No chains found in deployment ${networkTarget.network}", 1)
         }
         return chains
     }
 
     private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient): String? {
         val blockchainRid = deployModel.chains[chain.name]
-                ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
+                ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network ${networkTarget.network}. Specify target blockchain rid in chromia.yml")
 
         val endpoint = EndpointPool.default(directoryChainClient.cmGetBlockchainApiUrls(blockchainRid).toList())
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
 
         try {
             nodeClient.validateConfiguration(chain.config)
-            echo("Blockchain ${chain.name} was successfully verified against deployed chain on network $target")
+            echo("Blockchain ${chain.name} was successfully verified against deployed chain on network ${networkTarget.network}")
         } catch (e: ClientError) {
             return when (e.status) {
                 Status.UNAUTHORIZED -> "Node rejected request. You might need to update your chr to latest version. Reason: ${e.errorMessage}"
                 Status.FORBIDDEN -> "You do not have access to validate configuration against this blockchain. Make sure the configured keypair match the blockchain provider/owner and try again."
-                else -> "Blockchain ${chain.name} cannot be updated on network $target. Reason: ${e.errorMessage}"
+                else -> "Blockchain ${chain.name} cannot be updated on network ${networkTarget.network}. Reason: ${e.errorMessage}"
             }
         }
 
@@ -95,7 +95,7 @@ class DeployUpdateCommand(
         val schemaComparator = SchemaComparator()
         val diff = schemaComparator.compareSchemas(deployedSchema, newSchema)
         if (diff.isEmpty()) {
-            echo("No schema changes detected for ${chain.name} on network $target")
+            echo("No schema changes detected for ${chain.name} on network ${networkTarget.network}")
             return
         }
 
@@ -105,7 +105,7 @@ class DeployUpdateCommand(
 
         if (schemaChangesReport.containsUnsafeChanges && !verifyOnly) {
             if (terminal.terminalInfo.inputInteractive) {
-                if (YesNoPrompt("This update of ${chain.name} on network ${target} includes potentially dangerous database schema modifications that could result in data loss or corruption. " +
+                if (YesNoPrompt("This update of ${chain.name} on network ${networkTarget.network} includes potentially dangerous database schema modifications that could result in data loss or corruption. " +
                                 "Are you sure you want to proceed?",
                                 terminal, default = false
                         ).ask() != true) throw PrintMessage("Deployment update was aborted")

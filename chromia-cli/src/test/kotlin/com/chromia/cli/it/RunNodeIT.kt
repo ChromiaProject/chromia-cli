@@ -175,7 +175,7 @@ class RunNodeIT {
         TestProcess.Builder("node", "start", "--wipe")
                 .setWorkingDir(dir.toFile())
                 .awaitCompletion(false)
-                .startCondition("Module class was not found: net.postchain.UnknownGTXModule")
+                .startCondition("GTX module class not found: net.postchain.UnknownGTXModule")
                 .start()
     }
 

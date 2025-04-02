@@ -5,9 +5,12 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.tools.ft.addFtAuthenticationOperation
+import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
-import com.chromia.cli.util.*
+import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.RemoteDeploymentOption
+import com.chromia.cli.util.getFormattedUtcDateTime
+import com.chromia.directory1.lib.ft4.external.auth.FT_AUTH
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -21,10 +24,13 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.PropertiesFileLoader
-import net.postchain.common.toHex
+import net.postchain.common.data.Hash
+import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.PubKey
+import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
+import net.postchain.gtx.GtxBuilder
 import java.nio.file.Paths
 
 class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Creates a new transaction for multi signature and signs it with your key") {
@@ -82,7 +88,12 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         val signersWithoutInitialSigner = signers.filter { it != initialSigner.first().pubKey }.toList()
 
         echo("Creating transaction with signers: ${listOf(initialSigner.firstOrNull()?.pubKey) + signersWithoutInitialSigner}")
-        val transactionBuilder = client.transactionBuilder(initialSigner, signersWithoutInitialSigner)
+        val transactionBuilder = GtxBuilder(
+                client.config.blockchainRid,
+                signers = initialSigner.map { it.pubKey.data  } +  signersWithoutInitialSigner.map { it.data },
+                client.config.cryptoSystem,
+                client.merkleHashCalculator
+        )
 
         if (ftAuthOptions.ftAuth) {
             require(ftAuthOptions.ftAuthDescriptorId != null) { "Must specify auth descriptor id when using ft auth for multi signature" }
@@ -90,13 +101,24 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
-            addFtAuthenticationOperation(client, transactionBuilder, opName, signerPubkey.data, ftAuthOptions.ftAccountId, ftAuthOptions.ftAuthDescriptorId)
+            val (accountId, authDescriptorId) = findFtAccountIdWithAuthDescriptorId(client, ftAuthOptions.ftAccountId?.hexStringToByteArray(),
+                    signerPubkey.data, opName,
+                    ftAuthOptions.ftAuthDescriptorId?.hexStringToByteArray()
+            )
+            transactionBuilder.addOperation(FT_AUTH, gtv(accountId), gtv(authDescriptorId))
         }
 
-        val transaction = transactionBuilder.addOperation(opName, *args.toTypedArray())
+        val signatureBuilder = transactionBuilder.addOperation(opName, *args.toTypedArray())
                 .addNop()
-                .build()
-        saveTransactionToFile(transaction)
+                .uncheckedSignBuilder()
+        val txRid: Hash = signatureBuilder.txRid
+        val transaction: ByteArray = signatureBuilder
+                .apply {
+                    initialSigner.forEach { sign(it) }
+                }
+                .buildGtx().encode()
+
+        saveTransactionToFile(transaction, txRid)
     }
 
     private fun getSignersFromFile(): Set<PubKey> {
@@ -117,9 +139,10 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         return signers.toSet()
     }
 
-    private fun saveTransactionToFile(transaction: ByteArray) {
+    private fun saveTransactionToFile(transaction: ByteArray, txRid: Hash) {
         val file = outputFolder.resolve("${opName}_transaction_${getFormattedUtcDateTime()}")
-        file.writeText(transaction.toHex())
+        val txData = MultiSignatureTxData(transaction, txRid)
+        file.writeText(txData.encode())
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
 }

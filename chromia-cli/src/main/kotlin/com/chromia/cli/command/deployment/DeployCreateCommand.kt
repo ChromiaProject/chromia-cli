@@ -19,10 +19,10 @@ class DeployCreateCommand(
 
     override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
         compiledChains.forEach { chain ->
-            if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain '${chain.name}' is already defined in the configuration file: '${settings.modelFile}' under the deployment: '$target'")
+            if (deployModel.chains.containsKey(chain.name)) throw PrintMessage("Blockchain '${chain.name}' is already defined in the configuration file: '${settings.modelFile}' under the deployment: '${networkTarget.network}'")
             if (!confirm) {
                 if (terminal.terminalInfo.inputInteractive) {
-                    if (YesNoPrompt("This will create a new deployment of ${chain.name} on network $target. Would you like to create a new deployment?",
+                    if (YesNoPrompt("This will create a new deployment of ${chain.name} on network ${networkTarget.network}. Would you like to create a new deployment?",
                                     terminal, default = false
                             ).ask() != true) throw PrintMessage("Deployment was aborted")
                 } else {
@@ -42,7 +42,7 @@ class DeployCreateCommand(
             echo("""
                 Add the following to your project settings file:
                 deployments:
-                  $target:
+                  ${networkTarget.network}:
                     chains:
                       ${successfulDeployments.joinToString("\n      ") { "${it.blockchain.name}: x\"${it.blockchainRid!!.toHex()}\"" }}
                 """.trimIndent())

@@ -72,6 +72,13 @@ class DirectoryChainMockIT {
                     assertThat(client.cmGetBlockchainCluster(dappBrid.data)).isEqualTo("test")
                     assertThat(client.cmGetClusterAnchoringChains().map { it.wrap() }).containsExactly(managementChainBrid.wData)
 
+                    /* Waiting for first anchoring block. Directory chain build block time is 30
+                    postchain doesn't add special transactions on block height 0. We need to wait for second block in d1
+                    which contains anchoring transaction.
+                    * TODO: Update TestProcess builder startCondition to be able to avoid this sleep
+                    */
+                    Thread.sleep(35000)
+
                     // Anchoring API
                     val lastDappBlock = client.getLastAnchoredBlock(dappBrid)
                     assertThat(lastDappBlock).isNotNull()

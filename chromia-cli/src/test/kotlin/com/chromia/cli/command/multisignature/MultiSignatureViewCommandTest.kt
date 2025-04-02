@@ -2,6 +2,7 @@ package com.chromia.cli.command.multisignature
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
@@ -10,6 +11,7 @@ import com.github.ajalt.mordant.terminal.TerminalRecorder
 import java.io.File
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 
 class MultiSignatureViewCommandTest {
@@ -23,6 +25,7 @@ class MultiSignatureViewCommandTest {
         MultiSignatureViewCommand().context { terminal = testTerminal }.parse(listOf("--file", transactionFile.absolutePath))
         assertThat(logger.output()).isEqualTo("""    
             {
+              "transactionRID": "A96D1B62A761ACFC9FBC25E1AF55C4DCA483653DD2A45CA95D525C4FD7911335",
               "blockchainRID": "0505050505050505050505050505050505050505050505050505050505050505",
               "operations": [
                 {
@@ -34,7 +37,7 @@ class MultiSignatureViewCommandTest {
                 {
                   "operation": "nop",
                   "arguments": [
-                    "integer: 1729612840588"
+                    "integer: 1742972037215"
                   ]
                 }
               ],
@@ -43,7 +46,7 @@ class MultiSignatureViewCommandTest {
                 "027C95A328CF7F91EA670D31A527D1C3BA6D04EF72AB4DE034C9C79A74189ECB10"
               ],
               "signatures": [
-                "3E77838DF8F7560EA714C67A657E5523FB7405694098B85C0902424968F071A96A26A983D4054C40496E9D4A0130764A977810531601685ACB73DE231A610EE9",
+                "0334F97591929260337B411FE1DA988C3736DA693558DDFE87A007442D1586D44B9EE7776CE19C483548DA1BB357F9387215F277F6C1D536461086BE9CE311EE",
                 ""
               ]
             }
@@ -54,12 +57,22 @@ class MultiSignatureViewCommandTest {
     }
 
     @Test
+    fun unsupportedTransactionFormat(@TempDir tempDir: Path) {
+        val transactionFile = File(this.javaClass.classLoader.getResource("call_op_transaction_hex_unsupported")!!.file)
+        val res = assertThrows<PrintMessage> {
+            MultiSignatureViewCommand().context { terminal = testTerminal }.parse(listOf("--file", transactionFile.absolutePath))
+        }
+        assertThat(res.message).isEqualTo("Transaction file is incompatible with current CLI version")
+    }
+
+    @Test
     fun printExistingTransactionNestedArrayOperation(@TempDir tempDir: Path) {
         val transactionFile = File(this.javaClass.classLoader.getResource("call_op_transaction_hex_array")!!.file)
 
         MultiSignatureViewCommand().context { terminal = testTerminal }.parse(listOf("--file", transactionFile.absolutePath))
         assertThat(logger.output()).isEqualTo("""    
 {
+  "transactionRID": "C619215A032214EDC905607F7648B7A80F1C4A5823902425D0FB24E4DC723DDB",
   "blockchainRID": "C7D5D9E5222E8AF3F13FE973581CAA78C7824E10D23A247C3DA9A5F7AA9E417F",
   "operations": [
     {
@@ -123,6 +136,7 @@ class MultiSignatureViewCommandTest {
         MultiSignatureViewCommand().context { terminal = testTerminal }.parse(listOf("--file", transactionFile.absolutePath))
         assertThat(logger.output()).isEqualTo("""
 {
+  "transactionRID": "D6E07ADF35A8C4EB433390CA3041551CFDC8D5A4C169874A803473DD317D5260",
   "blockchainRID": "D53C7945E33781124C7D4A412D722C8B02C90B3BBC1445568F95DC62B6162306",
   "operations": [
     {

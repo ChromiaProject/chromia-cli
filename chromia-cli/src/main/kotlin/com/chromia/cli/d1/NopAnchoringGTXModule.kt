@@ -19,6 +19,7 @@ import net.postchain.core.block.BlockQueriesProvider
 import net.postchain.crypto.CryptoSystem
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtx.PostchainContextAware
 import net.postchain.gtx.SimpleGTXModule
@@ -62,12 +63,16 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
                     val height = thisBq.getLastBlockHeight().get()
                     val anchorRid = thisBq.getBlockRid(height).get()!!
                     val anchorBlock = thisBq.getBlock(anchorRid, txHashesOnly = false).get()!!
-                    val tx = AnchoringTxWithOpIndex(
-                            txRid = anchorBlock.transactions.first().rid.wrap(),
-                            txData = block.header.wrap(),
-                            txOpIndex = 0
-                    )
-                    GtvObjectMapper.toGtvDictionary(tx)
+
+                    if (anchorBlock.transactions.isEmpty()) {
+                        GtvNull
+                    } else {
+                        AnchoringTxWithOpIndex(
+                                txRid = anchorBlock.transactions.first().rid.wrap(),
+                                txData = block.header.wrap(),
+                                txOpIndex = 0
+                        ).let { GtvObjectMapper.toGtvDictionary(it) }
+                    }
                 },
                 "is_block_anchored" to { _, ctx, args ->
                     val brid = gtvToBlockchainRid(args["blockchain_rid"]!!)

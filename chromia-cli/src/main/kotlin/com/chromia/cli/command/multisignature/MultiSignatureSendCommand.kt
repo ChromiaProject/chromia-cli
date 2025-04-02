@@ -14,12 +14,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.client.transaction.signTransaction
 import net.postchain.common.exception.UserMistake
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.crypto.sha256Digest
-import net.postchain.gtv.merkle.GtvMerkleHashCalculatorV1
+import net.postchain.gtx.signTransaction
 
 class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a fully signed transaction") {
 
@@ -38,14 +35,13 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
         postchainClientConfig.configureSigners(keyPairSource)
 
         val transactionBuilder = target.createClient(postchainClientConfig).transactionBuilder()
-        val transaction = transactionFile.readText().hexStringToByteArray()
+        val txData = parseTransactionFile(transactionFile)
 
-        // TODO use-new-algo choose merkle hash version
         val signedTransaction = try {
-            signTransaction(transaction, postchainClientConfig.signers, GtvMerkleHashCalculatorV1(::sha256Digest))
+            signTransaction(txData.transaction, txData.txRid, postchainClientConfig.signers)
         } catch (e: UserMistake) {
-            if (e.message == "No empty signature found for the given subject ID") {
-                transaction
+            if (e.message == "Signature for this signer already exists") {
+                txData.transaction
             } else {
                 throw PrintMessage("Failed to sign transaction, cause: ${e.message}", 1)
             }

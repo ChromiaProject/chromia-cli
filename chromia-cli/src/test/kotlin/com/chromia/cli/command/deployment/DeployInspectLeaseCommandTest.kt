@@ -55,7 +55,7 @@ class DeployInspectLeaseCommandTest {
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
 
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", gtv(getLeaseData()))) {
+        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "-s", settingsFile.absolutePath))
             assertThat(logger.output()).contains(""""container": "containerId"""")
@@ -97,7 +97,7 @@ class DeployInspectLeaseCommandTest {
                     chains:
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", gtv(getLeaseData()))) {
+        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "--container-id", "A Different Container", "-s", settingsFile.absolutePath))
             assertThat(logger.output()).contains(""""container": "A Different Container"""")
@@ -118,7 +118,7 @@ class DeployInspectLeaseCommandTest {
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
         withModel(directoryChainModel, economyChainModel.withQuery(
-                "get_leases_by_account", gtv(listOf(gtv(getLeaseData()), gtv(getLeaseData())))
+                "get_leases_by_account", gtv(listOf(getLeaseData(), getLeaseData()))
         )) {
             val accountId = "0000000000000000000000000000000000000000000000000000000000000003"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
@@ -143,7 +143,7 @@ class DeployInspectLeaseCommandTest {
     @Test
     fun `Explicit setting system option using account id to get lease data`() {
         withModel(directoryChainModel, economyChainModel.withQuery(
-                "get_leases_by_account", gtv(listOf(gtv(getLeaseData()), gtv(getLeaseData())))
+                "get_leases_by_account", gtv(listOf(getLeaseData(), getLeaseData()))
         )) {
             val accountId = "03DD65032C7BEE117FFDAA94C8DADAE79ADBA2A3A17C8D4A5239AA2DC2E93D845E"
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -156,7 +156,7 @@ class DeployInspectLeaseCommandTest {
 
     @Test
     fun `Explicit setting system option using container id to get lease data`() {
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", gtv(getLeaseData()))) {
+        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 
