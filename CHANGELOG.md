@@ -1,5 +1,15 @@
 # Changelog
 
+Structure to follow for writing a new entry:
+### Added
+### Fixed
+### Breaking Changes
+
+Only add section if something can be written under it.
+Changelogs will be automatically be generated from this file up to https://docs.chromia.com/cli/cli-release-notes
+Which will also take bold or italic text styling.
+Keep this in mind when writing and styling any note.
+
 ## [0.26.0] - 2025-04-04
 ### Added
 - `chr build`: Added `--hide-lib-warnings` flag to suppress library warnings
@@ -7,14 +17,12 @@
 - `chr tx`: Added support for sending intra-network ICCF proofs with the `--iccf-force-intra-network` option
 
 ### Breaking Changes
-- When using `chr tx` with **_any_** ICCF options against a local node (started with `chr node start`), the node must now be running with the directory chain mock enabled via `--directory-chain-mock`
+- When using `chr tx` with any ICCF options against a local node (started with `chr node start`), the node must now be running with the directory chain mock enabled via `--directory-chain-mock`
 
 ## [0.25.0] - 2025-04-02
-### Updated
+### Added
 - Integrated merkle hash calculator v2
 - Revised multi signature workflow to new merkle hash calculator
-
-### Added
 - Implemented an automatic fetch for brid in commands where it is required and not defined in `chromia.yml`
 - **Version Bumps**
   - rell 0.14.8
