@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.26.0] - 2025-04-04
+### Added
+- `chr build`: Added `--hide-lib-warnings` flag to suppress library warnings
+- `chr tx`: Added support for registering FT4 accounts with the `--ft-register-account` option
+- `chr tx`: Added support for sending intra-network ICCF proofs with the `--iccf-force-intra-network` option
+
+### Breaking Changes
+- When using `chr tx` with **_any_** ICCF options against a local node (started with `chr node start`), the node must now be running with the directory chain mock enabled via `--directory-chain-mock`
+
 ## [0.25.0] - 2025-04-02
 ### Updated
 - Integrated merkle hash calculator v2
