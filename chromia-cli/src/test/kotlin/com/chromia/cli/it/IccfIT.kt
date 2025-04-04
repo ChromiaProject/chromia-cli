@@ -63,16 +63,16 @@ class IccfIT {
         // If test fails verify that we are getting the correct brid from getSourceChainBrid, by adding .verbose()
         // option to the outer most TestProcess.Builder(...) and look for the brid for source_chain.
         val sourceChainBrid = getSourceChainBrid(dir)
-        TestProcess.Builder("node", "start", "--wipe")
+        TestProcess.Builder("node", "start", "--directory-chain-mock", "--wipe")
                 .awaitCompletion(false)
                 .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
-                    TestProcess.Builder("tx", "--cid", "0", "op_to_confirm", "Secret message", "--await").verbose().startCondition("was posted CONFIRMED").start()
-                    val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 0)
+                    TestProcess.Builder("tx", "--cid", "1", "op_to_confirm", "Secret message", "--await").verbose().startCondition("was posted CONFIRMED").start()
+                    val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 1)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "1", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
                 }
     }
 
