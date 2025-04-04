@@ -32,7 +32,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.io.File
 import kotlin.test.assertFailsWith
-
+import com.github.ajalt.clikt.core.CliktCommand
+import io.mockk.*
 internal class BuildCommandTest {
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(terminalInterface = logger)
@@ -115,7 +116,9 @@ internal class BuildCommandTest {
 
         TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar").toPath(), "")
         assertFailsWith<ValidationException> {
-            BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml")))
+            BuildCommand().context {
+                terminal = testTerminal
+            }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml")))
         }
         assertThat(logger.stderr()).all {
             contains("Should be: 11")
@@ -234,4 +237,43 @@ internal class BuildCommandTest {
         )
         assertThat(outputGtv["gtx"]?.get("rell")?.get("sources")?.get("main.rell")?.asString()).isEqualTo(rellSourceWithInvalidXmlChar)
     }
+
+    @Test
+    fun `test message routing in BuildCommandCliEnv`() {
+        val mockCmd = mockk<CliktCommand>()
+        every { mockCmd.echo(any(), any(), any()) } just Runs
+        
+        val env = BuildCommandCliEnv(mockCmd, hideLibWarnings = false)
+        
+        val regularMsg = "This is a regular message"
+        val userWarningMsg = "src/main.rell Warning: Missing semicolon"
+        val libWarningMsg = "lib/external/helper.rell Warning: Deprecated function"
+        val summaryMsg = "Errors: 3 Warnings: 7" 
+        
+        env.error(regularMsg)
+        env.error(userWarningMsg)
+        env.error(libWarningMsg)
+        env.error(summaryMsg)
+        
+        verify(exactly = 1) { mockCmd.echo(regularMsg, any(), any()) }
+        verify(exactly = 1) { mockCmd.echo(userWarningMsg, any(), any()) }
+        verify(exactly = 1) { mockCmd.echo(libWarningMsg, any(), any()) }
+        
+        verify(exactly = 1) { 
+            mockCmd.echo(
+                withArg { summaryText: String ->
+                    assertThat(summaryText).all {
+                        contains("Errors: 3")
+                        contains("User Warnings: 1")
+                        contains("Lib Warnings: 6")
+                    }
+                },
+                any(),
+                any()
+            ) 
+        }
+        
+        assertEquals(1, env.userWarningCount)
+    }
+    
 }
