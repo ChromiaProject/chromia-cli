@@ -18,6 +18,7 @@ import net.postchain.logging.BLOCKCHAIN_RID_TAG
 import net.postchain.logging.CHAIN_IID_TAG
 import net.postchain.logging.NODE_PUBKEY_TAG
 import net.postchain.rell.module.RellPostchainModuleEnvironment
+import com.github.ajalt.mordant.rendering.TextColors
 
 const val INITILIZED_LOG = "Node is initialized"
 
@@ -35,7 +36,7 @@ class StartCommand : AbstractNodeCommand(help = """
     }
 
     private fun startPostchainNode() {
-        val chainsToStart = mutableListOf<Long>()
+        val chainsToStart = mutableListOf<Pair<String, Long>>()
         val environment = RellPostchainModuleEnvironment(
                 sqlLog = sqlLog
         )
@@ -47,31 +48,24 @@ class StartCommand : AbstractNodeCommand(help = """
                 val gtvWithSigners = withSigner(gtv, nodeConfig.pubKeyByteArray)
                 val brid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject())
                 val iid = index.toLong()
-                echo("Starting blockchain $name with brid $brid on id $iid")
-                chainsToStart.add(iid)
-                withLoggingContext(
-                        NODE_PUBKEY_TAG to nodeConfig.pubKey,
-                        CHAIN_IID_TAG to iid.toString(),
-                        BLOCKCHAIN_RID_TAG to brid.toHex()
-                ) {
-                    withReadWriteConnection(node.postchainContext.sharedStorage, iid) { eContext: EContext ->
-                        if (BlockchainApi.findBlockchain(eContext) == null) {
-                            BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
-                        }
+                chainsToStart.add(name to iid)
+                withReadWriteConnection(node.postchainContext.sharedStorage, iid) { eContext: EContext ->
+                    if (BlockchainApi.findBlockchain(eContext) == null) {
+                        BlockchainApi.initializeBlockchain(eContext, brid, override = true, gtvWithSigners)
+                    }
 
-                        val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
-                        if (lastHeight >= 0) {
+                    val lastHeight = BlockchainApi.getLastBlockHeight(eContext)
+                    if (lastHeight >= 0) {
 
-                            val previousBlockchainRids = BlockchainApi.listConfigurationHashes(eContext)
-                                    .map { BlockchainRid(it) }
-                                    .toMutableList()
+                        val previousBlockchainRids = BlockchainApi.listConfigurationHashes(eContext)
+                                .map { BlockchainRid(it) }
+                                .toMutableList()
 
-                            val lastBlockchainRid = previousBlockchainRids.removeAt(previousBlockchainRids.lastIndex)
-                            val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject())
+                        val lastBlockchainRid = previousBlockchainRids.removeAt(previousBlockchainRids.lastIndex)
+                        val blockchainRid = GtvToBlockchainRidFactory.calculateBlockchainRid(gtvWithSigners.toObject())
 
-                            if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
-                            if (blockchainRid != lastBlockchainRid) BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
-                        }
+                        if (previousBlockchainRids.contains(blockchainRid)) throw PrintMessage("Blockchain configuration already exists in database, cannot start on already used config")
+                        if (blockchainRid != lastBlockchainRid) BlockchainApi.addConfiguration(eContext, lastHeight + 1, override = true, gtvWithSigners)
                     }
                 }
             }
@@ -79,7 +73,8 @@ class StartCommand : AbstractNodeCommand(help = """
                 StorageInitializer.setupInitialPeers(nodeConfig, it)
             }
             chainsToStart.forEach {
-                node.startBlockchain(it)
+                val startedBrid = node.startBlockchain(it.second)
+                echo("Started blockchain ${TextColors.blue(it.first)}. Chain-id: ${it.second}, brid $startedBrid")
             }
             echo(INITILIZED_LOG)
         }
