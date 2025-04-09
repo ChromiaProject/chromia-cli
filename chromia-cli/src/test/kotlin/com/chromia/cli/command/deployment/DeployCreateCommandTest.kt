@@ -181,6 +181,8 @@ class DeployCreateCommandTest {
                         module: main
                       bar:
                         module: main
+                      fobar:
+                        module: main
                 """.trimIndent())
                     deployments("""
                     deployments:
@@ -194,6 +196,16 @@ class DeployCreateCommandTest {
             val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--network", "test", "-y", "--config", config.absolutePath, "--secret", secret.absolutePath))
             assertThat(res.stdout).contains("Deployment of blockchain bar was successful")
             assertThat(res.stdout).contains("Deployment of blockchain foo was successful")
+            assertThat(res.stdout).contains("Deployment of blockchain fobar was successful")
+            assertThat(res.stdout).contains("""
+                Add the following to your project settings file:
+                deployments:
+                  test:
+                    chains:
+                      foo: x"0808080808080808080808080808080808080808080808080808080808080808"
+                      bar: x"0808080808080808080808080808080808080808080808080808080808080808"
+                      fobar: x"0808080808080808080808080808080808080808080808080808080808080808"
+            """.trimIndent())
         }
     }
 

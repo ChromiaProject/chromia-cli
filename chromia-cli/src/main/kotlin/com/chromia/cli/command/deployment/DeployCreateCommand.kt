@@ -44,7 +44,7 @@ class DeployCreateCommand(
                 deployments:
                   ${networkTarget.network}:
                     chains:
-                      ${successfulDeployments.joinToString("\n      ") { "${it.blockchain.name}: x\"${it.blockchainRid!!.toHex()}\"" }}
+                      ${successfulDeployments.joinToString("\n                      ") { "${it.blockchain.name}: x\"${it.blockchainRid!!.toHex()}\"" }}
                 """.trimIndent())
         }
     }
