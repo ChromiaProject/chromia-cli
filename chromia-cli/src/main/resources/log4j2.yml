@@ -29,6 +29,13 @@ Loggers:
     AppenderRef:
       - ref: LogToRollingFile
   Logger:
+    - name: com.chromia
+      level: ${env:CHR_LOG_LEVEL:-info}
+      additivity: false
+      AppenderRef:
+        - ref: ConsoleAppender
+        - ref: LogToRollingFile
+          level: warn
     - name: net.postchain
       level: ${env:CHR_LOG_LEVEL:-info}
       additivity: false
