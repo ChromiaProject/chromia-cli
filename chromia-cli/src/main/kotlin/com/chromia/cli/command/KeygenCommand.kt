@@ -16,6 +16,7 @@ import java.util.Properties
 import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
+import kotlin.io.path.absolutePathString
 
 class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/private key pair") {
 
@@ -57,10 +58,9 @@ class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/p
                 if (existingKeyPair != null) {
                     throw PrintMessage("Keypair with id: ${chromiaKeyStore.keyId} already exists", 1)
                 }
-                val target = chromiaKeyStore.saveKeyPair(keyPair)
-                val mnemonicFile = saveSecp256k1Mnemonic(mnemonic, File("$target/${name}_mnemonic"), keyPair)
+                chromiaKeyStore.saveKeyPair(keyPair, mnemonic)
                 echo("""
-                |Mnemonic is written to ${mnemonicFile.absolutePath}, take appropriate action on the content of the file to make sure it is kept safe
+                |Mnemonic is written to ${chromiaKeyStore.mnemonicFile.absolutePathString()}, take appropriate action on the content of the file to make sure it is kept safe
                 |pubkey:    ${keyPair.pubKey.data.toHex()}
             """.trimMargin()
                 )
@@ -123,7 +123,7 @@ private fun saveSecp256k1Mnemonic(mnemonic: String, file: File, keyPair: KeyPair
     if (file.parentFile != null && !file.parentFile.exists()) file.parentFile.mkdirs()
     file.writeText(
             """
-                This is a generated file that contains you mnemonic phrase to recover your keypair with public key ${keyPair.pubKey.hex()}.
+                This is a generated file that contains your mnemonic phrase to recover your keypair with public key ${keyPair.pubKey.hex()}.
                 It is highly recommended that you delete this file from your system once the phrase has been placed in a secure place or moved this file to a secure place. 
                 Mnemonic phrase generated:
                 $mnemonic

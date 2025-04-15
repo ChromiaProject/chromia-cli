@@ -4,9 +4,12 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
+import com.chromia.cli.util.readBlockchainConfigFile
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
+import net.postchain.base.configuration.BlockchainConfigurationData
 import net.postchain.client.exception.ClientError
+import net.postchain.common.toHex
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
@@ -251,11 +254,13 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
             writeText(sourceChromiaYml)
         }
         BuildCommand().parse(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
+        val configFile = "${dir.absolutePathString()}/build/a.xml"
+        val configHash = BlockchainConfigurationData.merkleHash(readBlockchainConfigFile(File(configFile)))
         val res = FetchConfigCommand().test(listOf(
-                "--blockchain-config", "${dir.absolutePathString()}/build/a.xml", "--hash"
+                "--blockchain-config", configFile, "--hash"
         ))
         assertThat(res.statusCode).isEqualTo(0)
-        assertThat(res.stdout).isEqualTo("F33F2D859E48FD178C9F6F818E6CD5B05910C1B2E9B1CBD814C488BE229358C9\n")
+        assertThat(res.stdout).isEqualTo("${configHash.toHex()}\n")
     }
 
     @Test
