@@ -68,11 +68,11 @@ class IccfIT {
                 .startCondition(INITILIZED_LOG)
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start {
-                    TestProcess.Builder("tx", "--cid", "1", "op_to_confirm", "Secret message", "--await").verbose().startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "1", "op_to_confirm", "Secret message", "--await").verbose().startCondition("was posted and confirmed").start()
                     val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 1)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted and confirmed").start()
                 }
     }
 

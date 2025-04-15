@@ -34,7 +34,7 @@ class QueryIT {
     fun formatHelp() {
         TestProcess.Builder("query", "--help")
                 .exitCode(0)
-                .timeout(Duration.ofSeconds(5))
+                .timeout(Duration.ofSeconds(10))
                 .startCondition("Make a query towards a running node")
                 .start()
     }

@@ -6,12 +6,7 @@ import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
-import com.github.ajalt.clikt.core.context
-import com.github.ajalt.clikt.core.parse
-import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
-import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.BlockchainRid
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
@@ -26,9 +21,6 @@ import kotlin.io.path.absolutePathString
 
 
 class TxCommandTest : IntegrationTestSetup() {
-    private val logger = TerminalRecorder()
-    private val testTerminal = Terminal(terminalInterface = logger)
-
     private fun launchBlockchainInTestNode(config: String): BlockchainRid {
         val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())
         val setup = SystemSetupFactory.buildSystemSetup(listOf(BlockchainSetup.buildFromGtv(0, gtvConfig)))
@@ -46,7 +38,7 @@ class TxCommandTest : IntegrationTestSetup() {
             module;
             struct my_struct { name; }
             operation test_text(s1: text, s2: text) {
-                require(s1 == "foobar");
+                require(s1 == "foobar", "foobar expected");
                 require(s2 == "foo bar");
             }
             operation test_numeric(s1: integer, s2: big_integer, s3: decimal) {
@@ -85,23 +77,38 @@ class TxCommandTest : IntegrationTestSetup() {
 
         BuildCommand().test(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
         val brid = launchBlockchainInTestNode("${dir.absolutePathString()}/build/a.xml")
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        var res = TxCommand().test(listOf("--await",
                 "test_text", "foobar", "\"foo bar\"", "-brid", "$brid"))
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
                 "test_numeric", "1", "2L", "\"1.2\"", "-brid", "$brid"))
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
                 "test_nullable", "null", "-brid", "$brid"))
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
                 "test_collection", "[\"foo\", \"bar\"]", "[\"foo\", \"bar\"]", "[\"foo\": 1]", "-brid", "$brid"))
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
                 "test_struct", "[\"foo bar\"]", "-brid", "$brid"))
-        TxCommand().context { terminal = testTerminal }.parse(listOf("--await",
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
                 "test_byte_array", "x\"0373599a61cc6b3bc02a78c34313e1737ae9cfd56b9bb24360b437d469efdf3b15\"", "-brid", "$brid"))
-        assertThat(logger.output()).contains("CONFIRMED")
+        assertThat(res.stdout).contains("was posted and confirmed")
+
+        res = TxCommand().test(listOf("--no-await",
+                "bogus_op", "-brid", "$brid"))
+        assertThat(res.stdout).contains("Transaction was rejected immediately: Unknown operation: bogus_op")
+        res = TxCommand().test(listOf("--await",
+                "bogus_op", "-brid", "$brid"))
+        assertThat(res.stdout).contains("Transaction was rejected immediately: Unknown operation: bogus_op")
+        res = TxCommand().test(listOf("--await",
+                "test_text", "bogus", "\"foo bar\"", "-brid", "$brid"))
+        assertThat(res.stdout).contains("Transaction was rejected after polling: [main:test_text(main.rell:4)] Operation 'main:test_text' failed: foobar expected")
     }
 
     @Test
-    fun wrongFormatOfbridForIccfSourceThrowsError() {
+    fun wrongFormatOfBridForIccfSourceThrowsError() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--iccf-source", "00"))
             assertThat(res.stderr).contains("invalid value for --iccf-source: Wrong size of Blockchain RID, was 1 should be 32 (64 characters)")
@@ -112,7 +119,7 @@ class TxCommandTest : IntegrationTestSetup() {
     fun awaitTxByDefault() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl))
-            assertThat(res.stdout).contains("CONFIRMED")
+            assertThat(res.stdout).contains("was posted and confirmed")
         }
     }
 
@@ -120,7 +127,7 @@ class TxCommandTest : IntegrationTestSetup() {
     fun noAwaitTxGivesCorrectStatusCode() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--no-await"))
-            assertThat(res.stdout).contains("WAITING")
+            assertThat(res.stdout).contains("was posted but is still pending")
         }
     }
 
@@ -128,7 +135,7 @@ class TxCommandTest : IntegrationTestSetup() {
     fun underscoreArgumentIsParsed() {
         withModel(TestModel().withQuery("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--await", "--api-url", apiUrl, "_foobar"))
-            assertThat(res.stdout).contains("CONFIRMED")
+            assertThat(res.stdout).contains("was posted and confirmed")
         }
     }
 
@@ -136,7 +143,7 @@ class TxCommandTest : IntegrationTestSetup() {
     fun underscoreOperationIsParsed() {
         withModel(TestModel().withQuery("_test_op", gtv(1))) {
             val res = TxCommand().test(listOf("_test_op", "--await", "--api-url", apiUrl, "foobar"))
-            assertThat(res.stdout).contains("CONFIRMED")
+            assertThat(res.stdout).contains("was posted and confirmed")
         }
     }
 }

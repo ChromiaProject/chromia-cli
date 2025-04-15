@@ -161,7 +161,18 @@ class TxCommand : ChromiaCommand(help = """
             if (nop) addNop()
             if (awaitConfirmation) postAwaitConfirmation() else post()
         }
-        if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN) throw PrintMessage("Transaction Failed with code ${res.httpStatusCode}: ${res.rejectReason}", statusCode = 1)
-        echo("transaction with rid ${res.txRid.rid} was posted ${res.status}${res.rejectReason?.let { ": $it" } ?: ""}")
+        when (res.status) {
+            TransactionStatus.UNKNOWN ->
+                echo("transaction with rid ${res.txRid.rid} was posted but has unknown status")
+
+            TransactionStatus.WAITING ->
+                echo("transaction with rid ${res.txRid.rid} was posted but is still pending")
+
+            TransactionStatus.CONFIRMED ->
+                echo("transaction with rid ${res.txRid.rid} was posted and confirmed")
+
+            TransactionStatus.REJECTED ->
+                throw PrintMessage("Transaction was rejected ${if (!awaitConfirmation || res.httpStatusCode == 400) "immediately" else "after polling" }: ${res.rejectReason}", statusCode = 1)
+        }
     }
 }

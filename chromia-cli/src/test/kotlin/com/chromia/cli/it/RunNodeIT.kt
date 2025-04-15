@@ -23,7 +23,7 @@ class RunNodeIT {
                 .setConfig(dir.resolve("chromia.yml").toFile())
                 .start { process ->
                     TestProcess.Builder("query", "hello").startCondition("Hi!").start()
-                    TestProcess.Builder("tx", "call_op", "1", "--no-await").startCondition("was posted WAITING: OK").start()
+                    TestProcess.Builder("tx", "call_op", "1", "--no-await").startCondition("was posted but is still pending").start()
 
                     TestProcess.Builder("query", "new_query").startCondition("Unknown query: new_query").exitCode(1).start()
                     with(File(dir.toFile(), "src/main.rell")) {
@@ -142,9 +142,9 @@ class RunNodeIT {
                 .setWorkingDir(dir.toFile())
                 .start {
                     // Send message
-                    TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted and confirmed").start()
                     // Make sure a block gets built by making a dummy operation (We could also just wait maxBlockTime)
-                    TestProcess.Builder("tx", "--cid", "1", "dummy", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "1", "dummy", "--await").startCondition("was posted and confirmed").start()
                     // Verify that message was received
                     TestProcess.Builder("query", "--cid", "1", "get_messages").wholeOutput("""
                         |[
@@ -233,7 +233,7 @@ class RunNodeIT {
                 .awaitCompletion(false)
                 .startCondition(INITILIZED_LOG)
                 .start {
-                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted and confirmed").start()
                 }
     }
 
@@ -261,7 +261,7 @@ class RunNodeIT {
                 .awaitCompletion(false)
                 .startCondition(INITILIZED_LOG)
                 .start {
-                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted CONFIRMED").start()
+                    TestProcess.Builder("tx", "--cid", "0", "strict_gtv", "25L", "--await").startCondition("was posted and confirmed").start()
                 }
     }
 }

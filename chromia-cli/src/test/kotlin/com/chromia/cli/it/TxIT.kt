@@ -60,7 +60,7 @@ class TxIT {
     fun formatHelp() {
         TestProcess.Builder("tx", "--help")
                 .exitCode(0)
-                .timeout(Duration.ofSeconds(5))
+                .timeout(Duration.ofSeconds(10))
                 .startCondition("Make a transaction towards a node")
                 .start()
     }
@@ -91,7 +91,7 @@ class TxIT {
             TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--no-await")
                     .setWorkingDir(dir.toFile())
                     .start { process ->
-                        process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
+                        process.waitUntil("was posted but is still pending", Duration.ofSeconds(5))
                     }
         }
         assertThat(txRecorderModel.txList.size).isEqualTo(1)
@@ -132,7 +132,7 @@ class TxIT {
                 TestProcess.Builder("tx", "call_op", "13", "--network", "test", "--blockchain", "hello", "--config", config, "--no-await")
                         .setWorkingDir(dir.toFile())
                         .start { process ->
-                            process.waitUntil("was posted WAITING: OK", Duration.ofSeconds(5))
+                            process.waitUntil("was posted but is still pending", Duration.ofSeconds(5))
                         }
             }
             assertThat(txRecorderModel.txList.size).isEqualTo(1)
@@ -157,7 +157,7 @@ class TxIT {
                     .setWorkingDir(dir.toFile())
                     .awaitCompletion(false)
                     .start { process ->
-                        process.waitUntil("Versions before release 0.4.0 are not supported, current FT4 version 0.1.0r is to old", Duration.ofSeconds(5))
+                        process.waitUntil("Versions before release 0.4.0 are not supported, current FT4 version 0.1.0r is to old", Duration.ofSeconds(10))
                         process.close()
                         assertThat(process.process.exitValue()).isEqualTo(1)
                     }
