@@ -10,6 +10,7 @@ import com.chromia.cli.util.formatRaw
 import com.chromia.cli.util.formatXml
 import com.chromia.cli.util.formatYaml
 import com.chromia.cli.util.outputFormat
+import com.chromia.cli.util.parseArgAsGtv
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -19,7 +20,6 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvDictionary
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvString
 import net.postchain.gtv.parse.GtvParser
 import net.postchain.gtv.pretty
 
@@ -72,11 +72,7 @@ class QueryCommand : ChromiaCommand(help = """
             args.size == 1 && args[0].startsWith("[") && args[0].endsWith("]") -> GtvParser.parse(args[0])
             else -> GtvDictionary.build(args.associate {
                 val (key, value) = it.split("=", limit = 2)
-                key to try {
-                    GtvParser.parse(value)
-                } catch (e: IllegalArgumentException) {
-                    GtvString(value)
-                }
+                key to parseArgAsGtv(value)
             })
         }
     }

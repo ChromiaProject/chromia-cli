@@ -10,6 +10,7 @@ import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
+import com.chromia.cli.util.parseArgAsGtv
 import com.chromia.directory1.lib.ft4.external.auth.FT_AUTH
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -28,8 +29,6 @@ import net.postchain.common.data.Hash
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvString
-import net.postchain.gtv.parse.GtvParser
 import net.postchain.gtx.GtxBuilder
 import java.nio.file.Paths
 
@@ -65,15 +64,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
             "dict" to """["key1":value1,"key2":value2]"""
     ))
             .multiple()
-            .transformAll { args ->
-                args.map {
-                    try {
-                        GtvParser.parse(it)
-                    } catch (_: IllegalArgumentException) {
-                        GtvString(it)
-                    }
-                }
-            }
+            .transformAll { args -> args.map(::parseArgAsGtv) }
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget

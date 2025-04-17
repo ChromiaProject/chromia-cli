@@ -12,6 +12,7 @@ import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.evmAuthOption
+import com.chromia.cli.util.parseArgAsGtv
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -31,9 +32,6 @@ import net.postchain.common.tx.TransactionStatus
 import net.postchain.d1.client.ChromiaClientProvider
 import net.postchain.d1.iccf.IccfProofTxMaterialBuilder
 import net.postchain.gtv.GtvFactory.decodeGtv
-import net.postchain.gtv.GtvString
-import net.postchain.gtv.parse.GtvParser
-
 
 class TxCommand : ChromiaCommand(help = """
     Make a transaction towards a node.
@@ -98,15 +96,7 @@ class TxCommand : ChromiaCommand(help = """
     )
     )
             .multiple()
-            .transformAll { args ->
-                args.map {
-                    try {
-                        GtvParser.parse(it)
-                    } catch (_: IllegalArgumentException) {
-                        GtvString(it)
-                    }
-                }
-            }
+            .transformAll { args -> args.map(::parseArgAsGtv) }
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
