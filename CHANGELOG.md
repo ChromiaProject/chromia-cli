@@ -10,6 +10,17 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.26.1] - 2025-04-22
+### Added
+- `chr kegen`: Set file permissions on private key and mnemonic files
+- `chr tx`:  Improve output from tx command
+- Improve parsing of GTV expressions passed to commands. Support keywords like `null`, `true`, `false`
+- Improve logging. Include `com.chromia` package
+
+### Fixed
+- `chr node start` Display correct blockchain BRID when using old configurations
+- `chr deployment create` Correct indentation for print statement with multiple successful deployed chains
+  
 ## [0.26.0] - 2025-04-04
 ### Added
 - `chr build`: Added `--hide-lib-warnings` flag to suppress library warnings
