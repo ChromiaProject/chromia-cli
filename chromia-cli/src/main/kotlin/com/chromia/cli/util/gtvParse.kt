@@ -7,6 +7,7 @@ import net.postchain.gtv.parse.GtvParser
 
 val GtvPattern = Regex("""^(["'\[x0-9-]|null|true|false).*""")
 val RidPattern = Regex("""^[0-9a-fA-F]{64}$""")
+val DecimalPattern = Regex("""^-?[0-9]+\.[0-9]+$""")
 
 /**
  * Parses the given string as a GTV (Generic Typed Value) object. If the string is non-blank
@@ -20,7 +21,8 @@ val RidPattern = Regex("""^[0-9a-fA-F]{64}$""")
  * @throws IllegalArgumentException If the input string is blank or starts like a valid GTV expression but does not
  * follow the expected GTV format.
  */
-fun parseArgAsGtv(s: String): Gtv = if (GtvPattern.matches(s) && !RidPattern.matches(s)) {
+fun parseArgAsGtv(s: String): Gtv = if (GtvPattern.matches(s)
+        && !RidPattern.matches(s) && !DecimalPattern.matches(s)) {
     try {
         GtvParser.parse(s)
     } catch (e: IllegalArgumentException) {

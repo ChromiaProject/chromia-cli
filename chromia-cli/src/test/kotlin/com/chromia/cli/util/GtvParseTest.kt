@@ -82,6 +82,30 @@ class GtvParseTest {
     }
 
     @Test
+    fun `should return GTV string when input is decimal`() {
+        // Arrange
+        val input = "1.2"
+
+        // Act
+        val result: Gtv = parseArgAsGtv(input)
+
+        // Assert
+        assertThat(result).isEqualTo(GtvString(input))
+    }
+
+    @Test
+    fun `should return GTV string when input is negative decimal`() {
+        // Arrange
+        val input = "-1.2"
+
+        // Act
+        val result: Gtv = parseArgAsGtv(input)
+
+        // Assert
+        assertThat(result).isEqualTo(GtvString(input))
+    }
+
+    @Test
     fun `should return parsed Gtv object when input starts with dash`() {
         // Arrange
         val input = "-123"

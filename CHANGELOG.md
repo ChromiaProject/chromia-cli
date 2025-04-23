@@ -12,7 +12,7 @@ Keep this in mind when writing and styling any note.
 
 ## [0.26.2] - 2025-04-23
 ### Fixed
-- `chr query`: Accept plain RID as parameter to query command
+- `chr query`: Accept plain RID and decimal as parameter to query command
 
 ## [0.26.1] - 2025-04-22
 ### Added
