@@ -72,13 +72,13 @@ class GtvParseTest {
     @Test
     fun `should return parsed Gtv object when input starts with digit`() {
         // Arrange
-        val input = "123"
+        val input = "1234"
 
         // Act
         val result: Gtv = parseArgAsGtv(input)
 
         // Assert
-        assertThat(result).isEqualTo(GtvInteger(123))
+        assertThat(result).isEqualTo(GtvInteger(1234))
     }
 
     @Test
@@ -103,6 +103,18 @@ class GtvParseTest {
 
         // Assert
         assertThat(result).isEqualTo(GtvByteArray("123456".hexStringToByteArray()))
+    }
+
+    @Test
+    fun `should return GTV string when input not start with x but is a valid hex string of length 64`() {
+        // Arrange
+        val input = "07AAE80AC5D46A8D5911EFB276EA8F7F510CA185F92E6FE615F6DE1A863EC616"
+
+        // Act
+        val result: Gtv = parseArgAsGtv(input)
+
+        // Assert
+        assertThat(result).isEqualTo(GtvString(input))
     }
 
     @Test

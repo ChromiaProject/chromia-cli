@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.26.2] - 2025-04-23
+### Fixed
+- `chr query`: Accept plain RID as parameter to query command
+
 ## [0.26.1] - 2025-04-22
 ### Added
 - `chr kegen`: Set file permissions on private key and mnemonic files
