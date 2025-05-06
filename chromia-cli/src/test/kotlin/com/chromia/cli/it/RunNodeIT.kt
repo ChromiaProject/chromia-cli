@@ -7,6 +7,7 @@ import java.io.File
 import java.nio.file.Path
 import java.time.Duration
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.io.TempDir
 
 class RunNodeIT {
@@ -88,6 +89,7 @@ class RunNodeIT {
     }
 
     @Test
+    @Timeout(60)
     fun icmfMessageIsReceived() {
         testData(dir) {
             config {
@@ -145,6 +147,88 @@ class RunNodeIT {
                     TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted and confirmed").start()
                     // Make sure a block gets built by making a dummy operation (We could also just wait maxBlockTime)
                     TestProcess.Builder("tx", "--cid", "1", "dummy", "--await").startCondition("was posted and confirmed").start()
+                    // Verify that message was received
+                    TestProcess.Builder("query", "--cid", "1", "get_messages").wholeOutput("""
+                        |[
+                        |  [
+                        |    "msg": "Hello!",
+                        |    "topic": "L_msg"
+                        |  ]
+                        |]""".trimMargin()).start()
+                }
+    }
+
+    @Test
+    @Timeout(60)
+    fun icmfMessageReceptionErrorIsHandled() {
+        testData(dir) {
+            config {
+                blockchains("""
+                    blockchains:
+                      sender:
+                        module: sender
+                        config:
+                          blockstrategy:
+                            mininterblockinterval: 25
+                            maxblocktime: 1000
+                          gtx:
+                            modules:
+                              - "net.postchain.d1.icmf.IcmfSenderGTXModule"
+                      receiver:
+                        module: receiver
+                        config:
+                          icmf:
+                            receiver:
+                              local:
+                                - brid: null
+                                  topic: "L_msg"
+                          gtx:
+                            modules:
+                              - "net.postchain.d1.icmf.IcmfReceiverGTXModule"
+                          sync_ext:
+                            - "net.postchain.d1.icmf.IcmfReceiverSynchronizationInfrastructureExtension"
+                """.trimIndent())
+            }
+            addSourceFile("sender.rell", """
+                module;
+                operation send_message(text) {
+                    op_context.emit_event("icmf_message", (topic = "L_msg", body = text.to_gtv()).to_gtv_pretty());
+                }
+            """.trimIndent())
+            addSourceFile("receiver.rell", """
+                module;
+                operation dummy(i: integer) {}
+                object state {
+                  mutable ready: boolean = false;
+                }
+                operation ready() {
+                  state.ready = true;
+                }
+                entity msg {
+                  topic: text;
+                  msg: text;
+                }
+                operation __icmf_message(sender: byte_array, topic: text, body: gtv) {
+                    require(state.ready, "Not ready to receive ICMF message");
+                    log("Ready to receive ICMF message!");
+                    create msg(topic = topic, msg = text.from_gtv(body));
+                }
+                query get_messages() = msg @*{}($.to_struct());
+            """.trimIndent())
+        }
+        TestProcess.Builder("node", "start", "--wipe")
+                .awaitCompletion(false)
+                .startCondition(INITILIZED_LOG)
+                .setWorkingDir(dir.toFile())
+                .start {
+                    // Send message
+                    TestProcess.Builder("tx", "--cid", "0", "send_message", "Hello!", "--await").startCondition("was posted and confirmed").start()
+                    // Make sure a block gets built by making a dummy operation
+                    TestProcess.Builder("tx", "--cid", "1", "dummy", "1", "--await").startCondition("was posted and confirmed").start()
+                    // Make it ready to receive messages
+                    TestProcess.Builder("tx", "--cid", "1", "ready", "--await").startCondition("was posted and confirmed").start()
+                    // Make sure a block gets built by making a dummy operation
+                    TestProcess.Builder("tx", "--cid", "1", "dummy", "2", "--await").startCondition("was posted and confirmed").start()
                     // Verify that message was received
                     TestProcess.Builder("query", "--cid", "1", "get_messages").wholeOutput("""
                         |[

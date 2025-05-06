@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.26.3]
+### Added
+- `chr node start`: More production like ICMF reception error handling
+
 ## [0.26.2] - 2025-04-23
 ### Fixed
 - `chr query`: Accept plain RID and decimal as parameter to query command
