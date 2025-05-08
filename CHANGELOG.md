@@ -13,6 +13,14 @@ Keep this in mind when writing and styling any note.
 ## [0.26.3]
 ### Added
 - `chr node start`: More production like ICMF reception error handling
+- **Version Bumps**
+  - rell 0.14.10
+  - postchain 3.34.0
+  - postchain-client 3.29.2
+  - chromia-cli-tools 0.5.2
+  - rell-toolbox 0.7.1
+  - rell-codegen 0.16.4
+  - rell-dokka 0.2.12
 
 ## [0.26.2] - 2025-04-23
 ### Fixed
