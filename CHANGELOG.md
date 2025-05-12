@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.26.4] - 2025-05-12
+### Fixed
+- Displaying wrong blockchain config merkel hash
+
 ## [0.26.3]
 ### Added
 - `chr node start`: More production like ICMF reception error handling
