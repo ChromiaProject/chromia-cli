@@ -10,6 +10,11 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.0] - 2025-05-15
+### Added
+- Seeder tool for generating realistic data for testing Dapps.
+- Additional modules support for documentation generation.
+
 ## [0.26.4] - 2025-05-12
 ### Fixed
 - Displaying wrong blockchain config merkel hash

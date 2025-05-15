@@ -16,6 +16,7 @@ import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
 import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
+import com.chromia.cli.command.seeder.SeederCommand
 import com.chromia.cli.command.tools.ToolsCommand
 import com.chromia.cli.tools.launcher.CliLauncher
 import com.github.ajalt.clikt.core.subcommands
@@ -53,6 +54,7 @@ fun main(args: Array<out String>) = object : CliLauncher("chr") {
                 CodeCommand.commands(),
                 FetchConfigCommand(),
                 MultiSignatureCommand.commands(),
-                ToolsCommand.commands()
+                ToolsCommand.commands(),
+                SeederCommand.commands(),
         )
         .catchingAllExceptionsMain(args)
