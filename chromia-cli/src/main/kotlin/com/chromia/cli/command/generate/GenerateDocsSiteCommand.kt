@@ -48,6 +48,14 @@ class GenerateDocsSiteCommand : ChromiaCommand(
 
     private fun formatLibraryPaths() = model.libs.keys.map { "lib.$it" }.toSet()
 
+    val additionalModules by lazy { model.docs.additionalModules ?: emptyList() }
+
+    val mainModules by lazy {
+        settings.model!!.blockchains.map {
+            it.value.module ?: throw CliktError("Cannot generate docs for ${it.key} without main module")
+        }
+    }
+
     override fun run() {
 
         require(system || settings.model != null) { "Project settings file not found" }
@@ -65,9 +73,7 @@ class GenerateDocsSiteCommand : ChromiaCommand(
         true -> RellDokkaPluginConfigurationBuilder.SYSTEM.includes(systemIncludes)
         else -> RellDokkaPluginConfigurationBuilder(
                 title = model.docs.title,
-                modules = settings.model!!.blockchains.map {
-                    it.value.module ?: throw CliktError("Cannot generate docs for ${it.key} without main module")
-                },
+                modules = mainModules,
                 projectRoot = settings.sourceDir!!
         )
                 .customStyleSheets(model.docs.customStyleSheets)
@@ -75,6 +81,7 @@ class GenerateDocsSiteCommand : ChromiaCommand(
                 .includes(model.docs.additionalContentFiles)
                 .footerMessage(model.docs.footerMessage)
                 .filteredModules(getFilteredModules(formatLibraryPaths(), include))
+                .additionalModules(additionalModules)
                 .apply {
                     model.docs.sourceLink?.let {
                         val localDirectory = model.compile.source
