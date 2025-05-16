@@ -14,6 +14,7 @@ Keep this in mind when writing and styling any note.
 ### Added
 - Seeder tool for generating realistic data for testing Dapps.
 - Additional modules support for documentation generation.
+- Pause and resume container
 
 ## [0.26.4] - 2025-05-12
 ### Fixed

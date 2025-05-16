@@ -25,7 +25,7 @@
         <rell.dokka.version>0.2.14</rell.dokka.version>
         <rell.toolbox.version>0.8.0</rell.toolbox.version>
         <eif.version>0.13.1</eif.version>
-        <directory.chain.version>1.83.0</directory.chain.version>
+        <directory.chain.version>1.94.0</directory.chain.version>
         <chromia.cli.tools.version>0.5.4</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
