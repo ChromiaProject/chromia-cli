@@ -1,6 +1,7 @@
 package com.chromia.cli.command
 
 import com.chromia.build.tools.test.xmlTestReport
+import com.chromia.cli.coverage.CodeCoverageCollector
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.sql.SqlStatisticsCollector
 import com.chromia.cli.sql.SqlStatisticsRenderer
@@ -79,10 +80,15 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
             .boolean()
             .optionalValueLazy { true }
 
+    private val coverage by option(help = "Enable code coverage")
+            .boolean()
+            .optionalValueLazy { true }
+
     private val timestamp by option("-ts", "--timestamp", help = "Timestamp on logs").flag()
 
     private val sqlStatisticsCollector by lazy { SqlStatisticsCollector() }
     private val sqlStatisticsRenderer by lazy { SqlStatisticsRenderer(this, sqlLogType) }
+    private val codeCoverageCollector by lazy { CodeCoverageCollector() }
 
     override fun run() {
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
@@ -127,6 +133,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
             sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
         }
         printResults(res)
+        codeCoverageCollector.writeReport(testReportPath.resolve("coverage.cobertura.xml "))
     }
 
     private fun shouldRunUnitTests() = blockchains.isEmpty()
@@ -174,6 +181,8 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
             sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
         }
         printResults(res)
+
+        codeCoverageCollector.writeReport(testReportPath.resolve("${blockchain}-coverage.xml"))
     }
 
     private fun createTestConfig(testModuleArgs: Map<String, Map<String, Gtv>>, additionalGtxModules: List<String>? = null,
@@ -194,6 +203,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                 .testPatterns(tests)
                 .databaseUrl(if (useDB) "${settings.model.databaseUrl}&currentSchema=${settings.model.databaseSchema}_tests" else null)
                 .stopOnError(failOnError ?: settings.model.test.failOnError)
+                .coverage(coverage == true)
                 .sqlErrorLog(settings.model.logSqlErrors)
                 .logPrinter { s -> echo("${if (timestamp) LocalTime.now().format(timeFormatter) else ""}$s") }
                 .outPrinter(::echo)
@@ -204,6 +214,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                 }
                 .onTestCaseFinished { res ->
                     res.print()
+                    if (coverage == true) codeCoverageCollector.onTestCaseFinished(res)
                     sqlStatisticsCollector.onTestCaseFinished(res)
                 }
                 .sqlLog(false)
@@ -277,3 +288,4 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         return line
     }
 }
+
