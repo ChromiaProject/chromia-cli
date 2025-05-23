@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.core.ParameterHolder
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
@@ -78,3 +79,8 @@ fun ParameterHolder.evmAuthOption() = option(help = "Adds ft4.evm_auth operation
             (if (it.startsWith("0x")) it.drop(2) else it).hexStringToByteArray()
         }
         .validate { require(it.size == 20) { "EVM address must be 20 bytes" } }
+
+fun ParameterHolder.hideLibWarningsOption() =
+        option("--hide-lib-warnings")
+                .flag(default = false)
+                .help("Hide library warnings in build output")

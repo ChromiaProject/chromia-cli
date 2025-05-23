@@ -1,0 +1,22 @@
+module;
+
+object settings {
+    internal_default_threshold: integer = 100;
+}
+
+function get_optional_threshold(): integer? {
+    return settings.internal_default_threshold;
+}
+
+function get_effective_threshold(): integer {
+    val current_threshold_setting = get_optional_threshold();
+    if (current_threshold_setting != null) {
+        return current_threshold_setting!!;
+    } else {
+        return 0;
+    }
+}
+
+query get_lib_value_for_warning_check(): integer {
+    return get_effective_threshold();
+}

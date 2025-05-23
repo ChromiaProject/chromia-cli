@@ -5,13 +5,14 @@ import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.sql.SqlStatisticsCollector
 import com.chromia.cli.sql.SqlStatisticsRenderer
 import com.chromia.cli.tools.config.chromiaModelOption
-import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.tools.formatter.success
 import com.chromia.cli.tools.formatter.warning
+import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.addWhitelistedGTXModules
 import com.chromia.cli.util.blockchainOption
+import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
@@ -80,6 +81,8 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
             .optionalValueLazy { true }
 
     private val timestamp by option("-ts", "--timestamp", help = "Timestamp on logs").flag()
+
+    private val hideLibWarnings by hideLibWarningsOption()
 
     private val sqlStatisticsCollector by lazy { SqlStatisticsCollector() }
     private val sqlStatisticsRenderer by lazy { SqlStatisticsRenderer(this, sqlLogType) }
@@ -180,7 +183,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                                  appModuleInTestsError: Boolean = false): RellApiRunTests.Config {
         val compileConf = RellApiCompile.Config.Builder()
                 .moduleArgs(testModuleArgs)
-                .cliEnv(CliktCliEnv(this))
+                .cliEnv(BuildCliEnv(this, hideLibWarnings))
                 .includeTestSubModules(true)
                 .appModuleInTestsError(appModuleInTestsError)
                 .addWhitelistedGTXModules(additionalGtxModules)

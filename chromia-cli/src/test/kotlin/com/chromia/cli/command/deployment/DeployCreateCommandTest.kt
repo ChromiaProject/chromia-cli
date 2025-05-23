@@ -5,24 +5,24 @@ import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.keystore.ChromiaKeyStore
-import com.chromia.build.tools.restapi.DirectoryChainModel
-import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.*
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
-import com.chromia.build.tools.restapi.withClusterManagement
-import com.chromia.build.tools.restapi.withCompression
-import com.chromia.build.tools.restapi.withQuery
-import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
-import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.ClusterManagementStub
+import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
 import net.postchain.crypto.KeyPair
@@ -31,10 +31,12 @@ import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
@@ -218,5 +220,37 @@ class DeployCreateCommandTest {
             assertThat(throwable.message).isEqualTo("Blockchain 'deployed' is already defined in the configuration file: '${settingsFile.absoluteFile}' under the deployment: 'test'")
         }
 
+    }
+
+    @Test
+    fun `should hide library warnings with hide-lib-warnings option`() {
+        val projectResourceUrl = javaClass.classLoader.getResource("dapp_with_libWarnings")
+                ?: fail { "dapp_with_libWarnings not found" }
+        val projectPath = Paths.get(projectResourceUrl.toURI())
+        val chromiaYmlPath = projectPath.resolve("chromia.yml").absolutePathString()
+
+        val terminalRecorder = TerminalRecorder()
+        val terminal = Terminal(terminalInterface = terminalRecorder, ansiLevel = AnsiLevel.NONE)
+
+        withModel(model.withCompression()
+                .withQuery("find_blockchain_rid", gtv(BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")))
+        ) {
+            val resultWithoutFlag = DeployCreateCommand().context { this.terminal = terminal }
+                .test(listOf("-s", chromiaYmlPath, "--secret", secret.absolutePath, "--blockchain", "testlib", "--network", "test", "-y"))
+            
+            val outputWithoutHiding = resultWithoutFlag.stderr
+
+            val resultWithFlag = DeployCreateCommand().context { this.terminal = terminal }
+                .test(listOf("-s", projectPath.resolve("chromia.yml").absolutePathString(), "--secret", secret.absolutePath, "--blockchain", "testlib", "--network", "test", "-y", "--hide-lib-warnings"))
+
+            val outputWithHiding = resultWithFlag.stderr
+
+
+            assertThat(outputWithoutHiding).contains("lib/testlib")
+            assertThat(outputWithHiding).doesNotContain("lib/testlib")
+
+            assertThat(outputWithoutHiding).contains("Lib Warnings:")
+            assertThat(outputWithHiding).contains("Lib Warnings:")
+        }
     }
 }

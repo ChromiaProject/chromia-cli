@@ -3,16 +3,23 @@ package com.chromia.cli.command.generate
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
+import assertk.assertions.doesNotContain
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import com.chromia.cli.util.CommandExtension
 import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import java.io.File
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.RegisterExtension
+import java.nio.file.Paths
 
 internal class GenerateClientStubsCommandTest {
 
@@ -170,5 +177,40 @@ internal class GenerateClientStubsCommandTest {
         val res = command.parse(listOf("-s", "$targetDir/chromia.yml", "--typescript"))
         assertThat(res.stderr).contains("Query return type contains unsupported mixed tuple type")
         assertThat(res.statusCode).isEqualTo(1)
+    }
+
+    @Test
+    fun `should hide library warnings with hide-lib-warnings option`() {
+        val projectResourceUrl = javaClass.classLoader.getResource("dapp_with_libWarnings")
+        val projectPath = Paths.get(projectResourceUrl.toURI())
+        val chromiaYmlPath = projectPath.resolve("chromia.yml")
+
+        val buildDir = projectPath.resolve("build").toFile()
+        if (buildDir.exists()) {
+            buildDir.deleteRecursively()
+        }
+
+        val terminalRecorder = TerminalRecorder()
+        val terminal = Terminal(terminalInterface = terminalRecorder, ansiLevel = AnsiLevel.NONE)
+
+        GenerateClientStubsCommand().context { this.terminal = terminal }
+            .parse(listOf("--settings", chromiaYmlPath.toString(),
+                          "--typescript"))
+
+        val outputWithoutHiding = terminalRecorder.stderr()
+        terminalRecorder.clearOutput()
+
+        GenerateClientStubsCommand().context { this.terminal = terminal }
+            .parse(listOf("--settings", chromiaYmlPath.toString(),
+                          "--typescript",
+                          "--hide-lib-warnings"))
+
+        val outputWithHiding = terminalRecorder.stderr()
+
+        assertThat(outputWithoutHiding).contains("lib/testlib/warn.rell")
+        assertThat(outputWithHiding).doesNotContain("lib/testlib/warn.rell")
+
+        assertThat(outputWithoutHiding).contains("Lib Warnings: 1")
+        assertThat(outputWithHiding).contains("Lib Warnings: 1")
     }
 }

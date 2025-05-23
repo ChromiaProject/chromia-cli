@@ -2,6 +2,8 @@ package com.chromia.cli.command.generate
 
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.optionalChromiaModelOption
+import com.chromia.cli.util.BuildCliEnv
+import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.util.targetDirectoryOption
 import com.chromia.rell.dokka.RellDokkaGenerator
 import com.chromia.rell.dokka.config.RellDokkaPluginConfigurationBuilder
@@ -42,6 +44,8 @@ class GenerateDocsSiteCommand : ChromiaCommand(
     """.trimIndent()
     ).multiple()
 
+    private val hideLibWarnings by hideLibWarningsOption()
+
     fun getFilteredModules(libs: Set<String>, explicitIncluded: List<String>): List<String> {
         return libs.minus(explicitIncluded.toSet()).toList()
     }
@@ -61,9 +65,11 @@ class GenerateDocsSiteCommand : ChromiaCommand(
         require(system || settings.model != null) { "Project settings file not found" }
         require(!system || target != null) { "Please specify target folder when generating system docs" }
         val targetFolder = target ?: File(settings.targetDir!!, "site")
+        val buildCliEnv = BuildCliEnv(this, hideLibWarnings)
 
         val builder = configBuilder()
                 .targetFolder(targetFolder)
+                .cliEnv(buildCliEnv)
         RellDokkaGenerator(builder)
                 .generate()
         echo("Documentation generated at $targetFolder")

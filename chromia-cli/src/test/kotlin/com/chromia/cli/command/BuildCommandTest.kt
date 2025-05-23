@@ -5,6 +5,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsAll
 import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isNotEmpty
@@ -13,6 +14,7 @@ import assertk.assertions.isTrue
 import com.chromia.build.tools.compile.ValidationException
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.RellLibraryModel
+import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.CommandExtension
 import com.chromia.cli.util.TestRepositoryCloner
 import com.github.ajalt.clikt.core.context
@@ -30,10 +32,17 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.nio.file.Path
 import kotlin.test.assertFailsWith
 import com.github.ajalt.clikt.core.CliktCommand
 import io.mockk.*
+import org.junit.jupiter.api.fail
+import java.nio.file.Paths
+import kotlin.io.path.absolute
+import kotlin.io.path.absolutePathString
+
 internal class BuildCommandTest {
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(terminalInterface = logger)
@@ -239,11 +248,35 @@ internal class BuildCommandTest {
     }
 
     @Test
+    fun `should hide library warnings with hide-lib-warnings option`() {
+        val projectResourceUrl = javaClass.classLoader.getResource("dapp_with_libWarnings")
+                ?: fail { "dapp_with_libWarnings not found" }
+        val projectPath = Paths.get(projectResourceUrl.toURI())
+        val chromiaYmlPath = projectPath.resolve("chromia.yml").absolutePathString()
+
+        val terminalRecorder = TerminalRecorder()
+        val terminal = Terminal(terminalInterface = terminalRecorder)
+        
+        BuildCommand().context { this.terminal = terminal }
+            .parse(listOf("--settings", chromiaYmlPath))
+        val outputWithoutHiding = terminalRecorder.stderr()
+
+        terminalRecorder.clearOutput()
+        
+        BuildCommand().context { this.terminal = terminal }
+            .parse(listOf("--settings", dir.resolve("chromia.yml").toString(), "--hide-lib-warnings"))
+        val outputWithHiding = terminalRecorder.stderr()
+        
+        assertThat(outputWithoutHiding).contains("lib/testlib")
+        assertThat(outputWithHiding).doesNotContain("lib/testlib")
+    }
+
+    @Test
     fun `test message routing in BuildCommandCliEnv`() {
         val mockCmd = mockk<CliktCommand>()
         every { mockCmd.echo(any(), any(), any()) } just Runs
         
-        val env = BuildCommandCliEnv(mockCmd, hideLibWarnings = false)
+        val env = BuildCliEnv(mockCmd, hideLibWarnings = false)
         
         val regularMsg = "This is a regular message"
         val userWarningMsg = "src/main.rell Warning: Missing semicolon"

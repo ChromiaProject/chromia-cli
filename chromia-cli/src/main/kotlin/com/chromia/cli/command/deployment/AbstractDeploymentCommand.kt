@@ -8,13 +8,14 @@ import com.chromia.api.result.isSuccess
 import com.chromia.api.result.save
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaModelConfigOption
-import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.keepOnlyStandardGtxModules
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.DeployedNetworkOption
+import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
@@ -42,6 +43,8 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     val networkTarget by DeployedNetworkOption { settings.model }
 
+    private val hideLibWarnings by hideLibWarningsOption()
+
     protected val client by lazy {
         val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         clientConfig.configureSigners(keyPairSource)
@@ -65,7 +68,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     }
 
     final override fun run() {
-        val cliEnv = CliktCliEnv(this@AbstractDeploymentCommand)
+        val cliEnv = BuildCliEnv(this, hideLibWarnings)
         val chainsToDeploy = blockchain ?: explicitChainsToDeploy()
         val res = ChromiaCompileApi.build(cliEnv, settings.model.filterBlockchains(chainsToDeploy))
                 .onEach { it.keepOnlyStandardGtxModules().validate() }

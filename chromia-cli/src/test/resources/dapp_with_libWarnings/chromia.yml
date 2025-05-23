@@ -1,0 +1,16 @@
+blockchains:
+  testlib:
+    module: main
+deployments:
+  test:
+    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+    url: "http://localhost:7745"
+    container: test_container
+libs:
+  testlib:
+    insecure: true
+    path: lib/testlib
+    registry: gitlab.com/chromia/testlib
+docs:
+  title: "DOCUMENTATION"
+  footerMessage: © 2024 Chromia

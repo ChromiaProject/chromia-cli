@@ -1,0 +1,8 @@
+module;
+
+import lib.testlib.warn.{get_lib_value_for_warning_check};
+
+query get_data_and_check_lib_warning() {
+    val lib_val = get_lib_value_for_warning_check();
+    return "Main app with lib value: %s".format(lib_val);
+}

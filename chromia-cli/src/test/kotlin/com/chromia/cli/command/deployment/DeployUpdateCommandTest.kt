@@ -12,33 +12,43 @@ import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withCompression
 import com.chromia.build.tools.restapi.withInvalidConfiguration
+import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.restapi.withRellVersion
 import com.chromia.build.tools.restapi.withValidConfiguration
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
+import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
 import com.chromia.cli.util.DeploymentTestModel
-import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.versionfinder.RellDeployVersionException
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.PostchainContext
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.PostchainModel
+import net.postchain.chromia.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.BaseCryptoSystem
 import net.postchain.gtv.Gtv
+import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvInteger
 import net.postchain.managed.ManagedNodeDataSource
 import net.postchain.managed.config.ManagedBlockchainConfiguration
 import net.postchain.rell.api.base.RellCliBasicException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.fail
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
@@ -46,6 +56,8 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.test.assertNotNull
@@ -297,6 +309,52 @@ class DeployUpdateCommandTest {
         }
     }
 
+    @Test
+    fun `should hide library warnings with hide-lib-warnings option`() {
+        val projectResourceUrl = DeployUpdateCommandTest::class.java.classLoader.getResource("dapp_with_libWarnings")
+                ?: fail { "dapp_with_libWarnings not found under test resources" }
+        val projectPath = Paths.get(projectResourceUrl.toURI())
+        val chromiaYml = projectPath.resolve("chromia.yml").absolutePathString()
+
+        val terminalRecorder = TerminalRecorder()
+        val terminal = Terminal(terminalInterface = terminalRecorder, ansiLevel = AnsiLevel.NONE)
+
+        withModel(model.withCompression(), SuccessfulDeploymentModelForLib(deployedChainBrid)) {
+            val resultWithoutFlag = DeployUpdateCommand().context { this.terminal = terminal }
+                    .test(
+                            listOf(
+                                    "-s",
+                                    chromiaYml,
+                                    "--secret", secret.absolutePath,
+                                    "--blockchain", "testlib",
+                                    "--network", "test"
+                            )
+                    )
+
+            val outputWithoutHiding = resultWithoutFlag.stderr
+
+            val resultWithFlag = DeployUpdateCommand().context { this.terminal = terminal }
+                    .test(
+                            listOf(
+                                    "-s",
+                                    chromiaYml,
+                                    "--secret", secret.absolutePath,
+                                    "--blockchain", "testlib",
+                                    "--network", "test",
+                                    "--hide-lib-warnings"
+                            )
+                    )
+
+            val outputWithHiding = resultWithFlag.stderr
+
+            assertThat(outputWithoutHiding).contains("lib/testlib")
+            assertThat(outputWithHiding).doesNotContain("lib/testlib")
+
+            assertThat(outputWithoutHiding).contains("Lib Warnings: 1")
+            assertThat(outputWithHiding).contains("Lib Warnings: 1")
+        }
+    }
+
     private fun createManagedModeMockModel(bcRid: BlockchainRid, verifyDigestValue: Boolean): PostchainModel {
         return mock<PostchainModel> {
             on { live } doReturn true
@@ -354,4 +412,27 @@ class SuccessfulDeploymentUpdateModel(val model: Model) : Model by model {
 
         return GtvEncoder.encodeGtv(config)
     }
+}
+
+class SuccessfulDeploymentModelForLib(val model: Model): Model by model {
+        constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
+
+        override fun validateBlockchainConfiguration(configuration: Gtv) {}
+
+        override fun getBlockchainConfiguration(height: Long): ByteArray? {
+            val resourceUrl = DeployUpdateCommandTest::class.java.classLoader.getResource("dapp_with_libWarnings")
+                    ?: fail { "dapp_with_libWarnings not found under test resources" }
+            val projectPath = Paths.get(resourceUrl.toURI())
+
+            val fileMap = mutableMapOf<String, String>()
+            projectPath.toFile().walk()
+                    .filter { it.isFile && it.name.endsWith(".rell") }
+                    .forEach {
+                        val relativePath = projectPath.relativize(it.toPath()).toString()
+                        fileMap[relativePath] = it.readText()
+                    }
+
+            val config = DeploymentTestDataCreator.buildGtvConfig(fileMap)
+            return GtvEncoder.encodeGtv(config)
+        }
 }
