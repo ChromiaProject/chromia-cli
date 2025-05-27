@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.1] - 2025-xx-yy
+### Fixed
+- Make reading of saved transactions more robust and show an error message if it fails.
+
 ## [0.27.0] - 2025-05-15
 ### Added
 - Seeder tool for generating realistic data for testing Dapps.

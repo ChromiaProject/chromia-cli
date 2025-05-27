@@ -3,8 +3,8 @@ package com.chromia.cli.command.multisignature
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.tools.config.configureSigners
-import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.chromia.cli.util.getFormattedUtcDateTime
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
@@ -33,7 +33,7 @@ class MultiSignatureSignCommand : ChromiaCommand(name = "sign", help = "Sign a e
     override fun run() {
         chromiaConfig.config.configureSigners(keyPairSource)
         val signer = chromiaConfig.config.signers
-        val txData = parseTransactionFile(transactionFile)
+        val txData = MultiSignatureTxData.parseTransactionFile(transactionFile)
         val signedTransaction = signTransaction(txData.transaction, txData.txRid, signer)
         saveTransactionToFile(signedTransaction, txData.txRid)
     }

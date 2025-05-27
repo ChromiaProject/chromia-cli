@@ -2,11 +2,11 @@ package com.chromia.cli.command.multisignature
 
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.configureSigners
+import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.tools.config.configureSigners
-import com.chromia.cli.tools.config.keyPairSourceOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -35,7 +35,7 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
         postchainClientConfig.configureSigners(keyPairSource)
 
         val transactionBuilder = target.createClient(postchainClientConfig).transactionBuilder()
-        val txData = parseTransactionFile(transactionFile)
+        val txData = MultiSignatureTxData.parseTransactionFile(transactionFile)
 
         val signedTransaction = try {
             signTransaction(txData.transaction, txData.txRid, postchainClientConfig.signers)
