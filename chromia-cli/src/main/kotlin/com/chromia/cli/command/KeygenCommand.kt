@@ -1,5 +1,6 @@
 package com.chromia.cli.command
 
+import com.chromia.build.tools.config.ChromiaConfigLoader
 import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
@@ -9,16 +10,19 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.optionalValue
 import com.github.ajalt.clikt.parameters.types.file
-import java.io.File
-import java.io.FileOutputStream
-import java.util.Properties
 import net.postchain.common.toHex
 import net.postchain.crypto.KeyPair
 import net.postchain.crypto.Secp256K1CryptoSystem
+import java.io.File
+import java.io.FileOutputStream
+import java.util.Properties
 import kotlin.io.path.absolutePathString
 
 class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/private key pair") {
+
+    val configLoader = ChromiaConfigLoader { msg -> echo(msg, err = true) }
 
     private val wordList by option(
             "-m", "--mnemonic",
@@ -35,19 +39,29 @@ class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/p
                     .file(canBeDir = false)
                     .convert { KeygenOutputMode.PropertiesFile(it.name, it.parentFile, it) },
 
-            option2 = option("--key-id", help = "Name the generated key with an id")
-                    .convert { KeygenOutputMode.KeyIdFile(it) },
+            option2 = option("--get-pubkey",
+                    help = """
+                        Print the active public key. If no key-id is specified, the key is determined from your configuration;
+                        otherwise, retrieves the public key for the given key-id.
+                     """
+            ).convert { KeygenOutputMode.GetPubkey(it) }
+                    .optionalValue(KeygenOutputMode.GetPubkey("")),
 
             options = arrayOf(
                     option("--dry", help = "Perform dry run, prints keys in terminal and does not save keys to disk").flag()
-                            .convert { KeygenOutputMode.DryRun }
+                            .convert { KeygenOutputMode.DryRun },
+                    option("--key-id", help = "Name the generated key with an id")
+                            .convert { KeygenOutputMode.KeyIdFile(it) }
             )
+
     ).single().required()
+
 
     /**
      * Cryptographic key generator. Will generate a pair of public and private keys and print to stdout.
      */
     override fun run() {
+
         val (keyPair, mnemonic) = generateSecp256k1KeyPairWithMnemonic(wordList)
 
         when (keygenOutputMode) {
@@ -91,12 +105,34 @@ class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/p
                 """.trimMargin())
             }
 
+            is KeygenOutputMode.GetPubkey -> {
+                val keyId = (keygenOutputMode as KeygenOutputMode.GetPubkey).keyId
+
+                val pubkey = keyId.takeIf { it.isNotBlank() }?.let {
+                    retrievePublicKeyFrom(it)
+                } ?: retrieveActivePubKey(configLoader)
+
+                echo("pubkey: $pubkey")
+            }
+
             else -> {
                 PrintMessage("No keypair was generated, must provide one of --file, --key-id, --dry")
             }
         }
     }
+
 }
+
+private fun retrievePublicKeyFrom(keyId: String) =
+        ChromiaKeyStore(keyId).findKeyPair()?.pubKey?.data?.toHex()
+                ?: throw PrintMessage("No keypair found for key-id: $keyId", statusCode = 1)
+
+private fun retrieveActivePubKey(configLoader: ChromiaConfigLoader) =
+        configLoader.loadProperties().getString("pubkey")
+                ?: throw PrintMessage(
+                        "No pubkey found, in either your local/global configuration or the active key-id",
+                        statusCode = 1
+                )
 
 private fun generateSecp256k1KeyPairWithMnemonic(wordList: String): Pair<KeyPair, String> {
     val cs = Secp256K1CryptoSystem()
@@ -127,7 +163,7 @@ private fun saveSecp256k1Mnemonic(mnemonic: String, file: File, keyPair: KeyPair
                 It is highly recommended that you delete this file from your system once the phrase has been placed in a secure place or moved this file to a secure place. 
                 Mnemonic phrase generated:
                 $mnemonic
-            """.trimIndent()
+        """.trimIndent()
     )
 
     return file
@@ -137,4 +173,5 @@ sealed class KeygenOutputMode {
     data class PropertiesFile(val name: String, val directory: File?, val file: File) : KeygenOutputMode()
     data class KeyIdFile(val name: String) : KeygenOutputMode()
     data object DryRun : KeygenOutputMode()
+    data class GetPubkey(val keyId: String) : KeygenOutputMode()
 }

@@ -6,19 +6,16 @@ import assertk.assertions.exists
 import assertk.assertions.isEqualTo
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.io.path.readText
 import net.postchain.common.PropertiesFileLoader
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.*
+import kotlin.test.Ignore
 
 class KeygenCommandTest {
 
@@ -70,7 +67,7 @@ class KeygenCommandTest {
             val error = KeygenCommand().test(arrayOf(
                     "-m", "new shove leader great protect table leg witness walk night cable caution about produce engage armor first burden olive violin cube gentle bulk train"
             ))
-            assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: must provide one of --file, --key-id, --dry\n")
+            assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: must provide one of --file, --get-pubkey, --dry, --key-id\n")
         }
     }
 
@@ -122,7 +119,7 @@ class KeygenCommandTest {
                         "--key-id", "myKeyId",
                         "--file", ".secret",
                 ))
-        assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: option --file cannot be used with --key-id or --dry\n")
+        assertThat(error.stderr).isEqualTo("Usage: keygen [<options>]\n\nError: option --file cannot be used with --get-pubkey or --dry or --key-id\n")
     }
 
     @Test
@@ -149,5 +146,85 @@ class KeygenCommandTest {
         assertThat(privateKeyFile.exists()).isEqualTo(false)
         assertThat(publicKeyFile.exists()).isEqualTo(false)
         assertThat(secretFile.exists()).isEqualTo(false)
+    }
+
+    @Test
+    fun testRetrievePublicKeyWithSpecificKeyId(@TempDir dir: Path) {
+        val keyId = "testKeyId"
+        val pubkeyValue = "02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765"
+        val privkeyValue = "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429"
+        
+        val privateKeyFile = dir.resolve(keyId).toFile()
+        privateKeyFile.writeText(privkeyValue)
+        
+        val publicKeyFile = dir.resolve("$keyId.pubkey").toFile()
+        publicKeyFile.writeText(pubkeyValue)
+        
+        EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
+            val output = KeygenCommand().test(arrayOf("--get-pubkey", keyId))
+            assertThat(output.output).contains("pubkey: $pubkeyValue")
+        }
+    }
+    
+    @Test
+    fun testRetrievePublicKeyWithNonExistentKeyId(@TempDir dir: Path) {
+        val nonExistentKeyId = "nonExistentKeyId"
+        
+        EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
+            val output = KeygenCommand().test(arrayOf("--get-pubkey", nonExistentKeyId))
+            assertThat(output.output).isEqualTo("No keypair found for key-id: $nonExistentKeyId\n")
+        }
+    }
+    
+    @Test
+    fun testRetrievePublicKeyFromGlobalConfig(@TempDir dir: Path) {
+        val pubkeyValue = "02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765"
+        val privkeyValue = "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429"
+        
+        val config = dir.resolve("config").toFile()
+        config.writeText("""
+            pubkey: $pubkeyValue
+            privkey: $privkeyValue
+        """.trimIndent())
+        
+        EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
+            val output = KeygenCommand().test(arrayOf("--get-pubkey"))
+            assertThat(output.output).contains("pubkey: $pubkeyValue")
+        }
+    }
+    
+    @Test
+    fun testRetrievePublicKeyWithNoKeyFound(@TempDir dir: Path) {
+        EnvironmentVariables("CHROMIA_HOME", dir.toString()).execute {
+            val output = KeygenCommand().test(arrayOf("--get-pubkey"))
+            assertThat(output.output)
+                .isEqualTo("No pubkey found, in either your local/global configuration or the active key-id\n")
+        }
+    }
+
+    @Test
+    @Ignore("can't set user.dir to workingDir in order to test the retrieval of pubkey from local config")
+    fun testRetrievePublicKeyFromLocalConfig(@TempDir dir: Path) {
+        val pubkeyValue = "02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765"
+        val privkeyValue = "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429"
+
+        val workingDir = dir.resolve("working_dir").toFile().also { it.mkdir() }
+
+        val chromiaDir = workingDir.resolve(".chromia").also { it.mkdir() }
+
+        val configFile = chromiaDir.resolve("config").also { it.createNewFile() }
+        configFile.writeText("""
+            pubkey: $pubkeyValue
+            privkey: $privkeyValue
+        """.trimIndent())
+
+        EnvironmentVariables("CHROMIA_CONFIG", null)
+            .and("user.dir", chromiaDir.absolutePath)
+            .execute {
+                val result = KeygenCommand().test(arrayOf("--get-pubkey"))
+                println("currentDir --> ${dir.toAbsolutePath()}")
+                println("currentDir --> ${System.getProperty("user.dir")}")
+                assertThat(result.output).contains("pubkey: $pubkeyValue")
+        }
     }
 }
