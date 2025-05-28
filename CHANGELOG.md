@@ -10,9 +10,24 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
-## [0.27.1] - 2025-xx-yy
+## [0.27.1] - 2025-05-28
 ### Fixed
-- Make reading of saved transactions more robust and show an error message if it fails.
+- `multi-signature`: Make reading of saved transactions more robust and show an error message if it fails.
+
+### Added
+- `--hide-lib-warnings` option to commands that involve compilation
+- `--get-pubkey` option to `keygen` command to retrieve pubkey from local/global config or keyid
+- **Version Bumps**
+  - rell 0.14.11
+  - postchain 3.37.0
+  - postchain-client 3.30.0
+  - chromia-cli-tools 0.5.6
+  - rell-toolbox 0.8.3
+  - rell-codegen 0.16.6
+  - rell-dokka 0.2.17
+  - directory-chain 1.94.1
+  - eif 0.16.0
+  - postchain-chromia 3.30.2
 
 ## [0.27.0] - 2025-05-15
 ### Added
