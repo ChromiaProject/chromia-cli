@@ -5,16 +5,23 @@ import com.chromia.build.tools.util.snakeCaseName
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.deployment.voterset.proposalDescriptionOption
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.tools.config.blockchainRidOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.util.DeployedNetworkOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.pubkey
 import com.chromia.directory1.proposal_blockchain.proposeBlockchainRenameOperation
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.groups.required
+import com.github.ajalt.clikt.parameters.groups.single
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import net.postchain.common.BlockchainRid
 import net.postchain.common.tx.TransactionStatus
 
 class ProposalRenameBlockchainCommand : ChromiaCommand(
@@ -27,10 +34,29 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
     private val networkTarget by DeployedNetworkOption { settings.model ?: ChromiaModel.default() }
     private val keyPairSource by keyPairSourceOption()
     private val description by proposalDescriptionOption {
-        "Renaming blockchain with BRID: ${networkTarget.brid} to '$name'"
+        "Renaming blockchain with BRID: ${bridOfBlockchainToRename} to '$newName'"
     }
 
-    private val name by option("-n", "--name", help = "New name of the blockchain").required()
+    private val newName by option("-n", "--new-name", "--name", help = "New name of the blockchain").required()
+
+    private val bridOfBlockchainToRename: BlockchainRid by mutuallyExclusiveOptions(
+            name = "Blockchain to rename",
+            help = "Either specify blockchain-rid explicitly, or specify old name",
+
+            option1 = blockchainRidOption("Brid for blockchain to rename").convert {
+                BlockchainRid.buildFromHex(it)
+            },
+
+            option2 = blockchainOption("Name of blockchain under 'deployments -> chains' to rename") .convert {
+                val deploymentModel = settings.model?.deployments?.get(networkTarget.network) ?:
+                    throw PrintMessage("Could not find deployment configuration named: ${networkTarget.network}")
+                val blockchainRid = deploymentModel.chains.get(it) ?:
+                    throw PrintMessage("Could not find chain named: $it, under deployment ${networkTarget.network}")
+                blockchainRid
+            },
+    ).single().required()
+
+
 
     override fun run() {
         settings.config.configureSigners(keyPairSource)
@@ -54,8 +80,8 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
         val res = client.transactionBuilder()
                 .proposeBlockchainRenameOperation(
                         pubKey,
-                        networkTarget.brid,
-                        snakeCaseName(name),
+                        bridOfBlockchainToRename,
+                        snakeCaseName(newName),
                         description
                 )
                 .addNop()

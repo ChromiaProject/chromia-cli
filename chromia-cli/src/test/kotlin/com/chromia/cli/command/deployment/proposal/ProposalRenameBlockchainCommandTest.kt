@@ -2,6 +2,7 @@ package com.chromia.cli.command.deployment.proposal
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
 import com.chromia.build.tools.restapi.*
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
@@ -54,7 +55,8 @@ class ProposalRenameBlockchainCommandTest {
                         "--config", config.absolutePath,
                         "-n", "testname",
                         "--description", "Proposed rename",
-                        "--secret", secret.absolutePath
+                        "--secret", secret.absolutePath,
+                        "-brid", "0000000000000000000000000000000000000000000000000000000000000000"
                 ))
             }
             assertThat(
@@ -84,7 +86,8 @@ class ProposalRenameBlockchainCommandTest {
                         "--network", "test",
                         "--config", config.absolutePath,
                         "-n", "New blockchain name",
-                        "--description", "Proposed name"
+                        "--description", "Proposed name",
+                        "-brid", "0000000000000000000000000000000000000000000000000000000000000000"
                 ))
             }
 
@@ -112,7 +115,8 @@ class ProposalRenameBlockchainCommandTest {
                     "--config", config.absolutePath,
                     "-n", "New blockchain name",
                     "--description", "Proposed name",
-                    "--secret", secret.absolutePath
+                    "--secret", secret.absolutePath,
+                    "-brid", "0000000000000000000000000000000000000000000000000000000000000000"
             ))
             assertThat(res.stdout).contains("Blockchain rename proposition was added successfully")
         }
@@ -138,9 +142,78 @@ class ProposalRenameBlockchainCommandTest {
                     "-d", "test",
                     "-n", "New blockchain name",
                     "--description", "Proposed name",
-                    "--secret", secret.absolutePath
+                    "--secret", secret.absolutePath,
+                    "-brid", "0000000000000000000000000000000000000000000000000000000000000000"
             ))
             assertThat(res.stdout).contains("Cannot add proposal for renaming blockchain reason null")
+        }
+    }
+
+    @Test
+    fun `throws when network target is not defined in settings`() {
+        withModel(AlwaysFailingModel(DirectoryChainModel(apiVersion = 65), TransactionStatus.REJECTED)) {
+            testData(testDir) {
+                config {
+                    deployments("""
+                        deployments:
+                            test:
+                                url: "http://localhost:7745"
+                                brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    """.trimIndent())
+                }
+            }
+
+            val throwable = assertThrows<CliktError> {
+                ProposalRenameBlockchainCommand().parse(listOf(
+                        "-s", settingsFile.absolutePath,
+                        "--config", config.absolutePath,
+                        "-d", "non_existing_network",
+                        "-n", "New blockchain name",
+                        "--description", "Proposed name",
+                        "--secret", secret.absolutePath,
+                        "--blockchain", "old_blockchain_name"
+                ))
+            }
+            assertThat(
+                    throwable.message!!
+            ).isEqualTo(
+                    "Could not find deployment configuration named: non_existing_network"
+            )
+        }
+    }
+
+    @Test
+    fun `throws when blockchain name is not defined under chains`() {
+        withModel(AlwaysFailingModel(DirectoryChainModel(apiVersion = 65), TransactionStatus.REJECTED)) {
+            testData(testDir) {
+                config {
+                    deployments("""
+                        deployments:
+                            test:
+                                url: "http://localhost:7745"
+                                brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                                chains:
+                                    old_name: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    """.trimIndent())
+                }
+            }
+
+            val throwable = assertThrows<CliktError> {
+                ProposalRenameBlockchainCommand().parse(listOf(
+                        "-s", settingsFile.absolutePath,
+                        "--config", config.absolutePath,
+                        "-d", "test",
+                        "-n", "New blockchain name",
+                        "--description", "Proposed name",
+                        "--secret", secret.absolutePath,
+                        "--blockchain", "not_correct_old_name"
+                ))
+            }
+            assertThat(
+                    throwable.message!!
+            ).isEqualTo(
+                    "Could not find chain named: not_correct_old_name, under deployment test"
+            )
         }
     }
 }
