@@ -10,6 +10,16 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.2] - 2025-06-11
+### Added
+- **Version Bumps**
+  - rell-codegen 0.16.7
+  - chromia-cli-tools 0.5.8
+### Fixed
+- Fix `chr deployment proposal rename` to target correct blockchain-rid
+- Refactor FT auth to use new functionality in ft4-client
+- Update jgit to mitigate a vulnerability that affects it
+
 ## [0.27.1] - 2025-05-28
 ### Fixed
 - `multi-signature`: Make reading of saved transactions more robust and show an error message if it fails.

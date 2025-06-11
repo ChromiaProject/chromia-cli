@@ -250,6 +250,10 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
+            <artifactId>codegen-python</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.rell</groupId>
             <artifactId>codegen</artifactId>
         </dependency>
         <dependency>
