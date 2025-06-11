@@ -39,30 +39,14 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
 
     private val newName by option("-n", "--new-name", "--name", help = "New name of the blockchain").required()
 
-    private val bridOfBlockchainToRename: BlockchainRid by mutuallyExclusiveOptions(
-            name = "Blockchain to rename",
-            help = "Either specify blockchain-rid explicitly, or specify old name",
-
-            option1 = blockchainRidOption("Brid for blockchain to rename").convert {
-                BlockchainRid.buildFromHex(it)
-            },
-
-            option2 = blockchainOption("Name of blockchain under 'deployments -> chains' to rename") .convert {
-                val deploymentModel = settings.model?.deployments?.get(networkTarget.network) ?:
-                    throw PrintMessage("Could not find deployment configuration named: ${networkTarget.network}")
-                val blockchainRid = deploymentModel.chains.get(it) ?:
-                    throw PrintMessage("Could not find chain named: $it, under deployment ${networkTarget.network}")
-                blockchainRid
-            },
-    ).single().required()
-
-
+    private val bridOfBlockchainToRename by blockchainRidOption("Brid for blockchain to rename").required()
 
     override fun run() {
         settings.config.configureSigners(keyPairSource)
         val clientConfig = settings.config.setApiUrls(networkTarget.urls).setBrid(networkTarget.brid)
         val client = networkTarget.createClient(clientConfig)
         val apiVersion = client.apiVersion
+        val brid = BlockchainRid.buildFromHex(bridOfBlockchainToRename)
 
         if (apiVersion < 61) {
             throw PrintMessage(
@@ -80,7 +64,7 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
         val res = client.transactionBuilder()
                 .proposeBlockchainRenameOperation(
                         pubKey,
-                        bridOfBlockchainToRename,
+                        brid,
                         snakeCaseName(newName),
                         description
                 )
