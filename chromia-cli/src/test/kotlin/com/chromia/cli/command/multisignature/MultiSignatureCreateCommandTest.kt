@@ -12,17 +12,15 @@ import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
-import com.chromia.directory1.lib.ft4.core.accounts.AuthType
-import com.chromia.directory1.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
-import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
-import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
-import com.chromia.directory1.lib.ft4.external.auth.GET_AUTH_FLAGS
-import com.chromia.directory1.lib.ft4.utils.PagedResult
-import com.chromia.directory1.lib.ft4.version.GET_VERSION
+import com.chromia.lib.ft4.core.accounts.AuthType
+import com.chromia.lib.ft4.external.accounts.Ft4GetAccountAuthDescriptorsBySignerResult
+import com.chromia.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
+import com.chromia.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
+import com.chromia.lib.ft4.external.auth.GET_AUTH_FLAGS
+import com.chromia.lib.ft4.utils.PagedResult
+import com.chromia.lib.ft4.version.GET_VERSION
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.api.rest.controller.Model
 import net.postchain.common.BlockchainRid
 import net.postchain.common.exception.UserMistake
@@ -41,6 +39,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class Ft4Model(val model: Model, val version: String, val responses: Map<String, Gtv> = mapOf()) : Model by model {
 

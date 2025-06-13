@@ -11,7 +11,7 @@ import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.parseArgAsGtv
-import com.chromia.directory1.lib.ft4.external.auth.FT_AUTH
+import com.chromia.lib.ft4.external.auth.FT_AUTH
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple

@@ -9,10 +9,10 @@ import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
-import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
-import com.chromia.directory1.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
-import com.chromia.directory1.lib.ft4.external.auth.GET_AUTH_FLAGS
-import com.chromia.directory1.lib.ft4.version.GET_VERSION
+import com.chromia.lib.ft4.external.accounts.GET_ACCOUNTS_BY_SIGNER
+import com.chromia.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIGNER
+import com.chromia.lib.ft4.external.auth.GET_AUTH_FLAGS
+import com.chromia.lib.ft4.version.GET_VERSION
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid

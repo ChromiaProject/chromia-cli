@@ -217,6 +217,10 @@
             <artifactId>postchain-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.postchain.client</groupId>
+            <artifactId>ft4-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>postchain-base</artifactId>
         </dependency>
