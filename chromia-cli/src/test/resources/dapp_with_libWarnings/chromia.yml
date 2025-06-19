@@ -10,7 +10,7 @@ libs:
   testlib:
     insecure: true
     path: lib/testlib
-    registry: gitlab.com/chromia/testlib
+    registry: https://gitlab.com/chromia/testlib
 docs:
   title: "DOCUMENTATION"
   footerMessage: © 2024 Chromia
