@@ -40,12 +40,10 @@ class KeygenCommand : ChromiaCommand(name = "keygen", help = "Generates public/p
                     .convert { KeygenOutputMode.PropertiesFile(it.name, it.parentFile, it) },
 
             option2 = option("--get-pubkey",
-                    help = """
-                        Print the active public key. If no key-id is specified, the key is determined from your configuration;
-                        otherwise, retrieves the public key for the given key-id.
-                     """
+                    help = "Print the active public key. If no key-id is specified, the key is determined from your configuration; otherwise, retrieves the public key for the given key-id.",
+                    metavar = "<key-id>"
             ).convert { KeygenOutputMode.GetPubkey(it) }
-                    .optionalValue(KeygenOutputMode.GetPubkey("")),
+                .optionalValue(KeygenOutputMode.GetPubkey("")),
 
             options = arrayOf(
                     option("--dry", help = "Perform dry run, prints keys in terminal and does not save keys to disk").flag()
