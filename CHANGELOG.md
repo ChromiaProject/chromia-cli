@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.4] - 2025-06-28
+### Fixed
+- Fixed Windows-specific issue with GitCloner in `chr install` and other small improvements
+ 
 ## [0.27.3] - 2025-06-19
 ### Fixed
 - Fix `chr install` on Windows. Uniform library RID calculation

@@ -19,7 +19,9 @@
     <properties>
         <revision>dev</revision>
         <directory.source>${project.parent.build.directory}/directory-chain/src</directory.source>
+        <library-chain.source>${project.parent.build.directory}/library-chain/src</library-chain.source>
         <directory.config>${directory.source}/../chromia.yml</directory.config>
+        <library-chain.config>${library-chain.source}/../chromia.yml</library-chain.config>
 
         <assembly.path>${project.basedir}/src/main/assembly/targz.xml</assembly.path>
 
@@ -42,7 +44,6 @@
                 <groupId>net.postchain.rell</groupId>
                 <artifactId>rell-maven-plugin</artifactId>
                 <configuration>
-                    <source>${directory.source}</source>
                     <packageName/>
                     <testModule/>
                 </configuration>
@@ -55,11 +56,28 @@
                             <goal>rell-generate-client</goal>
                         </goals>
                         <configuration>
+                            <source>${directory.source}</source>
                             <packageName>com.chromia.directory1</packageName>
                             <mainModule>
                                 common.queries,proposal_voter_set,proposal_blockchain,proposal_container
                             </mainModule>
                             <configPath>${directory.config}</configPath>
+<!--                            <target>${project.build.directory}/generated-sources/rell-client-directory</target>-->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>library-chain-client-gen</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>rell-install</goal>
+                            <goal>rell-generate-client</goal>
+                        </goals>
+                        <configuration>
+                            <source>${library-chain.source}</source>
+                            <packageName>com.chromia.library.chain</packageName>
+                            <mainModule>main</mainModule>
+                            <configPath>${library-chain.config}</configPath>
+                            <target>${project.build.directory}/generated-sources/rell-client-library</target>
                         </configuration>
                     </execution>
                 </executions>

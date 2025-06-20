@@ -14,6 +14,7 @@ import com.chromia.cli.command.code.CodeCommand
 import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
+import com.chromia.cli.command.library.LibraryCommand
 import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
 import com.chromia.cli.command.seeder.SeederCommand
@@ -56,5 +57,6 @@ fun main(args: Array<out String>) = object : CliLauncher("chr") {
                 MultiSignatureCommand.commands(),
                 ToolsCommand.commands(),
                 SeederCommand.commands(),
+                LibraryCommand.commands()
         )
         .catchingAllExceptionsMain(args)

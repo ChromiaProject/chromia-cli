@@ -2,6 +2,7 @@ package com.chromia.cli.util
 
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -12,3 +13,8 @@ fun getFormattedUtcDateTime(dateTime: Instant = Clock.systemUTC().instant()): St
 
     return formattedDateTime
 }
+
+fun Long.convertMillisToLocalDateTime(): LocalDateTime? =
+    Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
