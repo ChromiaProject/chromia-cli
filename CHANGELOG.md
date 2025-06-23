@@ -10,7 +10,11 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
-## [0.27.4] - 2025-06-28
+## [0.27.5] - 2025-06-23
+### Fixed
+- Remove validation of `registry` in chromia model json schema and other small fixes
+
+## [0.27.4] - 2025-06-20
 ### Fixed
 - Fixed Windows-specific issue with GitCloner in `chr install` and other small improvements
  
