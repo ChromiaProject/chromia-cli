@@ -96,10 +96,5 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
                     statusCode = 1
                 )
         }
-
-        if (res.status == TransactionStatus.CONFIRMED) {
-        } else {
-            throw CliktError()
-        }
     }
 }

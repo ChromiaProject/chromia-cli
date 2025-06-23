@@ -40,7 +40,7 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
     protected val remoteTarget by RemoteTargetOptions()
 
     protected val client by lazy {
-        createConfiguredClient(remoteTarget.url)
+        createConfiguredClient(remoteTarget.url, remoteTarget.brid)
     }
 
     protected val pubkey by lazy {
@@ -57,7 +57,7 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
     fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
         val inputUrl = url ?: remoteTarget.url
 
-        val networkConfig = inputUrl?.let { predefinedNetworks[it] }
+        val networkConfig = inputUrl?.let { predefinedNetworks[it]?.invoke() }
 
         val targetUrl = networkConfig?.first ?: inputUrl ?: CHROMIA_MAINNET
         val targetBrid = brid ?: remoteTarget.brid
@@ -187,22 +187,22 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
         // TODO: add library-chain (url, brid) on mainnet when it will be deployed
         val predefinedNetworks by lazy {
             mapOf(
-                "testnet" to Pair(
+                "testnet" to { Pair(
                     "https://node0.testnet.chromia.com:7740",
                     BlockchainRid.buildFromHex(
                         "E43378EC9CBAD09130CD31CA0F296B360EE2A211AEE7872B0E2517AB0CC7B9EA"
                     )
-                ),
-                "devnet1" to Pair(
+                ) },
+                "devnet" to { Pair(
                     "https://node8.devnet1.chromia.dev:7740",
                     BlockchainRid.buildFromHex(
                         "6933A4AB594C85FCAF8D3B7EA14F11CA4B06826EE1A3A823055D1CC923E71FF9"
                     )
-                ),
-                "localhost" to Pair(
+                ) },
+                "localhost" to { Pair(
                     LOCAL_HOST,
                     fetchBridFromLocalNode()
-                )
+                ) }
             )
         }
 
