@@ -43,7 +43,8 @@ sealed class DeployActionCommand(
         if (res) {
             echo("${action.name} of blockchain ${deployModel.chains.keys} was successful")
         } else {
-            throw PrintMessage(msg!!, statusCode = 1)
+            val altMsg = "${action.name} of blockchain ${deployModel.chains.keys} was unsuccessful"
+            throw PrintMessage(msg ?: altMsg, statusCode = 1)
         }
         if (action == BlockchainAction.remove) {
             echo("INFO: Clean up deployment ${deployModel.chains.keys} from your config file under chains for network \"$target\", as it is no longer a valid deployment")
