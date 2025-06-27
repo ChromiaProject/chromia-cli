@@ -128,7 +128,7 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       - net.postchain.web.WebStaticGTXModuleFactory
       - net.postchain.gtx.StandardOpsGTXModule
       rell:
-        compilerVersion: 0.14.11
+        compilerVersion: 0.14.12
         moduleArgs:
           main:
             foo: bar

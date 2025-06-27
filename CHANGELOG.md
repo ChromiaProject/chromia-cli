@@ -10,6 +10,23 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.6] - 2025-06-23
+### Added
+- **Version Bumps**
+  - rell 0.14.12
+  - postchain 3.40.0
+  - postchain-client 3.34.0
+  - chromia-cli-tools 0.5.15
+  - rell-toolbox 0.8.4
+  - rell-codegen 0.16.8
+  - rell-dokka 0.2.18
+  - directory-chain 1.95.0
+  - eif 0.16.3
+
+### Fixed
+- NPE when message is null in deploy command
+- Update testnet BRID for library commands
+
 ## [0.27.5] - 2025-06-23
 ### Fixed
 - Remove validation of `registry` in chromia model json schema and other small fixes
