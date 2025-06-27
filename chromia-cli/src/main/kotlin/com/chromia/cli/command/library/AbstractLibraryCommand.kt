@@ -79,12 +79,6 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
         operationName: String,
         optionalAccountId: String? = null
     ): Pair<ByteArray, ByteArray> {
-        val pubkey = client.config.signers
-            .firstOrNull()
-            ?.pubKey
-            ?.data
-            ?: throw PrintMessage("No signer found", statusCode = 1)
-
         initFtAuth(client)
 
         val (accountId, authDescriptorId) = findFtAccountIdAndAuthDescriptorId(
@@ -190,7 +184,7 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
                 "testnet" to { Pair(
                     "https://node0.testnet.chromia.com:7740",
                     BlockchainRid.buildFromHex(
-                        "E43378EC9CBAD09130CD31CA0F296B360EE2A211AEE7872B0E2517AB0CC7B9EA"
+                        "C42BB39DF12F984DAE6FC7B3783503D7CC1E37A23C5ABC36FA0E98C55E697711"
                     )
                 ) },
                 "devnet" to { Pair(
