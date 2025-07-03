@@ -1,5 +1,6 @@
 package com.chromia.cli.command
 
+import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
@@ -21,6 +22,7 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
@@ -78,6 +80,7 @@ class TxCommand : ChromiaCommand(help = """
         val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place").convert {
             BlockchainRid.buildFromHex(it)
         }
+        val sourceApiUrl by option(help = "Source api url (default target api url)")
         val iccfForceIntraNetwork by option(help = "Force usage of intra-network ICCF proof").flag()
     }
 
@@ -100,13 +103,20 @@ class TxCommand : ChromiaCommand(help = """
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
+        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it)} ?: target.urls
         val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
         var newArgs = args
         val transactionBuilder = if (iccfOptions.iccfTx != null) {
             require(iccfOptions.iccfSource != null) { "Chain id for iccf transaction must be specified" }
-            val sourceClient = target.createClient(postchainClientConfig.setBrid(iccfOptions.iccfSource!!))
+
+            val sourceClient = target.createClient(
+                    postchainClientConfig
+                            .setBrid(iccfOptions.iccfSource!!)
+                            .setApiUrls(sourceClientUrl)
+            )
+
             val txInfo = sourceClient.getTransactionInfo(TxRid(iccfOptions.iccfTx!!))
             newArgs = listOf(decodeGtv(txInfo.txData.data)) + args
 
