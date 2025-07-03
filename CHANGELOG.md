@@ -10,6 +10,17 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.7] - 2025-07-03
+### Added
+- Adds iccf source url option to `chr tx` command to support iccf tx across different clusters
+- Adds `--devcontainer` flag to `chr create-rell-dapp` command to create a project with devcontainer environment
+- **Version Bumps**
+  - chromia-cli-tools 0.5.16
+
+### Fixed
+- NPE when message is null in deploy command
+- Update testnet BRID for library commands
+
 ## [0.27.6] - 2025-06-23
 ### Added
 - **Version Bumps**
