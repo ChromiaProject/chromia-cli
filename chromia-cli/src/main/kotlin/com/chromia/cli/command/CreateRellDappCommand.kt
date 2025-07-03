@@ -1,11 +1,13 @@
 package com.chromia.cli.command
 
 import com.chromia.build.tools.template.TemplateFactoryProvider
+import com.chromia.build.tools.template.TemplateOptions
 import com.chromia.build.tools.template.TemplateProject
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
@@ -31,6 +33,8 @@ class CreateRellDappCommand : ChromiaCommand(name = "create-rell-dapp", help = "
             .enum<TemplateProject> { it.name.lowercase().replace("_", "-") }
             .default(TemplateProject.MINIMAL)
 
+    private val includeDevContainer by option("--devcontainer", help = "Setup devcontainer for project").flag()
+
     override fun run() {
 
         if (projectName.contains(" ")) {
@@ -45,6 +49,7 @@ class CreateRellDappCommand : ChromiaCommand(name = "create-rell-dapp", help = "
 
         projectDir.mkdirs()
         val factory = TemplateFactoryProvider.getFactory(template)
-        factory.createProjectFromTemplate(projectDir, projectName)
+        val options = TemplateOptions(includeDevContainer)
+        factory.createProjectFromTemplate(projectDir, projectName, options)
     }
 }
