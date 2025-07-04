@@ -32,7 +32,7 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
     private val description by option(
         "--description",
         "-d",
-        help = "Version number for this deployment"
+        help = "A brief description of the library."
     ).required()
 
     private val library by option(

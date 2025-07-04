@@ -32,7 +32,7 @@ class CreateLibraryCommand : AbstractLibraryCommand(
     private val description by option(
         "--description",
         "-d",
-        help = "Description of the library"
+        help = "A brief description of the library."
     ).prompt("Library description")
 
     private val organizationId by option(
