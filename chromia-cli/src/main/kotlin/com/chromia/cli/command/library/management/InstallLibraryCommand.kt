@@ -8,6 +8,8 @@ import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.tools.formatter.warning
+import com.chromia.cli.util.DependencyUpdatedMarker
+import com.chromia.cli.util.targetDirectoryOption
 import com.chromia.library.chain.versioning.external.getLibraryRid
 import com.chromia.library.chain.versioning.external.getLibraryVersionFilesInBytes
 import com.github.ajalt.clikt.core.PrintMessage
@@ -75,6 +77,9 @@ class InstallLibraryCommand(
         
         if (chromiaLibs.isNotEmpty() || otherLibs.isNotEmpty()) {
             echo("Dependencies installed successfully to ${settings.model?.compile?.source}")
+            settings.model?.compile?.target?.let {
+                DependencyUpdatedMarker(it.toFile()).markAsInstalled()
+            }
         }
     }.getOrElse { e ->
         echo("Failed to install dependencies: ${e.message}", err = true)
