@@ -76,10 +76,10 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
                     "No blockchain specified and no default blockchain found in deployment configuration"
                 )
     
-    private fun inferNetworkFromModel(): String? = settings().deployments.keys.firstOrNull()
+    private fun inferNetworkFromModel(): String? = settings().deployments.keys.takeIf { it.size == 1 }?.firstOrNull()
 
     private fun inferBlockchainFromModel(): String? =
-        settings().deployments[network]?.chains?.keys?.firstOrNull()
+        settings().deployments[network]?.chains?.keys?.takeIf { it.size == 1 }?.firstOrNull()
 
     override val brid: BlockchainRid
         get() {
