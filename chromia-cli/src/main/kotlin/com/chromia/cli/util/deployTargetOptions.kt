@@ -58,19 +58,11 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
     private val networkOption by deployTargetOption()
     private val blockchainOptionValue by blockchainOption(help = "Name of blockchain in deployment configuration")
 
-    fun isRemoteDeployment(): Boolean = hasExplicitOptions() || canInferOptions() || isConfigured()
+    fun isRemoteDeployment(): Boolean = hasExplicitOptions() || canInferOptions()
     
     private fun hasExplicitOptions(): Boolean = networkOption != null || blockchainOptionValue != null
 
     private fun canInferOptions(): Boolean = inferNetworkFromModel() != null && inferBlockchainFromModel() != null
-
-    private fun isConfigured(): Boolean = try {
-        network
-        blockchain
-        true
-    } catch (_: IllegalArgumentException) {
-        false
-    }
 
     val network: String
         get() = networkOption
