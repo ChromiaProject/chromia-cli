@@ -14,6 +14,7 @@ import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.parseArgAsGtv
+import com.chromia.cli.util.or
 import com.chromia.lib.ft4.external.auth.FT_AUTH
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -42,7 +43,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
 
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
         val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
@@ -78,7 +79,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
             .transformAll { args -> args.map(::parseArgAsGtv) }
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget
+        val target = deploymentTarget or explicitTarget
         val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)

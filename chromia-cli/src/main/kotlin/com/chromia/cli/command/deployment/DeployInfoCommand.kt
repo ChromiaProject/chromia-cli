@@ -11,10 +11,10 @@ import com.chromia.cli.util.NodeStatusFinder
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.TableOutputFormat
 import com.chromia.cli.util.tableOutputFormat
+import com.chromia.cli.util.or
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.chromia.directory1.cm_api.cmGetBlockchainCluster
 import com.github.ajalt.clikt.core.terminal
-import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -33,12 +33,12 @@ class DeployInfoCommand(
 ) {
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config }, httpHandlerFactory)
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
     private val verbose by option(help = "Show verbose information about nodes").flag()
     private val outputFormat by tableOutputFormat()
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget
+        val target = deploymentTarget or explicitTarget
         val clientConfig = settings.config.setApiUrls(target.urls)
         val directoryClient = target.createDirectoryClient(clientConfig)
 

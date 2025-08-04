@@ -14,6 +14,7 @@ import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.evmAuthOption
 import com.chromia.cli.util.parseArgAsGtv
+import com.chromia.cli.util.or
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -66,7 +67,7 @@ class TxCommand : ChromiaCommand(help = """
     private val settings by optionalChromiaModelConfigOption()
     private val keyPairSource by keyPairSourceOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
     private val timeb by timebOptions(Clock.systemUTC())
@@ -103,8 +104,8 @@ class TxCommand : ChromiaCommand(help = """
             .transformAll { args -> args.map(::parseArgAsGtv) }
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget
-        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it) } ?: target.urls
+        val target = deploymentTarget or explicitTarget
+        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it)} ?: target.urls
         val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)

@@ -19,8 +19,8 @@ import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.TableOutputFormat
 import com.chromia.cli.util.modulesOption
 import com.chromia.cli.util.tableOutputFormat
+import com.chromia.cli.util.or
 import com.github.ajalt.clikt.core.terminal
-import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.default
 import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -48,7 +48,7 @@ class DeployInspectCommand(
 ) {
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
 
     private val outputFormat by tableOutputFormat().defaultLazy {
         if (terminal.terminalInfo.outputInteractive) TableOutputFormat.table else TableOutputFormat.JSON
@@ -78,7 +78,7 @@ class DeployInspectCommand(
     private val mutableStyle = TextColors.rgb("#569CD6")
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget
+        val target = deploymentTarget or explicitTarget
         val clientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         val client = target.createClient(clientConfig)
 

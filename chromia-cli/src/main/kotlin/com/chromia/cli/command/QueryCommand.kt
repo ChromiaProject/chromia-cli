@@ -11,6 +11,7 @@ import com.chromia.cli.util.formatXml
 import com.chromia.cli.util.formatYaml
 import com.chromia.cli.util.outputFormat
 import com.chromia.cli.util.parseArgAsGtv
+import com.chromia.cli.util.or
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.transformAll
@@ -44,7 +45,7 @@ class QueryCommand : ChromiaCommand(help = """
 ) {
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
-    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
+    private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
 
     private val outputFormat by outputFormat()
     private val queryName by argument(help = "name of the query to make.")
@@ -78,7 +79,7 @@ class QueryCommand : ChromiaCommand(help = """
     }
 
     override fun run() {
-        val target = deploymentTarget ?: explicitTarget
+        val target = deploymentTarget or explicitTarget
         val clientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         val client = target.createClient(clientConfig)
 

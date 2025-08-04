@@ -9,7 +9,6 @@ import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.client.config.PostchainClientConfig
@@ -56,9 +55,40 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 }
 
 class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment") {
-    val network by deployTargetOption().required()
-            .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
-    override val blockchain by blockchainOption(help = "Name of blockchain in deployment configuration").required()
+    private val networkOption by deployTargetOption()
+    private val blockchainOptionValue by blockchainOption(help = "Name of blockchain in deployment configuration")
+
+    fun isRemoteDeployment(): Boolean = hasExplicitOptions() || canInferOptions() || isConfigured()
+    
+    private fun hasExplicitOptions(): Boolean = networkOption != null || blockchainOptionValue != null
+
+    private fun canInferOptions(): Boolean = inferNetworkFromModel() != null && inferBlockchainFromModel() != null
+
+    private fun isConfigured(): Boolean = try {
+        network
+        blockchain
+        true
+    } catch (_: IllegalArgumentException) {
+        false
+    }
+
+    val network: String
+        get() = networkOption
+                ?: inferNetworkFromModel()
+                ?: throw IllegalArgumentException("No network specified and no default deployment found in chromia.yml")
+    
+    override val blockchain: String 
+        get() = blockchainOptionValue
+                ?: inferBlockchainFromModel()
+                ?: throw IllegalArgumentException(
+                    "No blockchain specified and no default blockchain found in deployment configuration"
+                )
+    
+    private fun inferNetworkFromModel(): String? = settings().deployments.keys.firstOrNull()
+
+    private fun inferBlockchainFromModel(): String? =
+        settings().deployments[network]?.chains?.keys?.firstOrNull()
+
     override val brid: BlockchainRid
         get() {
             val deploymentModel = settings().deployments[network]
@@ -84,8 +114,13 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
 }
 
 class DeployedNetworkOption(private val settings: () -> ChromiaModel) : DeploymentOption("Deployment", help = "Use a configured deployment network") {
-    val network by deployTargetOption().required()
+    val networkOption by deployTargetOption()
             .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }
+
+    val network get() = networkOption
+            ?: settings().deployments.takeIf { it.size == 1 }?.keys?.firstOrNull()
+            ?: throw IllegalArgumentException("No network specified and no default deployment found in chromia.yml")
+
     override val blockchain: String
         get() = brid.toHex()
     override val brid: BlockchainRid
@@ -155,3 +190,7 @@ class LocalDeploymentOption(
         return config.setBrid(directoryBrid).client(PostchainClientProviderImpl())
     }
 }
+
+infix fun RemoteDeploymentOption.or(fallback: DeploymentOption): DeploymentOption =
+        if (isRemoteDeployment()) this else fallback
+
