@@ -4,6 +4,7 @@ import com.chromia.cli.command.BuildCommand
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.CreateRellDappCommand
 import com.chromia.cli.command.FetchConfigCommand
+import com.chromia.cli.command.HelpCommand
 import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
 import com.chromia.cli.command.QueryCommand
@@ -40,6 +41,7 @@ fun main(args: Array<out String>) = object : CliLauncher("chr") {
             Java version ${System.getProperty("java.version")}
         """.trimIndent())
         .subcommands(
+                HelpCommand(),
                 BuildCommand(),
                 CreateRellDappCommand(),
                 DeploymentCommand.commands(),
