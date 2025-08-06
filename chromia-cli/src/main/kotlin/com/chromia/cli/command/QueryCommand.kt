@@ -46,7 +46,7 @@ class QueryCommand : ChromiaCommand(help = """
     private val settings by optionalChromiaModelConfigOption()
     private val explicitTarget by LocalDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }
-    val target by lazy { deploymentTarget or explicitTarget }
+
     private val outputFormat by outputFormat()
     private val queryName by argument(help = "name of the query to make.")
     private val args by argument(help = "arguments to pass to the query, passed either as key=value pairs or as a single dict.", helpTags = mapOf(
@@ -79,6 +79,7 @@ class QueryCommand : ChromiaCommand(help = """
     }
 
     override fun run() {
+        val target = deploymentTarget or explicitTarget
         val clientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         val client = target.createClient(clientConfig)
 
