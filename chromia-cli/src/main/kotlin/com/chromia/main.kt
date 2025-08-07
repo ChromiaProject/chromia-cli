@@ -11,6 +11,7 @@ import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
 import com.chromia.cli.command.TestCommand
 import com.chromia.cli.command.TxCommand
+import com.chromia.cli.command.VersionCommand
 import com.chromia.cli.command.code.CodeCommand
 import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
@@ -27,38 +28,43 @@ import net.postchain.PostchainNode
 import net.postchain.eif.EifGTXModule
 import net.postchain.rell.base.utils.RellVersions
 
-fun main(args: Array<out String>) = object : CliLauncher("chr") {
-    override fun aliases() =
-            mapOf(
-                    "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
-                    "gtv" to listOf("tools", "gtv"),
-            )
-}.versionOption("""
+fun main(args: Array<out String>) {
+    val commandName = "chr"
+    val version = """
             ${ChromiaCommand::class.java.`package`.implementationVersion ?: "(unknown)"}
             rell version ${RellVersions::class.java.`package`.implementationVersion ?: "(unknown)"}
             postchain version ${PostchainNode::class.java.`package`.implementationVersion ?: "(unknown)"}
             EIF version ${EifGTXModule::class.java.`package`.implementationVersion ?: "(unknown)"}
             Java version ${System.getProperty("java.version")}
-        """.trimIndent())
-        .subcommands(
-                HelpCommand(),
-                BuildCommand(),
-                CreateRellDappCommand(),
-                DeploymentCommand.commands(),
-                EifCommand.commands(),
-                GenerateCommand.commands(),
-                InstallCommand(),
-                KeygenCommand(),
-                NodeCommand.commands(),
-                QueryCommand(),
-                ReplCommand(),
-                TestCommand(),
-                TxCommand(),
-                CodeCommand.commands(),
-                FetchConfigCommand(),
-                MultiSignatureCommand.commands(),
-                ToolsCommand.commands(),
-                SeederCommand.commands(),
-                LibraryCommand.commands()
-        )
-        .catchingAllExceptionsMain(args)
+        """.trimIndent()
+    return object : CliLauncher(commandName) {
+        override fun aliases() =
+                mapOf(
+                        "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
+                        "gtv" to listOf("tools", "gtv"),
+                )
+    }.versionOption(version)
+            .subcommands(
+                    HelpCommand(),
+                    VersionCommand(commandName, version),
+                    BuildCommand(),
+                    CreateRellDappCommand(),
+                    DeploymentCommand.commands(),
+                    EifCommand.commands(),
+                    GenerateCommand.commands(),
+                    InstallCommand(),
+                    KeygenCommand(),
+                    NodeCommand.commands(),
+                    QueryCommand(),
+                    ReplCommand(),
+                    TestCommand(),
+                    TxCommand(),
+                    CodeCommand.commands(),
+                    FetchConfigCommand(),
+                    MultiSignatureCommand.commands(),
+                    ToolsCommand.commands(),
+                    SeederCommand.commands(),
+                    LibraryCommand.commands()
+            )
+            .catchingAllExceptionsMain(args)
+}
