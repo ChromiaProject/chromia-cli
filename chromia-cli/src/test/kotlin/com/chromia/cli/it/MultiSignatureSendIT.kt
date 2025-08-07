@@ -17,7 +17,6 @@ import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.absolutePathString
 import net.postchain.common.BlockchainRid
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.toHex
 import net.postchain.gtx.Gtx
 import org.junit.jupiter.api.Test
@@ -131,5 +130,125 @@ class MultiSignatureSendIT {
         assertThat(sentTxGtx.signatures.size).isEqualTo(2)
         assertThat(sentTxGtx.signatures.first().toHex()).isEqualTo(signedTransactionGtx.signatures.first().toHex())
         assertThat(sentTxGtx.signatures.last().toHex()).isEqualTo(signedTransactionGtx.signatures.last().toHex())
+    }
+
+    @Test
+    fun `should infer blockchain when only one blockchain exists under deployments`(@TempDir tempDir: Path) {
+        val secondSignerPubkey = "0389A330A3549B54CFFEEC475729E8176DD8AD8EA206AB4591A27D7A4554B8EC28"
+        val secondSignerPrivkey = "88F71D48430A63CE2C8E21E8D0CFF200D75E81E259C34A74D9483622F8B62086"
+        val testBrid = BlockchainRid.buildRepeat(5)
+
+        testData(tempDir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "${RestApiInstance.apiUrl}"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        chains:
+                          hello: x"${testBrid.toHex()}"
+                        """.trimIndent()
+                )
+            }
+            secret { secretFile(tempDir) }
+        }
+
+        val signersFile = tempDir.resolve("signers").toFile()
+        signersFile.writeText("pubkey1=${secondSignerPubkey},")
+
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--secret", secret.absolutePath,
+                "--target", tempDir.absolutePathString(),
+                "call_op", opName
+        ))
+
+        val createdTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }!!
+        val secretForSecondSigner = tempDir.resolve(".secret_signer_2").toFile()
+        secretForSecondSigner.writeText("""
+            pubkey=${secondSignerPubkey},
+            privkey=${secondSignerPrivkey},
+        """.trimIndent())
+
+        MultiSignatureSignCommand().parse(listOf(
+                "--file", createdTransactionFile.absolutePath,
+                "--secret", secretForSecondSigner.absolutePath,
+                "--target", tempDir.toFile().absolutePath
+        ))
+        createdTransactionFile.delete()
+
+        val signedTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }!!
+
+        TestProcess.Builder("multi-signature", "send", "--file", signedTransactionFile.absolutePath, "--no-await", "--network", "test")
+                .setWorkingDir(tempDir.toFile())
+                .exitCode(0)
+                .awaitCompletion(false)
+                .start()
+    }
+
+    @Test
+    fun `should fail to send when blockchain cannot be inferred from deployment without chains configuration`(@TempDir tempDir: Path) {
+        val secondSignerPubkey = "0389A330A3549B54CFFEEC475729E8176DD8AD8EA206AB4591A27D7A4554B8EC28"
+        val secondSignerPrivkey = "88F71D48430A63CE2C8E21E8D0CFF200D75E81E259C34A74D9483622F8B62086"
+        val testBrid = BlockchainRid.buildRepeat(5)
+
+        testData(tempDir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "${RestApiInstance.apiUrl}"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        """.trimIndent()
+                )
+            }
+            secret { secretFile(tempDir) }
+        }
+
+        val signersFile = tempDir.resolve("signers").toFile()
+        signersFile.writeText("pubkey1=${secondSignerPubkey},")
+
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--secret", secret.absolutePath,
+                "--target", tempDir.absolutePathString(),
+                "call_op", opName
+        ))
+
+        val createdTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }!!
+        val secretForSecondSigner = tempDir.resolve(".secret_signer_2").toFile()
+        secretForSecondSigner.writeText("""
+            pubkey=${secondSignerPubkey},
+            privkey=${secondSignerPrivkey},
+        """.trimIndent())
+
+        MultiSignatureSignCommand().parse(listOf(
+                "--file", createdTransactionFile.absolutePath,
+                "--secret", secretForSecondSigner.absolutePath,
+                "--target", tempDir.toFile().absolutePath
+        ))
+        createdTransactionFile.delete()
+
+        val signedTransactionFile = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }!!
+
+        TestProcess.Builder("multi-signature", "send", "--file", signedTransactionFile.absolutePath, "--no-await", "--network", "test")
+                .setWorkingDir(tempDir.toFile())
+                .exitCode(3)
+                .partialOutput("No blockchain specified and no default blockchain found in deployment configuration")
+                .start()
     }
 }

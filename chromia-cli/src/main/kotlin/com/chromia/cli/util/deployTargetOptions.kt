@@ -58,15 +58,12 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
     private val networkOption by deployTargetOption()
     private val blockchainOptionValue by blockchainOption(help = "Name of blockchain in deployment configuration")
 
-    fun isRemoteDeployment(): Boolean = hasExplicitOptions() || canInferOptions()
+    fun isRemoteDeployment(): Boolean = networkOption != null || canInferOptions()
     
-    private fun hasExplicitOptions(): Boolean = networkOption != null || blockchainOptionValue != null
-
-    private fun canInferOptions(): Boolean = inferNetworkFromModel() != null && inferBlockchainFromModel() != null
+    private fun canInferOptions(): Boolean = networkOption != null && inferBlockchainFromModel() != null
 
     val network: String
         get() = networkOption
-                ?: inferNetworkFromModel()
                 ?: throw IllegalArgumentException("No network specified and no default deployment found in chromia.yml")
     
     override val blockchain: String 
@@ -76,8 +73,6 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
                     "No blockchain specified and no default blockchain found in deployment configuration"
                 )
     
-    private fun inferNetworkFromModel(): String? = settings().deployments.keys.takeIf { it.size == 1 }?.firstOrNull()
-
     private fun inferBlockchainFromModel(): String? =
         settings().deployments[network]?.chains?.keys?.takeIf { it.size == 1 }?.firstOrNull()
 

@@ -1,6 +1,14 @@
 package com.chromia.cli.it
 
+import assertk.all
+import assertk.assertThat
+import assertk.assertions.containsAll
+import assertk.assertions.containsExactly
+import assertk.assertions.hasSize
+import assertk.assertions.isEqualTo
+import assertk.assertions.startsWith
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
@@ -66,4 +74,60 @@ class QueryIT {
                     .start()
         }
     }
+
+    @Test
+    fun `should infer blockchain option when only 1 blockchain exists under deployments`(@TempDir dir: Path) {
+        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
+        testData(dir) {
+            config {
+                deployments(
+                        """
+                deployments:
+                  test:
+                    url: "$apiUrl"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    container: testcontainer
+                    chains:
+                      hello: x"${testBrid.toHex()}"
+            """.trimIndent())
+            }
+        }
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                QueryDeploymentModel(testBrid),
+        ) {
+            TestProcess.Builder("query", "hello_world", "--network", "test")
+                    .setConfig(dir.resolve("chromia.yml").toFile())
+                    .startCondition("Hello People!")
+                    .start()
+        }
+    }
+
+    @Test
+    fun `should throw if network is provided but can't infer blockchain from deployments`(@TempDir dir: Path) {
+        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
+        testData(dir) {
+            config {
+                deployments(
+                        """
+                deployments:
+                  test:
+                    url: "$apiUrl"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    container: testcontainer
+            """.trimIndent())
+            }
+        }
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                QueryDeploymentModel(testBrid),
+        ) {
+            TestProcess.Builder("query", "hello_world", "--network", "test")
+                .exitCode(3)
+                .setConfig(dir.resolve("chromia.yml").toFile())
+                .partialOutput("No blockchain specified and no default blockchain found in deployment configuration")
+                .start()
+        }
+    }
+
 }
