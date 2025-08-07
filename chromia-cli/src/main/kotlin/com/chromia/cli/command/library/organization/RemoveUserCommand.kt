@@ -53,7 +53,7 @@ class RemoveUserCommand : AbstractLibraryCommand(
                 accountId = accountIdBytes
             ).run {
                 addNop()
-                postAwaitConfirmation()
+                postAwaitConfirmation(txListener())
             }
 
             when (res.status) {

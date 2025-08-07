@@ -159,7 +159,7 @@ class TxCommand : ChromiaCommand(help = """
         val res = transactionBuilder.addOperation(opName, *newArgs.toTypedArray()).run {
             if (ftAuthOptions.ftRegisterAccount) addFtRegisterAccountOperation(this)
             if (nop) addNop()
-            if (awaitConfirmation) postAwaitConfirmation() else post()
+            if (awaitConfirmation) postAwaitConfirmation(txListener()) else post()
         }
         when (res.status) {
             TransactionStatus.UNKNOWN ->

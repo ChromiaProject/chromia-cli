@@ -90,7 +90,7 @@ class CreateLibraryCommand : AbstractLibraryCommand(
             rid = rid
         ).run {
             addNop()
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
         when (res.status) {

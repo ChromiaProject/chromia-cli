@@ -39,7 +39,7 @@ class ProposalRevokeCommand : ChromiaCommand(
         val res = client.transactionBuilder()
                 .revokeProposalOperation(pubkey, RowId(idx))
                 .addNop()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)
             throw PrintMessage("Proposal action failed with reason ${res.rejectReason}", statusCode = 1)

@@ -48,7 +48,7 @@ class ProposalVoteCommand : ChromiaCommand(
         val res = client.transactionBuilder()
                 .makeVoteOperation(pubkey, idx, vote)
                 .addNop()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)
             throw PrintMessage("Proposal action failed with reason ${res.rejectReason}", statusCode = 1)

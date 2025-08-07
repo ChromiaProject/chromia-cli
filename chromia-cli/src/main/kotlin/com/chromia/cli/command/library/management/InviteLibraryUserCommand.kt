@@ -57,7 +57,7 @@ class InviteLibraryUserCommand : AbstractLibraryCommand(
             expiryMs
         ).run {
             addNop()
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
         when (res.status) {

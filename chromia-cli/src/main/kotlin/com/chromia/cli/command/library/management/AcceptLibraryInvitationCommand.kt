@@ -21,7 +21,7 @@ class AcceptLibraryInvitationCommand : AbstractLibraryCommand(
 
         val res = txBuilder.acceptLibraryInvitationOperation(invitationCode).run {
             addNop()
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
         when (res.status) {

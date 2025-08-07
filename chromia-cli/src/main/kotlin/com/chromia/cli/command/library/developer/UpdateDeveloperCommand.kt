@@ -17,7 +17,7 @@ class UpdateDeveloperCommand : AbstractLibraryCommand("update", help = "Update a
 
         val res = txBuilder.updateDeveloperNameOperation(newName).run {
             addNop()
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
         when (res.status) {

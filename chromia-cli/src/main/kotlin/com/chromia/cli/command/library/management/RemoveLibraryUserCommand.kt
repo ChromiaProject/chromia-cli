@@ -33,7 +33,7 @@ class RemoveLibraryUserCommand : AbstractLibraryCommand(
                 accountId = devAccountId.hexStringToByteArray()
             ).run {
                 addNop()
-                postAwaitConfirmation()
+                postAwaitConfirmation(txListener())
             }
 
             when (res.status) {

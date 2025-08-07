@@ -54,7 +54,7 @@ class RemoveContainerCommand : ChromiaCommand(
                 .removeContainerOperation(containerId)
                 .addNop()
                 .run {
-                    if (awaitConfirmation) postAwaitConfirmation() else post()
+                    if (awaitConfirmation) postAwaitConfirmation(txListener()) else post()
                 }
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN) {

@@ -46,7 +46,7 @@ class UpdateLibraryUserPermissionCommand : AbstractLibraryCommand(
                 accessLevel = accessLevel
             ).run {
                 addNop()
-                postAwaitConfirmation()
+                postAwaitConfirmation(txListener())
             }
 
             when (res.status) {

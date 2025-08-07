@@ -51,7 +51,7 @@ class PauseContainerCommand : ContainerActionCommand(name = "pause-container", h
                 )
                 .addNop()
                 .sign()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
         if (result.status == TransactionStatus.CONFIRMED) {
             echo("Pause of container ${deployModel.container} was successful")
         } else {
@@ -74,7 +74,7 @@ class ResumeContainerCommand : ContainerActionCommand(name = "resume-container",
                 )
                 .addNop()
                 .sign()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
         if (result.status == TransactionStatus.CONFIRMED) {
             echo("Resume of container ${deployModel.container} was successful")
         } else {

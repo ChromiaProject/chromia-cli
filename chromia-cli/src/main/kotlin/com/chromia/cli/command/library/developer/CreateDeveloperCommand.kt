@@ -36,7 +36,7 @@ class CreateDeveloperCommand : AbstractLibraryCommand(name = "create", help = "C
 
         val res = txBuilder.createDeveloperOperation(name).run {
             addNop()
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
         when (res.status) {

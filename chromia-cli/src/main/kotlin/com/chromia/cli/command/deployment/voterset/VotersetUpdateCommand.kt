@@ -76,7 +76,7 @@ class VotersetUpdateCommand : ChromiaCommand(
                         voterSet, threshold, null, newMember, removeMember, description
                 )
                 .addNop()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN)
             throw PrintMessage("Failed to add proposal with reason ${res.rejectReason}", statusCode = 1)

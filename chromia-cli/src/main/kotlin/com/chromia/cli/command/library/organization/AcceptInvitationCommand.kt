@@ -24,7 +24,7 @@ class AcceptInvitationCommand : AbstractLibraryCommand(
                 invitationCode = invitationCode
             ).run {
                 addNop()
-                postAwaitConfirmation()
+                postAwaitConfirmation(txListener())
             }
 
             when (res.status) {

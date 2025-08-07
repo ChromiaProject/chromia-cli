@@ -45,7 +45,7 @@ class UpdateUserPermissionCommand : AbstractLibraryCommand(
             toDevId = accountIdBytes,
             accessLevel = accessLevel
         ).run {
-            postAwaitConfirmation()
+            postAwaitConfirmation(txListener())
         }
 
 

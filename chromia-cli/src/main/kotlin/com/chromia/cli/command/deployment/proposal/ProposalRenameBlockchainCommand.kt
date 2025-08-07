@@ -69,7 +69,7 @@ class ProposalRenameBlockchainCommand : ChromiaCommand(
                         description
                 )
                 .addNop()
-                .postAwaitConfirmation()
+                .postAwaitConfirmation(txListener())
 
         if (res.status == TransactionStatus.REJECTED || res.status == TransactionStatus.UNKNOWN) {
             throw PrintMessage("Cannot add proposal for renaming blockchain reason ${res.rejectReason}", statusCode = 1)

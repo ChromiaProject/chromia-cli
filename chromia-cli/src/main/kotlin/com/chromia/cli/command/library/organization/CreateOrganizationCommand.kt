@@ -47,7 +47,7 @@ class CreateOrganizationCommand : AbstractLibraryCommand(
                 isOfficial = isOfficial
             ).run {
                 addNop()
-                postAwaitConfirmation()
+                postAwaitConfirmation(txListener())
             }
 
             when (res.status) {
