@@ -1,14 +1,6 @@
 package com.chromia.cli.it
 
-import assertk.all
-import assertk.assertThat
-import assertk.assertions.containsAll
-import assertk.assertions.containsExactly
-import assertk.assertions.hasSize
-import assertk.assertions.isEqualTo
-import assertk.assertions.startsWith
 import com.chromia.build.tools.TestProcess
-import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
