@@ -39,7 +39,7 @@ class BuildCliEnv(
         summaryPattern.find(msg)?.let { matchResult ->
             val (errorCount, warningCount) = matchResult.destructured
             val totalWarnings = warningCount.toInt()
-            val libWarnings = totalWarnings - userWarningCount
+            val libWarnings = maxOf(0, totalWarnings - userWarningCount)
 
             seenError = errorCount.toInt() > 0
 
