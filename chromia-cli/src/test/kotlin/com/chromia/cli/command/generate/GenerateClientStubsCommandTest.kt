@@ -167,7 +167,7 @@ internal class GenerateClientStubsCommandTest {
     }
 
     @Test
-    fun queryWithMixedTupleReturnNonZeroExit() {
+    fun queryWithMixedTupleProducesUserWarning() {
         testData(dir.toPath()) {
             addSourceFile("mixed.rell", """
                 query mixed() = (1, foo="bar");
@@ -176,7 +176,7 @@ internal class GenerateClientStubsCommandTest {
         val targetDir = dir.absolutePath
         val res = command.parse(listOf("-s", "$targetDir/chromia.yml", "--typescript"))
         assertThat(res.stderr).contains("Query return type contains unsupported mixed tuple type")
-        assertThat(res.statusCode).isEqualTo(1)
+        assertThat(res.statusCode).isEqualTo(0)
     }
 
     @Test

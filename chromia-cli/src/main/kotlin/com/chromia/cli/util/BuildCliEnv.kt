@@ -20,7 +20,6 @@ class BuildCliEnv(
         when {
             libraryWarningPattern.containsMatchIn(msg) -> if (!hideLibWarnings) command.echo(msg, err = true)
             userWarningPattern.containsMatchIn(msg) -> {
-                seenError = true
                 command.echo(msg, err = true)
                 userWarningCount++
             }
@@ -41,6 +40,8 @@ class BuildCliEnv(
             val (errorCount, warningCount) = matchResult.destructured
             val totalWarnings = warningCount.toInt()
             val libWarnings = totalWarnings - userWarningCount
+
+            seenError = errorCount.toInt() > 0
 
             val summary = buildString {
                 append(formatCountMsg("Errors", errorCount.toInt(), TextColors.brightRed))
