@@ -34,6 +34,7 @@ import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.gtv.mapper.GtvObjectMapper
 import net.postchain.gtx.Gtx
+import net.postchain.gtx.GtxOp
 import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -453,6 +454,110 @@ class MultiSignatureCreateCommandTest {
         assertThat(transactionGtx.signatures.size).isEqualTo(1)
         //Can't assert on expected signature because nop transaction changes signature
         assertThat(transactionGtx.signatures.first().toHex().length).isEqualTo(ByteArray(64).toHex().length)
+        assertThat(transactionGtx.gtxBody.operations.size).isEqualTo(2)
+    }
+
+    @Test
+    fun `timeb from`(@TempDir tempDir: Path) {
+        testData(tempDir) {
+            secret { secretFile(tempDir) }
+        }
+        val signersFile = tempDir.resolve("signers").toFile()
+        signersFile.writeText(
+                """
+                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                """.trimIndent()
+        )
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--target", tempDir.absolutePathString(),
+                "--secret", secret.absolutePath,
+                "--timeb-from", "1000000000000",
+                "call_op", opName
+        ))
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        assertThat(txData!!.txRid).isNotEmpty()
+        val transactionGtx = Gtx.decode(txData.transaction)
+        assertThat(transactionGtx.gtxBody.operations.size).isEqualTo(3)
+        assertThat(transactionGtx.gtxBody.operations[0]).isEqualTo(
+                GtxOp("timeb", gtv(1000000000000), GtvNull))
+    }
+
+    @Test
+    fun `timeb until`(@TempDir tempDir: Path) {
+        testData(tempDir) {
+            secret { secretFile(tempDir) }
+        }
+        val signersFile = tempDir.resolve("signers").toFile()
+        signersFile.writeText(
+                """
+                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                """.trimIndent()
+        )
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--target", tempDir.absolutePathString(),
+                "--secret", secret.absolutePath,
+                "--timeb-at", "2000000000000",
+                "call_op", opName
+        ))
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        assertThat(txData!!.txRid).isNotEmpty()
+        val transactionGtx = Gtx.decode(txData.transaction)
+        assertThat(transactionGtx.gtxBody.operations.size).isEqualTo(3)
+        assertThat(transactionGtx.gtxBody.operations[0]).isEqualTo(
+                GtxOp("timeb", gtv(0), gtv(2000000000000)))
+    }
+
+    @Test
+    fun `timeb from and until`(@TempDir tempDir: Path) {
+        testData(tempDir) {
+            secret { secretFile(tempDir) }
+        }
+        val signersFile = tempDir.resolve("signers").toFile()
+        signersFile.writeText(
+                """
+                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                """.trimIndent()
+        )
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--target", tempDir.absolutePathString(),
+                "--secret", secret.absolutePath,
+                "--timeb-from", "1000000000000",
+                "--timeb-at", "2000000000000",
+                "call_op", opName
+        ))
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        assertThat(txData!!.txRid).isNotEmpty()
+        val transactionGtx = Gtx.decode(txData.transaction)
+        assertThat(transactionGtx.gtxBody.operations.size).isEqualTo(3)
+        assertThat(transactionGtx.gtxBody.operations[0]).isEqualTo(
+                GtxOp("timeb", gtv(1000000000000), gtv(2000000000000)))
     }
 
     companion object {

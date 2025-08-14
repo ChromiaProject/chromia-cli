@@ -2,6 +2,7 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isZero
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import java.time.Instant
 import kotlin.io.path.absolutePathString
 
 
@@ -143,6 +145,25 @@ class TxCommandTest : IntegrationTestSetup() {
     fun underscoreOperationIsParsed() {
         withModel(TestModel().withQuery("_test_op", gtv(1))) {
             val res = TxCommand().test(listOf("_test_op", "--await", "--api-url", apiUrl, "foobar"))
+            assertThat(res.stdout).contains("was posted and confirmed")
+        }
+    }
+
+    @Test
+    fun timebAt() {
+        val timeb = Instant.now().plusSeconds(60).toEpochMilli()
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--timeb-at", timeb.toString()))
+            assertThat(res.statusCode).isZero()
+            assertThat(res.stdout).contains("was posted and confirmed")
+        }
+    }
+
+    @Test
+    fun timebAfter() {
+        withModel(TestModel().withQuery("test_op", gtv(1))) {
+            val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--timeb-after", "60"))
+            assertThat(res.statusCode).isZero()
             assertThat(res.stdout).contains("was posted and confirmed")
         }
     }

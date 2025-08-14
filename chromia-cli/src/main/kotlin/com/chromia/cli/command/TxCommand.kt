@@ -1,6 +1,5 @@
 package com.chromia.cli.command
 
-import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
@@ -10,6 +9,7 @@ import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.addFtRegisterAccountOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
+import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.evmAuthOption
@@ -22,7 +22,6 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
@@ -34,6 +33,7 @@ import net.postchain.common.tx.TransactionStatus
 import net.postchain.d1.client.ChromiaClientProvider
 import net.postchain.d1.iccf.IccfProofTxMaterialBuilder
 import net.postchain.gtv.GtvFactory.decodeGtv
+import java.time.Clock
 
 class TxCommand : ChromiaCommand(help = """
     Make a transaction towards a node.
@@ -69,6 +69,7 @@ class TxCommand : ChromiaCommand(help = """
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()
+    private val timeb by timebOptions(Clock.systemUTC())
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {
         val ftAuth by option(help = "Adds ft4.ft_auth operation for FT-compatible dapps").flag()
         val ftAccountId by option(help = "Explicitly specify which account to use")
@@ -103,7 +104,7 @@ class TxCommand : ChromiaCommand(help = """
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it)} ?: target.urls
+        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it) } ?: target.urls
         val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
@@ -121,10 +122,10 @@ class TxCommand : ChromiaCommand(help = """
             newArgs = listOf(decodeGtv(txInfo.txData.data)) + args
 
             IccfProofTxMaterialBuilder(
-                ChromiaClientProvider(
-                        ClusterManagementImpl(target.createDirectoryClient(postchainClientConfig)),
-                        client.config
-                ),
+                    ChromiaClientProvider(
+                            ClusterManagementImpl(target.createDirectoryClient(postchainClientConfig)),
+                            client.config
+                    ),
             ).build(
                     TxRid(iccfOptions.iccfTx!!),
                     txInfo.txHash.data,
@@ -134,6 +135,10 @@ class TxCommand : ChromiaCommand(help = """
                     forceIntraNetworkIccfOperation = iccfOptions.iccfForceIntraNetwork
             ).txBuilder
         } else client.transactionBuilder()
+
+        timeb?.let {
+            transactionBuilder.addTimeBound(0, it)
+        }
 
         if (ftAuthOptions.ftAuth || ftAuthOptions.evmAuth != null) {
             val signer = ftAuthOptions.evmAuth
@@ -172,7 +177,7 @@ class TxCommand : ChromiaCommand(help = """
                 echo("transaction with rid ${res.txRid.rid} was posted and confirmed")
 
             TransactionStatus.REJECTED ->
-                throw PrintMessage("Transaction was rejected ${if (!awaitConfirmation || res.httpStatusCode == 400) "immediately" else "after polling" }: ${res.rejectReason}", statusCode = 1)
+                throw PrintMessage("Transaction was rejected ${if (!awaitConfirmation || res.httpStatusCode == 400) "immediately" else "after polling"}: ${res.rejectReason}", statusCode = 1)
         }
     }
 }

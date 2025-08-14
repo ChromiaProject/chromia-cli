@@ -7,6 +7,9 @@ import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
+import com.chromia.cli.tools.util.SUPPORTED_TIME_AT_FORMATS
+import com.chromia.cli.tools.util.timeAtConverter
+import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
@@ -19,6 +22,7 @@ import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -29,8 +33,10 @@ import net.postchain.common.data.Hash
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxBuilder
 import java.nio.file.Paths
+import java.time.Clock
 
 class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Creates a new transaction for multi signature and signs it with your key") {
 
@@ -52,6 +58,11 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
     private val outputFolder by option("--target", help = "Path where file should be saved")
             .file()
             .default(Paths.get("").toAbsolutePath().toFile())
+
+    private val timebFrom by option("--timeb-from", help = "Add timeb operation to make transaction fail if applied before the given time (UTC). $SUPPORTED_TIME_AT_FORMATS")
+            .convert { timeAtConverter(it) }
+
+    private val timebUntil by timebOptions(Clock.systemUTC())
 
     private val opName by argument(help = "name of the operation to execute.")
 
@@ -81,10 +92,14 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         echo("Creating transaction with signers: ${listOf(initialSigner.firstOrNull()?.pubKey) + signersWithoutInitialSigner}")
         val transactionBuilder = GtxBuilder(
                 client.config.blockchainRid,
-                signers = initialSigner.map { it.pubKey.data  } +  signersWithoutInitialSigner.map { it.data },
+                signers = initialSigner.map { it.pubKey.data } + signersWithoutInitialSigner.map { it.data },
                 client.config.cryptoSystem,
                 client.merkleHashCalculator
         )
+
+        if (timebFrom != null || timebUntil != null) {
+            transactionBuilder.addOperation("timeb", gtv(timebFrom ?: 0), timebUntil?.let { gtv(it) } ?: GtvNull)
+        }
 
         if (ftAuthOptions.ftAuth) {
             require(ftAuthOptions.ftAuthDescriptorId != null) { "Must specify auth descriptor id when using ft auth for multi signature" }
