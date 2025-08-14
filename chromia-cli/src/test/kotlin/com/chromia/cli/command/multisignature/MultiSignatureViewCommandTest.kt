@@ -8,11 +8,11 @@ import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
-import java.io.File
-import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 class MultiSignatureViewCommandTest {
     private val logger = TerminalRecorder(width = 1000, outputInteractive = false)
@@ -53,7 +53,6 @@ class MultiSignatureViewCommandTest {
             
         """.trimIndent()
         )
-
     }
 
     @Test
@@ -99,7 +98,7 @@ class MultiSignatureViewCommandTest {
               "byteArray: 03B7EF6C5948022298051E57521CE56075A16A883516240021BD337C8A6E7DDD13"
             ]
           ],
-          "null_: ASN1_NULL"
+          "null"
         ]
       ]
     },

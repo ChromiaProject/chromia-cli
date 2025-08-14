@@ -9,6 +9,7 @@ import net.postchain.common.toHex
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvDictionary
+import net.postchain.gtv.GtvNull
 import net.postchain.gtx.Gtx
 
 class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a existing transaction") {
@@ -46,6 +47,7 @@ class MultiSignatureViewCommand : ChromiaCommand(name = "view", help = "View a e
         return when (arg) {
             is GtvArray -> arg.array.map { argumentParser(it) }
             is GtvDictionary -> arg.asDict().mapValues { (_, v) -> argumentParser(v) }
+            is GtvNull -> "null"
             else -> arg.getRawGtv().toString()
         }
     }
