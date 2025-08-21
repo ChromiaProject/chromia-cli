@@ -3,7 +3,6 @@
 This document describes how key pairs are read and managed within the Chromia CLI for various commands.
 
 ## Key Pair Reading Flow
-
 The Chromia CLI follows a specific precedence order when determining which key pair to use for operations:
 
 1. **Global Configuration**: 
