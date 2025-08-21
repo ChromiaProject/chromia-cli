@@ -415,7 +415,6 @@ library deploy --id "my-utils" --version "1.1.0" --description "Bug fixes" --rid
 ```
 
 ## Notes
-
 - Private keys (`--secret`) are required for all operations that modify blockchain state
 - Invitation codes are single-use and expire after the specified duration
   - Library files are automatically collected from the configured source directory (only `.rell` files are included). Before uploading, `chr` validates the code for compilation errors to ensure library quality
