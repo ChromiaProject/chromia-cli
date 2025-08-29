@@ -133,7 +133,7 @@ internal class TestCommandTest {
         val throwable = assertThrows<CliktError> {
             TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "test,test2", "--no-db"))
         }
-        assertThat(throwable.message!!).contains("Test module \"test\" is not defined under blockchain \"hello\"")
+        assertThat(throwable.message!!).contains("No tests to run")
     }
 
     @Test
@@ -154,11 +154,10 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        val throwable = assertThrows<CliktError> {
-            TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-bc", "hello2", "-m", "testDir.foo", "--no-db"))
-        }
-
-        assertThat(throwable.message!!).contains("Only one blockchain is allowed when specifying module")
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-bc", "hello2", "-m", "testDir.foo", "--no-db"))
+        assertThat(logger.output()).contains("Running tests for chain: hello\n")
+        assertThat(logger.output()).contains("Running tests for chain: hello2\n")
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
     }
 
     @Test
