@@ -15,15 +15,14 @@ import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktError
-import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.optionalValueLazy
 import com.github.ajalt.clikt.parameters.options.split
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
@@ -54,18 +53,18 @@ enum class SqlLoggingType {
 
 class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
-    private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s). Can only be a single chain if used together with -m", metavar = "BLOCKCHAIN")
+    private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s).", metavar = "BLOCKCHAIN")
             .multiple()
     private val modules by modulesOption("Run tests in this module(s) only. Must be the part of the specified modules or its submodules. Comma delimited, will default to all modules either under each selected blockchain or test")
     private val settings by chromiaModelOption()
 
     private val sqlLogType by option("--sql-log", help = "Enable SQL query logging. Optional value: 'user' (only user queries) or 'system' (only system queries). Without value, logs both types.")
-        .choice(
-            "user" to SqlLoggingType.USER,
-            "system" to SqlLoggingType.SYSTEM,
-        )
-        .optionalValueLazy { SqlLoggingType.BOTH }
-        .default(SqlLoggingType.NONE)
+            .choice(
+                    "user" to SqlLoggingType.USER,
+                    "system" to SqlLoggingType.SYSTEM,
+            )
+            .optionalValueLazy { SqlLoggingType.BOTH }
+            .default(SqlLoggingType.NONE)
 
     private val tests by option(help = "test method pattern", metavar = "").split(",")
     private val sourceDir by lazy { settings.sourceDir }
@@ -92,77 +91,41 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         if (testReport) {
             testReportPath.mkdirs()
         }
+        var hasRunTests = false
         try {
-            if (shouldRunBlockchainTests()) {
-                runBlockchainTests(testReportPath.toPath())
-            }
-            if (shouldRunUnitTests()) {
-                runUnitTests(testReportPath.toPath())
+            settings.model.blockchains
+                    .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
+                    .forEach { bc ->
+                        val testModules = calcTestModules(bc.value.test.modules)
+                        if (testModules.isNotEmpty()) {
+                            runTestsForBlockchain(bc.key, bc.value, testModules, testReportPath.toPath())
+                            hasRunTests = true
+                        }
+                    }
+            if (blockchains.isEmpty()) {
+                val testModules = calcTestModules(settings.model.test.modules)
+                if (testModules.isNotEmpty()) {
+                    runUnitTests(testModules, testReportPath.toPath())
+                    hasRunTests = true
+                }
             }
         } catch (e: RellCliException) {
             throw CliktError(e.message)
         }
-    }
-
-    private fun runBlockchainTests(testReportPath: Path) {
-        validateSingleModuleSelected()
-        blockchains.forEach { validateContainsModule(it) }
-
-        settings.model.blockchains
-                .filter { it.value.test.modules.isNotEmpty() }
-                .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
-                .forEach {
-                    runTestsForBlockchain(it.key, testReportPath)
-                }
-    }
-
-    private fun runUnitTests(testReportPath: Path) {
-        val testModules = modules ?: settings.model.test.modules
-        val testModuleArgs = settings.model.test.moduleArgs
-        val testConf = createTestConfig(testModuleArgs)
-
-        currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
-        val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
-        if (testReport) {
-            Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
-        }
-        if (sqlLogType != SqlLoggingType.NONE) {
-            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
-        }
-        printResults(res)
-    }
-
-    private fun shouldRunUnitTests() = blockchains.isEmpty()
-
-    private fun shouldRunBlockchainTests() = modules == null || (modules!!.isNotEmpty() && blockchains.isNotEmpty())
-
-    private fun validateSingleModuleSelected() {
-        if (blockchains.size > 1 && !modules.isNullOrEmpty()) {
-            throw PrintMessage("Only one blockchain is allowed when specifying module", statusCode = 1)
+        if (!hasRunTests) {
+            throw CliktError("No tests to run")
         }
     }
 
-    private fun validateContainsModule(blockchain: String) {
-        val chainConfig = getBlockchainConfig(blockchain)
-        if (!modules.isNullOrEmpty()) {
-            modules!!.forEach { m ->
-                if (!chainConfig.test.modules.any { bcm -> m.startsWith(bcm) })
-                    throw PrintMessage("Test module \"$m\" is not defined under blockchain \"$blockchain\"", statusCode = 1)
-            }
-        }
-    }
+    private fun calcTestModules(declaredTestModules: List<String>): List<String> = if (modules.isNullOrEmpty())
+        declaredTestModules
+    else
+        modules!!.filter { m -> declaredTestModules.any { m.startsWith(it) } }
 
-    private fun getBlockchainConfig(blockchain: String): BlockchainModel {
-        return settings.model.blockchains[blockchain]
-                ?: throw CliktError("Blockchain '$blockchain' not found")
-    }
-
-    private fun runTestsForBlockchain(blockchain: String, testReportPath: Path) {
-        val chainConfig = getBlockchainConfig(blockchain)
-
+    private fun runTestsForBlockchain(blockchain: String, chainConfig: BlockchainModel, testModules: List<String>, testReportPath: Path) {
         val appModules = listOf(chainConfig.module
                 ?: throw CliktError("Cannot run tests for blockchain $blockchain without main module"))
-        val testModules = modules ?: chainConfig.test.modules
+
         val additionalModules = chainConfig.config["gtx"]?.get("modules")?.asArray()?.map { it.asString() }
 
         val testModuleArgs = mergeModuleArgs(chainConfig.moduleArgs, chainConfig.test.moduleArgs)
@@ -172,6 +135,21 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         if (testReport) {
             Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
+        }
+        if (sqlLogType != SqlLoggingType.NONE) {
+            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
+        }
+        printResults(res)
+    }
+
+    private fun runUnitTests(testModules: List<String>, testReportPath: Path) {
+        val testModuleArgs = settings.model.test.moduleArgs
+        val testConf = createTestConfig(testModuleArgs)
+
+        currentContext.terminal.println("=".repeat(20) + "Running unit tests" + "=".repeat(20))
+        val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
+        if (testReport) {
+            Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
         }
         if (sqlLogType != SqlLoggingType.NONE) {
             sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
