@@ -2,7 +2,6 @@ package com.chromia.cli.command.library
 
 import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
-import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.lib.DirectoryHashCalculator
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.BlockchainModel
@@ -13,6 +12,8 @@ import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.BuildCliEnv
+import com.chromia.cli.util.PredefinedNetworks.CHROMIA_MAINNET
+import com.chromia.cli.util.PredefinedNetworks.predefinedNetworks
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -20,11 +21,9 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
-import net.postchain.client.defaultHttpHandler
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
-import org.http4k.core.HttpHandler
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -165,7 +164,9 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
                 )
         }.onFailure { error ->
             when (error) {
-                is PrintMessage -> throw error
+                is PrintMessage -> {
+                    throw error
+                }
                 else -> throw PrintMessage(
                     "Compilation failed for library '$libraryName': ${error.message}",
                     statusCode = 1
@@ -174,38 +175,4 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
         }
     }
 
-    companion object {
-        const val CHROMIA_MAINNET = "https://system.chromaway.com:7740"
-        const val LOCAL_HOST = "http://localhost:7740"
-
-        // TODO: add library-chain (url, brid) on mainnet when it will be deployed
-        val predefinedNetworks by lazy {
-            mapOf(
-                "testnet" to { Pair(
-                    "https://node0.testnet.chromia.com:7740",
-                    BlockchainRid.buildFromHex(
-                        "C42BB39DF12F984DAE6FC7B3783503D7CC1E37A23C5ABC36FA0E98C55E697711"
-                    )
-                ) },
-                "devnet" to { Pair(
-                    "https://node8.devnet1.chromia.dev:7740",
-                    BlockchainRid.buildFromHex(
-                        "6933A4AB594C85FCAF8D3B7EA14F11CA4B06826EE1A3A823055D1CC923E71FF9"
-                    )
-                ) },
-                "localhost" to { Pair(
-                    LOCAL_HOST,
-                    fetchBridFromLocalNode()
-                ) }
-            )
-        }
-
-        private fun fetchBridFromLocalNode() = runCatching {
-            val config = PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.singleUrl(LOCAL_HOST))
-            val httpHandler: HttpHandler = defaultHttpHandler(config)
-            BridFetcher(httpHandler, LOCAL_HOST).fetchBlockchainRid(0)
-        }.onFailure { _ ->
-            throw PrintMessage("Unable to fetch brid from local node")
-        }.getOrThrow()
-    }
 }
