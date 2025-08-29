@@ -10,6 +10,16 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.8] - 2025-08-29
+### Added
+- Adds marker file after dependency installation to enable IDE reference resolution.
+- Print progress while posting transaction and awaiting confirmation
+- Support adding timeb operation in tx and multi-signature create commands
+- **Version Bumps**
+    - chromia-cli-tools 0.6.2
+### Fixed
+- Inconsistent library warning count and other minor bug fixes
+
 ## [0.27.7] - 2025-07-03
 ### Added
 - Adds iccf source url option to `chr tx` command to support iccf tx across different clusters
