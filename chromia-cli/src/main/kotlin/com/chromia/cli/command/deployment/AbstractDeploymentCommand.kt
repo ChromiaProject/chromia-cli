@@ -15,6 +15,7 @@ import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.DeployedNetworkOption
+import com.chromia.cli.util.LibraryRidResolver
 import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.versionfinder.CanNotFindBlockchainException
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
@@ -70,7 +71,9 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
     final override fun run() {
         val cliEnv = BuildCliEnv(this, hideLibWarnings)
         val chainsToDeploy = blockchain ?: explicitChainsToDeploy()
-        val res = ChromiaCompileApi.build(cliEnv, settings.model.filterBlockchains(chainsToDeploy))
+        val chromiaModel = settings.model.filterBlockchains(chainsToDeploy)
+        val modelWithLibRids = LibraryRidResolver.resolveLibraryRids(chromiaModel)
+        val res = ChromiaCompileApi.build(cliEnv,modelWithLibRids)
                 .onEach { it.keepOnlyStandardGtxModules().validate() }
                 .apply { validateRellVersion(client) }
                 .apply { preDeploymentVerification(this) }

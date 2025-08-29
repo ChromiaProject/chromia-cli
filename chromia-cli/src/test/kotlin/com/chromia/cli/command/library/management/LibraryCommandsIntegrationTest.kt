@@ -56,6 +56,9 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
     private lateinit var keyPair1: KeyPair
     private lateinit var keyPair2: KeyPair
 
+    private val organisationId = "com.example"
+    private val libraryName = "my_lib"
+    
     @BeforeEach
     fun setupLibraryChain() {
         libraryChainKeyPair = KeyPair.of(
@@ -87,15 +90,15 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
 
         val result = deployNewLibraryVersion(
             dir = myLibDirWithCompilationErrors,
-            libraryId = "my_lib",
+            libraryId = libraryName,
             version = "0.0.2",
             description = "Library with compilation errors",
-            library = "lib_a",
+            library = libraryName,
             secretFile = dev1SecretFile
         )
 
         assertThat(result.stdout).isNotNull()
-        assertThat(result.stdout).contains("Compilation failed for library 'lib_a'")
+        assertThat(result.stdout).contains("Compilation failed for library '$libraryName'")
     }
 
     private fun testCreateDevelopers() {
@@ -108,7 +111,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
 
     private fun testCreateAndViewOrganization() {
         val createOrgResult = createOrganization(
-            orgId = "com.example",
+            orgId = organisationId,
             name = "org1",
             description = "organization description",
             secretFile = dev1SecretFile
@@ -117,10 +120,10 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         assertThat(createOrgResult.stdout)
             .contains("Organization 'org1' created successfully with ID: com.example")
 
-        val viewOrgResult = viewOrganization("com.example")
+        val viewOrgResult = viewOrganization(organisationId)
 
         assertThat(viewOrgResult.stdout).all {
-            contains("com.example")
+            contains(organisationId)
             contains("org1")
             contains("organization description")
         }
@@ -130,18 +133,17 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         setupLibraryFiles(myLibDir)
         val createLibraryResult = createLibrary(
             dir = myLibDir,
-            id = "my_lib",
-            library = "lib_a",
-            name = "My library",
+            library = libraryName,
+            name = libraryName,
             description = "My test custom library",
             version = "0.0.1",
-            organization = "com.example",
+            organization = organisationId,
             secretFile = dev1SecretFile,
         )
 
         assertThat(createLibraryResult.stdout).all {
             contains("Uploading files from: ")
-            // only upload files under module: lib.lib_a from `chromia.yml file - 1 file, skips files in other modules
+            // only upload files under module: lib.$libA from `chromia.yml file - 1 file, skips files in other modules
             contains("Found 1 files to include in library")
             contains("Library created successfully in transaction TxRid")
         }
@@ -166,10 +168,10 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
                 tagOrBranch: v1.0.0r
                 rid: x"FA487D75E63B6B58381F8D71E0700E69BEDEAD3A57D1E6C1A9ABB149FAC9E65F"
                 insecure: true
-              my_lib:
+              $organisationId.$libraryName:
                 version: 0.0.1
-                registry: http://localhost:7740
-                brid: "${libraryChainBrid.toHex()}"
+                registry: localhost
+                
         """.trimIndent()
 
         installTestDir.resolve("chromia.yml").writeText(chromiaYmlContent)
@@ -188,6 +190,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             listOf(
                 "-s",
                 installTestDir.resolve("chromia.yml").absolutePathString(),
+                "--url", "localhost"
             )
         )
 
@@ -199,7 +202,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         assertThat(ft4LibDir.toFile().isDirectory()).isTrue()
         assertThat(ft4LibDir.toFile().listFiles()?.isNotEmpty() ?: false).isTrue()
 
-        val myLibDir = srcDir.resolve("lib/my_lib")
+        val myLibDir = srcDir.resolve("lib/$libraryName")
         assertThat(myLibDir.toFile().exists()).isTrue()
         assertThat(myLibDir.toFile().isDirectory()).isTrue()
         assertThat(myLibDir.toFile().listFiles()?.isNotEmpty() ?: false).isTrue()
@@ -209,7 +212,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         val dev2AccountId = getDeveloperAccountId(dev2SecretFile)
 
         val inviteResult = inviteDevToLibrary(
-            libraryId = "my_lib",
+            libraryId = "$organisationId.$libraryName",
             developerAccountId = dev2AccountId,
             accessLevel = "admin",
             secretFile = dev1SecretFile
@@ -233,7 +236,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         val dev2AccountId = getDeveloperAccountId(dev2SecretFile)
 
         val updateResult = updateLibraryUserPermission(
-            libraryId = "my_lib",
+            libraryId = "$organisationId.$libraryName",
             developerAccountId = dev2AccountId,
             accessLevel = "publisher",
             secretFile = dev1SecretFile
@@ -247,7 +250,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         val dev2AccountId = getDeveloperAccountId(dev2SecretFile)
 
         val removeResult = removeDevFromLibrary(
-            libraryId = "my_lib",
+            libraryId = "$organisationId.$libraryName",
             developerAccountId = dev2AccountId,
             secretFile = dev1SecretFile
         )
@@ -256,15 +259,15 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
     }
 
     private fun testDeployNewLibraryVersion() {
-        val moduleFile = File(myLibDir.toFile(), "src/lib/lib_a/module.rell")
+        val moduleFile = File(myLibDir.toFile(), "src/lib/$libraryName/module.rell")
         moduleFile.writeText("module; val ZERO = 0; function newFunction() = 10;")
 
         val deployResult = deployNewLibraryVersion(
             dir = myLibDir,
-            libraryId = "my_lib",
+            libraryId = "$organisationId.$libraryName",
             version = "0.0.2",
             description = "Updated library with new function",
-            library = "lib_a",
+            library = libraryName,
             secretFile = dev1SecretFile
         )
 
@@ -332,7 +335,6 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
 
     fun createLibrary(
         dir: Path,
-        id: String,
         library: String,
         name: String,
         description: String,
@@ -341,7 +343,6 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         secretFile: File
     ) = CreateLibraryCommand().test(
         listOf(
-            "--id", id,
             "--library", library,
             "--name", name,
             "--description", description,
@@ -357,8 +358,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         File(dir.toFile(), "chromia.yml").writeText(
             """
                 blockchains:
-                  lib_a:
-                    module: lib.lib_a
+                  $libraryName:
+                    module: lib.$libraryName
                     type: library
                 compile:
                   rellVersion: 0.14.5
@@ -367,7 +368,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             """.trimIndent()
         )
 
-        File(dir.toFile(), "src/lib/lib_a/module.rell").apply {
+        File(dir.toFile(), "src/lib/$libraryName/module.rell").apply {
             parentFile.mkdirs()
             writeText("module; val PI = 1; function side_effect(){}")
         }
@@ -387,8 +388,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         File(dir.toFile(), "chromia.yml").writeText(
             """
                 blockchains:
-                  lib_a:
-                    module: lib.lib_a
+                  $libraryName:
+                    module: lib.$libraryName
                     type: library
                 compile:
                   rellVersion: 0.14.5
@@ -397,7 +398,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             """.trimIndent()
         )
 
-        File(dir.toFile(), "src/lib/lib_a/module.rell").apply {
+        File(dir.toFile(), "src/lib/$libraryName/module.rell").apply {
             parentFile.mkdirs()
             writeText(
                 """
@@ -539,7 +540,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         val lines = output.lines()
 
         val invitationLine = lines.firstOrNull {
-            it.contains("• Code:") && it.contains("Library: my_lib")
+            it.contains("• Code:") && it.contains("Library: $organisationId.$libraryName")
         } ?: fail { "Could not find invitation in output: $output" }
 
         val codePattern = Regex("Code: ([^|]+)")
@@ -555,7 +556,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             repositoryCloner.clone(
                 registry = "https://bitbucket.org/chromawallet/library-chain.git",
                 target = libraryChainDir,
-                tagOrBranch = "dev",
+                tagOrBranch = "main",
             )
         } catch (e: Exception) {
             fail { "Failed to clone library-chain repository: ${e.message}" }

@@ -4,6 +4,7 @@ import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.library.chain.versioning.external.CREATE_LIBRARY
 import com.chromia.library.chain.versioning.external.createLibraryOperation
+import com.chromia.library.chain.versioning.external.getLibraryByOrganizationAndName
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
@@ -17,11 +18,6 @@ class CreateLibraryCommand : AbstractLibraryCommand(
     name = "create",
     help = "Create a new library in an organization"
 ) {
-
-    private val libraryId by option(
-        "--id",
-        help = "Unique identifier for the library"
-    ).required()
 
     private val displayName by option(
         "--name",
@@ -81,7 +77,6 @@ class CreateLibraryCommand : AbstractLibraryCommand(
 
         val rid = calculateRid(libPath)
         val res = txBuilder.createLibraryOperation(
-            id = libraryId,
             displayName = displayName,
             description = description,
             files = files,
@@ -100,8 +95,11 @@ class CreateLibraryCommand : AbstractLibraryCommand(
             TransactionStatus.WAITING ->
                 echo("transaction with rid ${res.txRid.rid} was posted but is still pending")
 
-            TransactionStatus.CONFIRMED ->
+            TransactionStatus.CONFIRMED -> {
+                val library = client.getLibraryByOrganizationAndName(organizationId, displayName)
+                val libraryId = library?.id ?: "Unknown"
                 echo("Library created successfully in transaction ${res.txRid} with id: $libraryId")
+            }
             TransactionStatus.REJECTED ->
                 throw PrintMessage(
                     "Unable to create library: ${res.status}[${res.httpStatusCode}] --> ${res.rejectReason}",

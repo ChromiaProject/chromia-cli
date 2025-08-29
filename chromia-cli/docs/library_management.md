@@ -232,8 +232,14 @@ The `library install` command reads your `chromia.yml` file and installs all lib
 
 **Usage:**
 ```bash
-library install [options]
+library install [<library_id> [<registry>]] [options]
 ```
+
+**Arguments:**
+- `library_id` (optional): Specific library ID to install. If not provided, all configured libraries will be installed.
+- `registry` (optional): Custom registry URL to use for the specified library. If not provided, the registry from the configuration file will be used.
+
+**Note:** When using both arguments, the order matters: `library_id` must come first, followed by `registry`. The `registry` argument is only used when a specific `library_id` is provided.
 
 **Options:**
 - `--force`, `-f`: Force installation even if RID verification fails (use with caution)
@@ -269,9 +275,26 @@ libs:
 2. **External Git libraries**: Hosted in Git repositories
    - Specify `registry` (Git URL), `path`, `tagOrBranch`, `rid`, and `insecure` flag
 
-**Example:**
+**Examples:**
+
+Install all configured libraries:
 ```bash
-library install 
+library install
+```
+
+Install a specific library using its configured registry:
+```bash
+library install my_lib
+```
+
+Install a specific library from a custom registry:
+```bash
+library install my_lib https://custom-registry.com:7740
+```
+
+Install with force flag to bypass RID verification:
+```bash
+library install my_lib --force
 ```
 
 ## Collaboration Commands
