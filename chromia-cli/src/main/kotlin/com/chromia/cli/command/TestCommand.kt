@@ -16,7 +16,11 @@ import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.util.modulesOption
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.parameters.groups.default
+import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.groups.single
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
@@ -26,6 +30,7 @@ import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextStyle
 import com.github.ajalt.mordant.terminal.success
 import net.postchain.gtv.Gtv
@@ -41,6 +46,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.name
+import kotlin.io.path.relativeTo
 
 val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")
 
@@ -55,7 +62,20 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s).", metavar = "BLOCKCHAIN")
             .multiple()
-    private val modules by modulesOption("Run tests in this module(s) only. Must be the part of the specified modules or its submodules. Comma delimited, will default to all modules either under each selected blockchain or test")
+
+    sealed class ModulesOrFile {
+        data class Modules(val modules: List<String>) : ModulesOrFile()
+        data class File(val file: Path) : ModulesOrFile()
+        data object All : ModulesOrFile()
+    }
+
+    private val modulesOrFile: ModulesOrFile by mutuallyExclusiveOptions(
+            modulesOption("Run tests in this module(s) only. Must be the part of the specified modules or its submodules. Comma delimited, will default to all modules either under each selected blockchain or test")
+                    .convert { x: List<String> -> ModulesOrFile.Modules(x) },
+            option("--file", help = "Run tests in one file").path(canBeFile = true, canBeDir = true, mustExist = true)
+                    .convert { ModulesOrFile.File(it) },
+    ).single().default(ModulesOrFile.All)
+
     private val settings by chromiaModelOption()
 
     private val sqlLogType by option("--sql-log", help = "Enable SQL query logging. Optional value: 'user' (only user queries) or 'system' (only system queries). Without value, logs both types.")
@@ -87,6 +107,12 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     private val sqlStatisticsRenderer by lazy { SqlStatisticsRenderer(this, sqlLogType) }
 
     override fun run() {
+        val modules = when (val mf = modulesOrFile) {
+            is ModulesOrFile.Modules -> mf.modules
+            is ModulesOrFile.File -> listOf(moduleOfFile(sourceDir.toPath(), mf.file))
+            is ModulesOrFile.All -> null
+        }
+
         val testReportPath = testReportDir ?: File(settings.targetDir, "reports")
         if (testReport) {
             testReportPath.mkdirs()
@@ -96,14 +122,14 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
             settings.model.blockchains
                     .filter { blockchains.isEmpty() || blockchains.contains(it.key) }
                     .forEach { bc ->
-                        val testModules = calcTestModules(bc.value.test.modules)
+                        val testModules = calcTestModules(modules, bc.value.test.modules)
                         if (testModules.isNotEmpty()) {
                             runTestsForBlockchain(bc.key, bc.value, testModules, testReportPath.toPath())
                             hasRunTests = true
                         }
                     }
             if (blockchains.isEmpty()) {
-                val testModules = calcTestModules(settings.model.test.modules)
+                val testModules = calcTestModules(modules, settings.model.test.modules)
                 if (testModules.isNotEmpty()) {
                     runUnitTests(testModules, testReportPath.toPath())
                     hasRunTests = true
@@ -117,10 +143,10 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         }
     }
 
-    private fun calcTestModules(declaredTestModules: List<String>): List<String> = if (modules.isNullOrEmpty())
+    private fun calcTestModules(modules: List<String>?, declaredTestModules: List<String>): List<String> = if (modules.isNullOrEmpty())
         declaredTestModules
     else
-        modules!!.filter { m -> declaredTestModules.any { m.startsWith(it) } }
+        modules.filter { m -> declaredTestModules.any { m.startsWith(it) } }
 
     private fun runTestsForBlockchain(blockchain: String, chainConfig: BlockchainModel, testModules: List<String>, testReportPath: Path) {
         val appModules = listOf(chainConfig.module
@@ -258,3 +284,8 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         return line
     }
 }
+
+internal fun moduleOfFile(sourceDir: Path, file: Path): String =
+        file.relativeTo(sourceDir).joinToString(separator = ".") { it.name }.let {
+            if (it.endsWith(".rell")) it.dropLast(5) else it
+        }

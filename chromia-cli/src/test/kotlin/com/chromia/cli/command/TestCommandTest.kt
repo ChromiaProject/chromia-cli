@@ -3,6 +3,7 @@ package com.chromia.cli.command
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
+import assertk.assertions.isEqualTo
 import com.chromia.build.tools.testData
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
@@ -24,7 +25,6 @@ import org.redundent.kotlin.xml.parse
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.exists
-import kotlin.test.assertEquals
 
 internal class TestCommandTest {
 
@@ -32,12 +32,14 @@ internal class TestCommandTest {
     private val testTerminal = Terminal(terminalInterface = logger)
 
     @TempDir
-    private lateinit var testDir: Path
+    private lateinit var projectDir: Path
     private lateinit var settingsFile: File
+    private lateinit var testDir: File
+    private lateinit var testFile: File
 
     @BeforeEach
     fun setup() {
-        with(File(testDir.toFile(), "src/main.rell")) {
+        with(File(projectDir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -45,7 +47,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -55,7 +57,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+        settingsFile = File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -69,7 +71,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(testDir.toFile(), "src/testDir/bar.rell")) {
+        with(File(projectDir.toFile(), "src/testDir/bar.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -79,8 +81,11 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(testDir.toFile(), "src/testDir/foo.rell")) {
-            parentFile.mkdirs()
+        testDir = File(projectDir.toFile(), "src/testDir").apply {
+            mkdirs()
+        }
+
+        testFile = File(testDir, "foo.rell").apply {
             writeText("""
                 @test module;
 
@@ -123,8 +128,20 @@ internal class TestCommandTest {
     }
 
     @Test
-    fun testBlockchainWithDirSpecific() {
+    fun testBlockchainWithDirModuleSpecific() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "testDir", "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
+    }
+
+    @Test
+    fun testBlockchainWithFileSpecific() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--file", testFile.absolutePath, "--no-db"))
+        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
+    }
+
+    @Test
+    fun testBlockchainWithDirSpecific() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--file", testDir.absolutePath, "--no-db"))
         assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
     }
 
@@ -138,7 +155,7 @@ internal class TestCommandTest {
 
     @Test
     fun testMultipleBlockchainsWithModule() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -162,7 +179,7 @@ internal class TestCommandTest {
 
     @Test
     fun testMultipleBlockchainsWithoutModule() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -191,7 +208,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleSelectiveTest() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -208,7 +225,7 @@ internal class TestCommandTest {
 
     @Test
     fun testUnitMultipleModules() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -224,7 +241,7 @@ internal class TestCommandTest {
 
     @Test
     fun testUnitMultipleModulesOnlyRunsTestsOnceWhenDuplicateInvocations() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -240,7 +257,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSubModuleAllTests() {
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -256,7 +273,7 @@ internal class TestCommandTest {
 
     @Test
     fun testWithDb() {
-        with(File(testDir.toFile(), "src/main.rell")) {
+        with(File(projectDir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -268,13 +285,13 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/test_ops.rell")) {
+        with(File(projectDir.toFile(), "src/test_ops.rell")) {
             writeText("""
                 module;
                 operation add_foo(name, pubkey) {} // Conflict
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -287,7 +304,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -308,7 +325,7 @@ internal class TestCommandTest {
 
     @Test
     fun testSqlLogging() {
-        with(File(testDir.toFile(), "src/main.rell")) {
+        with(File(projectDir.toFile(), "src/main.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -320,7 +337,7 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -333,7 +350,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains: 
                   main:
@@ -365,7 +382,7 @@ internal class TestCommandTest {
 
     @Test
     fun failingTest() {
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -383,7 +400,7 @@ internal class TestCommandTest {
 
     @Test
     fun failingTestColors() {
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -411,7 +428,7 @@ internal class TestCommandTest {
 
     @Test
     fun okTestsColors() {
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -432,7 +449,7 @@ internal class TestCommandTest {
 
     @Test
     fun failingTestStopOnError() {
-        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+        settingsFile = File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -447,7 +464,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -465,7 +482,7 @@ internal class TestCommandTest {
 
     @Test
     fun testFailingTestContinuesWithGlobalOverride() {
-        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+        settingsFile = File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                     hello:
@@ -480,7 +497,7 @@ internal class TestCommandTest {
             """.trimIndent())
         }
 
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -498,9 +515,9 @@ internal class TestCommandTest {
 
     @Test
     fun failingTestStopOnErrorFlag() {
-        settingsFile = File(testDir.toFile(), "chromia.yml").apply {
+        settingsFile = File(projectDir.toFile(), "chromia.yml").apply {
 
-            with(File(testDir.toFile(), "src/test.rell")) {
+            with(File(projectDir.toFile(), "src/test.rell")) {
                 parentFile.mkdirs()
                 writeText("""
                 @test module;
@@ -519,19 +536,19 @@ internal class TestCommandTest {
 
     @Test
     fun testBlockchainTestScopeFailOnErrorStopsGlobally() {
-        with(File(testDir.toFile(), "src/development.rell")) {
+        with(File(projectDir.toFile(), "src/development.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/production.rell")) {
+        with(File(projectDir.toFile(), "src/production.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/moduleA/test.rell")) {
+        with(File(projectDir.toFile(), "src/moduleA/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -539,7 +556,7 @@ internal class TestCommandTest {
                 function test_c() {assert_equals(1, 2);}
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/moduleB/test.rell")) {
+        with(File(projectDir.toFile(), "src/moduleB/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -548,7 +565,7 @@ internal class TestCommandTest {
                 function test_a() {}
             """.trimIndent())
         }
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   a:
@@ -574,7 +591,7 @@ internal class TestCommandTest {
 
     @Test
     fun testBlockchainTestScope() {
-        with(File(testDir.toFile(), "src/development.rell")) {
+        with(File(projectDir.toFile(), "src/development.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
@@ -586,7 +603,7 @@ internal class TestCommandTest {
                 query get_foo(name) = foo @? { name };
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/moduleA/test.rell")) {
+        with(File(projectDir.toFile(), "src/moduleA/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -598,7 +615,7 @@ internal class TestCommandTest {
                 }
             """.trimIndent())
         }
-        with(File(testDir.toFile(), "src/moduleB/test.rell")) {
+        with(File(projectDir.toFile(), "src/moduleB/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -607,7 +624,7 @@ internal class TestCommandTest {
                 function test_b() {}
             """.trimIndent())
         }
-        File(testDir.toFile(), "chromia.yml").apply {
+        File(projectDir.toFile(), "chromia.yml").apply {
             writeText("""
                 blockchains:
                   foo_chain_dev:
@@ -643,22 +660,22 @@ internal class TestCommandTest {
 
     @Test
     fun testTestReportSuccess() {
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
-        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
-        assertEquals("testsuite", testReport.nodeName)
-        assertEquals("rell", testReport.attributes["name"])
-        assertEquals("0", testReport.attributes["failures"])
-        assertEquals("2", testReport.attributes["tests"])
-        assertEquals("3.0", testReport.attributes["version"])
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", projectDir.toString()))
+        val testReport = parse(projectDir.resolve("rell-unit-tests.xml").toFile())
+        assertThat(testReport.nodeName).isEqualTo("testsuite")
+        assertThat(testReport.attributes["name"]).isEqualTo("rell")
+        assertThat(testReport.attributes["failures"]).isEqualTo("0")
+        assertThat(testReport.attributes["tests"]).isEqualTo("2")
+        assertThat(testReport.attributes["version"]).isEqualTo("3.0")
         val case = testReport.children.filterIsInstance<Node>().first()
-        assertEquals("testcase", case.nodeName)
-        assertEquals("test_a", case.attributes["name"])
-        assertEquals("test", case.attributes["classname"])
+        assertThat(case.nodeName).isEqualTo("testcase")
+        assertThat(case.attributes["name"]).isEqualTo("test_a")
+        assertThat(case.attributes["classname"]).isEqualTo("test")
     }
 
     @Test
     fun testTestReportFailure() {
-        with(File(testDir.toFile(), "src/test.rell")) {
+        with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
             writeText("""
                 @test module;
@@ -669,38 +686,37 @@ internal class TestCommandTest {
 
         assertThrows<CliktError> {
             TestCommand().context { terminal = testTerminal }.parse(
-                    listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
+                    listOf("-s", settingsFile.absolutePath, "--no-db", "--test-report", "--test-report-dir", projectDir.toString()))
         }
-        val testReport = parse(testDir.resolve("rell-unit-tests.xml").toFile())
-        assertEquals("testsuite", testReport.nodeName)
-        assertEquals("rell", testReport.attributes["name"])
+        val testReport = parse(projectDir.resolve("rell-unit-tests.xml").toFile())
+        assertThat(testReport.nodeName).isEqualTo("testsuite")
+        assertThat(testReport.attributes["name"]).isEqualTo("rell")
         val case = testReport.children.filterIsInstance<Node>().first()
-        assertEquals("testcase", case.nodeName)
-        assertEquals("test_b", case.attributes["name"])
-        assertEquals("test", case.attributes["classname"])
+        assertThat(case.nodeName).isEqualTo("testcase")
+        assertThat(case.attributes["name"]).isEqualTo("test_b")
+        assertThat(case.attributes["classname"]).isEqualTo("test")
         val failure = case.children.filterIsInstance<Node>().first()
-        assertEquals("failure", failure.nodeName)
-        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>", failure.attributes["message"])
-        assertEquals("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
-                "\tat test:test_b(test.rell:3)",
-                failure.children.filterIsInstance<CDATAElement>().first().text.trim())
+        assertThat(failure.nodeName).isEqualTo("failure")
+        assertThat(failure.attributes["message"]).isEqualTo("System function 'rell.test.assert_equals': expected <2> but was <1>")
+        assertThat(failure.children.filterIsInstance<CDATAElement>().first().text.trim()).isEqualTo("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
+                "\tat test:test_b(test.rell:3)")
     }
 
     @Test
     fun testBlockchainTestReport() {
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db", "--test-report", "--test-report-dir", testDir.toString()))
-        assertThat(testDir.resolve("hello-tests.xml").exists())
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db", "--test-report", "--test-report-dir", projectDir.toString()))
+        assertThat(projectDir.resolve("hello-tests.xml").exists())
     }
 
     @Test
     fun testModuleTestReport() {
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db", "--test-report-dir", testDir.toString()))
-        assertThat(testDir.resolve("test-tests.xml").exists())
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-m", "test", "--no-db", "--test-report-dir", projectDir.toString()))
+        assertThat(projectDir.resolve("test-tests.xml").exists())
     }
 
     @Test
     fun testIccfDoesNothing() {
-        testData(testDir) {
+        testData(projectDir) {
             config {
                 blockchains(
                         """
@@ -734,7 +750,7 @@ internal class TestCommandTest {
 
     @Test
     fun testIccfDoesNotWorkOnUnitTest() {
-        testData(testDir) {
+        testData(projectDir) {
             config {
                 blockchains(
                         """
@@ -766,5 +782,17 @@ internal class TestCommandTest {
         }
         val res = TestCommand().test("-s ${settingsFile.absolutePath}")
         assertThat(res.output).contains("Unknown operation: iccf_proof")
+    }
+
+    @Test
+    fun `moduleOfFile with Rell file`() {
+        val module = moduleOfFile(Path.of("root", "src"), Path.of("root", "src", "main", "test.rell"))
+        assertThat(module).isEqualTo("main.test")
+    }
+
+    @Test
+    fun `moduleOfFile with directory`() {
+        val module = moduleOfFile(Path.of("root", "src"), Path.of("root", "src", "main", "test"))
+        assertThat(module).isEqualTo("main.test")
     }
 }
