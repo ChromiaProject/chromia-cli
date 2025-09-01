@@ -15,6 +15,14 @@ object PredefinedNetworks {
     // TODO: add library-chain (url, brid) on mainnet when it will be deployed
     val predefinedNetworks by lazy {
         mapOf(
+            "mainnet" to {
+                Pair(
+                    CHROMIA_MAINNET,
+                    BlockchainRid.buildFromHex(
+                        "C9051571CD822507DDD1F3B43F2DC066B54CC5A25ECD758A1B5A42913483CF20"
+                    )
+                )
+            },
             "testnet" to {
                 Pair(
                     "https://node0.testnet.chromia.com:7740",
