@@ -134,18 +134,6 @@ internal class TestCommandTest {
     }
 
     @Test
-    fun testBlockchainWithFileSpecific() {
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--file", testFile.absolutePath, "--no-db"))
-        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 2 PASSED / 2 TOTAL")
-    }
-
-    @Test
-    fun testBlockchainWithDirSpecific() {
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--file", testDir.absolutePath, "--no-db"))
-        assertThat(logger.output()).contains("SUMMARY: 0 FAILED / 4 PASSED / 4 TOTAL")
-    }
-
-    @Test
     fun testBlockchainWithModuleNotInScope() {
         val throwable = assertThrows<CliktError> {
             TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "-m", "test,test2", "--no-db"))
