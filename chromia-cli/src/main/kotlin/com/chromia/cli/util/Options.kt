@@ -8,7 +8,6 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
@@ -61,7 +60,7 @@ fun ParameterHolder.accountIdOption(help: String = "Set FT4 account id explicitl
 
 fun CliktCommand.modulesOption(help: String) =
         option("-m", "--modules", help = help, metavar = "MODULES")
-                .split(",")
+                .convert { it.split(",", ignoreCase = false, limit = 0) } // using .split() prevents it from being used in mutuallyExclusiveOptions()
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
