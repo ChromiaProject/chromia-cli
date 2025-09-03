@@ -12,7 +12,11 @@ import com.github.ajalt.mordant.rendering.Whitespace
 import com.github.ajalt.mordant.table.ColumnWidth
 import net.postchain.common.hexStringToByteArray
 
-class GetDeveloperCommand : AbstractLibraryCommand("get", help = "Get a library developer") {
+class GetDeveloperCommand : AbstractLibraryCommand(
+    "get",
+    help = "Get a library developer",
+    hideKeyPairSourceHelpMessage = true
+) {
 
     private val accountId by argument(
         help = "Developer account ID"

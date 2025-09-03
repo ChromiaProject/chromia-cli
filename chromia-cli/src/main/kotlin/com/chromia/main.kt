@@ -17,6 +17,7 @@ import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
 import com.chromia.cli.command.library.LibraryCommand
+import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
 import com.chromia.cli.command.seeder.SeederCommand
@@ -52,7 +53,7 @@ fun main(args: Array<out String>) {
                     DeploymentCommand.commands(),
                     EifCommand.commands(),
                     GenerateCommand.commands(),
-                    InstallCommand(),
+                    InstallLibraryCommand(),
                     KeygenCommand(),
                     NodeCommand.commands(),
                     QueryCommand(),

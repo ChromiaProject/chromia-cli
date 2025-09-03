@@ -17,6 +17,8 @@ class RemoveUserCommand : AbstractLibraryCommand(
     name = "remove-user",
     help = "Remove a user from an organization"
 ) {
+    override val hiddenFromHelp = true
+
     private val organizationId by argument(
         help = "ID of the organization to remove user from"
     )

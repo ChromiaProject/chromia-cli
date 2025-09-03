@@ -11,6 +11,7 @@ class AcceptLibraryInvitationCommand : AbstractLibraryCommand(
     name = "accept-invitation",
     help = "Accept a library invitation"
 ) {
+    override val hiddenFromHelp = true
 
     val invitationCode by argument(
         help = "The invitation code to accept"

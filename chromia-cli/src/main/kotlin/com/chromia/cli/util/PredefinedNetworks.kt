@@ -9,15 +9,16 @@ import net.postchain.common.BlockchainRid
 import org.http4k.core.HttpHandler
 
 object PredefinedNetworks {
-    const val CHROMIA_MAINNET = "https://system.chromaway.com:7740"
+    const val CHROMIA_MAINNET_NODE = "https://dapps0.chromaway.com"
+    const val CHROMIA_MAINNET = "mainnet"
     const val LOCAL_HOST = "http://localhost:7740"
 
     // TODO: add library-chain (url, brid) on mainnet when it will be deployed
     val predefinedNetworks by lazy {
         mapOf(
-            "mainnet" to {
+            CHROMIA_MAINNET to {
                 Pair(
-                    CHROMIA_MAINNET,
+                    CHROMIA_MAINNET_NODE,
                     BlockchainRid.buildFromHex(
                         "C9051571CD822507DDD1F3B43F2DC066B54CC5A25ECD758A1B5A42913483CF20"
                     )
@@ -27,7 +28,7 @@ object PredefinedNetworks {
                 Pair(
                     "https://node0.testnet.chromia.com:7740",
                     BlockchainRid.buildFromHex(
-                        "E93362BE11F3BEDB98B4A4CC61FC1FC9ED0A8DD372983070EAC9DD3FBB666ACE"
+                        "76693857DEDCCA049BA3546ACADB2F73648B1A83FF8A8210F3F89EBD59DBC7C7"
                     )
                 )
             },

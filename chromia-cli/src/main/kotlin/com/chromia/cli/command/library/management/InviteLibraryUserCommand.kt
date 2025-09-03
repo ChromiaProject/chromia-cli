@@ -18,6 +18,8 @@ class InviteLibraryUserCommand : AbstractLibraryCommand(
     name = "invite-user",
     help = "Invite a user to collaborate on a library"
 ) {
+    override val hiddenFromHelp = true
+
     private val libraryId by option(
         "--library-id",
         help = "ID of the library to invite user to"

@@ -5,7 +5,6 @@ import com.chromia.cli.command.library.developer.DeveloperCommand
 import com.chromia.cli.command.library.management.AcceptLibraryInvitationCommand
 import com.chromia.cli.command.library.management.CreateLibraryCommand
 import com.chromia.cli.command.library.management.DeployNewLibraryVersionCommand
-import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.command.library.management.InviteLibraryUserCommand
 import com.chromia.cli.command.library.management.ListLibrariesCommand
 import com.chromia.cli.command.library.management.ListLibraryInvitationsCommand
@@ -19,8 +18,6 @@ import com.github.ajalt.clikt.core.subcommands
 class LibraryCommand private constructor() : NoOpChromiaCommand(
     help = "Manage organizations and libraries in the Chromia library ecosystem"
 ) {
-
-    override val hiddenFromHelp = true
 
     companion object {
         fun commands() = LibraryCommand().subcommands(
@@ -36,7 +33,6 @@ class LibraryCommand private constructor() : NoOpChromiaCommand(
             UpdateLibraryUserPermissionCommand(),
             AcceptLibraryInvitationCommand(),
             ListLibraryInvitationsCommand(),
-            InstallLibraryCommand()
         )
     }
 }

@@ -10,6 +10,16 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.9] - 2025-09-03
+### Added
+- `--file` option to `chr test` to run all tests in a single Rell file
+- `chr code check` command to check Rell code for compilation errors
+- `chr install` supports library chains
+- `chr library list` command to list available libraries on library chain
+- `chr library view` command to view details about specific library on library chain
+### Fixed
+- Improve how test command deals with --modules option
+
 ## [0.27.8] - 2025-08-29
 ### Added
 - Adds marker file after dependency installation to enable IDE reference resolution.

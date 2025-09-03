@@ -11,8 +11,10 @@ import net.postchain.common.tx.TransactionStatus
 
 class RemoveLibraryUserCommand : AbstractLibraryCommand(
     name = "delete-dev",
-    help = "Delete a developer from a library"
+    help = "Delete a developer from a library",
+    hideKeyPairSourceHelpMessage = true
 ) {
+    override val hiddenFromHelp = true
 
     private val libraryId by option(
         "--library-id",
