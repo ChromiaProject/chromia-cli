@@ -58,7 +58,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
 
     private val organisationId = "com.example"
     private val libraryName = "my_lib"
-    
+
     @BeforeEach
     fun setupLibraryChain() {
         libraryChainKeyPair = KeyPair.of(
@@ -78,6 +78,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         testCreateAndViewOrganization()
         testCreateLibrary()
         testInstallLibrary()
+        testInstallLibraryExplicitelyWithVersion()
         testAddDevToLibrary()
         testUpdateDevPermission()
         testRemoveDevFromLibrary()
@@ -190,12 +191,75 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             listOf(
                 "-s",
                 installTestDir.resolve("chromia.yml").absolutePathString(),
-                "--url", "localhost"
+                "--url",
+                "localhost"
             )
         )
 
         assertThat(installResult.stderr).isEmpty()
         assertThat(installResult.stdout).contains("Dependencies installed successfully")
+
+        val ft4LibDir = srcDir.resolve("lib/ft4")
+        assertThat(ft4LibDir.toFile().exists()).isTrue()
+        assertThat(ft4LibDir.toFile().isDirectory()).isTrue()
+        assertThat(ft4LibDir.toFile().listFiles()?.isNotEmpty() ?: false).isTrue()
+
+        val myLibDir = srcDir.resolve("lib/$libraryName")
+        assertThat(myLibDir.toFile().exists()).isTrue()
+        assertThat(myLibDir.toFile().isDirectory()).isTrue()
+        assertThat(myLibDir.toFile().listFiles()?.isNotEmpty() ?: false).isTrue()
+    }
+
+    private fun testInstallLibraryExplicitelyWithVersion() {
+        val installTestDir = rellDappDir.resolve("install_test_project")
+        installTestDir.toFile().mkdirs()
+
+        val chromiaYmlContent = """
+            blockchains:
+              my_chain:
+                module: main
+            compile:
+              rellVersion: 0.14.2
+            database:
+              schema: schema_my_rell_dapp
+            libs:
+              ft4:
+                registry: https://gitlab.com/chromaway/ft4-lib.git
+                path: rell/src/lib/ft4
+                tagOrBranch: v1.0.0r
+                rid: x"FA487D75E63B6B58381F8D71E0700E69BEDEAD3A57D1E6C1A9ABB149FAC9E65F"
+                insecure: true
+              $organisationId.$libraryName:
+                version: 0.0.1
+                registry: localhost
+                
+        """.trimIndent()
+
+        installTestDir.resolve("chromia.yml").writeText(chromiaYmlContent)
+
+        val srcDir = installTestDir.resolve("src")
+        srcDir.toFile().mkdirs()
+
+        val mainRellContent = """
+            module;
+            query hello_world() = "Hello %s!".format(my_name.name);
+        """.trimIndent()
+
+        srcDir.resolve("main.rell").writeText(mainRellContent)
+
+        val installResult = InstallLibraryCommand().test(
+            listOf(
+                "$organisationId.$libraryName@0.0.1",
+                "-s",
+                installTestDir.resolve("chromia.yml").absolutePathString(),
+                "--url",
+                "localhost"
+            )
+        )
+
+        assertThat(installResult.stderr).isEmpty()
+        assertThat(installResult.stdout).contains("com.example.my_lib")
+        assertThat(installResult.stdout).contains("version: 0.0.1")
 
         val ft4LibDir = srcDir.resolve("lib/ft4")
         assertThat(ft4LibDir.toFile().exists()).isTrue()

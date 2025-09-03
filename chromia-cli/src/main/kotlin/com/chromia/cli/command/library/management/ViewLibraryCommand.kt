@@ -13,7 +13,8 @@ import com.github.ajalt.mordant.table.ColumnWidth
 
 class ViewLibraryCommand : AbstractLibraryCommand(
     name = "view",
-    help = "View detailed information about a library"
+    help = "View detailed information about a library",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
     private val libraryId by argument(

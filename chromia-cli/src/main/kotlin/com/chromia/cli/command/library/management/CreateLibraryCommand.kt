@@ -18,6 +18,7 @@ class CreateLibraryCommand : AbstractLibraryCommand(
     name = "create",
     help = "Create a new library in an organization"
 ) {
+    override val hiddenFromHelp = true
 
     private val displayName by option(
         "--name",

@@ -32,10 +32,16 @@ import kotlin.io.path.readBytes
 import kotlin.io.path.relativeTo
 import kotlin.streams.asSequence
 
-abstract class AbstractLibraryCommand(name: String? = null, help: String) : ChromiaCommand(name, help) {
+abstract class AbstractLibraryCommand(
+    name: String? = null,
+    help: String,
+    hideKeyPairSourceHelpMessage: Boolean = false
+) : ChromiaCommand(name, help) {
 
     protected val settings by optionalChromiaModelConfigOption()
-    protected val keyPairSource by keyPairSourceOption()
+
+    private val keyPairSource by keyPairSourceOption(hideKeyPairSourceHelpMessage)
+
     protected val remoteTarget by RemoteTargetOptions()
 
     protected val client by lazy {
@@ -54,11 +60,11 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
     }
 
     fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
-        val inputUrl = url ?: remoteTarget.url
+        val inputUrl = url ?: remoteTarget.url ?: CHROMIA_MAINNET
 
-        val networkConfig = inputUrl?.let { predefinedNetworks[it]?.invoke() }
+        val networkConfig = inputUrl.let { predefinedNetworks[it]?.invoke() }
 
-        val targetUrl = networkConfig?.first ?: inputUrl ?: CHROMIA_MAINNET
+        val targetUrl = networkConfig?.first ?: inputUrl
         val targetBrid = brid ?: remoteTarget.brid
             ?: networkConfig?.second
             ?: throw PrintMessage("Brid of library_chain is required")
@@ -93,10 +99,10 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
         return accountId to authDescriptorId
     }
 
-    class RemoteTargetOptions : OptionGroup() {
+    class RemoteTargetOptions : OptionGroup("Library chain deployment options") {
         val url by option(
             "--url",
-            help = "Url to target where library-chain is deployed. Ex: https://node0.testnet.chromia.dev:7740"
+            help = "Url where library-chain is deployed. Ex: testnet, localhost, https://custom-network.chromia.dev:7740"
         )
         val brid by option(
             "--brid",
@@ -174,5 +180,4 @@ abstract class AbstractLibraryCommand(name: String? = null, help: String) : Chro
             }
         }
     }
-
 }

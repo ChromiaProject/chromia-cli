@@ -11,7 +11,8 @@ import com.github.ajalt.clikt.parameters.types.long
 
 class ListOrganizationsCommand : AbstractLibraryCommand(
     name = "list",
-    help = "List all organizations"
+    help = "List all organizations",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
     private val limit by option(

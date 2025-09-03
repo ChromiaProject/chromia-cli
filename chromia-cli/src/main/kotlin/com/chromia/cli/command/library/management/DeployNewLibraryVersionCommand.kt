@@ -4,12 +4,9 @@ import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.library.chain.versioning.external.CREATE_LIBRARY_VERSION
 import com.chromia.library.chain.versioning.external.createLibraryVersionOperation
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import net.postchain.common.hexStringToByteArray
 import net.postchain.common.tx.TransactionStatus
 import java.io.File
 
@@ -17,6 +14,8 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
     name = "deploy",
     help = "Deploy a new version of a library"
 ) {
+
+    override val hiddenFromHelp = true
 
     private val libraryId by option(
         "--id",

@@ -6,6 +6,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.testData
+import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
@@ -31,7 +32,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.test.assertFailsWith
 
-class InstallCommandTest {
+class InstallLibraryCommandTest {
     val path = "src/lib"
     private val logger = TerminalRecorder()
     private val testTerminal = Terminal(terminalInterface = logger)
@@ -70,7 +71,7 @@ class InstallCommandTest {
                   path: path/to/foo
                   rid: x"11"
         """.trimIndent())
-            InstallCommand { TestRepositoryCloner() }
+            InstallLibraryCommand { TestRepositoryCloner() }
                     .context { terminal = testTerminal }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
         }
@@ -79,7 +80,7 @@ class InstallCommandTest {
 
     @Test
     fun insecureTrueRidNotMatchingTest() {
-        InstallCommand { TestRepositoryCloner() }
+        InstallLibraryCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "insecureBar"))
 
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
@@ -92,7 +93,7 @@ class InstallCommandTest {
         testRepositoryCloner.createFile(testDir.resolve("$path/foo"), Path("existingFileFoo.rell"))
         testRepositoryCloner.createFile(testDir.resolve("$path/bar"), Path("existingFileBar.rell"))
 
-        val res = InstallCommand { testRepositoryCloner }
+        val res = InstallLibraryCommand { testRepositoryCloner }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "foo"))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
@@ -109,7 +110,7 @@ class InstallCommandTest {
             }
         }
         assertDoesNotThrow {
-            InstallCommand { TestRepositoryCloner() }
+            InstallLibraryCommand { TestRepositoryCloner() }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "alias_foo"))
         }
     }
@@ -117,7 +118,7 @@ class InstallCommandTest {
     @Test
     fun singleLibraryTest() {
 
-        InstallCommand { TestRepositoryCloner() }
+        InstallLibraryCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "foo"))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
@@ -128,7 +129,7 @@ class InstallCommandTest {
 
     @Test
     fun simpleSingleLibraryTest() {
-        InstallCommand { TestRepositoryCloner() }
+        InstallLibraryCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "bar"))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/d.rell").exists())
@@ -136,7 +137,7 @@ class InstallCommandTest {
 
     @Test
     fun simpleAllLibraryTest() {
-        InstallCommand { TestRepositoryCloner() }
+        InstallLibraryCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/bar/d.rell").exists())
@@ -147,7 +148,7 @@ class InstallCommandTest {
 
     @Test
     fun multipleLibraryTest() {
-        InstallCommand { TestRepositoryCloner() }
+        InstallLibraryCommand { TestRepositoryCloner() }
                 .parse(listOf("-s", settingsFile.absolutePath, "-lib", "bar", "-lib", "foo"))
         Assertions.assertTrue(File(testDir.toFile(), "chromia.yml").exists())
         Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
@@ -158,7 +159,7 @@ class InstallCommandTest {
 
     @Test
     fun missingSpecificLibraryTest() {
-        val res = InstallCommand { TestRepositoryCloner() }
+        val res = InstallLibraryCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "missingLib"))
         assertThat(res.stderr).contains("Error: invalid value for --library: Specified library(s) [missingLib] does not exist in config file")
     }
@@ -173,7 +174,7 @@ class InstallCommandTest {
         }
 
         val error = assertThrows<LibraryInstallException> {
-            InstallCommand { TestRepositoryCloner() }
+            InstallLibraryCommand { TestRepositoryCloner() }
                     .test(listOf("-s", settingsFile.absolutePath, "-lib", "wrongRegistry"))
         }
         assertThat(error.message).isEqualTo("Repository does not exist")
@@ -188,7 +189,7 @@ class InstallCommandTest {
         }
 
         assertDoesNotThrow {
-            InstallCommand { TestRepositoryCloner() }
+            InstallLibraryCommand { TestRepositoryCloner() }
                     .context { terminal = testTerminal }
                     .parse(listOf("-s", settingsFile.absolutePath, "-lib", "emptyRegistry"))
         }

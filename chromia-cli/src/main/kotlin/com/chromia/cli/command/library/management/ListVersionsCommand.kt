@@ -16,7 +16,8 @@ import com.github.ajalt.mordant.table.ColumnWidth
 
 class ListVersionsCommand : AbstractLibraryCommand(
     name = "versions",
-    help = "List all versions of a library"
+    help = "List all versions of a library",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
     private val libraryId by argument(

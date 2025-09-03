@@ -12,7 +12,8 @@ import com.github.ajalt.mordant.table.table
 
 class ViewOrganizationCommand : AbstractLibraryCommand(
     name = "view",
-    help = "View organization details"
+    help = "View organization details",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
     private val organizationId by option(

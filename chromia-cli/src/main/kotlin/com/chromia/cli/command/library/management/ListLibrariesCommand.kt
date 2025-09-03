@@ -17,7 +17,8 @@ import com.github.ajalt.mordant.table.ColumnWidth
 
 class ListLibrariesCommand : AbstractLibraryCommand(
     name = "list",
-    help = "List all available libraries"
+    help = "List all available libraries",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
     private val limit by option(

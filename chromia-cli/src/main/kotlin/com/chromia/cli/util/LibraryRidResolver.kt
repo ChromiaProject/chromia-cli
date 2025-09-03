@@ -21,8 +21,9 @@ object LibraryRidResolver {
             if (isLibraryChainLib(it.value)) {
                 val client = createConfiguredClient(it.value.registry)
                 val rid = client.getLibraryRid(it.key, it.value.version!!)
-                        ?: throw PrintMessage("Unable to get rid for ${it.key}")
-                val name = client.getLibrary(it.key)?.displayName ?: throw PrintMessage("Unable to get library name for ${it.key}")
+                    ?: throw PrintMessage("Unable to get rid for ${it.key}")
+                val name = client.getLibrary(it.key)?.displayName
+                    ?: throw PrintMessage("Library ${it.key} not found")
                 name to it.value.copy(rid = WrappedByteArray(rid))
             } else {
                 it.key to it.value
@@ -36,14 +37,14 @@ object LibraryRidResolver {
     private fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
         val networkConfig = url?.let { predefinedNetworks[it]?.invoke() }
         val targetUrl = networkConfig?.first ?: url ?: CHROMIA_MAINNET
-        val targetBrid = brid ?: networkConfig?.second
-        ?: throw PrintMessage("Brid of library_chain is required")
+        val targetBrid = brid ?: predefinedNetworks[targetUrl]?.invoke()?.second
+            ?: throw PrintMessage("Brid of library_chain is required")
 
         val postchainConfig = PostchainClientConfig.defaultConfig
-                .copy(
-                        endpointPool = EndpointPool.singleUrl(targetUrl),
-                        blockchainRid = targetBrid
-                )
+            .copy(
+                endpointPool = EndpointPool.singleUrl(targetUrl),
+                blockchainRid = targetBrid
+            )
         return PostchainClientProviderImpl().createClient(postchainConfig)
     }
 }

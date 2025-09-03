@@ -8,6 +8,7 @@ import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.DependencyUpdatedMarker
+import com.chromia.cli.util.libraryOption
 import com.chromia.library.chain.versioning.external.getLatestLibraryVersion
 import com.chromia.library.chain.versioning.external.getLibrary
 import com.chromia.library.chain.versioning.external.getLibraryRid
@@ -18,37 +19,44 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.arguments.validate
 import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.validate
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.div
-import kotlin.io.path.exists
-import kotlin.io.path.moveTo
-import kotlin.io.path.writeBytes
+import kotlin.collections.emptyList
+import kotlin.io.path.*
 
 class InstallLibraryCommand(
     val repositoryClonerFactory: (quiet: Boolean) -> RepositoryCloner = { GitRepositoryCloner(quiet = it) }
 ) : AbstractLibraryCommand(
     name = "install",
-    help = "Install library dependencies"
+    help = "Install library dependencies",
+    hideKeyPairSourceHelpMessage = true
 ) {
 
-    private val explicitLibraryId by argument()
-        .optional()
-        .validate { it.matches(Regex("^[a-zA-Z0-9._]+$")) }
-    private val explicitRegistry by argument()
-        .optional()
+    private val library by libraryOption()
+        .multiple(emptyList(), required = false)
+        .validate {
+            require(settings.model?.libs?.keys?.containsAll(it) == true) {
+                "Specified library(s) $it does not exist in config file"
+            }
+        }
+    private val explicitLibraryId by argument(
+        name = "library-id",
+        help = "ID of the library to install with optional version, e.g. 'chromia-lib@1.0.0'. " +
+            "if no version is specified the latest version will be installed"
+    ).optional()
+    private val explicitRegistry by argument(
+        name = "registry",
+        help = "Registry where the library is hosted"
+    ).optional()
         .validate {
             require(it.isValidIdentifierOrUrl()) {
-                "Library ID must be a valid identifier (alphanumeric, dots, underscores) or URL"
+                "Registry must be a valid identifier or URL"
             }
         }
 
@@ -70,12 +78,15 @@ class InstallLibraryCommand(
             .resolve("lib")
             .also { Files.createDirectories(it) }
 
+        val filteredModel = settings.model?.filterLibraries(library.takeIf { it.isNotEmpty() })
+
         explicitLibraryId?.let {
-            downloadAndInstallLibrary(it, RellLibraryModel(explicitRegistry), libRoot, true)
+            val (libraryId, version) = extractLibraryIdAndVersion(it)
+            downloadAndInstallLibrary(libraryId, RellLibraryModel(explicitRegistry, version = version), libRoot, true)
             return@runCatching
         }
 
-        val (chromiaLibs, gitRegistryLibs) = settings.model?.libs
+        val (chromiaLibs, gitRegistryLibs) = filteredModel?.libs
             ?.entries
             ?.partition { it.value.version != null }
             ?: return
@@ -102,6 +113,15 @@ class InstallLibraryCommand(
         }
     }.getOrThrow()
 
+    private fun extractLibraryIdAndVersion(libraryIdWithVersion: String): Pair<String, String?> {
+        val delimiter = "@"
+        return if (libraryIdWithVersion.contains(delimiter)) {
+            libraryIdWithVersion.substringBeforeLast(delimiter) to libraryIdWithVersion.substringAfterLast(delimiter)
+        } else {
+            libraryIdWithVersion to null
+        }
+    }
+
     @OptIn(ExperimentalPathApi::class)
     private fun downloadAndInstallLibrary(
         libraryId: String,
@@ -109,14 +129,12 @@ class InstallLibraryCommand(
         libRoot: Path,
         isExplicitInstall: Boolean = false
     ) {
-        val (registry, version) = resolveVersionAndRegistry(libraryId, libModel, isExplicitInstall)
-        val name = createConfiguredClient(registry)
-            .getLibrary(libraryId)
-            ?.displayName
-            ?: throw PrintMessage("Unable to get library name for $libraryId")
+        val client = createConfiguredClient(libModel.registry)
+        val version = resolveVersion(libraryId, libModel, isExplicitInstall)
+        val name = client.getLibrary(libraryId)?.displayName
+            ?: throw PrintMessage("Library '$libraryId' not found.")
 
-        val expectedRid = createConfiguredClient(libModel.registry)
-            .getLibraryRid(libraryId, version!!)
+        val expectedRid = client.getLibraryRid(libraryId, version)
             ?: throw PrintMessage("Unable to get rid for $libraryId")
 
         val tempLibraryDir = createTempDirectory(name)
@@ -139,16 +157,17 @@ class InstallLibraryCommand(
                 }
 
                 targetDir.parent?.createDirectories()
-                tempLibraryDir.moveTo(targetDir, StandardCopyOption.REPLACE_EXISTING)
+                tempLibraryDir.copyToRecursively(targetDir, overwrite = true, followLinks = false)
                 if (isExplicitInstall) {
                     // TODO: Evaluate if we are able to write directly to yaml file
                     echo(
-                        """
-                        add this into chromia.yaml file under libs :
-                        $libraryId:
-                            version: $version
-                            registry: $registry
-                        """.trimIndent()
+                        buildString {
+                            appendLine("add this into chromia.yaml file under libs :")
+                            appendLine(libraryId)
+                            appendLine("\tversion: $version")
+                            explicitRegistry?.let { appendLine("\tregistry: $it") }
+                            remoteTarget.brid?.let { appendLine("\tbrid: $it") }
+                        }
                     )
 //                    addNewLibraryToChromiaModel(libraryId, libModel, version)
                 }
@@ -166,45 +185,17 @@ class InstallLibraryCommand(
         }
     }
 
-    private fun resolveVersionAndRegistry(libraryId: String, libModel: RellLibraryModel, isExplicitInstall: Boolean) =
-        if (isExplicitInstall) {
-            val latestVersion = createConfiguredClient(explicitRegistry)
+    private fun resolveVersion(libraryId: String, libModel: RellLibraryModel, isExplicitInstall: Boolean): String {
+        return if (isExplicitInstall && libModel.version.isNullOrBlank()) {
+            createConfiguredClient(libModel.registry)
                 .getLatestLibraryVersion(libraryId)
                 ?.version
-                ?: throw PrintMessage("Unable to get latest version for $libraryId")
-            Pair(explicitRegistry, latestVersion)
+                ?: throw PrintMessage("Library '$libraryId' is not found.")
         } else {
-            Pair(libModel.registry, libModel.version)
+            libModel.version
+                ?: throw PrintMessage("$libraryId version cannot be null.")
         }
-
-//    private fun addNewLibraryToChromiaModel(libraryId: String, libModel: RellLibraryModel, version: String) {
-//        val projectDir = settings.model?.compile?.source?.parent
-//            ?: throw PrintMessage("Unable to determine project directory")
-//
-//        // FIXME: can be anything e.g: chromia.yaml OR chromia_devnet.yaml
-//        // TODO: check chromia-cli-tools for a function that looks for correct chromia yaml file
-//        val chromiaYmlFile = projectDir.resolve("chromia.yml").toFile()
-//        if (!chromiaYmlFile.exists()) {
-//            throw PrintMessage("chromia.yml file not found in project directory: $projectDir")
-//        }
-//
-//        try {
-//            val currentModel = settings.model!!
-//            val newLibraryModel = libModel.copy(
-//                version = version
-//            )
-//
-//            val modelWithNewLib = currentModel.copy(
-//                libs = currentModel.libs + (libraryId to newLibraryModel)
-//            )
-//
-//            modelWithNewLib.writeYaml(chromiaYmlFile.toPath())
-//
-//            echo("Updated chromia.yml with library: $libraryId (version: $version)")
-//        } catch (e: Exception) {
-//            echo("Warning: Failed to update chromia.yml: ${e.message}", err = true)
-//        }
-//    }
+    }
 
     private fun fetchAllLibraryChunks(libraryId: String, libModel: RellLibraryModel, version: String) = run {
         generateSequence(0L) { it + 1 }
@@ -237,7 +228,7 @@ class InstallLibraryCommand(
 
     private fun String.isValidIdentifierOrUrl(): Boolean {
         val identifierPattern = Regex("^[a-zA-Z0-9._]+$")
-        val urlPattern = Regex("^(https?|ftp)://[^\\s/$.?#].\\S*$", RegexOption.IGNORE_CASE)
+        val urlPattern = """^(https?://)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(:\d+)?(/.*)?$""".toRegex()
 
         return matches(identifierPattern) || matches(urlPattern)
     }

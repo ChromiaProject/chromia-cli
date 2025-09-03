@@ -10,6 +10,7 @@ class ListLibraryInvitationsCommand : AbstractLibraryCommand(
     name = "list-invitations",
     help = "List pending invitations"
 ) {
+    override val hiddenFromHelp = true
 
     override fun run() {
         try {
@@ -29,7 +30,13 @@ class ListLibraryInvitationsCommand : AbstractLibraryCommand(
     private fun displayInvitations(invitations: List<TypesSActiveInvitation>) {
         echo("Pending Invitations:")
         invitations.forEach { invitation ->
-            echo("• Code: ${invitation.code} | Library: ${invitation.libraryId} | Expires: ${invitation.expiresAt}")
+            val code = invitation.code
+            val libraryId = invitation.libraryId
+            val expiresAt = invitation.expiresAt
+            val organizationId = invitation.organizationId
+            echo(
+                "• Code: $code | Library: $libraryId | Expires: $expiresAt | Organization: $organizationId"
+            )
         }
         echo("Total: ${invitations.size} invitation(s)")
     }

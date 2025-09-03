@@ -16,6 +16,7 @@ class UpdateLibraryUserPermissionCommand : AbstractLibraryCommand(
     name = "update-user-permission",
     help = "Update a user's permission level for a library"
 ) {
+    override val hiddenFromHelp = true
 
     private val libraryId by argument(
         help = "ID of the library"
