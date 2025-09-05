@@ -13,6 +13,8 @@ import com.chromia.cli.d1.ManagementChainFactory
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
+import com.chromia.cli.util.BuildCliEnv
+import com.chromia.cli.util.hideLibWarningsOption
 import com.chromia.cli.util.nodePropertiesOption
 import com.chromia.cli.util.readBlockchainConfigFile
 import com.chromia.cli.util.removeKnownGtxModules
@@ -48,13 +50,15 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
             """.trimIndent()
     ).flag()
 
+    protected val hideLibWarnings by hideLibWarningsOption()
+
     protected fun extractConfigs(): Collection<BlockchainConfiguration> {
         val configsToAdd = if (blockchainConfigs.isEmpty()) {
             val model = settings.model.filterBlockchains { bc, model ->
                 model.type == BlockchainModel.Type.BLOCKCHAIN && (name.isEmpty() || name.contains(bc))
             }
             require(model.blockchains.isNotEmpty()) { "No blockchains started" }
-            ChromiaCompileApi.build(CliktCliEnv(this), model)
+            ChromiaCompileApi.build(BuildCliEnv(this, hideLibWarnings), model)
         } else {
             blockchainConfigs
                     .filter { name.isEmpty() || name.contains(it.nameWithoutExtension) }
