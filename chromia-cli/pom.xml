@@ -468,7 +468,9 @@
                                         <to>
                                             <image>${gitlab.registry}/${image.name}:${project.version}</image>
                                             <auth>
+                                                <!--suppress UnresolvedMavenProperty -->
                                                 <username>${env.CI_REGISTRY_USER}</username>
+                                                <!--suppress UnresolvedMavenProperty -->
                                                 <password>${env.CI_REGISTRY_PASSWORD}</password>
                                             </auth>
                                         </to>
