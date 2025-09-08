@@ -10,6 +10,12 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.27.10] - 2025-09-08
+### Added
+- Add `--hide-lib-warnings` option to node commands
+- **Version Bumps**
+  - chromia-cli-tools 0.6.4
+
 ## [0.27.9] - 2025-09-03
 ### Added
 - `--file` option to `chr test` to run all tests in a single Rell file
