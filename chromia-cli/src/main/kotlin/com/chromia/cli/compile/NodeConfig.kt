@@ -13,7 +13,7 @@ object NodeConfig {
          return AppConfig.fromPropertiesFile(File(nodeConfigFile.absolutePath))
      }
 
-     fun getDefaultNodeConfig(config: ChromiaModel, overrides: Map<String, Any> = mapOf()): AppConfig {
+     fun getDefaultNodeConfig(config: ChromiaModel, managedMode: Boolean = false, overrides: Map<String, Any> = mapOf()): AppConfig {
          val privKey = "42".repeat(32).hexStringToByteArray()
          val pubKey = secp256k1_derivePubKey(privKey)
 
@@ -27,7 +27,10 @@ object NodeConfig {
              setProperty("database.schema", config.databaseSchema)
              setProperty("database.username", config.databaseUser)
              setProperty("database.password", config.databasePassword)
-             setProperty("configuration.provider.node", "manual")
+             setProperty("configuration.provider.node", if (managedMode) "managed" else "manual")
+             if (managedMode) {
+                 setProperty("infrastructure", "net.postchain.d1.D1InfrastructureFactory")
+             }
              setProperty("fastsync.exit_delay", 0)
              overrides.forEach { setProperty(it.key, it.value) }
          }
