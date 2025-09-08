@@ -255,6 +255,11 @@
             <artifactId>chromia-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>net.postchain</groupId>
+            <artifactId>chromia-infrastructure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
             <groupId>net.postchain.rell</groupId>
             <artifactId>codegen-kotlin</artifactId>
         </dependency>

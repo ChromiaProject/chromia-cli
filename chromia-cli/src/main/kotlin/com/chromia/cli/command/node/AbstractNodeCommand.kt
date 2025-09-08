@@ -39,9 +39,12 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
     protected val name by option(help = "Only start specified blockchains (multiple)", metavar = "NAME")
             .multiple()
 
+    protected val managedMode by option("-mm", "--managed-mode", help = "Start in managed mode", hidden = true).flag()
     private val overrides by option("-p", help = "Override any property value (usage: -p key=value)", metavar = "KEY=VALUE").associate()
     private val nodeConfigFile by nodePropertiesOption()
-    protected val nodeConfig by lazy { nodeConfigFile ?: NodeConfig.getDefaultNodeConfig(settings.model, overrides) }
+    protected val nodeConfig by lazy {
+        nodeConfigFile ?: NodeConfig.getDefaultNodeConfig(settings.model, managedMode, overrides)
+    }
     private val directoryChainMock by option(
             help = """
                 Adds a blockchain on ID 0 that responds to the cluster management api and anchoring api.
@@ -71,8 +74,8 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
 
         return configsToAdd
                 .let { if (directoryChainMock) addDirectoryChain(it) else it }
-                .map { replaceInMemoryIcmf(it) }
-                .map { it.removeKnownGtxModules(CliktCliEnv(this)) }
+                .map { if (managedMode) it else replaceInMemoryIcmf(it) }
+                .map { if (managedMode) it else it.removeKnownGtxModules(CliktCliEnv(this)) }
                 .onEach { it.validate() }
     }
 
