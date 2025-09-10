@@ -18,15 +18,15 @@
     <properties>
         <revision>dev</revision>
         <codegen.version>0.16.8</codegen.version>
-        <postchain.version>3.40.8</postchain.version>
+        <postchain.version>3.42.4</postchain.version>
         <postchain-chromia.version>3.32.1</postchain-chromia.version>
-        <postchain.client.version>3.36.0</postchain.client.version>
+        <postchain.client.version>3.37.1</postchain.client.version>
         <rell.version>0.14.12</rell.version>
         <rell.dokka.version>0.2.18</rell.dokka.version>
         <rell.toolbox.version>0.8.4</rell.toolbox.version>
         <eif.version>0.16.3</eif.version>
         <directory.chain.version>1.95.0</directory.chain.version>
-        <chromia.cli.tools.version>0.6.4</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.6.5</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
 
         <jgit.version>6.9.0.202403050737-r</jgit.version>
@@ -368,6 +368,11 @@
             <dependency>
                 <groupId>net.postchain.client</groupId>
                 <artifactId>postchain-client</artifactId>
+                <version>${postchain.client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.postchain.client</groupId>
+                <artifactId>chromia-client</artifactId>
                 <version>${postchain.client.version}</version>
             </dependency>
             <dependency>

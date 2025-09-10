@@ -23,12 +23,12 @@ import kotlin.io.path.absolutePathString
 
 
 class TxCommandTest : IntegrationTestSetup() {
-    private fun launchBlockchainInTestNode(config: String): BlockchainRid {
-        val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())
-        val setup = SystemSetupFactory.buildSystemSetup(listOf(BlockchainSetup.buildFromGtv(0, gtvConfig)))
+    private fun launchBlockchainsInTestNode(vararg configs: String): List<BlockchainRid> {
+        val gtvConfigs = configs.map { GtvMLParser.parseGtvML(File(it).readText()) }
+        val setup = SystemSetupFactory.buildSystemSetup(gtvConfigs.mapIndexed { i, it -> BlockchainSetup.buildFromGtv(i, it) })
         setup.needRestApi = true
         createNodesFromSystemSetup(setup, true)
-        return setup.blockchainMap[0]!!.rid
+        return setup.blockchainMap.toList().sortedBy { it.first }.map { it.second.rid }
     }
 
 
@@ -60,6 +60,24 @@ class TxCommandTest : IntegrationTestSetup() {
             }       
             operation test_byte_array(s1: byte_array) {
             }
+            operation test_iccf_first(tx_to_prove: gtx_transaction, op_index: integer, other_arg: text) {
+            }
+            operation test_iccf_second(other_arg: text, tx_to_prove: gtx_transaction, op_index: integer) {
+            }
+            
+            // Mock ICCF
+            operation iccf_proof(blockchain_rid: byte_array, tx_hash: byte_array, tx_proof: byte_array) {}
+            query cm_get_blockchain_api_urls(blockchain_rid: byte_array) = [ "http://localhost:7740" ];
+            query cm_get_blockchain_cluster(brid: byte_array) = "my_cluster";            
+            """.trimIndent())
+        }
+
+        with(File(dir.toFile(), "src/other.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+            module;
+            operation op_to_prove(arg: integer) {
+            }
             """.trimIndent())
         }
 
@@ -72,13 +90,21 @@ class TxCommandTest : IntegrationTestSetup() {
                       signers:
                         - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
 
+                  b:
+                    module: other
+                    config:
+                      signers:
+                        - x"03A301697BDFCD704313BA48E51D567543F2A182031EFD6915DDC07BBCC4E16070"
+
                 database:
                   schema: txcommandtest0_0
             """.trimIndent())
         }
 
         BuildCommand().test(listOf("-s", "${dir.absolutePathString()}/chromia.yml"))
-        val brid = launchBlockchainInTestNode("${dir.absolutePathString()}/build/a.xml")
+        val blockchainRids = launchBlockchainsInTestNode("${dir.absolutePathString()}/build/a.xml", "${dir.absolutePathString()}/build/b.xml")
+        val brid = blockchainRids[0]
+        val otherBrid = blockchainRids[1]
         var res = TxCommand().test(listOf("--await",
                 "test_text", "foobar", "\"foo bar\"", "-brid", "$brid"))
         assertThat(res.stdout).contains("was posted and confirmed")
@@ -107,6 +133,23 @@ class TxCommandTest : IntegrationTestSetup() {
         res = TxCommand().test(listOf("--await",
                 "test_text", "bogus", "\"foo bar\"", "-brid", "$brid"))
         assertThat(res.stdout).contains("Transaction was rejected after polling: [main:test_text(main.rell:4)] Operation 'main:test_text' failed: foobar expected")
+
+        res = TxCommand().test(listOf("--await", "op_to_prove", "1", "-brid", "$otherBrid"))
+        assertThat(res.stdout).contains("was posted and confirmed")
+        val txToProve = res.stdout.substring("transaction with rid ".length, "transaction with rid ".length + 64)
+        res = TxCommand().test(listOf("--await",
+                "--iccf-tx", txToProve,
+                "--iccf-source", otherBrid.toHex(),
+                "--source-api-url", "http://localhost:7740",
+                "test_iccf_first", "0", "\"foo bar\"", "-brid", "$brid"))
+        assertThat(res.stdout).contains("was posted and confirmed")
+        res = TxCommand().test(listOf("--await",
+                "--iccf-tx", txToProve,
+                "--iccf-source", otherBrid.toHex(),
+                "--source-api-url", "http://localhost:7740",
+                "--iccf-arg-pos", "1",
+                "test_iccf_second", "\"foo bar\"", "0", "-brid", "$brid"))
+        assertThat(res.stdout).contains("was posted and confirmed")
     }
 
     @Test
