@@ -22,17 +22,17 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
+import com.github.ajalt.clikt.parameters.types.int
 import net.postchain.client.core.TxRid
-import net.postchain.cm.cm_api.ClusterManagementImpl
+import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToWrappedByteArray
 import net.postchain.common.tx.TransactionStatus
-import net.postchain.d1.client.ChromiaClientProvider
-import net.postchain.d1.iccf.IccfProofTxMaterialBuilder
-import net.postchain.gtv.GtvFactory.decodeGtv
+import net.postchain.d1.client.StandardChromiaClient
 import java.time.Clock
 
 class TxCommand : ChromiaCommand(help = """
@@ -77,12 +77,15 @@ class TxCommand : ChromiaCommand(help = """
         val ftRegisterAccount by option(help = "Adds ft4.register_account operation. To be used in combination with an account creation strategy.").flag()
     }
     private val iccfOptions by object : OptionGroup("ICCF options") {
-        val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as first argument to the operation").validate { it.hexStringToWrappedByteArray() }
-        val iccfSource by option(help = "Blockchain RID for the chain which the tx to be confirmed has taken place").convert {
+        val iccfTx by option(help = "Constructs a ICCF-proof for this tx-rid and inserts iccf_proof operation to the transaction. This will also add the tx as a gtx_transaction as argument to the operation").validate { it.hexStringToWrappedByteArray() }
+        val iccfSource by option(help = "Blockchain RID for the chain which the tx to be proven has taken place").convert {
             BlockchainRid.buildFromHex(it)
         }
         val sourceApiUrl by option(help = "Source api url (default target api url)")
         val iccfForceIntraNetwork by option(help = "Force usage of intra-network ICCF proof").flag()
+        val iccfArgPos by option(help = "Which argument position to insert the gtx_transaction in the operation").int()
+                .default(0)
+                .validate { require(it >= 0) { "Cannot be negative" } }
     }
 
     private val opName by argument(help = "Name of the operation to execute.")
@@ -104,37 +107,30 @@ class TxCommand : ChromiaCommand(help = """
 
     override fun run() {
         val target = deploymentTarget ?: explicitTarget
-        val sourceClientUrl = iccfOptions.sourceApiUrl?.let { listOf(it) } ?: target.urls
         val postchainClientConfig = settings.config.setApiUrls(target.urls).setBrid(target.brid)
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
-        var newArgs = args
-        val transactionBuilder = if (iccfOptions.iccfTx != null) {
-            require(iccfOptions.iccfSource != null) { "Chain id for iccf transaction must be specified" }
+        val newArgs = args.toMutableList()
+        val transactionBuilder = client.transactionBuilder()
 
-            val sourceClient = target.createClient(
-                    postchainClientConfig
-                            .setBrid(iccfOptions.iccfSource!!)
-                            .setApiUrls(sourceClientUrl)
+        if (iccfOptions.iccfTx != null) {
+            require(iccfOptions.iccfSource != null) { "Source chain for iccf transaction must be specified" }
+
+            val chromiaClient = if (iccfOptions.sourceApiUrl != null) {
+                StandardChromiaClient(EndpointPool.singleUrl(iccfOptions.sourceApiUrl!!))
+            } else {
+                StandardChromiaClient(target.createDirectoryClient(postchainClientConfig).config)
+            }
+
+            val provenTx = chromiaClient.addIccfProof(
+                    transactionBuilder,
+                    TxRid(iccfOptions.iccfTx!!),
+                    iccfOptions.iccfSource!!,
+                    forceIntraNetworkIccfOperation = iccfOptions.iccfForceIntraNetwork
             )
 
-            val txInfo = sourceClient.getTransactionInfo(TxRid(iccfOptions.iccfTx!!))
-            newArgs = listOf(decodeGtv(txInfo.txData.data)) + args
-
-            IccfProofTxMaterialBuilder(
-                    ChromiaClientProvider(
-                            ClusterManagementImpl(target.createDirectoryClient(postchainClientConfig)),
-                            client.config
-                    ),
-            ).build(
-                    TxRid(iccfOptions.iccfTx!!),
-                    txInfo.txHash.data,
-                    iccfOptions.iccfSource!!,
-                    target.brid,
-                    iccfTxSigners = settings.config.signers,
-                    forceIntraNetworkIccfOperation = iccfOptions.iccfForceIntraNetwork
-            ).txBuilder
-        } else client.transactionBuilder()
+            newArgs.add(iccfOptions.iccfArgPos, provenTx)
+        }
 
         timeb?.let {
             transactionBuilder.addTimeBound(0, it)

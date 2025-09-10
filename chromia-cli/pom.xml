@@ -236,6 +236,10 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.client</groupId>
+            <artifactId>chromia-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.postchain.client</groupId>
             <artifactId>ft4-client</artifactId>
         </dependency>
         <dependency>
@@ -249,10 +253,6 @@
         <dependency>
             <groupId>net.postchain</groupId>
             <artifactId>postchain-gtx-data</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.postchain</groupId>
-            <artifactId>chromia-core</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
