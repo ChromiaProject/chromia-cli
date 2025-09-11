@@ -4,13 +4,12 @@ import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
 import com.chromia.build.tools.TestProcess
 import com.chromia.build.tools.compile.withSigner
-import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.build.tools.testData
+import com.chromia.cli.command.node.INITILIZED_LOG
 import com.chromia.cli.compile.NodeConfig
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.model.parseModel
 import net.postchain.base.gtv.GtvToBlockchainRidFactory
-import java.nio.file.Path
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientImpl
 import net.postchain.client.request.SingleEndpointPool
@@ -22,6 +21,7 @@ import net.postchain.gtv.mapper.toObject
 import net.postchain.rell.api.base.RellCliEnv
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 
 class IccfIT {
 
@@ -53,9 +53,13 @@ class IccfIT {
             """.trimIndent())
             addSourceFile("confirmation.rell", """
                 module;
-                operation confirmation(tx: gtx_transaction) {
-                require(op_context.get_all_operations()[0].name == "iccf_proof");
-                require(text.from_gtv(tx.body.operations[0].args[0]) == "Secret message");
+                operation confirmation1(tx: gtx_transaction) {
+                    require(op_context.get_all_operations()[0].name == "iccf_proof");
+                    require(text.from_gtv(tx.body.operations[0].args[0]) == "Secret message");
+                }
+                operation confirmation2(first_arg: text, tx: gtx_transaction) {
+                    require(op_context.get_all_operations()[0].name == "iccf_proof");
+                    require(text.from_gtv(tx.body.operations[0].args[0]) == "Secret message");
                 }
             """.trimIndent())
         }
@@ -72,7 +76,8 @@ class IccfIT {
                     val config = PostchainClientConfig(BlockchainRid.ZERO_RID, endpointPool = SingleEndpointPool("http://localhost:7740"), queryByChainId = 1)
                     val client = PostchainClientImpl(config)
                     val txRid = client.query("get_latest_tx", gtv(mapOf())).asByteArray().toHex()
-                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation", "--await").startCondition("was posted and confirmed").start()
+                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "confirmation1", "--await").startCondition("was posted and confirmed").start()
+                    TestProcess.Builder("tx", "--cid", "2", "--iccf-source", sourceChainBrid, "--iccf-tx", txRid, "--iccf-arg-pos", "1", "confirmation2", "some_arg", "--await").startCondition("was posted and confirmed").start()
                 }
     }
 
