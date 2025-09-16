@@ -64,8 +64,13 @@ class DeployUpdateCommand(
     private fun verifyConfiguration(chain: BlockchainConfiguration, directoryChainClient: PostchainClient): String? {
         val blockchainRid = deployModel.chains[chain.name]
                 ?: throw PrintMessage("Blockchain ${chain.name} cannot be updated since it has not been deployed to network ${networkTarget.network}. Specify target blockchain rid in chromia.yml")
+        val urls = directoryChainClient.cmGetBlockchainApiUrls(blockchainRid).toList()
+        require(urls.isNotEmpty()) {
+            "No endpoints found for blockchain '${chain.name}' on network '${networkTarget.network}' with BRID '$blockchainRid'"
+        }
 
-        val endpoint = EndpointPool.default(directoryChainClient.cmGetBlockchainApiUrls(blockchainRid).toList())
+        val endpoint = EndpointPool.default(urls)
+
         val nodeClient = clientProvider.createClient(directoryChainClient.config.copy(blockchainRid, endpoint))
 
         try {
