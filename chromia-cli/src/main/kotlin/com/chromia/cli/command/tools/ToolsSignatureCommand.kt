@@ -9,7 +9,8 @@ class ToolsCommand : NoOpChromiaCommand(help = "Miscellaneous tools") {
         fun commands() = ToolsCommand().subcommands(
                 GtvCommand(),
                 ValidateModelCommand(),
-                LibModelGenerateCommand()
+                LibModelGenerateCommand(),
+                RidCalculatorCommand()
         )
     }
 
