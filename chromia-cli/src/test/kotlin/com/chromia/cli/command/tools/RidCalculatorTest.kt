@@ -29,10 +29,7 @@ class RidCalculatorCommandTest {
             addSourceFile("lib/my/module.rell", """module;""")
             addSourceFile("lib/my/test/module.rell", """@test module;""")
         }
-
-        val calculator = DirectoryHashCalculator(tempDir)
-        val expectedRid = calculator.compute(tempDir, DirectoryHashCalculator.RidStrategy.LIST)
-        val expectedHex = expectedRid.toHex()
+        val expectedHex = "635D662C225007E8BB706C71AE695B5A86E8398C43096B0C42D6812CF0B5C02D"
 
         val result = RidCalculatorCommand().test(listOf("--path", tempDir.toString()))
 
