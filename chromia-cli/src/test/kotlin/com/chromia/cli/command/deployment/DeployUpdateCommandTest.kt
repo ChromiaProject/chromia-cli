@@ -33,7 +33,7 @@ import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.PostchainContext
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.controller.PostchainModel
-import net.postchain.chromia.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import net.postchain.chain0.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.BaseCryptoSystem
@@ -354,6 +354,28 @@ class DeployUpdateCommandTest {
             assertThat(outputWithHiding).contains("Lib Warnings: 1")
         }
     }
+
+    @Test
+    fun failWhenNoEndpointsFoundForBlockchain() {
+        withModel(
+                model.withQuery(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf())),
+                DeploymentTestDataCreator.deployedChainModel.withValidConfiguration()
+        ) {
+            val ex = assertThrows<IllegalArgumentException> {
+                DeployUpdateCommand().parse(
+                        listOf(
+                                "-s", settingsFile.absolutePath,
+                                "--secret", secret.absolutePath,
+                                "--blockchain", "deployed",
+                                "--network", "test"
+                        )
+                )
+            }
+            assertThat(ex.message!!).contains("No API URLs found for brid")
+            assertThat(ex.message!!).contains("Check if the directory chain is correctly configured")
+        }
+    }
+
 
     private fun createManagedModeMockModel(bcRid: BlockchainRid, verifyDigestValue: Boolean): PostchainModel {
         return mock<PostchainModel> {
