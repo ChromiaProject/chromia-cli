@@ -31,6 +31,10 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     protected fun createClientFromDirectoryChain(config: ChromiaClientConfig): PostchainClient {
         val directoryChain = createDirectoryClient(config)
         val apiUrls = directoryChain.cmGetBlockchainApiUrls(brid)
+        require(apiUrls.isNotEmpty()) {
+            "No API URLs found for brid '$brid'. " +
+                "Check if the directory chain is correctly configured and that '$brid' correct."
+        }
         val updatedConfig = directoryChain.config.copy(brid, EndpointPool.default(apiUrls))
         return PostchainClientImpl(updatedConfig)
     }
