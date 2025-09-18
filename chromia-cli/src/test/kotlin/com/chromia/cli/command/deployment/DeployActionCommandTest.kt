@@ -3,7 +3,12 @@ package com.chromia.cli.command.deployment
 import assertk.assertThat
 import assertk.assertions.contains
 import com.chromia.cli.util.DeploymentTestDataCreator
+import com.github.ajalt.clikt.core.context
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.mordant.rendering.AnsiLevel
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -65,7 +70,24 @@ class DeployActionCommandTest {
     fun cannotRemoveNotDeployedBlockchain() {
         val blockchain = "my_rell_dapp"
         val network = "test"
-        val res = DeployRemoveCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", blockchain, "--network", network))
+        val res = DeployRemoveCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", blockchain, "--network", network, "-y"))
         assertThat(res.stdout).contains("The action \"remove\" of Blockchain $blockchain cannot be done since it has not been deployed to network $network. Specify target blockchain rid in chromia.yml")
     }
+
+    @Test
+    fun canAbortBlockchainRemoval() {
+        val blockchain = "deployed"
+        val network = "test"
+        val terminalRecorder = TerminalRecorder()
+        val terminal = Terminal(terminalInterface = terminalRecorder, ansiLevel = AnsiLevel.NONE)
+
+        val res = DeployRemoveCommand().context { this.terminal = terminal }
+                .test(
+                    listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", blockchain, "--network", network),
+                    stdin = "no\n",
+                    inputInteractive = true
+                )
+        assertThat(res.stdout).contains("Operation aborted")
+    }
+
 }

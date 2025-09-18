@@ -42,7 +42,7 @@ class DeployActionIT {
     @Test
     fun deploymentRemoveSuccessful() {
         withModel(SuccessfulDeploymentActionModel(BlockchainRid.ZERO_RID)) {
-            val lines = TestProcess.Builder("deployment", "remove", "--network", "test", "--blockchain", "deployed", "--secret", secretFile.absolutePath)
+            val lines = TestProcess.Builder("deployment", "remove", "--network", "test", "--blockchain", "deployed", "--secret", secretFile.absolutePath, "-y")
                     .setConfig(settingsFile)
                     .start { it.readLines() }
             assertThat(lines[0]).contains("remove of blockchain [deployed] was successful")
