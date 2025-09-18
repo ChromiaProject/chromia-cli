@@ -8,10 +8,14 @@ import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.deployTargetOption
 import com.chromia.cli.tools.config.keyPairSourceOption
+import com.chromia.cli.tools.formatter.warning
 import com.chromia.directory1.proposal_blockchain.BlockchainAction
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.*
+import com.github.ajalt.mordant.terminal.YesNoPrompt
 
 sealed class DeployActionCommand(
         private val action: BlockchainAction,
@@ -32,6 +36,11 @@ sealed class DeployActionCommand(
         deployModel
     }
 
+    private val confirm by option(
+        "-y",
+        help = "Confirm that this will remove the blockchain permanently"
+    ).flag(default = false)
+
     override fun run() {
         blockchain?.forEach { chain ->
             if (!deployModel.chains.containsKey(chain)) throw PrintMessage("The action \"${this.action.name}\" of Blockchain ${chain} cannot be done since it has not been deployed to network $target. Specify target blockchain rid in chromia.yml")
@@ -39,6 +48,19 @@ sealed class DeployActionCommand(
         val deployModel = settings.model.deployments[target]!!.filterChains(blockchain)
 
         settings.config.configureSigners(keyPairSource)
+
+        action.takeIf { it == BlockchainAction.remove }?.run {
+            if (!confirm) {
+                if (terminal.terminalInfo.inputInteractive) {
+                    if (YesNoPrompt("Continuing with execution will delete blockchain '$blockchain' with brid: '${deployModel.blockchainRid}' on network '$target'.",
+                                    terminal, default = false
+                            ).ask() != true) throw PrintMessage("Operation aborted")
+                } else {
+                    throw CliktError("Please specify -y option to force removal")
+                }
+            }
+        }
+
         val (res, msg) = ChromiaDeploymentApi.action(deployModel, settings.config, action, description)
         if (res) {
             echo("${action.name} of blockchain ${deployModel.chains.keys} was successful")
