@@ -4,9 +4,7 @@ import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.library.chain.versioning.external.CREATE_LIBRARY_VERSION
 import com.chromia.library.chain.versioning.external.createLibraryVersionOperation
-import com.chromia.library.chain.versioning.external.getLatestLibraryVersion
 import com.github.ajalt.clikt.core.PrintMessage
-import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import net.postchain.common.tx.TransactionStatus
@@ -41,11 +39,6 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
         help = "Library to deploy"
     ).required()
 
-    private val verifyRid by option(
-        "--verify-rid",
-        help = "Verify the RID of the library code"
-    ).flag(default = false)
-
     override fun run() {
         authorizeFtAuthOperation(CREATE_LIBRARY_VERSION)
 
@@ -73,10 +66,6 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
 
         validateLibraryCode(library)
         val rid = calculateRid(libPath)
-
-        if (verifyRid) {
-            verifyIfCodeHasActuallyChanged(libraryId, rid)
-        }
 
         val res = txBuilder.createLibraryVersionOperation(
             id = libraryId,
@@ -106,18 +95,5 @@ class DeployNewLibraryVersionCommand : AbstractLibraryCommand(
                     statusCode = 1
                 )
         }
-    }
-
-    private fun verifyIfCodeHasActuallyChanged(
-        libraryId: String,
-        newRid: ByteArray,
-    ) {
-        client.getLatestLibraryVersion(libraryId)
-            ?.rid
-            ?.let {
-                require(!newRid.contentEquals(it.data)) {
-                    "New version of library '$libraryId' has the same code as the latest version. Aborting..."
-                }
-            }
     }
 }
