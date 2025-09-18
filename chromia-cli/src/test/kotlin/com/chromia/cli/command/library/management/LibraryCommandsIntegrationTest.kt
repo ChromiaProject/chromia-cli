@@ -23,6 +23,7 @@ import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
 import net.postchain.gtv.gtvml.GtvMLParser
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -82,6 +83,7 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         testAddDevToLibrary()
         testUpdateDevPermission()
         testRemoveDevFromLibrary()
+        testDeployNewLibraryVersionWithNoChanges()
         testDeployNewLibraryVersion()
         testDeployLibraryWithCompilationErrors()
     }
@@ -95,7 +97,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             version = "0.0.2",
             description = "Library with compilation errors",
             library = libraryName,
-            secretFile = dev1SecretFile
+            secretFile = dev1SecretFile,
+            verifyRid = true
         )
 
         assertThat(result.stdout).isNotNull()
@@ -322,6 +325,21 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         assertThat(removeResult.stdout).contains("User removed from library successfully")
     }
 
+    private fun testDeployNewLibraryVersionWithNoChanges() {
+        assertThatThrownBy {
+            deployNewLibraryVersion(
+                dir = myLibDir,
+                libraryId = "$organisationId.$libraryName",
+                version = "0.0.2",
+                description = "Updated library with new function",
+                library = libraryName,
+                secretFile = dev1SecretFile,
+                verifyRid = true
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("New version of library 'com.example.my_lib' has the same code as the latest version. Aborting...")
+    }
+
     private fun testDeployNewLibraryVersion() {
         val moduleFile = File(myLibDir.toFile(), "src/lib/$libraryName/module.rell")
         moduleFile.writeText("module; val ZERO = 0; function newFunction() = 10;")
@@ -332,7 +350,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             version = "0.0.2",
             description = "Updated library with new function",
             library = libraryName,
-            secretFile = dev1SecretFile
+            secretFile = dev1SecretFile,
+            verifyRid = true
         )
 
         assertThat(deployResult.stdout).contains("New library version deployed successfully")
@@ -567,7 +586,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
         version: String,
         description: String,
         library: String,
-        secretFile: File
+        secretFile: File,
+        verifyRid: Boolean = false,
     ) = DeployNewLibraryVersionCommand().test(
         listOf(
             "--id", libraryId,
@@ -576,7 +596,8 @@ class LibraryCommandsIntegrationTest : IntegrationTestSetup() {
             "--library", library,
             "--secret", secretFile.absolutePath,
             "--url", "localhost",
-            "-s", "${dir.absolutePathString()}/chromia.yml"
+            "-s", "${dir.absolutePathString()}/chromia.yml",
+            if (verifyRid) "--verify-rid" else ""
         )
     )
 
