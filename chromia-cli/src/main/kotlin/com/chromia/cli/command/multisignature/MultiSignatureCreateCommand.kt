@@ -6,13 +6,13 @@ import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
-import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.tools.util.SUPPORTED_TIME_AT_FORMATS
 import com.chromia.cli.tools.util.timeAtConverter
 import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
+import com.chromia.cli.util.initFtAuthVerbose
 import com.chromia.cli.util.parseArgAsGtv
 import com.chromia.lib.ft4.external.auth.FT_AUTH
 import com.github.ajalt.clikt.core.PrintMessage
@@ -103,7 +103,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
 
         if (ftAuthOptions.ftAuth) {
             require(ftAuthOptions.ftAuthDescriptorId != null) { "Must specify auth descriptor id when using ft auth for multi signature" }
-            initFtAuth(client)
+            initFtAuthVerbose(client, target.blockchain, target.brid.toHex())
 
             val signerPubkey = (postchainClientConfig.signers.singleOrNull()?.pubKey
                     ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))

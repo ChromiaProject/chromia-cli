@@ -10,13 +10,18 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
-## [0.27.11] - 2025-09-10
+## [0.27.11] - 2025-09-22
 ### Added
 - Option to specify argument position to insert ICCF transaction in `chr tx` command
+- Add confirmation check when deleting a blockchain from a container in `chr deployment remove` with `-y` flag to auto-confirm
+- `--verify-rid` option in `chr library deploy` to verify if the version to be deployed introduces code changes
 - **Version Bumps**
   - postchain 3.42.4
   - postchain-client 3.37.1
   - chromia-cli-tools 0.6.5
+### Fixed
+- Enhanced error output for chr tx --ft-auth failures to include more context.
+- Adds validation to check if the 'BRID' provided is valid before creating directoryChain client
 
 ## [0.27.10] - 2025-09-08
 ### Added
