@@ -13,7 +13,9 @@ import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.LocalDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.evmAuthOption
+import com.chromia.cli.util.initFtAuthVerbose
 import com.chromia.cli.util.parseArgAsGtv
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -141,7 +143,7 @@ class TxCommand : ChromiaCommand(help = """
                     ?: (postchainClientConfig.signers.singleOrNull()?.pubKey?.data
                             ?: throw PrintMessage("A single keypair is required to use FT authentication", statusCode = 1))
 
-            initFtAuth(client)
+            initFtAuthVerbose(client, target.blockchain, target.brid.toHex())
 
             val (accountId, authDescriptorId) = findFtAccountIdAndAuthDescriptorId(
                     client,
