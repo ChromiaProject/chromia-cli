@@ -5,15 +5,18 @@ import assertk.assertions.contains
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
+import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.testData
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_CLUSTER
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
+import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import com.google.gson.Gson
@@ -33,6 +36,8 @@ import org.http4k.core.Status
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
@@ -344,5 +349,90 @@ class DeployInfoCommandTest {
         assertThat(response["Round"].asString).isEqualTo(round)
         assertThat(response["Revolting"].asString).isEqualTo(revolting)
         assertThat(response["Status"].asString).isEqualTo(status)
+    }
+
+    @Test
+    fun testNoBlockchainsConfiguredError() {
+            settingsFile.writeText(
+                    """
+            deployments:
+              test-network:
+                url: $apiUrl
+                brid: x"${model.blockchainRid}"
+            """.trimIndent()
+            )
+
+            val res = assertThrows<CliktError> {
+                DeployInfoCommand().parse(listOf(
+                                "--settings", settingsFile.absolutePath,
+                                "--network", "test-network"
+                    ))
+            }
+
+            assertThat(res.message!!).isEqualTo("""
+                |No blockchains configured for deployment 'test-network'
+                |Resolution options:
+                |- Add blockchain configurations to your deployment
+                |- Choose a different deployment target using --network
+            """.trimMargin())
+    }
+
+    @Test
+    fun testMultipleBlockchainsAvailableError() {
+        settingsFile.writeText(
+                """
+           deployments:
+              test_network:
+                brid: x"0000000000000000000000000000000000000000000000000000000000000002"
+                url:
+                  - "http://localhost:7740"
+                chains:
+                  blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
+                  blockchain2: x"0000000000000000000000000000000000000000000000000000000000000003"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            DeployInfoCommand().parse(listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test_network"
+                    ))
+        }
+
+        assertThat(res.message!!).isEqualTo("""
+            Multiple blockchains available in deployment 'test_network'
+            Available chains: blockchain1, blockchain2
+            Resolution:
+            - Specify the target blockchain using: --blockchain <name>
+                - Example: --blockchain blockchain1
+        """.trimIndent())
+    }
+
+    @Test
+    fun testInferBlockchainFromDeploymentCorrectly() {
+        val targetChain = BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")
+        settingsFile.writeText("""
+            deployments:
+              test-network:
+                url: $apiUrl
+                brid: x"${model.blockchainRid}"
+                chains:
+                  blockchain1: x"${targetChain.toHex()}"
+        """.trimIndent())
+
+        withModel(
+                Directory1Model(model.blockchainRid, targetChain),
+                DeployedChainModel(targetChain)) {
+            assertDoesNotThrow {
+                DeployInfoCommand().test(
+                    listOf(
+                        "--settings",
+                        settingsFile.absolutePath,
+                        "--network",
+                        "test-network"
+                    )
+                )
+            }
+        }
     }
 }

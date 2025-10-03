@@ -12,8 +12,8 @@ import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.BuildCliEnv
-import com.chromia.cli.util.PredefinedNetworks.CHROMIA_MAINNET
-import com.chromia.cli.util.PredefinedNetworks.predefinedNetworks
+import com.chromia.cli.util.LibraryChainNetworkUtils.CHROMIA_MAINNET
+import com.chromia.cli.util.LibraryChainNetworkUtils.libraryPredefinedNetworks
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -62,11 +62,11 @@ abstract class AbstractLibraryCommand(
     fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
         val inputUrl = url ?: remoteTarget.url ?: CHROMIA_MAINNET
 
-        val networkConfig = inputUrl.let { predefinedNetworks[it]?.invoke() }
+        val networkConfig = inputUrl.let { libraryPredefinedNetworks[it]?.invoke() }
 
-        val targetUrl = networkConfig?.first ?: inputUrl
+        val targetUrl = networkConfig?.url ?: inputUrl
         val targetBrid = brid ?: remoteTarget.brid
-            ?: networkConfig?.second
+            ?: networkConfig?.brid
             ?: throw PrintMessage("Brid of library_chain is required")
 
         settings.config.configureSigners(keyPairSource)

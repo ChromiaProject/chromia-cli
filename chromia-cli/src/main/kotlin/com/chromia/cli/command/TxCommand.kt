@@ -8,14 +8,12 @@ import com.chromia.cli.tools.ft.addEvmAuthOperation
 import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.addFtRegisterAccountOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
-import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.tools.util.timebOptions
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.evmAuthOption
 import com.chromia.cli.util.initFtAuthVerbose
 import com.chromia.cli.util.parseArgAsGtv
-import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
@@ -67,7 +65,7 @@ class TxCommand : ChromiaCommand(help = """
 
     private val settings by optionalChromiaModelConfigOption()
     private val keyPairSource by keyPairSourceOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val nop by option("-nop", help = "Adds a nop to the transaction").flag()

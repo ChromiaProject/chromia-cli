@@ -2,7 +2,7 @@ package com.chromia.cli.command
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.OutputFormat
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.formatJson
@@ -43,7 +43,7 @@ class QueryCommand : ChromiaCommand(help = """
 """.trimIndent()
 ) {
     private val settings by optionalChromiaModelConfigOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
 
     private val outputFormat by outputFormat()

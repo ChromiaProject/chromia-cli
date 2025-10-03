@@ -4,7 +4,7 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.addFtAuthenticationOperation
 import com.chromia.cli.tools.ft.initFtAuth
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.util.containerIdOption
 import com.chromia.cli.tools.config.keyPairSourceOption
@@ -33,7 +33,7 @@ class RemoveContainerCommand : ChromiaCommand(
     private val clientProvider: PostchainClientProvider = PostchainClientProviderImpl()
     private val settings by optionalChromiaModelConfigOption()
     private val keyPairSource by keyPairSourceOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val containerId by containerIdOption(help = "Container Identifier to add dapp provider too").required()
 

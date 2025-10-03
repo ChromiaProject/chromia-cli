@@ -66,4 +66,59 @@ class QueryIT {
                     .start()
         }
     }
+
+    @Test
+    fun `should infer blockchain option when only 1 blockchain exists under deployments`(@TempDir dir: Path) {
+        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
+        testData(dir) {
+            config {
+                deployments(
+                        """
+                deployments:
+                  test:
+                    url: "$apiUrl"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    container: testcontainer
+                    chains:
+                      hello: x"${testBrid.toHex()}"
+            """.trimIndent())
+            }
+        }
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                QueryDeploymentModel(testBrid),
+        ) {
+            TestProcess.Builder("query", "hello_world", "--network", "test")
+                    .setConfig(dir.resolve("chromia.yml").toFile())
+                    .startCondition("Hello People!")
+                    .start()
+        }
+    }
+
+    @Test
+    fun `should throw if network is provided but can't infer blockchain from deployments`(@TempDir dir: Path) {
+        val testBrid = BlockchainRid("0000000000000000000000000000000000000000000000000000000000000001".hexStringToByteArray())
+        testData(dir) {
+            config {
+                deployments(
+                        """
+                deployments:
+                  test:
+                    url: "$apiUrl"
+                    brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                    container: testcontainer
+            """.trimIndent())
+            }
+        }
+        withModel(
+                Directory1Model(BlockchainRid.ZERO_RID, mapOf(testBrid to listOf(apiUrl))),
+                QueryDeploymentModel(testBrid),
+        ) {
+            TestProcess.Builder("query", "hello_world", "--network", "test")
+                    .exitCode(1)
+                    .setConfig(dir.resolve("chromia.yml").toFile())
+                    .partialOutput("No blockchains configured for deployment test")
+                    .start()
+        }
+    }
 }
