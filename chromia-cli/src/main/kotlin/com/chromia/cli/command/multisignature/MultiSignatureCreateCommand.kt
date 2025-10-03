@@ -9,7 +9,7 @@ import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
 import com.chromia.cli.tools.util.SUPPORTED_TIME_AT_FORMATS
 import com.chromia.cli.tools.util.timeAtConverter
 import com.chromia.cli.tools.util.timebOptions
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.initFtAuthVerbose
@@ -41,7 +41,7 @@ import java.time.Clock
 class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Creates a new transaction for multi signature and signs it with your key") {
 
     private val settings by optionalChromiaModelConfigOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
 
     private val ftAuthOptions by object : OptionGroup("FT compatible dapps options") {

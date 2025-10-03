@@ -2,19 +2,31 @@ package com.chromia.cli.command
 
 import assertk.assertThat
 import assertk.assertions.contains
+import assertk.assertions.isEqualTo
 import assertk.assertions.isZero
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
+import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
+import net.postchain.api.rest.controller.Model
+import net.postchain.api.rest.model.ApiStatus
+import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
+import net.postchain.common.tx.TransactionStatus
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
+import net.postchain.gtx.GtxQuery
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
@@ -23,6 +35,15 @@ import kotlin.io.path.absolutePathString
 
 
 class TxCommandTest : IntegrationTestSetup() {
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+
+    @BeforeEach
+    fun setup() {
+        settingsFile = testDir.resolve("chromia.yml").toFile()
+    }
+
     private fun launchBlockchainsInTestNode(vararg configs: String): List<BlockchainRid> {
         val gtvConfigs = configs.map { GtvMLParser.parseGtvML(File(it).readText()) }
         val setup = SystemSetupFactory.buildSystemSetup(gtvConfigs.mapIndexed { i, it -> BlockchainSetup.buildFromGtv(i, it) })
@@ -208,6 +229,109 @@ class TxCommandTest : IntegrationTestSetup() {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--timeb-after", "60"))
             assertThat(res.statusCode).isZero()
             assertThat(res.stdout).contains("was posted and confirmed")
+        }
+    }
+
+    @Test
+    fun testNoBlockchainsConfiguredError() {
+        settingsFile.writeText(
+            """
+            deployments:
+              test-network:
+                url:
+                  - "http://localhost:7740"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            TxCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test-network",
+                            "test_op"
+                    )
+            )
+        }
+        assertThat(res.message!!).isEqualTo("""
+            No blockchains configured for deployment 'test-network'
+            Resolution options:
+            - Add blockchain configurations to your deployment
+            - Choose a different deployment target using --network
+         """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testMultipleBlockchainsAvailableError() {
+        settingsFile.writeText(
+            """
+           deployments:
+              test_network:
+                brid: x"0000000000000000000000000000000000000000000000000000000000000002"
+                url:
+                  - "http://localhost:7740"
+                chains:
+                  blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
+                  blockchain2: x"0000000000000000000000000000000000000000000000000000000000000003"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            TxCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test_network",
+                            "test_op"
+                    )
+            )
+        }
+        assertThat(res.message!!).isEqualTo("""
+                     Multiple blockchains available in deployment 'test_network'
+                     Available chains: blockchain1, blockchain2
+                     Resolution:
+                     - Specify the target blockchain using: --blockchain <name>
+                         - Example: --blockchain blockchain1
+                     """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testInferBlockchainFromDeploymentCorrectly() {
+        val blockchainRid = BlockchainRid.buildRepeat(1)
+        settingsFile.writeText(
+                """
+            deployments:
+              test-network:
+                url: $apiUrl
+                chains:
+                  blockchain1: x"${blockchainRid.toHex()}"
+            """.trimIndent()
+        )
+
+        withModel(TestTxModel(blockchainRid)) {
+            val res = TxCommand().test(
+                listOf(
+                    "--settings",
+                    settingsFile.absolutePath,
+                    "--network",
+                    "test-network",
+                    "test_op"
+                )
+            )
+            assertThat(res.stdout).contains("was posted and confirmed")
+        }
+    }
+}
+
+internal class TestTxModel(val model: Model = TestModel()) : Model by model {
+    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
+
+    override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
+    override fun query(query: GtxQuery): Gtv {
+        return when (query.name) {
+            CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(apiUrl)))
+            "test_op" -> gtv("SUCCESS")
+            else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }
 }

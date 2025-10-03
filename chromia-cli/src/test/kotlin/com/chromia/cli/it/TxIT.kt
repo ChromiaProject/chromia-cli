@@ -203,6 +203,56 @@ class TxIT {
     }
 
     @Test
+    fun `should infers blockchain when only one chain exists under deployments`(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "$apiUrl"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        chains:
+                          hello: x"${testBrid.toHex()}"
+                        """.trimIndent()
+                )
+            }
+            secret()
+        }
+
+
+        TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--no-await", "--network", "test")
+                .setWorkingDir(dir.toFile())
+                .exitCode(0)
+                .awaitCompletion(false)
+                .start()
+    }
+
+    @Test
+    fun `should throw if network is provided but cannot infer blockchain from deployments`(@TempDir dir: Path) {
+        testData(dir) {
+            config {
+                deployments("""
+                    deployments:
+                      test:
+                        url: "$apiUrl"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: testcontainer
+                        """.trimIndent()
+                )
+            }
+            secret()
+        }
+
+
+        TestProcess.Builder("tx", "--api-url", apiUrl, "call_op", "13", "--no-await", "--network", "test")
+                .setWorkingDir(dir.toFile())
+                .exitCode(1)
+                .partialOutput("No blockchains configured for deployment test")
+                .start()
+    }
+
+    @Test
     fun failingTxExitCode(@TempDir dir: Path) {
         testData(dir)
         withModel(AlwaysFailingModel(testBrid, TransactionStatus.REJECTED)) {

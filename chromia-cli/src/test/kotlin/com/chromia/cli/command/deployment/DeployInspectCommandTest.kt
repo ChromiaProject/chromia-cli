@@ -12,6 +12,7 @@ import com.chromia.cli.util.RellOperation
 import com.chromia.cli.util.RellParameter
 import com.chromia.cli.util.RellQuery
 import com.chromia.cli.util.RellStructure
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
@@ -20,13 +21,27 @@ import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.BlockchainRid
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
+import java.nio.file.Path
 
 class DeployInspectCommandTest {
+    @TempDir
+    private lateinit var testDir: Path
+    private lateinit var settingsFile: File
+
     private val nonInteractiveLogger = TerminalRecorder(width = 1000, outputInteractive = false)
     private val nonInteractiveTerminal = Terminal(terminalInterface = nonInteractiveLogger)
     private val interactiveLogger = TerminalRecorder(width = 1000, outputInteractive = true)
     private val interactiveTerminal = Terminal(terminalInterface = interactiveLogger)
+
+    @BeforeEach
+    fun setup() {
+        settingsFile = testDir.resolve("chromia.yml").toFile()
+    }
 
     private val testInputBlockchain = mapOf(
             "foo" to RellModule("foo",
@@ -213,5 +228,66 @@ class DeployInspectCommandTest {
         )
                 .context { terminal = interactiveTerminal }
                 .parse(args)
+    }
+
+    @Test
+    fun testNoBlockchainsConfiguredError() {
+        settingsFile.writeText(
+            """
+            deployments:
+              test-network:
+                url:
+                  - "http://localhost:7740"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            DeployInspectCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test-network"
+                    )
+            )
+        }
+
+        assertThat(res.message!!).isEqualTo("""
+                |No blockchains configured for deployment 'test-network'
+                |Resolution options:
+                |- Add blockchain configurations to your deployment
+                |- Choose a different deployment target using --network
+            """.trimMargin())
+    }
+
+    @Test
+    fun testMultipleBlockchainsAvailableError() {
+        settingsFile.writeText(
+            """
+           deployments:
+              test_network:
+                brid: x"0000000000000000000000000000000000000000000000000000000000000002"
+                url:
+                  - "http://localhost:7740"
+                chains:
+                  blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
+                  blockchain2: x"0000000000000000000000000000000000000000000000000000000000000003"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            DeployInspectCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test_network"
+                    )
+            )
+        }
+        assertThat(res.message!!).isEqualTo("""
+                     Multiple blockchains available in deployment 'test_network'
+                     Available chains: blockchain1, blockchain2
+                     Resolution:
+                     - Specify the target blockchain using: --blockchain <name>
+                         - Example: --blockchain blockchain1
+                     """.trimIndent()
+        )
     }
 }

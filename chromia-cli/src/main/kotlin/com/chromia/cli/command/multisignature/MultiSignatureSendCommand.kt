@@ -5,7 +5,7 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.cooccurring
@@ -22,7 +22,7 @@ class MultiSignatureSendCommand : ChromiaCommand(name = "send", help = "Send a f
 
     private val settings by optionalChromiaModelConfigOption()
     private val keyPairSource by keyPairSourceOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
     private val awaitConfirmation by option("--await", "-a", help = "Wait for transaction to be included in a block").flag("--no-await", default = true)
     private val transactionFile by option("-f", "--file", help = "Path to file of transaction")

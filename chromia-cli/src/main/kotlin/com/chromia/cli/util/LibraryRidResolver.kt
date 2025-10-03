@@ -2,8 +2,8 @@ package com.chromia.cli.util
 
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.RellLibraryModel
-import com.chromia.cli.util.PredefinedNetworks.CHROMIA_MAINNET
-import com.chromia.cli.util.PredefinedNetworks.predefinedNetworks
+import com.chromia.cli.util.LibraryChainNetworkUtils.CHROMIA_MAINNET
+import com.chromia.cli.util.LibraryChainNetworkUtils.libraryPredefinedNetworks
 import com.chromia.library.chain.versioning.external.getLibrary
 import com.chromia.library.chain.versioning.external.getLibraryRid
 import com.github.ajalt.clikt.core.PrintMessage
@@ -35,9 +35,9 @@ object LibraryRidResolver {
     private fun isLibraryChainLib(libModel: RellLibraryModel) = libModel.version != null
 
     private fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
-        val networkConfig = url?.let { predefinedNetworks[it]?.invoke() }
-        val targetUrl = networkConfig?.first ?: url ?: CHROMIA_MAINNET
-        val targetBrid = brid ?: predefinedNetworks[targetUrl]?.invoke()?.second
+        val networkConfig = url?.let { libraryPredefinedNetworks[it]?.invoke() }
+        val targetUrl = networkConfig?.url ?: url ?: CHROMIA_MAINNET
+        val targetBrid = brid ?: libraryPredefinedNetworks[targetUrl]?.invoke()?.brid
             ?: throw PrintMessage("Brid of library_chain is required")
 
         val postchainConfig = PostchainClientConfig.defaultConfig

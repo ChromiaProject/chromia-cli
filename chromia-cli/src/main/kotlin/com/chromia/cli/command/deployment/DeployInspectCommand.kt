@@ -7,7 +7,7 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.formatter.defaultTable
 import com.chromia.cli.tools.formatter.header
 import com.chromia.cli.util.BlockchainAnalyzer
-import com.chromia.cli.util.LocalDeploymentOption
+import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.ModuleArgsAnalyzer
 import com.chromia.cli.util.RellBlockchainAnalyzer
 import com.chromia.cli.util.RellEntity
@@ -47,7 +47,7 @@ class DeployInspectCommand(
         help = "Inspect the API of a deployed blockchain"
 ) {
     private val settings by optionalChromiaModelConfigOption()
-    private val explicitTarget by LocalDeploymentOption({ settings.config })
+    private val explicitTarget by ExplicitDeploymentOption({ settings.config })
     private val deploymentTarget by RemoteDeploymentOption { settings.model ?: ChromiaModel.default() }.cooccurring()
 
     private val outputFormat by tableOutputFormat().defaultLazy {

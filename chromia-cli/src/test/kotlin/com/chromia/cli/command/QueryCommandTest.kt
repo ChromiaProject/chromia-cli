@@ -10,8 +10,11 @@ import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQuery
 import com.chromia.build.tools.testData
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
+import com.github.ajalt.mordant.terminal.Terminal
+import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.api.rest.controller.Model
 import net.postchain.api.rest.model.ApiStatus
 import net.postchain.api.rest.model.TxRid
@@ -89,12 +92,96 @@ class QueryCommandTest : IntegrationTestSetup() {
     }
 
     @Test
-    fun testMissingBrid() {
-        val thrown = assertThrows<RuntimeException> {
-            QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
-        }
+    fun testNoBlockchainsConfiguredError() {
+        settingsFile.writeText(
+            """
+            deployments:
+              test-network:
+                url:
+                  - "http://localhost:7740"
+            """.trimIndent()
+        )
 
-        assertThat(thrown.message!!).contains("Could not auto-detect brid from")
+        val res = assertThrows<CliktError> {
+            QueryCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test-network",
+                            "test_query"
+                    ))
+        }
+        assertThat(res.message!!).isEqualTo("""
+                |No blockchains configured for deployment 'test-network'
+                |Resolution options:
+                |- Add blockchain configurations to your deployment
+                |- Choose a different deployment target using --network
+            """.trimMargin())
+    }
+
+    @Test
+    fun testMultipleBlockchainsAvailableError() {
+        settingsFile.writeText(
+            """
+           deployments:
+              test_network:
+                brid: x"0000000000000000000000000000000000000000000000000000000000000002"
+                url:
+                  - "http://localhost:7740"
+                chains:
+                  blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
+                  blockchain2: x"0000000000000000000000000000000000000000000000000000000000000003"
+            """.trimIndent()
+        )
+
+        val res = assertThrows<CliktError> {
+            QueryCommand().parse(
+                    listOf(
+                            "--settings", settingsFile.absolutePath,
+                            "--network", "test_network",
+                            "test_query"
+                    ))
+        }
+        assertThat(res.message!!).isEqualTo("""
+                     Multiple blockchains available in deployment 'test_network'
+                     Available chains: blockchain1, blockchain2
+                     Resolution:
+                     - Specify the target blockchain using: --blockchain <name>
+                         - Example: --blockchain blockchain1
+                     """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testInferBlockchainFromDeploymentCorrectly() {
+        val blockchainRid = BlockchainRid.buildRepeat(1)
+        settingsFile.writeText(
+                """
+            deployments:
+              test-network:
+                url: $apiUrl
+                chains:
+                  blockchain1: x"${blockchainRid.toHex()}"
+            """.trimIndent()
+        )
+
+        withModel(TestQueryModel()) {
+            val res = QueryCommand().test(
+                listOf(
+                    "--settings",
+                    settingsFile.absolutePath,
+                    "--network",
+                    "test-network",
+                    "test_query"
+                )
+            )
+            assertThat(res.stdout).contains("SUCCESS")
+        }
+    }
+
+    @Test
+    fun testMissingBrid() {
+        val res = QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--api-url", "http://localhost:7740", "hello"))
+        assertThat(res.stderr).contains("Could not auto-detect brid from")
     }
 
     @Test
@@ -106,9 +193,8 @@ class QueryCommandTest : IntegrationTestSetup() {
                 api.url=$dummyApiUrl
             """.trimIndent())
         }
-        val res = assertThrows<ClientError> {
-            QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
-        }
+
+        val res = assertThrows<ClientError> { QueryCommand().test(listOf("--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version")) }
         assertThat(res.message!!).contains(dummyApiUrl)
     }
 
@@ -122,9 +208,7 @@ class QueryCommandTest : IntegrationTestSetup() {
             """.trimIndent())
         }
         val overrideApiUrl = "http://not_existing_host_from_command_line:7741"
-        val res = assertThrows<ClientError> {
-            QueryCommand().test(listOf("--api-url", overrideApiUrl, "--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version"))
-        }
+        val res = assertThrows<ClientError> {  QueryCommand().test(listOf("--api-url", overrideApiUrl, "--settings", settingsFile.absolutePath, "--config", configFile.absolutePath, "api_version")) }
         assertThat(res.message!!).contains(overrideApiUrl)
     }
 
@@ -390,7 +474,7 @@ class QueryCommandTest : IntegrationTestSetup() {
                   my_library:
                     module: library
                 deployments:
-                  testnet: 
+                  custom_network: 
                     url: $apiUrl
                     chains:
                       my_library: x"$chainBrid"
@@ -401,7 +485,7 @@ class QueryCommandTest : IntegrationTestSetup() {
             val res = QueryCommand().test(listOf(
                     "--settings", settingsFile.absolutePath,
                     "--blockchain", "my_library",
-                    "--network", "testnet",
+                    "--network", "custom_network",
                     "test_query"
             ))
 
