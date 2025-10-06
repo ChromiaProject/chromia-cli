@@ -122,6 +122,8 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       name: net.postchain.devtools.OnDemandBlockBuildingStrategy
     config_consensus_strategy: HEADER_HASH
     configurationfactory: net.postchain.gtx.GTXBlockchainConfigurationFactory
+    features:
+      merkle_hash_version: 2
     gtx:
       modules:
       - net.postchain.rell.module.RellPostchainModuleFactory
@@ -154,6 +156,8 @@ class FetchConfigCommandTest : IntegrationTestSetup() {
       name: net.postchain.devtools.OnDemandBlockBuildingStrategy
     config_consensus_strategy: HEADER_HASH
     configurationfactory: net.postchain.gtx.GTXBlockchainConfigurationFactory
+    features:
+      merkle_hash_version: 2
     gtx:
       modules:
       - net.postchain.web.WebStaticGTXModuleFactory
