@@ -65,6 +65,8 @@ class PendingProposalModel(val model: Model, private val proposalResponse: Gtv, 
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
     override fun postTransaction(tx: ByteArray) {}
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "api_version" -> gtv(33)

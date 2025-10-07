@@ -16,6 +16,8 @@ class TxRecorderModel(val model: Model, private val responses: Map<String, Gtv> 
         txList.add(tx)
     }
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return responses[query.name] ?: throw UserMistake("Query ${query.name} in TxRecorderModel")
     }

@@ -170,6 +170,8 @@ internal class VotersetAddDappProviderCommandTest {
                 accountId = ACCOUNT_ID
         )
 
+        override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
         override fun query(query: GtxQuery): Gtv {
             return when (query.name) {
                 API_VERSION -> gtv(33)

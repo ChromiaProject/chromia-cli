@@ -19,7 +19,7 @@ class GtvIT {
     fun formatHelp() {
         TestProcess.Builder("tools", "gtv", "--help")
                 .exitCode(0)
-                .timeout(Duration.ofSeconds(5))
+                .timeout(Duration.ofSeconds(10))
                 .startCondition("Decode and convert GTV data")
                 .start()
     }

@@ -49,8 +49,10 @@ class Ft4Model(val model: Model, val version: String, val responses: Map<String,
 
     val ft4AccountId = "4".repeat(64).hexStringToWrappedByteArray()
     val ftAuthDescriptorId = "4".repeat(64)
-    override fun query(query: GtxQuery): Gtv {
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
+    override fun query(query: GtxQuery): Gtv {
         val pagedResult = PagedResult(null, data = listOf(gtv(mapOf("id" to gtv(ft4AccountId)))))
 
         return when (query.name) {
