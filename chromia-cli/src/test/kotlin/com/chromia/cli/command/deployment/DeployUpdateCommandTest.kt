@@ -12,8 +12,8 @@ import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withClusterManagement
 import com.chromia.build.tools.restapi.withCompression
 import com.chromia.build.tools.restapi.withInvalidConfiguration
-import com.chromia.build.tools.restapi.withQuery
-import com.chromia.build.tools.restapi.withRellVersion
+import com.chromia.build.tools.restapi.withQueryWithHeight
+import com.chromia.build.tools.restapi.withRellVersionWithHeight
 import com.chromia.build.tools.restapi.withValidConfiguration
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
@@ -38,10 +38,8 @@ import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
 import net.postchain.crypto.BaseCryptoSystem
 import net.postchain.gtv.Gtv
-import net.postchain.gtv.GtvArray
 import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.GtvFactory.gtv
-import net.postchain.gtv.GtvInteger
 import net.postchain.managed.ManagedNodeDataSource
 import net.postchain.managed.config.ManagedBlockchainConfiguration
 import net.postchain.rell.api.base.RellCliBasicException
@@ -261,7 +259,7 @@ class DeployUpdateCommandTest {
 
     @Test
     fun cannotUpdateNotMatchingRellVersion() {
-        withModel(model.withRellVersion("0.11.0")) {
+        withModel(model.withRellVersionWithHeight("0.11.0")) {
             val throwable = assertThrows<RellDeployVersionException> {
                 DeployUpdateCommand().test(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
             }
@@ -358,7 +356,7 @@ class DeployUpdateCommandTest {
     @Test
     fun failWhenNoEndpointsFoundForBlockchain() {
         withModel(
-                model.withQuery(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf())),
+                model.withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf())),
                 DeploymentTestDataCreator.deployedChainModel.withValidConfiguration()
         ) {
             val ex = assertThrows<IllegalArgumentException> {

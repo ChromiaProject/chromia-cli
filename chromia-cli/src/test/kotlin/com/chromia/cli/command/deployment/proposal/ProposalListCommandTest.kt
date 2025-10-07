@@ -56,6 +56,8 @@ class ProposalListModel(val model: Model) : Model by model {
     private val proposalTwo = GtvObjectMapper.toGtvDictionary(GetProposalsRangeResult(rowid = RowId(2), proposalType = ProposalType.blockchain_action, ProposalState.PENDING))
     private val proposalThree = GtvObjectMapper.toGtvDictionary(GetProposalsRangeResult(rowid = RowId(3), proposalType = ProposalType.configuration, ProposalState.PENDING))
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "api_version" -> gtv(33)

@@ -9,6 +9,9 @@ import net.postchain.gtx.GtxQuery
 
 class Directory1Model(val model: Model, val chains: Map<BlockchainRid, List<String>>) : Model by model {
     constructor(blockchainRid: BlockchainRid, chains: Map<BlockchainRid, List<String>>) : this(TestModel(blockchainRid), chains)
+
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         require(query.name == "cm_get_blockchain_api_urls")
         val brid = BlockchainRid(query.args.asDict()["blockchain_rid"]!!.asByteArray())

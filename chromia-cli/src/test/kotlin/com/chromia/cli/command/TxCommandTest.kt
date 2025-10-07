@@ -7,7 +7,7 @@ import assertk.assertions.isZero
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
-import com.chromia.build.tools.restapi.withQuery
+import com.chromia.build.tools.restapi.withQueryWithHeight
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.parse
@@ -175,7 +175,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun wrongFormatOfBridForIccfSourceThrowsError() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--iccf-source", "00"))
             assertThat(res.stderr).contains("invalid value for --iccf-source: Wrong size of Blockchain RID, was 1 should be 32 (64 characters)")
         }
@@ -183,7 +183,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun awaitTxByDefault() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl))
             assertThat(res.stdout).contains("was posted and confirmed")
         }
@@ -191,7 +191,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun noAwaitTxGivesCorrectStatusCode() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--no-await"))
             assertThat(res.stdout).contains("was posted but is still pending")
         }
@@ -199,7 +199,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun underscoreArgumentIsParsed() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--await", "--api-url", apiUrl, "_foobar"))
             assertThat(res.stdout).contains("was posted and confirmed")
         }
@@ -207,7 +207,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun underscoreOperationIsParsed() {
-        withModel(TestModel().withQuery("_test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("_test_op", gtv(1))) {
             val res = TxCommand().test(listOf("_test_op", "--await", "--api-url", apiUrl, "foobar"))
             assertThat(res.stdout).contains("was posted and confirmed")
         }
@@ -216,7 +216,7 @@ class TxCommandTest : IntegrationTestSetup() {
     @Test
     fun timebAt() {
         val timeb = Instant.now().plusSeconds(60).toEpochMilli()
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--timeb-at", timeb.toString()))
             assertThat(res.statusCode).isZero()
             assertThat(res.stdout).contains("was posted and confirmed")
@@ -225,7 +225,7 @@ class TxCommandTest : IntegrationTestSetup() {
 
     @Test
     fun timebAfter() {
-        withModel(TestModel().withQuery("test_op", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_op", gtv(1))) {
             val res = TxCommand().test(listOf("test_op", "--api-url", apiUrl, "--timeb-after", "60"))
             assertThat(res.statusCode).isZero()
             assertThat(res.stdout).contains("was posted and confirmed")
@@ -327,6 +327,9 @@ internal class TestTxModel(val model: Model = TestModel()) : Model by model {
     constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
+
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(apiUrl)))

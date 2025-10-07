@@ -83,7 +83,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun cannotDeployNotMatchingRellVersion() {
-        withModel(model.withRellVersion("0.11.0")) {
+        withModel(model.withRellVersionWithHeight("0.11.0")) {
             val throwable = assertThrows<RellDeployVersionException> {
                 DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
             }
@@ -94,7 +94,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun cannotDeployIfNodeIsUnresponsive() {
-        withModel(model.withQuery("get_cluster_api_urls", gtv(gtv("http://not-responding")))) {
+        withModel(model.withQueryWithHeight("get_cluster_api_urls", gtv(gtv("http://not-responding")))) {
             val throwable = assertThrows<NoNodeRunningContainerException> {
                 DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test"))
             }
@@ -128,7 +128,7 @@ class DeployCreateCommandTest {
     fun compressionConfigGetsAddedToXmlConfig() {
         withModel(
                 model.withCompression()
-                        .withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
+                        .withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
         ) {
             DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y"))
         }
@@ -143,7 +143,7 @@ class DeployCreateCommandTest {
         withModel(
                 model
                         .withCompression()
-                        .withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
+                        .withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
         ) {
             DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "my_rell_dapp", "--network", "test", "-y", "--no-compression"))
             assertThat(testDir.resolve("build/my_rell_dapp_compressed.xml").notExists())
@@ -158,7 +158,7 @@ class DeployCreateCommandTest {
     fun deployDappUsingKeyId() {
         withModel(model
                 .withCompression()
-                .withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
+                .withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))
         ) {
             val keyPair = KeyPair.of("02CCF1F5FF6A6E5C9A6E89716A67BC77BECEF4DA804BD3BCE3105D96EB3D1AD765", "7EEBCE9FF2339D21CA3F4A325C9968B0E6D197A2CADA421F7DB8DEFD02AB1429")
             EnvironmentVariables("CHROMIA_HOME", testDir.absolutePathString()).execute {
@@ -174,7 +174,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun deployAllDappsInConfig() {
-        withModel(model.withCompression().withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))) {
+        withModel(model.withCompression().withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(8)))) {
             testData(testDir) {
                 config {
                     blockchains("""
@@ -213,7 +213,7 @@ class DeployCreateCommandTest {
 
     @Test
     fun `Can not create new deployment of chain defined under deployments`() {
-        withModel(model.withQuery("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(0)))) {
+        withModel(model.withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildRepeat(0)))) {
             val throwable = assertThrows<PrintMessage> {
                 DeployCreateCommand().parse(listOf("-s", settingsFile.absolutePath, "--secret", secret.absolutePath, "--blockchain", "deployed", "--network", "test"))
             }
@@ -233,7 +233,7 @@ class DeployCreateCommandTest {
         val terminal = Terminal(terminalInterface = terminalRecorder, ansiLevel = AnsiLevel.NONE)
 
         withModel(model.withCompression()
-                .withQuery("find_blockchain_rid", gtv(BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")))
+                .withQueryWithHeight("find_blockchain_rid", gtv(BlockchainRid.buildFromHex("0000000000000000000000000000000000000000000000000000000000000002")))
         ) {
             val resultWithoutFlag = DeployCreateCommand().context { this.terminal = terminal }
                 .test(listOf("-s", chromiaYmlPath, "--secret", secret.absolutePath, "--blockchain", "testlib", "--network", "test", "-y"))

@@ -81,6 +81,8 @@ class DeployedChainModel(val model: Model) : Model by model {
 class Directory1Model(val model: Model, val responseChain: BlockchainRid) : Model by model {
     constructor(blockchainRid: BlockchainRid, responseChain: BlockchainRid) : this(TestModel(blockchainRid), responseChain)
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "api_version" -> gtv(33)

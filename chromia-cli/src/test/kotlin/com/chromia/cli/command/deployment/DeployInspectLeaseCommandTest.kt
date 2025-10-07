@@ -8,7 +8,7 @@ import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
-import com.chromia.build.tools.restapi.withQuery
+import com.chromia.build.tools.restapi.withQueryWithHeight
 import com.chromia.build.tools.testData
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
@@ -32,7 +32,7 @@ class DeployInspectLeaseCommandTest {
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
 
-    private val directoryChainModel = DirectoryChainModel().withQuery("get_economy_chain_rid", gtv(BlockchainRid.buildRepeat(1)))
+    private val directoryChainModel = DirectoryChainModel().withQueryWithHeight("get_economy_chain_rid", gtv(BlockchainRid.buildRepeat(1)))
     private val economyChainModel = TestModel(BlockchainRid.buildRepeat(1), 1)
 
     @BeforeEach
@@ -55,7 +55,7 @@ class DeployInspectLeaseCommandTest {
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
 
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
+        withModel(directoryChainModel, economyChainModel.withQueryWithHeight("get_lease_by_container_name", getLeaseData())) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "-s", settingsFile.absolutePath))
             assertThat(logger.output()).contains(""""container": "containerId"""")
@@ -97,7 +97,7 @@ class DeployInspectLeaseCommandTest {
                     chains:
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
+        withModel(directoryChainModel, economyChainModel.withQueryWithHeight("get_lease_by_container_name", getLeaseData())) {
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
             command.parse(listOf("--network", "test_network", "--container-id", "A Different Container", "-s", settingsFile.absolutePath))
             assertThat(logger.output()).contains(""""container": "A Different Container"""")
@@ -117,7 +117,7 @@ class DeployInspectLeaseCommandTest {
                     chains:
                       blockchain1: x"0000000000000000000000000000000000000000000000000000000000000001"
         """.trimIndent())
-        withModel(directoryChainModel, economyChainModel.withQuery(
+        withModel(directoryChainModel, economyChainModel.withQueryWithHeight(
                 "get_leases_by_account", gtv(listOf(getLeaseData(), getLeaseData()))
         )) {
             val accountId = "0000000000000000000000000000000000000000000000000000000000000003"
@@ -142,7 +142,7 @@ class DeployInspectLeaseCommandTest {
 
     @Test
     fun `Explicit setting system option using account id to get lease data`() {
-        withModel(directoryChainModel, economyChainModel.withQuery(
+        withModel(directoryChainModel, economyChainModel.withQueryWithHeight(
                 "get_leases_by_account", gtv(listOf(getLeaseData(), getLeaseData()))
         )) {
             val accountId = "03DD65032C7BEE117FFDAA94C8DADAE79ADBA2A3A17C8D4A5239AA2DC2E93D845E"
@@ -156,7 +156,7 @@ class DeployInspectLeaseCommandTest {
 
     @Test
     fun `Explicit setting system option using container id to get lease data`() {
-        withModel(directoryChainModel, economyChainModel.withQuery("get_lease_by_container_name", getLeaseData())) {
+        withModel(directoryChainModel, economyChainModel.withQueryWithHeight("get_lease_by_container_name", getLeaseData())) {
             val brid = "0000000000000000000000000000000000000000000000000000000000000000"
             val command = DeployInspectLeaseCommand().context { terminal = testTerminal }
 

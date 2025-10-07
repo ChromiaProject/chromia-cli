@@ -39,6 +39,8 @@ import kotlin.test.Test
 class VotersetInfoModel(val model: Model) : Model by model {
     constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
 
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             "api_version" -> gtv(33)

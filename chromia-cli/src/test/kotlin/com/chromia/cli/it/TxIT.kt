@@ -42,6 +42,8 @@ class AlwaysFailingModel(val model: Model, val status: TransactionStatus) : Mode
 }
 
 class Ft4Model(val model: Model, val version: String, val responses: Map<String, Gtv> = mapOf()) : Model by model {
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
             GET_VERSION -> gtv(version)

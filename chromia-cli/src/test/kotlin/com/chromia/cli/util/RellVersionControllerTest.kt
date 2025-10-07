@@ -5,16 +5,16 @@ import assertk.assertions.contains
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
-import com.chromia.build.tools.restapi.withRellVersion
+import com.chromia.build.tools.restapi.withRellVersionWithHeight
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.versionfinder.PostchainRellVersionFinder
-import kotlin.test.assertEquals
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.Endpoint
 import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
 import net.postchain.rell.base.model.R_LangVersion
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -26,7 +26,7 @@ class RellVersionControllerTest {
     @Test
     fun getTargetVersion200Status() {
         val expectedVersion = R_LangVersion.of(DefaultChromiaModelRellVersion)
-        withModel(TestModel(BlockchainRid.ZERO_RID).withRellVersion(expectedVersion)) {
+        withModel(TestModel(BlockchainRid.ZERO_RID).withRellVersionWithHeight(expectedVersion)) {
             val res = PostchainRellVersionFinder(template, PostchainClientProviderImpl()).getTargetVersion(Endpoint(RestApiInstance.apiUrl), BlockchainRid.ZERO_RID)
             assertEquals(res, expectedVersion)
         }

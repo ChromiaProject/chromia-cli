@@ -22,6 +22,8 @@ class DeployInspectLeaseIT {
     class EconomyChainModel(val model: Model, val leasesByAccount: Map<WrappedByteArray, Gtv>, val leasesByContainerName: Map<String, Gtv>) : Model by model {
         constructor(blockchainRid: BlockchainRid, leasesByAccount: Map<WrappedByteArray, Gtv>, leasesByContainerName: Map<String, Gtv>) : this(TestModel(blockchainRid), leasesByAccount, leasesByContainerName)
 
+        override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
+
         override fun query(query: GtxQuery): Gtv {
             return when (query.name) {
                 "get_leases_by_account" -> leasesByAccount[query.args["account_id"]?.asByteArray()?.wrap()]
@@ -37,6 +39,8 @@ class DeployInspectLeaseIT {
 
     class EconomyChainInDirectory1Model(val model: Model, val economyChainBrid: BlockchainRid) : Model by model {
         constructor(blockchainRid: BlockchainRid, economyChainBrid: BlockchainRid) : this(TestModel(blockchainRid), economyChainBrid)
+
+        override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
 
         override fun query(query: GtxQuery): Gtv {
             require(query.name == "get_economy_chain_rid") { "Expected query: get_economy_chain_rid, received: ${query.name}" }

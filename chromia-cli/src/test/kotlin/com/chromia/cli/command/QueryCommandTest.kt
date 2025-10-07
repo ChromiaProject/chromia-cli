@@ -7,7 +7,7 @@ import assertk.assertions.isEqualTo
 import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
-import com.chromia.build.tools.restapi.withQuery
+import com.chromia.build.tools.restapi.withQueryWithHeight
 import com.chromia.build.tools.testData
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.CliktError
@@ -253,7 +253,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun underscoreArgumentIsNotParsedAsOption() {
-        withModel(TestModel().withQuery("test_query", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_query", gtv(1))) {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "_bar=hello"))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stderr).isEmpty()
@@ -263,7 +263,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun doubleDashMakesForceArgumentParsing() {
-        withModel(TestModel().withQuery("test_query", gtv(1))) {
+        withModel(TestModel().withQueryWithHeight("test_query", { gtv(1) })) {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl, "--", "_bar=hello"))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stderr).isEmpty()
@@ -275,7 +275,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun prettyPrint() {
-        withModel(TestModel().withQuery("test_query", queryResponse)) {
+        withModel(TestModel().withQueryWithHeight("test_query", queryResponse)) {
             val res = QueryCommand().test(listOf("test_query", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             val output = res.stdout
@@ -297,7 +297,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun jsonOutput() {
-        withModel(TestModel().withQuery("test_query", queryResponse)) {
+        withModel(TestModel().withQueryWithHeight("test_query", queryResponse)) {
             val res = QueryCommand().test(listOf("test_query", "-f", "json", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""{
@@ -317,7 +317,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun xmlOutput() {
-        withModel(TestModel().withQuery("test_query", queryResponse)) {
+        withModel(TestModel().withQueryWithHeight("test_query", queryResponse)) {
             val res = QueryCommand().test(listOf("test_query", "-f", "xml", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -342,7 +342,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun yamlOutput() {
-        withModel(TestModel().withQuery("test_query", queryResponse)) {
+        withModel(TestModel().withQueryWithHeight("test_query", queryResponse)) {
             val res = QueryCommand().test(listOf("test_query", "-f", "yaml", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""---
@@ -360,7 +360,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputNull() {
-        withModel(TestModel().withQuery("test_query", GtvNull)) {
+        withModel(TestModel().withQueryWithHeight("test_query", GtvNull)) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -371,7 +371,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputByteArray() {
-        withModel(TestModel().withQuery("test_query", GtvByteArray("1234ABCD".hexStringToByteArray()))) {
+        withModel(TestModel().withQueryWithHeight("test_query", GtvByteArray("1234ABCD".hexStringToByteArray()))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -382,7 +382,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputString() {
-        withModel(TestModel().withQuery("test_query", GtvString("""Stockholm Göteborg 😀"""))) {
+        withModel(TestModel().withQueryWithHeight("test_query", GtvString("""Stockholm Göteborg 😀"""))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -393,7 +393,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputInteger() {
-        withModel(TestModel().withQuery("test_query", GtvInteger(17))) {
+        withModel(TestModel().withQueryWithHeight("test_query", GtvInteger(17))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -404,7 +404,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputBigInteger() {
-        withModel(TestModel().withQuery("test_query", GtvBigInteger(BigInteger("19223372036854775807")))) {
+        withModel(TestModel().withQueryWithHeight("test_query", GtvBigInteger(BigInteger("19223372036854775807")))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -415,7 +415,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputArrayOfInteger() {
-        withModel(TestModel().withQuery("test_query", gtv(listOf(gtv(1), gtv(2), gtv(3))))) {
+        withModel(TestModel().withQueryWithHeight("test_query", gtv(listOf(gtv(1), gtv(2), gtv(3))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -428,7 +428,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputArrayOfString() {
-        withModel(TestModel().withQuery("test_query", gtv(listOf(gtv("Stockholm"), gtv("Göteborg"), gtv("""😀"""))))) {
+        withModel(TestModel().withQueryWithHeight("test_query", gtv(listOf(gtv("Stockholm"), gtv("Göteborg"), gtv("""😀"""))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -441,7 +441,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputDictOfInteger() {
-        withModel(TestModel().withQuery("test_query", gtv(mapOf("a" to gtv(1), "b" to gtv(2), "c" to gtv(3))))) {
+        withModel(TestModel().withQueryWithHeight("test_query", gtv(mapOf("a" to gtv(1), "b" to gtv(2), "c" to gtv(3))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -454,7 +454,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun rawOutputDictOfString() {
-        withModel(TestModel().withQuery("test_query", gtv(mapOf("a" to gtv("Stockholm"), "b" to gtv("Göteborg"), "ö" to gtv("""😀"""))))) {
+        withModel(TestModel().withQueryWithHeight("test_query", gtv(mapOf("a" to gtv("Stockholm"), "b" to gtv("Göteborg"), "ö" to gtv("""😀"""))))) {
             val res = QueryCommand().test(listOf("test_query", "--output-format", "raw", "--api-url", apiUrl))
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).isEqualTo("""
@@ -502,6 +502,8 @@ internal class TestQueryModel(val model: Model = TestModel()) : Model by model {
 
     override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
     override fun postTransaction(tx: ByteArray) {}
+
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
 
     override fun query(query: GtxQuery): Gtv {
         return when (query.name) {
