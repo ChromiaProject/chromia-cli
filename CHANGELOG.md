@@ -10,6 +10,27 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.28.0] - 2025-09-22
+### Added
+- Automatic blockchain configuration inference
+- - When only one blockchain is defined, the configuration is automatically inferred from `<deployments.network>` in `chromia.yml`.
+    It is no longer necessary to specify the blockchain explicitly.
+    Example: `chr query hello_world --network testnet`. This behavior applies to all relevant commands.
+
+- Default configurations for Chromia networks:
+- - Introduced `--mainnet` and `--testnet` flags as alternatives to `--api-url`.
+- - When using `--network mainnet` or `--network testnet`, default Chromia configurations are applied automatically.
+    Configurations defined under chromia.yml `<deployments.mainnet/testnet>` take precedence if present.
+    This removes the need to specify url or brid in `chromia.yml` when targeting Chromia networks.
+
+- **Version Bumps**
+    - rell 0.14.15
+    - postchain 3.44.0
+    - postchain-client 3.38.0
+
+### Fixed
+- Will not try to load keys by `key.id` if `--secret` option is used in commands 
+
 ## [0.27.11] - 2025-09-22
 ### Added
 - Option to specify argument position to insert ICCF transaction in `chr tx` command
