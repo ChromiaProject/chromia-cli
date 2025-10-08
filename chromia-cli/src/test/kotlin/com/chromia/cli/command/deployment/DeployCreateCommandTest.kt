@@ -8,9 +8,11 @@ import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.build.tools.restapi.*
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.testData
+import com.chromia.cli.it.SuccessfulDeploymentModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
+import com.chromia.cli.util.CHROMIA_PREDEFINED_TESTING_NETWORK
 import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
@@ -210,6 +212,31 @@ class DeployCreateCommandTest {
             """.trimIndent())
         }
     }
+
+    @Test
+    fun deployChainUsingPredefinedNetworkUrl() {
+
+        withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
+            testData(testDir) {
+                config {
+                    deployments("""
+                    deployments:
+                      $CHROMIA_PREDEFINED_TESTING_NETWORK:
+                        container: test_container
+                """.trimIndent())
+                }
+            }
+            val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--network", CHROMIA_PREDEFINED_TESTING_NETWORK, "-y", "--config", config.absolutePath, "--secret", secret.absolutePath))
+            assertThat(res.stdout).contains("""
+                Add the following to your project settings file:
+                deployments:
+                  chromia_predefined_testing_network_chromia_cli:
+                    chains:
+                      hello: x"4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC"
+            """.trimIndent())
+        }
+    }
+
 
     @Test
     fun `Can not create new deployment of chain defined under deployments`() {

@@ -175,7 +175,6 @@ class DeploymentOptionTest {
     }
 
     @Test
-    @Disabled("url needs to become optional in chromia model before running this test")
     fun `loads urls from predefined networks when url is not in chromia model for deployed option`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
@@ -187,12 +186,11 @@ class DeploymentOptionTest {
             """.trimIndent()
         )
 
-        val command = TestCommandWithDeployedNetworkOption()
+        val command = TestCommandWithDeployedNetworkOption(predefinedNetworks["testnet"]!!)
         command.test(listOf("--settings", settingsFile.absolutePath, "--network", "testnet"))
     }
 
     @Test
-    @Disabled("url needs to become optional in chromia model before running this test")
     fun `throws when no urls is defined for non default network name`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
@@ -205,7 +203,10 @@ class DeploymentOptionTest {
         )
 
         val command = TestCommandWithDeployedNetworkOption()
-        command.test(listOf("--settings", settingsFile.absolutePath, "--network", "non_default_network"))
+        val res = assertThrows<IllegalArgumentException> {
+            command.test(listOf("--settings", settingsFile.absolutePath, "--network", "non_default_network"))
+        }
+        assertThat(res.message!!).isEqualTo("No urls found for network non_default_network")
     }
 }
 
