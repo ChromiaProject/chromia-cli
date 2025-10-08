@@ -4,6 +4,7 @@ const val MAINNET = "mainnet"
 const val TESTNET = "testnet"
 const val DEVNET1 = "devnet1"
 const val DEVNET2 = "devnet2"
+const val CHROMIA_PREDEFINED_TESTING_NETWORK = "chromia_predefined_testing_network_chromia_cli"
 
 val predefinedNetworks: Map<String, List<String>> = mapOf(
     MAINNET to listOf(
@@ -37,5 +38,9 @@ val predefinedNetworks: Map<String, List<String>> = mapOf(
         "https://node1.devnet2.chromia.dev:7740",
         "https://node2.devnet2.chromia.dev:7740",
         "https://node3.devnet2.chromia.dev:7740",
+    ),
+    CHROMIA_PREDEFINED_TESTING_NETWORK to listOf(
+            "http://localhost:7745"
     )
+
 )

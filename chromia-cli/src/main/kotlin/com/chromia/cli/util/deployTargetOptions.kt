@@ -34,6 +34,7 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
 
     protected fun getUrls(settings: ChromiaModel, network: String): List<String> {
         val urls = settings.deployments[network]?.urls
+                ?.takeIf { it.isNotEmpty() }
                 ?: predefinedNetworks[network]
                 ?: emptyList()
         require(urls.isNotEmpty()) { "No urls found for network $network" }

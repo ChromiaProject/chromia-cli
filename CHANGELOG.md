@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.28.1] - 2025-10-08
+### Fixed
+- Predefined urls for create statement
+
 ## [0.28.0] - 2025-09-22
 ### Added
 - Automatic blockchain configuration inference

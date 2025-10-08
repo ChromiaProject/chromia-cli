@@ -33,6 +33,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 import net.postchain.client.core.PostchainClient
 import net.postchain.client.core.PostchainClientProvider
 import net.postchain.client.request.Endpoint
+import net.postchain.gtv.GtvFactory.gtv
 
 abstract class AbstractDeploymentCommand(name: String, help: String, protected val clientProvider: PostchainClientProvider) : ChromiaCommand(name = name, help = help) {
 
@@ -58,13 +59,17 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
 
     protected val deployModel by lazy {
         settings.model.deployments[networkTarget.network].let { model ->
-            when {
-                model?.container == null -> {
-                    throw PrintMessage("No container specified on network ${networkTarget.network}")
-                }
-                model.blockchainRid == null -> model.copy(blockchainRid = networkTarget.brid)
-                else -> model
+            var activeModel = model
+            if (activeModel?.container == null) {
+                throw PrintMessage("No container specified on network ${networkTarget.network}")
             }
+            if (model.blockchainRid == null ) {
+                activeModel = activeModel.copy(blockchainRid = networkTarget.brid)
+            }
+            if (model.urls.isEmpty()) {
+                activeModel = activeModel.copy(url = gtv(networkTarget.urls.map { gtv(it) }))
+            }
+            activeModel
         }
     }
 
