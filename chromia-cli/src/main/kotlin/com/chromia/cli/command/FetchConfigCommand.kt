@@ -54,7 +54,12 @@ class FetchConfigCommand : ChromiaCommand(help = """
                 it.config.setBrid(it.blockchainRid).setApiUrls(listOf(url)).client(PostchainClientProviderImpl())
             }
                     ?: it.config.client(PostchainClientProviderImpl()).let { directoryClient ->
-                        PostchainClientImpl(directoryClient.config.copy(it.blockchainRid, EndpointPool.default(directoryClient.cmGetBlockchainApiUrls(it.blockchainRid))))
+                        val urls = directoryClient.cmGetBlockchainApiUrls(it.blockchainRid).toList()
+                        require(urls.isNotEmpty()) {
+                            "No urls found for blockchain with brid: '${it.blockchainRid}', from directory-chain with brid '${directoryClient.config.blockchainRid}'"
+                        }
+                        val endpoint = EndpointPool.default(urls)
+                        PostchainClientImpl(directoryClient.config.copy(it.blockchainRid, endpoint))
                     }
             client.getConfiguration()
         } ?: throw UsageError("Need to specify either --blockchain-config or --blockchain-rid")
