@@ -40,6 +40,7 @@ import net.postchain.crypto.BaseCryptoSystem
 import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvEncoder
 import net.postchain.gtv.GtvFactory.gtv
+import net.postchain.gtx.GtxQuery
 import net.postchain.managed.ManagedNodeDataSource
 import net.postchain.managed.config.ManagedBlockchainConfiguration
 import net.postchain.rell.api.base.RellCliBasicException
@@ -354,7 +355,7 @@ class DeployUpdateCommandTest {
     }
 
     @Test
-    fun failWhenNoEndpointsFoundForBlockchain() {
+    fun failWhenNoEndpointsFoundForDirectoryChain() {
         withModel(
                 model.withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf())),
                 DeploymentTestDataCreator.deployedChainModel.withValidConfiguration()
@@ -371,6 +372,25 @@ class DeployUpdateCommandTest {
             }
             assertThat(ex.message!!).contains("No API URLs found for brid")
             assertThat(ex.message!!).contains("Check if the directory chain is correctly configured")
+        }
+    }
+
+    @Test
+    fun failWhenNoEndpointsFoundForDappBrid() {
+        withModel(
+                DeploymentModelNoUrl(BlockchainRid.ZERO_RID),
+        ) {
+            val ex = assertThrows<IllegalArgumentException> {
+                DeployUpdateCommand().parse(
+                        listOf(
+                                "-s", settingsFile.absolutePath,
+                                "--secret", secret.absolutePath,
+                                "--blockchain", "deployed",
+                                "--network", "test"
+                        )
+                )
+            }
+            assertThat(ex.message!!).isEqualTo("No urls found for blockchain with brid: '0000000000000000000000000000000000000000000000000000000000000002', from directory-chain with brid '0000000000000000000000000000000000000000000000000000000000000000'")
         }
     }
 
@@ -398,6 +418,26 @@ class DeployUpdateCommandTest {
                     }
                 }
             }
+        }
+    }
+}
+
+
+
+class DeploymentModelNoUrl(val model: Model): Model by model {
+    constructor(blockchainRid: BlockchainRid) : this(DirectoryChainModel())
+
+    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> {
+        return when (query.name) {
+            CM_GET_BLOCKCHAIN_API_URLS -> {
+                if (query.args["blockchain_rid"]!!.asByteArray().contentEquals(BlockchainRid.ZERO_RID.data) ) {
+                    return gtv(listOf(gtv("http://localhost:7745"))) to 0
+                } else {
+                    return gtv(listOf()) to 0
+                }
+            }
+
+            else -> model.queryWithHeight(query)
         }
     }
 }
