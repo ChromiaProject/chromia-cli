@@ -10,6 +10,18 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.28.3] - 2025-10-24
+### Added
+- Add `deployment container configuration` command for toggling logs on container
+  - Reorganize container command while keeping aliases for backward compatibility:
+    - deployment pause-container -> deployment container pause
+    - deployment resume-container -> deployment container resume
+- **Version Bumps**
+    - directory-chain 1.101.15
+    - chromia-cli-tools 0.7.5
+### Fixed
+- Fix `signers` not set in deployTagetOption
+
 ## [0.28.2] - 2025-10-14
 ### Fixed
 - Adds error handling when no urls found for dApp brid from directory chain
