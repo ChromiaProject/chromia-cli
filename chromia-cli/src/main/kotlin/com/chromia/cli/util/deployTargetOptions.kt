@@ -62,7 +62,13 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
         if (d1BridFromModel != null) {
             return config.setBrid(d1BridFromModel).client(PostchainClientProviderImpl())
         }
-        return StandardChromiaClient(EndpointPool.default(urls)).getDirectoryChainClient()
+        val updatedConfig =
+                PostchainClientConfig.defaultConfig.copy(
+                signers = config.signers,
+                endpointPool = EndpointPool.default(urls)
+            )
+        return StandardChromiaClient(updatedConfig)
+                .getDirectoryChainClient()
     }
 
     protected fun fetchBridFromChainID(
@@ -221,13 +227,23 @@ class ExplicitDeploymentOption(
         return if (config.endpointPool.size == 1) {
             config.client(PostchainClientProviderImpl())
         } else {
-            StandardChromiaClient(config.endpointPool).getClient(brid)
+            val updatedConfig =
+                PostchainClientConfig.defaultConfig.copy(
+                    signers = config.signers,
+                    endpointPool = config.endpointPool
+                )
+            StandardChromiaClient(updatedConfig).getClient(brid)
         }
     }
 
     override fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient {
         return if (!apiUrl.contains("http://localhost:")) {
-            StandardChromiaClient(config.endpointPool).getDirectoryChainClient()
+            val updatedConfig =
+                    PostchainClientConfig.defaultConfig.copy(
+                            signers = config.signers,
+                            endpointPool = config.endpointPool
+                    )
+            StandardChromiaClient(updatedConfig).getDirectoryChainClient()
         } else {
             createLocalDirectoryClient(config)
         }
