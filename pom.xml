@@ -24,9 +24,10 @@
         <rell.dokka.version>0.2.20</rell.dokka.version>
         <rell.toolbox.version>0.8.10</rell.toolbox.version>
         <eif.version>0.16.3</eif.version>
-        <directory.chain.version>1.95.0</directory.chain.version>
-        <chromia.cli.tools.version>0.7.4</chromia.cli.tools.version>
+        <directory.chain.version>1.101.15</directory.chain.version>
+        <chromia.cli.tools.version>0.7.5</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
+        <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
         <jgit.version>6.9.0.202403050737-r</jgit.version>
 

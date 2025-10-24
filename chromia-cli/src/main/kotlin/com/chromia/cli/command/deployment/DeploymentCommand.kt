@@ -6,6 +6,11 @@ import com.chromia.cli.command.deployment.voterset.VotersetCommand
 import com.github.ajalt.clikt.core.subcommands
 
 class DeploymentCommand private constructor() : NoOpChromiaCommand(help = "Create and maintain deployments") {
+    override fun aliases() =
+        mapOf(
+            "pause-container" to listOf("container", "pause"),
+            "resume-container" to listOf("container", "resume")
+        )
 
     companion object {
         fun commands() = DeploymentCommand().subcommands(
@@ -19,9 +24,8 @@ class DeploymentCommand private constructor() : NoOpChromiaCommand(help = "Creat
                 DeployInspectLeaseCommand(),
                 ProposalCommand.commands(),
                 VotersetCommand.commands(),
+                ContainerCommand.commands(),
                 RemoveContainerCommand(),
-                PauseContainerCommand(),
-                ResumeContainerCommand(),
         )
     }
 }

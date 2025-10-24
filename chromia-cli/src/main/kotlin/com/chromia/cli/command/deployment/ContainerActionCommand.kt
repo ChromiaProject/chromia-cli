@@ -35,7 +35,7 @@ sealed class ContainerActionCommand(
     }
 }
 
-class PauseContainerCommand : ContainerActionCommand(name = "pause-container", help = "Pause a container") {
+class PauseContainerCommand : ContainerActionCommand(name = "pause", help = "Pause a container") {
     override fun run() {
         settings.config.configureSigners(keyPairSource)
         require(settings.config.signers.isNotEmpty()) { "No signers configured" }
@@ -60,7 +60,7 @@ class PauseContainerCommand : ContainerActionCommand(name = "pause-container", h
     }
 }
 
-class ResumeContainerCommand : ContainerActionCommand(name = "resume-container", help = "Resume a paused container") {
+class ResumeContainerCommand : ContainerActionCommand(name = "resume", help = "Resume a paused container") {
     override fun run() {
         settings.config.configureSigners(keyPairSource)
         require(settings.config.signers.isNotEmpty()) { "No signers configured" }
