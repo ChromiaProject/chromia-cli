@@ -5,7 +5,6 @@ import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.command.CreateRellDappCommand
 import com.chromia.cli.command.FetchConfigCommand
 import com.chromia.cli.command.HelpCommand
-import com.chromia.cli.command.InstallCommand
 import com.chromia.cli.command.KeygenCommand
 import com.chromia.cli.command.QueryCommand
 import com.chromia.cli.command.ReplCommand
@@ -17,7 +16,6 @@ import com.chromia.cli.command.deployment.DeploymentCommand
 import com.chromia.cli.command.eif.EifCommand
 import com.chromia.cli.command.generate.GenerateCommand
 import com.chromia.cli.command.library.LibraryCommand
-import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.command.multisignature.MultiSignatureCommand
 import com.chromia.cli.command.node.NodeCommand
 import com.chromia.cli.command.seeder.SeederCommand
@@ -43,6 +41,7 @@ fun main(args: Array<out String>) {
                 mapOf(
                         "generate-client-stubs" to listOf("generate", "client-stubs"),  // Deprecated alias
                         "gtv" to listOf("tools", "gtv"),
+                        "install" to listOf("library", "install"),
                 )
     }.versionOption(version)
             .subcommands(
@@ -53,7 +52,6 @@ fun main(args: Array<out String>) {
                     DeploymentCommand.commands(),
                     EifCommand.commands(),
                     GenerateCommand.commands(),
-                    InstallLibraryCommand(),
                     KeygenCommand(),
                     NodeCommand.commands(),
                     QueryCommand(),
