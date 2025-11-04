@@ -5,6 +5,7 @@ import com.chromia.cli.command.library.developer.DeveloperCommand
 import com.chromia.cli.command.library.management.AcceptLibraryInvitationCommand
 import com.chromia.cli.command.library.management.CreateLibraryCommand
 import com.chromia.cli.command.library.management.DeployNewLibraryVersionCommand
+import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.command.library.management.InviteLibraryUserCommand
 import com.chromia.cli.command.library.management.ListLibrariesCommand
 import com.chromia.cli.command.library.management.ListLibraryInvitationsCommand
@@ -23,6 +24,7 @@ class LibraryCommand private constructor() : NoOpChromiaCommand(
         fun commands() = LibraryCommand().subcommands(
             OrganizationCommand.commands(),
             DeveloperCommand.commands(),
+            InstallLibraryCommand(),
             CreateLibraryCommand(),
             ListLibrariesCommand(),
             ViewLibraryCommand(),

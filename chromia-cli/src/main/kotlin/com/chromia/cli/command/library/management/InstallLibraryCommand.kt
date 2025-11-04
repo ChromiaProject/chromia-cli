@@ -135,7 +135,7 @@ class InstallLibraryCommand(
             ?: throw PrintMessage("Library '$libraryId' not found.")
 
         val expectedRid = client.getLibraryRid(libraryId, version)
-            ?: throw PrintMessage("Unable to get rid for $libraryId")
+                ?: throw PrintMessage("Version '$version' doesn't exist for library '$libraryId'")
 
         val tempLibraryDir = createTempDirectory(name)
         val targetDir = libRoot / name
