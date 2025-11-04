@@ -99,7 +99,10 @@ abstract class AbstractLibraryCommand(
         return accountId to authDescriptorId
     }
 
-    class RemoteTargetOptions : OptionGroup("Library chain deployment options") {
+    class RemoteTargetOptions : OptionGroup(
+            "Custom Library chain options",
+            help = "Specify a custom library chain (overrides the default mainnet target)"
+    ) {
         val url by option(
             "--url",
             help = "Url where library-chain is deployed. Ex: testnet, localhost, https://custom-network.chromia.dev:7740"
