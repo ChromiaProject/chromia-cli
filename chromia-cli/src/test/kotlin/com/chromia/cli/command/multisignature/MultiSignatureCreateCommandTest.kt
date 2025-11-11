@@ -7,6 +7,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.TestDataBuilder
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
@@ -116,6 +117,7 @@ class MultiSignatureCreateCommandTest {
 
         assertThat(transactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
         assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
+        assertThat(transactionGtx.gtxBody.signers.size).isEqualTo(2)
         assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
         assertThat(transactionGtx.gtxBody.signers.last().toHex()).isEqualTo(secondSignerPubkey)
         assertThat(transactionGtx.signatures.size).isEqualTo(2)
@@ -262,7 +264,7 @@ class MultiSignatureCreateCommandTest {
     }
 
     @Test
-    fun shouldThrowIfNoInitialSignerIsFound(@TempDir tempDir: Path) {
+    fun noInitialSigner(@TempDir tempDir: Path) {
         testData(tempDir)
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
@@ -273,17 +275,28 @@ class MultiSignatureCreateCommandTest {
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
         val opName = "call_op"
 
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers-file", signersFile.absolutePath,
+                "--blockchain-rid", testBrid.toString(),
+                "--target", tempDir.absolutePathString(),
+                "call_op", opName
+        ))
 
-        val res = assertThrows<IllegalArgumentException> {
-            MultiSignatureCreateCommand().parse(listOf(
-                    "--settings", settingsFile.absolutePath,
-                    "--signers-file", signersFile.absolutePath,
-                    "--blockchain-rid", testBrid.toString(),
-                    "--target", tempDir.absolutePathString(),
-                    "call_op", opName
-            ))
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
         }
-        assertThat(res.message).isEqualTo("No initial signer found. Either set one in your configuration or specify path to secret file or key ID")
+        assertThat(txData!!.txRid).isNotEmpty()
+
+        val transactionGtx = Gtx.decode(txData.transaction)
+
+        assertThat(transactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
+        assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
+        assertThat(transactionGtx.gtxBody.signers.size).isEqualTo(1)
+        assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(secondSignerPubkey)
+        assertThat(transactionGtx.signatures.size).isEqualTo(1)
+        //Can't assert on expected signature because nop transaction changes signature
+        assertThat(transactionGtx.signatures.first()).isEmpty()
     }
 
     @Test

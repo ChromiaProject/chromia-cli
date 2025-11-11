@@ -25,7 +25,7 @@
         <rell.toolbox.version>0.8.10</rell.toolbox.version>
         <eif.version>0.16.3</eif.version>
         <directory.chain.version>1.101.15</directory.chain.version>
-        <chromia.cli.tools.version>0.7.5</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.8.0</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 

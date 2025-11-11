@@ -1,17 +1,18 @@
 package com.chromia.cli.command.multisignature
 
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
+import com.chromia.cli.tools.multisignature.saveTransactionToFile
 import com.chromia.cli.tools.util.SUPPORTED_TIME_AT_FORMATS
 import com.chromia.cli.tools.util.timeAtConverter
 import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.ExplicitDeploymentOption
 import com.chromia.cli.util.RemoteDeploymentOption
-import com.chromia.cli.util.getFormattedUtcDateTime
 import com.chromia.cli.util.initFtAuthVerbose
 import com.chromia.cli.util.parseArgAsGtv
 import com.chromia.lib.ft4.external.auth.FT_AUTH
@@ -35,6 +36,7 @@ import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxBuilder
+import java.io.File
 import java.nio.file.Paths
 import java.time.Clock
 
@@ -51,7 +53,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
     }
     private val keyPairSource by keyPairSourceOption()
 
-    private val fileWithSigners by option("--signers-file", help = "Path to file containing public keys of signers (pubkey1=x,pubkey2=y,...)")
+    private val fileWithSigners by option("--signers-file", help = "Path to file containing public keys of signers, one per line.")
             .file(canBeDir = false, mustExist = true, mustBeReadable = true)
             .required()
 
@@ -83,13 +85,11 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
 
-        val signers = getSignersFromFile()
+        val signers = getSignersFromFile(fileWithSigners)
         val initialSigner = postchainClientConfig.signers
-        require(initialSigner.isNotEmpty()) { "No initial signer found. Either set one in your configuration or specify path to secret file or key ID" }
+        val signersWithoutInitialSigner = signers.filterNot { signer -> initialSigner.any { it.pubKey == signer } }
 
-        val signersWithoutInitialSigner = signers.filter { it != initialSigner.first().pubKey }.toList()
-
-        echo("Creating transaction with signers: ${listOf(initialSigner.firstOrNull()?.pubKey) + signersWithoutInitialSigner}")
+        echo("Creating transaction with signers: ${initialSigner.map { it.pubKey } + signersWithoutInitialSigner}")
         val transactionBuilder = GtxBuilder(
                 client.config.blockchainRid,
                 signers = initialSigner.map { it.pubKey.data } + signersWithoutInitialSigner.map { it.data },
@@ -124,31 +124,28 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
                 }
                 .buildGtx().encode()
 
-        saveTransactionToFile(transaction, txRid)
-    }
-
-    private fun getSignersFromFile(): Set<PubKey> {
-        val properties = PropertiesFileLoader.load(fileWithSigners.path)
-        val signers = mutableListOf<PubKey>()
-
-        val keys = properties.keys
-        while (keys.hasNext()) {
-            val key = keys.next()
-            val value = properties.getString(key)
-            try {
-                val pubkey = PubKey(value)
-                signers.add(pubkey)
-            } catch (e: IllegalArgumentException) {
-                throw PrintMessage("Failed to add signer for value: $value, reason: ${e.message}. Please verify that your signers file is defined correctly", 1)
-            }
-        }
-        return signers.toSet()
-    }
-
-    private fun saveTransactionToFile(transaction: ByteArray, txRid: Hash) {
-        val file = outputFolder.resolve("${opName}_transaction_${getFormattedUtcDateTime()}")
-        val txData = MultiSignatureTxData(transaction, txRid)
-        file.writeText(txData.encode())
+        val file = MultiSignatureTxData(transaction, txRid).saveTransactionToFile(outputFolder, "${opName}_transaction")
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
+
+}
+
+fun getSignersFromFile(file: File): Set<PubKey> = try {
+    file.readLines().map { PubKey(it.hexStringToByteArray()) }.toSet()
+} catch (_: IllegalArgumentException) {
+    val properties = PropertiesFileLoader.load(file.path)
+    val signers = mutableListOf<PubKey>()
+
+    val keys = properties.keys
+    while (keys.hasNext()) {
+        val key = keys.next()
+        val value = properties.getString(key)
+        try {
+            val pubkey = PubKey(value)
+            signers.add(pubkey)
+        } catch (e: IllegalArgumentException) {
+            throw PrintMessage("Failed to add signer for value: $value, reason: ${e.message}. Please verify that your signers file is defined correctly", 1)
+        }
+    }
+    signers.toSet()
 }
