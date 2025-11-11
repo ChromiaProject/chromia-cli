@@ -30,7 +30,7 @@ internal class GenerateClientStubsCommandTest {
     @Test
     fun errorMessageIncludeAllStubTargets() {
         val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml"))
-        assertThat(res.output.trim()).isEqualTo("Missing language option: [--typescript, --javascript, --kotlin]")
+        assertThat(res.output.trim()).isEqualTo("Missing language option: [--typescript, --javascript, --kotlin, --python]")
         assertThat(res.statusCode).isEqualTo(1)
     }
 
@@ -72,6 +72,15 @@ internal class GenerateClientStubsCommandTest {
         assertThat(File(dir, "build/stubs/").listFiles()).hasSize(2)
         assertThat(File(dir, "build/stubs/").list()).containsAll("root.js")
         assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [/root.js, main/main.js]")
+        assertThat(res.statusCode).isEqualTo(0)
+    }
+
+    @Test
+    fun generatePython() {
+        val res = command.parse(listOf("-s", "${dir.absolutePath}/chromia.yml", "--python"))
+        assertThat(File(dir, "build/stubs/main").listFiles()).hasSize(1)
+        assertThat(File(dir, "build/stubs/main").list()).containsAll("main.py")
+        assertThat(res.output).contains("Created files in ${File(dir, "/build/stubs").absolutePath}: [main/main.py]")
         assertThat(res.statusCode).isEqualTo(0)
     }
 
