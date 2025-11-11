@@ -133,16 +133,17 @@ Create a new library in an organization.
 
 **Usage:**
 ```bash
-library create --id <lib_id> --library <lib_name> --name <display_name> --description <desc> --organization <org_id> [options]
+library create --organization <org_id> --name <display_name> --library <lib_name> --description <desc>  [options]
 ```
 
 **Options:**
-- `--id <lib_id>` (required): Unique identifier for the library
 - `--library <lib_name>` (required): Library name to include from chromia.yml configuration
 - `--name <display_name>`, `-n <display_name>` (required): Display name for the library
 - `--description <desc>`, `-d <desc>` (required): Description of the library
 - `--organization <org_id>`, `-o <org_id>` (required): Organization ID that will own this library
 - `--version <version>`, `-v <version>`: Initial version (default: "0.0.1")
+> library id will be <org_id> + '.' + <name>
+>   e.g: <org_id> = 'com.chromia' and <display_name> = 'ft4', the id will be 'com.chromia.ft4'
 
 **Example:**
 - The --library flag references a library anchor defined in your `chromia.yml`, which specifies the exact module directory to upload.
@@ -285,6 +286,11 @@ library install
 Install a specific library using its configured registry:
 ```bash
 library install my_lib
+```
+
+Install a specific version library using its configured registry:
+```bash
+library install my_lib@1.0.0
 ```
 
 Install a specific library from a custom registry:
