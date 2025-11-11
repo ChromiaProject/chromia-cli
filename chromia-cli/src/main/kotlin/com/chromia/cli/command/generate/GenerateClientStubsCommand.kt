@@ -3,7 +3,6 @@ package com.chromia.cli.command.generate
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.groupSwitch
-import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import net.postchain.rell.codegen.CodeGeneratorConfig
@@ -23,29 +22,13 @@ class GenerateClientStubsCommand : AbstractCodeGeneratorCommand(name = "client-s
         "--kotlin" to KotlinOption(),
         "--typescript" to TypescriptOption(),
         "--javascript" to JavascriptOption(),
-        // TODO: uncomment this after python is tested
-        // --python" to PythonOption()
+        "--python" to PythonOption()
     )
-
-    // NOTE: used to hide python from the help message, will be remove once python stubs are tested
-    private val python by option("--python", hidden = true).flag()
 
     override val defaultTargetFolder = "stubs"
 
-    // TODO: remove once python stubs are tested
-    override fun codeGeneratorConfig() = when {
-        python -> PythonOption()
-        else -> language.orThrow(
-                PrintMessage(
-                        "Missing language option: ${SupportedLanguages.entries.filter { it.alias != "python" }.map { "--" + it.alias }}",
-                        1
-                )
-        )
-    }
-
-// TODO: uncomment once python is tested
-//    override fun codeGeneratorConfig() = language
-//            ?: throw PrintMessage("Missing language option: ${SupportedLanguages.values().map { "--" + it.alias }}", 1)
+    override fun codeGeneratorConfig() = language
+        ?: throw PrintMessage("Missing language option: ${SupportedLanguages.entries.map { "--" + it.alias }}", 1)
 
     override fun factory() = codeGeneratorConfig().factory()
 }
@@ -81,5 +64,3 @@ enum class SupportedLanguages(val alias: String) {
     KOTLIN("kotlin"),
     PYTHON("python"),
 }
-
-private fun<T> T?.orThrow(ex: Exception): T = this ?: throw ex
