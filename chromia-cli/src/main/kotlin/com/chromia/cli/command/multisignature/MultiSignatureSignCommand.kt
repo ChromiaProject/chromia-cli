@@ -1,10 +1,12 @@
 package com.chromia.cli.command.multisignature
 
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.tools.config.chromiaConfigOption
 import com.chromia.cli.tools.config.configureSigners
 import com.chromia.cli.tools.config.keyPairSourceOption
-import com.chromia.cli.util.getFormattedUtcDateTime
+import com.chromia.cli.tools.multisignature.parseTransactionFile
+import com.chromia.cli.tools.util.getFormattedUtcDateTime
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option

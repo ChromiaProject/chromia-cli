@@ -7,17 +7,18 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotEmpty
 import com.chromia.build.tools.KeyStoreBuilder
 import com.chromia.build.tools.TestDataBuilder
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
-import java.io.File
-import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 import net.postchain.common.toHex
 import net.postchain.gtx.Gtx
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
+import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 class MultiSignatureSignCommandTest {
 

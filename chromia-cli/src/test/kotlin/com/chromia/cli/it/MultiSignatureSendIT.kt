@@ -6,21 +6,21 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.TestDataBuilder
 import com.chromia.build.tools.TestProcess
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.testData
 import com.chromia.cli.command.multisignature.MultiSignatureCreateCommand
 import com.chromia.cli.command.multisignature.MultiSignatureSignCommand
-import com.chromia.cli.command.multisignature.MultiSignatureTxData
 import com.github.ajalt.clikt.core.parse
-import java.nio.file.Path
-import java.time.Duration
-import kotlin.io.path.absolutePathString
 import net.postchain.common.BlockchainRid
 import net.postchain.common.toHex
 import net.postchain.gtx.Gtx
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import java.time.Duration
+import kotlin.io.path.absolutePathString
 
 class MultiSignatureSendIT {
     @Test

@@ -1,7 +1,9 @@
 package com.chromia.cli.command.multisignature
 
+import com.chromia.build.tools.multisignature.MultiSignatureTxData
 import com.chromia.cli.base.formatter.json
 import com.chromia.cli.command.ChromiaCommand
+import com.chromia.cli.tools.multisignature.parseTransactionFile
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file

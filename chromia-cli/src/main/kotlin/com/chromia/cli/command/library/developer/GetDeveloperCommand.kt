@@ -2,7 +2,7 @@ package com.chromia.cli.command.library.developer
 
 import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.tools.formatter.defaultTable
-import com.chromia.cli.util.convertMillisToLocalDateTime
+import com.chromia.cli.tools.util.convertMillisToLocalDateTime
 import com.chromia.library.chain.users.Developer
 import com.chromia.library.chain.users.external.getDeveloper
 import com.github.ajalt.clikt.parameters.arguments.argument
