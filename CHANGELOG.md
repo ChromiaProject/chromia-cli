@@ -10,6 +10,14 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.0] - 2025-11-11
+### Added
+- `chr generate client-stubs` command can now generate stubs for python
+- `chr multi-signature create` command accepts no initial signer
+- `chr multi-signature create` command accepts signer file to be written without properties 
+- Version bumps:
+  - chromia-cli.tools 0.8.1
+
 ## [0.28.3] - 2025-10-24
 ### Added
 - Add `deployment container configuration` command for toggling logs on container
