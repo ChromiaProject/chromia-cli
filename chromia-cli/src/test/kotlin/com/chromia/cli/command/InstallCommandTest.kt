@@ -4,7 +4,6 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
-import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.testData
 import com.chromia.cli.command.library.management.InstallLibraryCommand
 import com.chromia.cli.model.ChromiaModel
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Files
@@ -60,22 +58,20 @@ class InstallLibraryCommandTest {
 
     @Test
     fun ridNotMatchingTest() {
-        assertFailsWith<LibraryInstallException> {
-            File(testDir.toFile(), "chromia.yml").writeText("""
-            blockchains:
-                my_rell_dapp:
-                  module: main
-            libs:
-                fooFail:
-                  registry: http://foo.com
-                  path: path/to/foo
-                  rid: x"11"
-        """.trimIndent())
-            InstallLibraryCommand { TestRepositoryCloner() }
-                    .context { terminal = testTerminal }
-                    .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
-        }
-        assertThat(logger.output()).contains("Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
+        File(testDir.toFile(), "chromia.yml").writeText("""
+        blockchains:
+            my_rell_dapp:
+              module: main
+        libs:
+            fooFail:
+              registry: http://foo.com
+              path: path/to/foo
+              rid: x"11"
+    """.trimIndent())
+        InstallLibraryCommand { TestRepositoryCloner() }
+            .context { terminal = testTerminal }
+            .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
+        assertThat(logger.stderr()).contains("Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
     }
 
     @Test
@@ -161,7 +157,7 @@ class InstallLibraryCommandTest {
     fun missingSpecificLibraryTest() {
         val res = InstallLibraryCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "missingLib"))
-        assertThat(res.stderr).contains("Error: invalid value for --library: Specified library(s) [missingLib] does not exist in config file")
+        assertThat(res.stderr).contains("invalid value for --library: Specified library(ies) [missingLib] does not exist in config file")
     }
 
 
@@ -173,11 +169,9 @@ class InstallLibraryCommandTest {
             }
         }
 
-        val error = assertThrows<LibraryInstallException> {
-            InstallLibraryCommand { TestRepositoryCloner() }
+        val output = InstallLibraryCommand { TestRepositoryCloner() }
                     .test(listOf("-s", settingsFile.absolutePath, "-lib", "wrongRegistry"))
-        }
-        assertThat(error.message).isEqualTo("Repository does not exist")
+        assertThat(output.stderr).contains("Repository does not exist")
     }
 
     @Test

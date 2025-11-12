@@ -2,7 +2,10 @@ package com.chromia.cli.command.library
 
 import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
+import com.chromia.build.tools.config.predefinedNetworks
 import com.chromia.build.tools.lib.DirectoryHashCalculator
+import com.chromia.build.tools.lib.LibraryChainNetworkUtils.CHROMIA_MAINNET
+import com.chromia.build.tools.lib.LibraryChainNetworkUtils.libraryPredefinedNetworks
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.configureSigners
@@ -12,8 +15,6 @@ import com.chromia.cli.tools.ft.addFtAuthOperation
 import com.chromia.cli.tools.ft.findFtAccountIdAndAuthDescriptorId
 import com.chromia.cli.tools.ft.initFtAuth
 import com.chromia.cli.util.BuildCliEnv
-import com.chromia.cli.util.LibraryChainNetworkUtils.CHROMIA_MAINNET
-import com.chromia.cli.util.LibraryChainNetworkUtils.libraryPredefinedNetworks
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
@@ -21,9 +22,9 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
-import net.postchain.client.impl.PostchainClientProviderImpl
 import net.postchain.client.request.EndpointPool
 import net.postchain.common.BlockchainRid
+import net.postchain.d1.client.StandardChromiaClient
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -42,7 +43,7 @@ abstract class AbstractLibraryCommand(
 
     private val keyPairSource by keyPairSourceOption(hideKeyPairSourceHelpMessage)
 
-    protected val remoteTarget by RemoteTargetOptions()
+    protected val remoteTarget by LibraryChainTargetOptions()
 
     protected val client by lazy {
         createConfiguredClient(remoteTarget.url, remoteTarget.brid)
@@ -59,26 +60,37 @@ abstract class AbstractLibraryCommand(
         client.transactionBuilder()
     }
 
-    fun createConfiguredClient(url: String? = null, brid: BlockchainRid? = null): PostchainClient {
-        val inputUrl = url ?: remoteTarget.url ?: CHROMIA_MAINNET
-
-        val networkConfig = inputUrl.let { libraryPredefinedNetworks[it]?.invoke() }
-
-        val targetUrl = networkConfig?.url ?: inputUrl
-        val targetBrid = brid ?: remoteTarget.brid
-            ?: networkConfig?.brid
-            ?: throw PrintMessage("Brid of library_chain is required")
+    fun createConfiguredClient(explicitUrl: String? = null, explicitBrid: BlockchainRid? = null): PostchainClient {
+        val networkKey = resolveNetworkKey(explicitUrl)
+        val inputUrls = resolveInputUrls(networkKey)
+        val libraryChainBrid = resolveLibraryChainBrid(explicitBrid, networkKey)
 
         settings.config.configureSigners(keyPairSource)
 
         val postchainConfig = PostchainClientConfig.defaultConfig
             .copy(
                 signers = settings.config.signers,
-                endpointPool = EndpointPool.singleUrl(targetUrl),
-                blockchainRid = targetBrid
+                endpointPool = EndpointPool.default(inputUrls),
             )
-        return PostchainClientProviderImpl().createClient(postchainConfig)
+        return StandardChromiaClient(postchainConfig).getClient(libraryChainBrid)
     }
+
+    private fun resolveNetworkKey(url: String?): String = when {
+        !url.isNullOrBlank() -> url
+        else -> CHROMIA_MAINNET
+    }
+
+    private fun resolveInputUrls(url: String) = when {
+        predefinedNetworks[url] != null -> predefinedNetworks[url]!!
+        else -> listOf(url)
+    }
+
+    private fun resolveLibraryChainBrid(brid: BlockchainRid?, networkKey: String) = brid
+        ?: remoteTarget.brid
+        ?: getPredefinedLibraryChainBrid(networkKey)
+        ?: throw PrintMessage("Brid of library_chain is required")
+
+    private fun getPredefinedLibraryChainBrid(networkKey: String) = libraryPredefinedNetworks[networkKey]?.invoke()
 
     protected fun authorizeFtAuthOperation(
         operationName: String,
@@ -99,7 +111,7 @@ abstract class AbstractLibraryCommand(
         return accountId to authDescriptorId
     }
 
-    class RemoteTargetOptions : OptionGroup(
+    class LibraryChainTargetOptions : OptionGroup(
             "Custom Library chain options",
             help = "Specify a custom library chain (overrides the default mainnet target)"
     ) {

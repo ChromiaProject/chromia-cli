@@ -3,6 +3,11 @@ package com.chromia.cli.util
 import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.config.ChromiaClientConfig
 import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
+import com.chromia.build.tools.config.DEVNET1
+import com.chromia.build.tools.config.DEVNET2
+import com.chromia.build.tools.config.MAINNET
+import com.chromia.build.tools.config.TESTNET
+import com.chromia.build.tools.config.predefinedNetworks
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.blockchainRidOption
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
