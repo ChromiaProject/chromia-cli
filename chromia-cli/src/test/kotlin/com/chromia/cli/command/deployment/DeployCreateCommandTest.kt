@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import com.chromia.build.tools.config.CHROMIA_PREDEFINED_TESTING_NETWORK
 import com.chromia.build.tools.keystore.ChromiaKeyStore
 import com.chromia.build.tools.restapi.*
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
@@ -12,7 +13,6 @@ import com.chromia.cli.it.SuccessfulDeploymentModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
-import com.chromia.cli.util.CHROMIA_PREDEFINED_TESTING_NETWORK
 import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException

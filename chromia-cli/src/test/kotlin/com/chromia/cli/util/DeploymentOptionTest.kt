@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import com.chromia.build.tools.config.predefinedNetworks
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -13,7 +14,6 @@ import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.testing.test
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir

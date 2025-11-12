@@ -65,7 +65,7 @@ fun CliktCommand.modulesOption(help: String) =
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
         .convert { R_ModuleName.of(it) }
 
-fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library", metavar = "LIBRARY")
+fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library(ies) to install from chromia.yml file")
 fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()
 
 fun ParameterHolder.containerIdOption(help: String = "Set container id explicitly") = option("-cid", "--container-id", help = help)
