@@ -9,6 +9,7 @@ import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
 import com.chromia.cli.tools.ft.findFtAccountIdWithAuthDescriptorId
 import com.chromia.cli.tools.multisignature.saveTransactionToFile
 import com.chromia.cli.tools.util.SUPPORTED_TIME_AT_FORMATS
+import com.chromia.cli.tools.util.signersOption
 import com.chromia.cli.tools.util.timeAtConverter
 import com.chromia.cli.tools.util.timebOptions
 import com.chromia.cli.util.ExplicitDeploymentOption
@@ -23,20 +24,17 @@ import com.github.ajalt.clikt.parameters.arguments.transformAll
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.cooccurring
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.groups.required
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
-import net.postchain.common.PropertiesFileLoader
 import net.postchain.common.data.Hash
 import net.postchain.common.hexStringToByteArray
-import net.postchain.crypto.PubKey
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.GtvNull
 import net.postchain.gtx.GtxBuilder
-import java.io.File
 import java.nio.file.Paths
 import java.time.Clock
 
@@ -53,9 +51,7 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
     }
     private val keyPairSource by keyPairSourceOption()
 
-    private val fileWithSigners by option("--signers-file", help = "Path to file containing public keys of signers, one per line.")
-            .file(canBeDir = false, mustExist = true, mustBeReadable = true)
-            .required()
+    private val signers by signersOption().required()
 
     private val outputFolder by option("--target", help = "Path where file should be saved")
             .file()
@@ -85,7 +81,6 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         postchainClientConfig.configureSigners(keyPairSource)
         val client = target.createClient(postchainClientConfig)
 
-        val signers = getSignersFromFile(fileWithSigners)
         val initialSigner = postchainClientConfig.signers
         val signersWithoutInitialSigner = signers.filterNot { signer -> initialSigner.any { it.pubKey == signer } }
 
@@ -128,24 +123,4 @@ class MultiSignatureCreateCommand : ChromiaCommand(name = "create", help = "Crea
         echo("Transaction is written as hex to file: ${file.absolutePath}")
     }
 
-}
-
-fun getSignersFromFile(file: File): Set<PubKey> = try {
-    file.readLines().map { PubKey(it.hexStringToByteArray()) }.toSet()
-} catch (_: IllegalArgumentException) {
-    val properties = PropertiesFileLoader.load(file.path)
-    val signers = mutableListOf<PubKey>()
-
-    val keys = properties.keys
-    while (keys.hasNext()) {
-        val key = keys.next()
-        val value = properties.getString(key)
-        try {
-            val pubkey = PubKey(value)
-            signers.add(pubkey)
-        } catch (e: IllegalArgumentException) {
-            throw PrintMessage("Failed to add signer for value: $value, reason: ${e.message}. Please verify that your signers file is defined correctly", 1)
-        }
-    }
-    signers.toSet()
 }

@@ -20,6 +20,7 @@ import com.chromia.lib.ft4.external.accounts.GET_ACCOUNT_AUTH_DESCRIPTORS_BY_SIG
 import com.chromia.lib.ft4.external.auth.GET_AUTH_FLAGS
 import com.chromia.lib.ft4.utils.PagedResult
 import com.chromia.lib.ft4.version.GET_VERSION
+import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.parse
 import net.postchain.api.rest.controller.Model
@@ -91,7 +92,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=$secondSignerPubkey,
+                    $secondSignerPubkey
                 """.trimIndent()
         )
 
@@ -127,6 +128,43 @@ class MultiSignatureCreateCommandTest {
     }
 
     @Test
+    fun createInitialTransactionWithSignersOption(@TempDir tempDir: Path) {
+        testData(tempDir) {
+            secret { secretFile(tempDir) }
+        }
+
+        val settingsFile = tempDir.resolve("chromia.yml").toFile()
+        val secret = tempDir.resolve(".secret").toFile()
+        val opName = "call_op"
+
+        MultiSignatureCreateCommand().parse(listOf(
+                "--settings", settingsFile.absolutePath,
+                "--signers", secondSignerPubkey,
+                "--blockchain-rid", testBrid.toString(),
+                "--secret", secret.absolutePath,
+                "--target", tempDir.absolutePathString(),
+                "call_op", opName
+        ))
+
+        val txData = tempDir.toFile().listFiles()?.find { it.name.startsWith(opName) }?.readText()?.let {
+            MultiSignatureTxData.decode(it)
+        }
+        assertThat(txData!!.txRid).isNotEmpty()
+
+        val transactionGtx = Gtx.decode(txData.transaction)
+
+        assertThat(transactionGtx.gtxBody.blockchainRid).isEqualTo(testBrid)
+        assertThat(transactionGtx.gtxBody.operations.map { it.opName }).containsAll(opName, "nop")
+        assertThat(transactionGtx.gtxBody.signers.size).isEqualTo(2)
+        assertThat(transactionGtx.gtxBody.signers.first().toHex()).isEqualTo(TestDataBuilder.keyPair.pubKey.data.toHex())
+        assertThat(transactionGtx.gtxBody.signers.last().toHex()).isEqualTo(secondSignerPubkey)
+        assertThat(transactionGtx.signatures.size).isEqualTo(2)
+        //Can't assert on expected signature because nop transaction changes signature
+        assertThat(transactionGtx.signatures.first().toHex().length).isEqualTo(ByteArray(64).toHex().length)
+        assertThat(transactionGtx.signatures.last()).isEmpty()
+    }
+
+    @Test
     fun createInitialTransactionWithKeyPairFromConfig(@TempDir tempDir: Path) {
         testData(tempDir) {
             keyStore()
@@ -135,7 +173,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=$secondSignerPubkey,
+                    $secondSignerPubkey
                 """.trimIndent()
         )
 
@@ -179,7 +217,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${secondSignerPubKey.data.toHex()},
+                    ${secondSignerPubKey.data.toHex()}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -234,7 +272,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${secondSignerPubKey.data.toHex()},
+                    ${secondSignerPubKey.data.toHex()}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -269,7 +307,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=$secondSignerPubkey,
+                    $secondSignerPubkey
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -329,7 +367,7 @@ class MultiSignatureCreateCommandTest {
             val signersFile = tempDir.resolve("signers").toFile()
             signersFile.writeText(
                     """
-                    pubkey1=$secondSignerPubkey,
+                    $secondSignerPubkey
                 """.trimIndent()
             )
 
@@ -375,7 +413,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=a,
+                    a
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -383,7 +421,7 @@ class MultiSignatureCreateCommandTest {
         val opName = "call_op"
 
 
-        val res = assertThrows<PrintMessage> {
+        val res = assertThrows<BadParameterValue> {
             MultiSignatureCreateCommand().parse(listOf(
                     "--settings", settingsFile.absolutePath,
                     "--signers-file", signersFile.absolutePath,
@@ -393,7 +431,7 @@ class MultiSignatureCreateCommandTest {
                     "call_op", opName
             ))
         }
-        assertThat(res.message).isEqualTo("Failed to add signer for value: a, reason: Invalid hex string: length is not an even number. Please verify that your signers file is defined correctly")
+        assertThat(res.message).isEqualTo("Invalid hex string: length is not an even number")
     }
 
     @Test
@@ -404,8 +442,8 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=$secondSignerPubkey,
-                    pubkey2=$secondSignerPubkey,
+                    $secondSignerPubkey
+                    $secondSignerPubkey
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -444,7 +482,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                    ${TestDataBuilder.keyPair.pubKey}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -480,7 +518,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                    ${TestDataBuilder.keyPair.pubKey}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -514,7 +552,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                    ${TestDataBuilder.keyPair.pubKey}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
@@ -548,7 +586,7 @@ class MultiSignatureCreateCommandTest {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${TestDataBuilder.keyPair.pubKey},
+                    ${TestDataBuilder.keyPair.pubKey}
                 """.trimIndent()
         )
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
