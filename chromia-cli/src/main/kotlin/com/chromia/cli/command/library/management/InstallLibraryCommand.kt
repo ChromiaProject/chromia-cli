@@ -11,6 +11,7 @@ import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.DependencyUpdatedMarker
 import com.chromia.cli.util.libraryOption
+import com.chromia.cli.util.updateChromiaYamlForLibrary
 import com.chromia.library.chain.versioning.external.getLatestLibraryVersion
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -19,8 +20,6 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlin.collections.emptyList
 
 class InstallLibraryCommand(
@@ -71,32 +70,24 @@ class InstallLibraryCommand(
                 force
             )
 
-            // todo: Evaluate if we are able to write directly to yaml file
-            echo(
-                buildString {
-                    appendLine("add this into chromia.yaml file under libs :")
-                    appendLine(libraryId)
-                    appendLine("\tversion: $version")
-                    remoteTarget.url?.let { appendLine("\tregistry: $it") }
-                    remoteTarget.brid?.let { appendLine("\tbrid: $it") }
-                }
-            )
+            // todo: make this cleaner
+            val chromiaYmlFile = settings.model!!.compile.root.resolve("chromia.yml").toFile()
+
+            // note: this preserves the original YAML structure except for indentation,
+            updateChromiaYamlForLibrary(chromiaYmlFile, libraryName = libraryId, version!!)
+
             updateDependencyMarker()
             return@runCatching
         }
 
-        runBlocking {
-            coroutineScope {
-                ChromiaLibrariesApi.install(
-                    BuildCliEnv(this@InstallLibraryCommand),
-                    filteredModel!!,
-                    repositoryClonerFactory(true),
-                    force
-                )
-            }
-        }
+        ChromiaLibrariesApi.install(
+            BuildCliEnv(this@InstallLibraryCommand),
+            filteredModel!!,
+            repositoryClonerFactory(true),
+            force
+        )
 
-        filteredModel?.libs?.ifNotEmpty {
+        filteredModel.libs.ifNotEmpty {
             updateDependencyMarker()
         }
     }.fold(
