@@ -37,7 +37,7 @@ class MultiSignatureSendIT {
         val signersFile = tempDir.resolve("signers").toFile()
         signersFile.writeText(
                 """
-                    pubkey1=${secondSignerPubkey},
+                    ${secondSignerPubkey}
                 """.trimIndent()
         )
 
@@ -155,7 +155,7 @@ class MultiSignatureSendIT {
         }
 
         val signersFile = tempDir.resolve("signers").toFile()
-        signersFile.writeText("pubkey1=${secondSignerPubkey},")
+        signersFile.writeText(secondSignerPubkey)
 
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
         val secret = tempDir.resolve(".secret").toFile()
@@ -214,7 +214,7 @@ class MultiSignatureSendIT {
         }
 
         val signersFile = tempDir.resolve("signers").toFile()
-        signersFile.writeText("pubkey1=${secondSignerPubkey},")
+        signersFile.writeText(secondSignerPubkey)
 
         val settingsFile = tempDir.resolve("chromia.yml").toFile()
         val secret = tempDir.resolve(".secret").toFile()
