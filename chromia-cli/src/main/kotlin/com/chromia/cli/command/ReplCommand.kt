@@ -5,6 +5,7 @@ import com.chromia.cli.tools.config.optionalChromiaModelOption
 import com.chromia.cli.tools.config.safeOptionalChromiaModelOption
 import com.chromia.cli.tools.env.CliktCliEnv
 import com.chromia.cli.util.OutputFormat
+import com.chromia.cli.util.blockchainOption
 import com.chromia.cli.util.logSqlOption
 import com.chromia.cli.util.module
 import com.chromia.cli.util.outputFormat
@@ -15,7 +16,10 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.arguments.optional
+import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.groups.single
+import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -23,11 +27,13 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.inputStream
 import com.google.common.base.Throwables
+import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvString
 import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_Parser
+import net.postchain.rell.base.model.R_ModuleName
 import net.postchain.rell.base.repl.ReplInputChannel
 import net.postchain.rell.base.repl.ReplInputChannelFactory
 import net.postchain.rell.base.repl.ReplOutputChannel
@@ -64,7 +70,6 @@ class ReplCommand : ChromiaCommand(help = """
     Support for Rell scripts is experimental and may be changed or removed at any time.
 """.trimIndent()) {
     private val settings by safeOptionalChromiaModelOption()
-    private val module by module()
     private val sqlLog by logSqlOption()
     private val historyFile by option(help = "Save command history to this file").file(canBeDir = false, mustBeWritable = true)
     private val useDB by option(help = "If a session towards the configured database should be established").flag()
@@ -74,6 +79,13 @@ class ReplCommand : ChromiaCommand(help = """
             .deprecated("Use `--output-format raw` instead")
     private val outputFormat by outputFormat()
     private val printDuration by option("-d", "--duration", help = "Print duration of the execution").flag()
+    private val moduleOrBlockchain by mutuallyExclusiveOptions(
+            name = "Module source",
+            option1 = module().convert { ModuleSource.FromModule(it) },
+            option2 = blockchainOption(
+                help = "Name of the blockchain from which to load the module and moduleArgs"
+            ).convert { ModuleSource.FromBlockchain(it) }
+    ).single()
 
     private val script by argument(name = "script", help = "Script file")
             .inputStream()
@@ -94,7 +106,23 @@ class ReplCommand : ChromiaCommand(help = """
             }
             val localModel = settings.model ?: ChromiaModel.default()
             val sourceDir = settings.sourceDir ?: localModel.compile.source.toFile()
+            val testModuleArgs= settings.model?.test?.moduleArgs ?: mapOf()
+
+            val (selectedModule, selectedBlockchain) = when (val selected = moduleOrBlockchain) {
+                is ModuleSource.FromModule ->  selected.module.str() to null
+                is ModuleSource.FromBlockchain -> {
+                    val module = localModel.blockchains[selected.blockchain]?.module
+                    module to selected.blockchain
+                }
+                else -> null to null
+            }
+
+            val moduleArgs = selectedBlockchain?.let {
+                localModel.blockchains[it]?.moduleArgs
+            } ?: mapOf()
+
             val compileConfig = RellApiCompile.Config.Builder()
+                    .moduleArgs(mergeModuleArgs(moduleArgs, testModuleArgs))
                     .cliEnv(CliktCliEnv(this))
                     .mountConflictError(false)
                     .quiet(localModel.compile.quiet)
@@ -122,7 +150,7 @@ class ReplCommand : ChromiaCommand(help = """
                         inputChannelFactory(ScriptCommandInputChannelFactory(reader))
                     }
                             .build()
-                    RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
+                    RellApiRunShell.runShell(shellConfig, sourceDir, selectedModule)
                 }
             } else {
                 val shellConfig = shellConfigBuilder.apply {
@@ -130,7 +158,7 @@ class ReplCommand : ChromiaCommand(help = """
                         inputChannelFactory(IteratorCommandInputChannelFactory(listOf(command!!)))
                 }
                         .build()
-                RellApiRunShell.runShell(shellConfig, sourceDir, module?.str())
+                RellApiRunShell.runShell(shellConfig, sourceDir, selectedModule)
             }
         }
 
@@ -227,5 +255,17 @@ class ReplCommand : ChromiaCommand(help = """
                 valueFormat = format
             }
         }
+    }
+
+    fun mergeModuleArgs(
+        first: Map<String, Map<String, Gtv>>,
+        second: Map<String, Map<String, Gtv>>
+    ) = second.entries.fold(first.toMutableMap()) { acc, (key, value) ->
+            acc.merge(key, value) { old, new -> old + new }; acc
+        }
+
+    sealed class ModuleSource {
+        data class FromModule(val module: R_ModuleName) : ModuleSource()
+        data class FromBlockchain(val blockchain: String) : ModuleSource()
     }
 }

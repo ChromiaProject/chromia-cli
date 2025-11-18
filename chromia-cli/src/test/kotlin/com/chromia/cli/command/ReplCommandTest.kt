@@ -311,4 +311,78 @@ class ReplCommandTest {
         assertThat(res.statusCode).isEqualTo(1)
         assertThat(res.stderr).contains("Cannot use -c when specifying script file")
     }
+
+    @Test
+    fun testModuleArgsWhenPassedFromTest() {
+        with(File(dir, "src/args_module.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                struct module_args { name: text = 'Person'; }
+                entity user { name; }
+                operation add_user() { create user(chain_context.args.name); }
+            """.trimIndent())
+        }
+
+        File(dir, "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  main:
+                    module: args_module
+                test:
+                  moduleArgs:
+                    args_module:
+                      name: Misha
+            """.trimIndent())
+        }
+
+        with(File(dir, "script.rell")) {
+            writeText("""
+                import args_module;
+                rell.test.tx([args_module.add_user()]).nop(1).run();
+                args_module.user @ {.name == "Misha"}(.name)
+            """.trimIndent())
+        }
+
+        val res = ReplCommand().test("--use-db -s ${dir.absolutePath}/chromia.yml ${dir.absolutePath}/script.rell -m args_module")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.output).contains("Misha")
+    }
+
+
+    @Test
+    fun testModuleArgsWhenPassedFromMainModule() {
+        with(File(dir, "src/args_module.rell")) {
+            parentFile.mkdirs()
+            writeText("""
+                module;
+                struct module_args { name: text = 'Person'; }
+                entity user { name; }
+                operation add_user() { create user(chain_context.args.name); }
+            """.trimIndent())
+        }
+
+        File(dir, "chromia.yml").apply {
+            writeText("""
+                blockchains:
+                  main:
+                      module: args_module
+                      moduleArgs:
+                        args_module:
+                          name: Tim
+            """.trimIndent())
+        }
+
+        with(File(dir, "script.rell")) {
+            writeText("""
+                import args_module;
+                rell.test.tx([args_module.add_user()]).nop(2).run();
+                args_module.user @* {.name == "Tim"}(.name)
+            """.trimIndent())
+        }
+
+        val res = ReplCommand().test("--use-db -s ${dir.absolutePath}/chromia.yml ${dir.absolutePath}/script.rell --blockchain main")
+        assertThat(res.statusCode).isEqualTo(0)
+        assertThat(res.output).contains("Tim")
+    }
 }
