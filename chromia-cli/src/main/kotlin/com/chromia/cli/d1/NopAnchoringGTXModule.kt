@@ -93,7 +93,11 @@ class NopAnchoringGTXModule : PostchainContextAware, SimpleGTXModule<NopAnchorin
 
     override fun getSpecialTxExtensions() = listOf(NopAnchoringSpecialTXExtension())
 
-    override fun initializeContext(configuration: BlockchainConfiguration, postchainContext: PostchainContext) {
+    override fun initializeContext(
+            configuration: BlockchainConfiguration,
+            postchainContext: PostchainContext,
+            ctx: EContext
+    ) {
         blockQueriesProvider = postchainContext.blockQueriesProvider
         cryptoSystem = postchainContext.cryptoSystem
     }
