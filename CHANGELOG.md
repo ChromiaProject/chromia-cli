@@ -10,6 +10,11 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.2] - 2025-11-26
+### Fixed
+- Fix a bug in `chr build` when building a project with Chromia libraries
+- Downgrade Rell version to 0.14.15 due to a bug in 0.14.16
+
 ## [0.29.1] - 2025-11-24
 ### Added
 - `chr install` will update `libs` tag in chromia.yml

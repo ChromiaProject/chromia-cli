@@ -16,16 +16,16 @@
     <name>Chromia Cli Parent</name>
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.16.12</codegen.version>
+        <codegen.version>0.16.11</codegen.version>
         <postchain.version>3.47.1</postchain.version>
         <postchain-chromia.version>3.32.1</postchain-chromia.version>
         <postchain.client.version>3.38.0</postchain.client.version>
-        <rell.version>0.14.16</rell.version>
-        <rell.dokka.version>0.2.21</rell.dokka.version>
-        <rell.toolbox.version>0.8.11</rell.toolbox.version>
+        <rell.version>0.14.15</rell.version>
+        <rell.dokka.version>0.2.20</rell.dokka.version>
+        <rell.toolbox.version>0.8.10</rell.toolbox.version>
         <eif.version>0.16.3</eif.version>
         <directory.chain.version>1.101.15</directory.chain.version>
-        <chromia.cli.tools.version>0.8.4</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.8.5</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
