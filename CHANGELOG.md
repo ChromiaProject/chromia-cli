@@ -10,6 +10,15 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.1] - 2025-11-24
+### Added
+- `chr install` will update `libs` tag in chromia.yml
+- Add --signer and --signers option to multi-signature create command
+- Rell 0.14.16
+
+
+NOTE: the original YAML structure will stay the same except for indentation
+
 ## [0.29.0] - 2025-11-11
 ### Added
 - `chr generate client-stubs` command can now generate stubs for python
