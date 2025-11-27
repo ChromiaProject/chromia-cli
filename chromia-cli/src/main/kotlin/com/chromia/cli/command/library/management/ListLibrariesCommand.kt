@@ -25,7 +25,7 @@ class ListLibrariesCommand : AbstractLibraryCommand(
         "--limit",
         "-l",
         help = "Maximum number of libraries to display"
-    ).long().default(10)
+    ).long().default(20)
 
     private val offset by option(
         "--offset",
