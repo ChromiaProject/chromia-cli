@@ -129,16 +129,12 @@ update-docs:
     - if: $CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/
   variables:
     VERSION: $CI_COMMIT_TAG
-  image:
-    name: alpine/git
-    entrypoint: [ "" ]
   before_script:
     - !reference [ .git-setup, script ]
   script: |
     GIT_EMAIL=`git config user.email`
     GIT_NAME=`git config user.name`
 
-    apk update && apk add docker curl bash
     git clone https://x-token-auth:$BITBUCKET_CI_TOKEN@bitbucket.org/chromawallet/chromia-docs.git docs-repo
     cd docs-repo
     bash generate-chromia-cli-docs.sh
