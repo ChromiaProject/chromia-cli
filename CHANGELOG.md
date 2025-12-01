@@ -10,6 +10,11 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.3] - 2025-12-01
+### Fixed
+- Improved error message for `chr node start` when no blockchain configurations is found
+
+
 ## [0.29.2] - 2025-11-26
 ### Fixed
 - Fix a bug in `chr build` when building a project with Chromia libraries
