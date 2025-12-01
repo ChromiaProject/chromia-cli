@@ -60,7 +60,9 @@ abstract class AbstractNodeCommand(help: String) : ChromiaCommand(help = help) {
             val model = settings.model.filterBlockchains { bc, model ->
                 model.type == BlockchainModel.Type.BLOCKCHAIN && (name.isEmpty() || name.contains(bc))
             }
-            require(model.blockchains.isNotEmpty()) { "No blockchains started" }
+            require(model.blockchains.isNotEmpty()) {
+                "No blockchain configurations found in: ${settings.modelFilePath}"
+            }
             ChromiaCompileApi.build(BuildCliEnv(this, hideLibWarnings), model)
         } else {
             blockchainConfigs
