@@ -61,7 +61,7 @@ class InstallLibraryCommand(
         explicitLibraryId?.let {
             val (libraryId, version) = extractLibraryIdAndVersion(it)
             filteredModel = filteredModel?.copy(
-                libs = mapOf(libraryId to RellLibraryModel(remoteTarget.url, version = version))
+                libs = mapOf(libraryId to RellLibraryModel(remoteTarget.url, brid = remoteTarget.brid, version = version))
             )
             ChromiaLibrariesApi.install(
                 BuildCliEnv(this),
