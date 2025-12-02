@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.4] - 2025-12-01
+### Fixed
+- Resolved minor issue with library install command
+
 ## [0.29.3] - 2025-12-01
 ### Fixed
 - Improved error message for `chr node start` when no blockchain configurations is found
