@@ -11,6 +11,7 @@ import com.chromia.cli.command.library.management.ListLibrariesCommand
 import com.chromia.cli.command.library.management.ListLibraryInvitationsCommand
 import com.chromia.cli.command.library.management.ListVersionsCommand
 import com.chromia.cli.command.library.management.RemoveLibraryUserCommand
+import com.chromia.cli.command.library.management.UpdateLibraryDescription
 import com.chromia.cli.command.library.management.UpdateLibraryUserPermissionCommand
 import com.chromia.cli.command.library.management.ViewLibraryCommand
 import com.chromia.cli.command.library.organization.OrganizationCommand
@@ -35,6 +36,7 @@ class LibraryCommand private constructor() : NoOpChromiaCommand(
             UpdateLibraryUserPermissionCommand(),
             AcceptLibraryInvitationCommand(),
             ListLibraryInvitationsCommand(),
+            UpdateLibraryDescription()
         )
     }
 }
