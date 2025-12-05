@@ -14,7 +14,7 @@ import net.postchain.client.impl.PostchainClientProviderImpl
 
 class DeployCreateCommand(
         clientProvider: PostchainClientProvider = PostchainClientProviderImpl(),
-) : AbstractDeploymentCommand(name = "create", help = "Deploy blockchain into container", clientProvider) {
+) : AbstractDeploymentCommand(name = "create", help = "Deploy new blockchain instance", clientProvider) {
     private val confirm by option("-y", help = "Confirm that this will create a new deployment").flag()
 
     override fun preDeploymentVerification(compiledChains: Collection<BlockchainConfiguration>) {
