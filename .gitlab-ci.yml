@@ -169,6 +169,23 @@ update-docs:
         echo "No changes to commit."
       fi
 
+gitlab-release:
+  extends: .gitlab-release-with-notes
+  script:
+    - echo "Release CHR $CI_COMMIT_TAG"
+  release:
+    name: 'CHR $CI_COMMIT_TAG'
+    description: release_notes.md
+    tag_name: '$CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'Build Artifact (.tar.gz)'
+          url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven/com/chromia/cli/chromia-cli/${CI_COMMIT_TAG}/chromia-cli-${CI_COMMIT_TAG}-dist.tar.gz'
+          link_type: 'package'
+        - name: 'Build Artifact (.zip)'
+          url: '${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/maven/com/chromia/cli/chromia-cli/${CI_COMMIT_TAG}/chromia-cli-${CI_COMMIT_TAG}-dist.zip'
+          link_type: 'package'
+
 variables:
   # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
   # `showDateTime` will show the passed time in milliseconds. You need to specify `--batch-mode` to make this work.
@@ -197,49 +214,3 @@ services:
 cache:
   paths:
     - .m2/repository
-
-release-patch:
-  extends: .release
-  stage: release
-  script:
-    - |
-      NEXT_VERSION="$MAJOR.$MINOR.$((PATCH + 1))"
-      echo "Current version is $CURRENT_VERSION"
-      echo "Will create new version $NEXT_VERSION"
-
-      echo "Checking if version $NEXT_VERSION is documented in changelog..."
-      if ! grep -Eq "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
-        echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
-        echo "Please add release notes for this version to the changelog before triggering a release"
-        exit 1
-      else
-        echo "Version validation passed."
-      fi
-      git tag $MAJOR.$MINOR.$((PATCH + 1))
-      git push --tags
-  only:
-    - dev
-    - /^support\/.*$/
-
-release-minor:
-  extends: .release
-  stage: release
-  script:
-    - |
-      NEXT_VERSION="$MAJOR.$((MINOR + 1)).0"
-      echo "Current version is $CURRENT_VERSION"
-      echo "Will create new version $NEXT_VERSION"
-
-      echo "Checking if version $NEXT_VERSION is documented in changelog..."
-      if ! grep -Eq "## *\[$NEXT_VERSION\]" CHANGELOG.md; then
-        echo "ERROR: Version $NEXT_VERSION is not documented in the changelog!"
-        echo "Please add release notes for this version to the changelog before triggering a release"
-        exit 1
-      else
-        echo "Version validation passed."
-      fi
-      git tag $MAJOR.$((MINOR + 1)).0
-      git push --tags
-  only:
-    - dev
-    - /^support\/.*$/
