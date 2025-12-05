@@ -74,6 +74,6 @@ sealed class DeployActionCommand(
     }
 }
 
-class DeployResumeCommand : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain in a container")
-class DeployPauseCommand : DeployActionCommand(BlockchainAction.pause, "Pauses a blockchain in a container")
-class DeployRemoveCommand : DeployActionCommand(BlockchainAction.remove, "Removes a blockchain in a container (This action is permanent)")
+class DeployResumeCommand : DeployActionCommand(BlockchainAction.resume, "Starts a paused blockchain")
+class DeployPauseCommand : DeployActionCommand(BlockchainAction.pause, "Pauses a deployed blockchain")
+class DeployRemoveCommand : DeployActionCommand(BlockchainAction.remove, "Removes a deployed blockchain (This action is permanent)")

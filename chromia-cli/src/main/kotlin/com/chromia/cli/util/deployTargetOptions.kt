@@ -153,7 +153,7 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
 
 class DeployedNetworkOption(private val settings: () -> ChromiaModel) : DeploymentOption(
         "Network target options",
-        help = "Use a configured deployment network target in chromia.yml"
+        help = "Use a configured deployment network target in project settings file"
 ) {
     val network by deployTargetOption().required()
             .validate { require(settings().deployments.keys.contains(it)) { "Specified target [$it] does not exist" } }

@@ -20,6 +20,7 @@ class CreateRellDappCommand : ChromiaCommand(name = "create-rell-dapp", help = "
     ${"\u0085"}Minimal - Minimal working example including sample queries/operations and tests.
     ${"\u0085"}Plain - A plain skeleton with empty main and test files.
     ${"\u0085"}Plain-Multi - A plain skeleton with empty main and test files using multiple modules.
+    ${"\u0085"}Plain-library - A plain skeleton with structure for library development
     ${"\u0085"}Asset Management - A template focused on asset management on the Chromia blockchain. It includes components for blockchain operations and a frontend for user interaction
 """.trimIndent()) {
     private val projectName by argument(help = "Dapp name", name = "name").default("my-rell-dapp")

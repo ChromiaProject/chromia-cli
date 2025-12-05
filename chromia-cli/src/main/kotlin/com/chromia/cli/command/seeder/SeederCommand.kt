@@ -5,7 +5,7 @@ import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.ChromiaModelOption
 import com.github.ajalt.clikt.core.subcommands
 
-class SeederCommand: NoOpChromiaCommand(help = "ALPHA FEATURE: Generate fake data for a local database") {
+class SeederCommand: NoOpChromiaCommand(help = "Generate fake data for a local database") {
 
     companion object {
         fun commands() = SeederCommand().subcommands(
