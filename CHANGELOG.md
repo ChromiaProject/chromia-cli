@@ -10,6 +10,12 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.5] - 2025-12-10
+- Library install: Options --url and --brid can now be used to override default mainnet option when installing for
+libraries defined in `chromia.yml`
+- **Version Bumps**
+    - rell 0.15.0
+
 ## [0.29.4] - 2025-12-01
 ### Fixed
 - Resolved minor issue with library install command
