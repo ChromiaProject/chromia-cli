@@ -28,7 +28,6 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
-import kotlin.test.assertFailsWith
 
 class InstallLibraryCommandTest {
     val path = "src/lib"
@@ -157,7 +156,7 @@ class InstallLibraryCommandTest {
     fun missingSpecificLibraryTest() {
         val res = InstallLibraryCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath, "-lib", "missingLib"))
-        assertThat(res.stderr).contains("invalid value for --library: Specified library(ies) [missingLib] does not exist in config file")
+        assertThat(res.stderr).contains("invalid value for --library: Specified library(ies) [missingLib] not found in ${settingsFile.absolutePath}")
     }
 
 
@@ -193,4 +192,50 @@ class InstallLibraryCommandTest {
         assertThat(rellFiles.size).isEqualTo(2)
     }
 
+    @Test
+    fun forceFlagWithRidMismatchTest() {
+        File(testDir.toFile(), "chromia.yml").writeText("""
+        blockchains:
+          my_rell_dapp:
+            module: main
+        libs:
+          foo:
+            registry: http://foo.com
+            path: path/to/foo
+            rid: x"046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB2"
+    """.trimIndent())
+        // With --force flag, installation should succeed despite RID mismatch
+        InstallLibraryCommand { TestRepositoryCloner() }
+                .parse(listOf("-s", settingsFile.absolutePath, "-lib", "foo", "--force"))
+        Assertions.assertTrue(File(testDir.toFile(), "$path/foo/a.rell").exists())
+    }
+
+    @Test
+    fun emptyLibsSectionTest() {
+        File(testDir.toFile(), "chromia.yml").writeText("""
+        blockchains:
+            my_rell_dapp:
+              module: main
+    """.trimIndent())
+        val res = InstallLibraryCommand { TestRepositoryCloner() }
+                .test(listOf("-s", settingsFile.absolutePath))
+        assertThat(res.stderr).contains("No libraries found in:")
+    }
+
+    @Test
+    fun missingModelFileTest() {
+        val nonExistentFile = testDir.resolve("nonexistent.yml").toFile()
+        val res = InstallLibraryCommand { TestRepositoryCloner() }
+                .test(listOf("-s", nonExistentFile.absolutePath))
+        assertThat(res.stderr).contains("file \"${nonExistentFile.absolutePath}\" does not exist")
+    }
+
+    @Test
+    fun multipleMissingLibrariesTest() {
+        val res = InstallLibraryCommand { TestRepositoryCloner() }
+                .test(listOf("-s", settingsFile.absolutePath, "-lib", "missingLib1", "-lib", "missingLib2"))
+        assertThat(res.stderr).contains("invalid value for --library")
+        assertThat(res.stderr).contains("missingLib1")
+        assertThat(res.stderr).contains("missingLib2")
+    }
 }

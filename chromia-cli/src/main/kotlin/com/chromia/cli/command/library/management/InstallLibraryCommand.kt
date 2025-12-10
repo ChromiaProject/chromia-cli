@@ -4,8 +4,8 @@ import com.chromia.api.ChromiaLibrariesApi
 import com.chromia.api.filterLibraries
 import com.chromia.build.tools.lib.GitRepositoryCloner
 import com.chromia.build.tools.lib.RepositoryCloner
-import com.chromia.build.tools.util.ifNotEmpty
 import com.chromia.cli.command.library.AbstractLibraryCommand
+import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.util.BuildCliEnv
@@ -20,6 +20,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
+import java.io.File
 import kotlin.collections.emptyList
 
 class InstallLibraryCommand(
@@ -34,7 +35,7 @@ class InstallLibraryCommand(
         .multiple(emptyList(), required = false)
         .validate {
             require(settings.model?.libs?.keys?.containsAll(it) == true) {
-                "Specified library(ies) $it does not exist in config file"
+                "Specified library(ies) $it not found in ${settings.modelFilePath}"
             }
         }
     private val explicitLibraryId by argument(
@@ -53,43 +54,15 @@ class InstallLibraryCommand(
 
     override fun run() = runCatching {
         requireNotNull(settings.model) {
-            "Project settings file not found"
+            "Project settings file not found at ${settings.modelFilePath}"
         }
 
-        var filteredModel = settings.model?.filterLibraries(libsToInclude.takeIf { it.isNotEmpty() })
-
-        explicitLibraryId?.let {
-            val (libraryId, version) = extractLibraryIdAndVersion(it)
-            filteredModel = filteredModel?.copy(
-                libs = mapOf(libraryId to RellLibraryModel(remoteTarget.url, brid = remoteTarget.brid, version = version))
-            )
-            ChromiaLibrariesApi.install(
-                BuildCliEnv(this),
-                filteredModel!!,
-                repositoryClonerFactory(true),
-                force
-            )
-
-            // todo: make this cleaner
-            val chromiaYmlFile = settings.model!!.compile.root.resolve("chromia.yml").toFile()
-
-            // note: this preserves the original YAML structure except for indentation,
-            updateChromiaYamlForLibrary(chromiaYmlFile, libraryName = libraryId, version!!)
-
-            updateDependencyMarker()
-            return@runCatching
+        if (explicitLibraryId != null) {
+            installByLibraryId(explicitLibraryId!!)
+        } else {
+            installFromLibraryModel()
         }
 
-        ChromiaLibrariesApi.install(
-            BuildCliEnv(this@InstallLibraryCommand),
-            filteredModel!!,
-            repositoryClonerFactory(true),
-            force
-        )
-
-        filteredModel.libs.ifNotEmpty {
-            updateDependencyMarker()
-        }
     }.fold(
         onSuccess = { echo(info("Dependencies installed successfully")) },
         onFailure = { echo("""
@@ -97,6 +70,56 @@ class InstallLibraryCommand(
             ${it.message}
         """.trimIndent(), err = true) }
     )
+
+    private fun installByLibraryId(libraryIdentifier: String) {
+        val (libraryId, version) = extractLibraryIdAndVersion(libraryIdentifier)
+        val chromiaModuleWithExplicitLib = settings.model!!.copy(
+                libs = mapOf(libraryId to RellLibraryModel(
+                        registry = remoteTarget.url,
+                        brid = remoteTarget.brid,
+                        version = version,
+                ))
+        )
+        installLibraryModules(chromiaModuleWithExplicitLib)
+
+        // note: this preserves the original YAML structure except for indentation,
+        updateChromiaYamlForLibrary(File(settings.modelFilePath!!), libraryName = libraryId, version!!)
+        updateDependencyMarker()
+    }
+
+    private fun installFromLibraryModel() {
+        val filteredModel = settings.model!!.filterLibraries(libsToInclude.takeIf { it.isNotEmpty() })
+        require(filteredModel.libs.isNotEmpty()) {"No libraries found in: ${settings.modelFilePath}"}
+
+        val modelsWithExplicitTarget = filteredModel.copy(
+                libs = filteredModel.libs.map {
+                    val libmodel = it.value
+                    val insecure = if (force) { true } else { libmodel.insecure}
+                    val modelWithExplicitTarget = RellLibraryModel(
+                            registry = remoteTarget.url ?: libmodel.registry,
+                            brid = remoteTarget.brid ?: libmodel.brid,
+                            tagOrBranch = libmodel.tagOrBranch,
+                            path = libmodel.path,
+                            insecure = insecure,
+                            rid = libmodel.rid,
+                            version = libmodel.version
+                    )
+                    it.key to modelWithExplicitTarget
+                }.toMap()
+        )
+
+        installLibraryModules(modelsWithExplicitTarget)
+        updateDependencyMarker()
+    }
+
+    private fun installLibraryModules(model: ChromiaModel) {
+        ChromiaLibrariesApi.install(
+                BuildCliEnv(this@InstallLibraryCommand),
+                model,
+                repositoryClonerFactory(true),
+                force
+        )
+    }
 
     private fun updateDependencyMarker() {
         settings.model?.compile?.target?.let {
