@@ -10,6 +10,7 @@ import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.RellLibraryModel
 import com.chromia.cli.model.parseModel
 import com.chromia.cli.util.TestRepositoryCloner
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.core.terminal
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Files
@@ -67,10 +69,12 @@ class InstallLibraryCommandTest {
               path: path/to/foo
               rid: x"11"
     """.trimIndent())
-        InstallLibraryCommand { TestRepositoryCloner() }
-            .context { terminal = testTerminal }
-            .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
-        assertThat(logger.stderr()).contains("Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
+        assertThrows<CliktError> {
+            InstallLibraryCommand { TestRepositoryCloner() }
+                .context { terminal = testTerminal }
+                .parse(listOf("-s", settingsFile.absolutePath, "-lib", "fooFail"))
+        }
+        assertThat(logger.output()).contains("Was: 046AC0AE25375C1CF7A819D0649F6373A49B53265937D6E9D6CC6CE4317B0EB1")
     }
 
     @Test
@@ -217,9 +221,11 @@ class InstallLibraryCommandTest {
             my_rell_dapp:
               module: main
     """.trimIndent())
-        val res = InstallLibraryCommand { TestRepositoryCloner() }
+        val ex = assertThrows<IllegalArgumentException> {
+            InstallLibraryCommand { TestRepositoryCloner() }
                 .test(listOf("-s", settingsFile.absolutePath))
-        assertThat(res.stderr).contains("No libraries found in:")
+        }
+        assertThat(ex.message!!).contains("No libraries found in:")
     }
 
     @Test
