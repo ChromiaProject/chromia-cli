@@ -3,24 +3,25 @@ package com.chromia.cli.command.library.management
 import com.chromia.api.ChromiaLibrariesApi
 import com.chromia.api.filterLibraries
 import com.chromia.build.tools.lib.GitRepositoryCloner
+import com.chromia.build.tools.lib.LibraryInstallException
 import com.chromia.build.tools.lib.RepositoryCloner
 import com.chromia.cli.command.library.AbstractLibraryCommand
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.RellLibraryModel
-import com.chromia.cli.tools.formatter.info
 import com.chromia.cli.util.BuildCliEnv
 import com.chromia.cli.util.DependencyUpdatedMarker
 import com.chromia.cli.util.libraryOption
-import com.chromia.cli.util.updateChromiaYamlForLibrary
 import com.chromia.library.chain.versioning.external.getLatestLibraryVersion
 import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.validate
-import java.io.File
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.runBlocking
 import kotlin.collections.emptyList
 
 class InstallLibraryCommand(
@@ -52,26 +53,25 @@ class InstallLibraryCommand(
             "corrupted or tampered libraries."
     ).flag(default = false)
 
-    override fun run() = runCatching {
-        requireNotNull(settings.model) {
-            "Project settings file not found at ${settings.modelFilePath}"
+    override fun run(): Unit = runBlocking {
+            requireNotNull(settings.model) {
+                "Project settings file not found at ${settings.modelFilePath}"
+            }
+
+            if (explicitLibraryId != null) {
+                installByLibraryId(explicitLibraryId!!)
+            } else {
+                installFromLibraryModel()
+            }
         }
 
-        if (explicitLibraryId != null) {
-            installByLibraryId(explicitLibraryId!!)
-        } else {
-            installFromLibraryModel()
+    private fun updateDependencyMarker() {
+        settings.model?.compile?.target?.let {
+            DependencyUpdatedMarker(it.toFile()).markAsInstalled()
         }
+    }
 
-    }.fold(
-        onSuccess = { echo(info("Dependencies installed successfully")) },
-        onFailure = { echo("""
-            Failed to install dependencies: 
-            ${it.message}
-        """.trimIndent(), err = true) }
-    )
-
-    private fun installByLibraryId(libraryIdentifier: String) {
+    private suspend fun installByLibraryId(libraryIdentifier: String) {
         val (libraryId, version) = extractLibraryIdAndVersion(libraryIdentifier)
         val chromiaModuleWithExplicitLib = settings.model!!.copy(
                 libs = mapOf(libraryId to RellLibraryModel(
@@ -80,14 +80,11 @@ class InstallLibraryCommand(
                         version = version,
                 ))
         )
-        installLibraryModules(chromiaModuleWithExplicitLib)
-
-        // note: this preserves the original YAML structure except for indentation,
-        updateChromiaYamlForLibrary(File(settings.modelFilePath!!), libraryName = libraryId, version!!)
+        installLibraries(chromiaModuleWithExplicitLib, isExplicitInstall = true)
         updateDependencyMarker()
     }
 
-    private fun installFromLibraryModel() {
+    private suspend fun installFromLibraryModel() {
         val filteredModel = settings.model!!.filterLibraries(libsToInclude.takeIf { it.isNotEmpty() })
         require(filteredModel.libs.isNotEmpty()) {"No libraries found in: ${settings.modelFilePath}"}
 
@@ -108,24 +105,10 @@ class InstallLibraryCommand(
                 }.toMap()
         )
 
-        installLibraryModules(modelsWithExplicitTarget)
+        installLibraries(modelsWithExplicitTarget)
         updateDependencyMarker()
     }
 
-    private fun installLibraryModules(model: ChromiaModel) {
-        ChromiaLibrariesApi.install(
-                BuildCliEnv(this@InstallLibraryCommand),
-                model,
-                repositoryClonerFactory(true),
-                force
-        )
-    }
-
-    private fun updateDependencyMarker() {
-        settings.model?.compile?.target?.let {
-            DependencyUpdatedMarker(it.toFile()).markAsInstalled()
-        }
-    }
 
     private fun extractLibraryIdAndVersion(libraryIdWithVersion: String): Pair<String, String?> {
         val delimiter = "@"
@@ -138,4 +121,29 @@ class InstallLibraryCommand(
             libraryIdWithVersion to latestVersion
         }
     }
+
+    private suspend fun installLibraries(model: ChromiaModel, isExplicitInstall: Boolean = false) = coroutineScope {
+        val isInteractive = terminal.terminalInfo.outputInteractive
+
+        val progress = if (isInteractive) {
+            LibraryInstallProgressImpl(terminal, model)
+        } else null
+
+        try {
+            progress?.initialize(this)
+            ChromiaLibrariesApi.install(
+                    BuildCliEnv(this@InstallLibraryCommand),
+                    model,
+                    repositoryClonerFactory(true),
+                    force,
+                    progress,
+                    isExplicitInstall
+            )
+        } catch (_: LibraryInstallException) {
+            // Wait for animation to complete before throwing
+            progress?.finish()
+                    ?: throw CliktError(statusCode = 1)
+        }
+    }
+
 }
