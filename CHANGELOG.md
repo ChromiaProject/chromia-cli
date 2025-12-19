@@ -10,6 +10,8 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.7] - 2025-12-19
+- `chr install` now exits gracefully when no libraries are found in chromia.yml instead of throwing an error
 
 ## [0.29.6] - 2025-12-18
 - Library install: Introduced real-time visual feedback for library downloads and installations. 
