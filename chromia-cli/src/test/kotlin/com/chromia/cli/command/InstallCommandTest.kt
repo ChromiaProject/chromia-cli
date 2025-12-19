@@ -221,11 +221,11 @@ class InstallLibraryCommandTest {
             my_rell_dapp:
               module: main
     """.trimIndent())
-        val ex = assertThrows<IllegalArgumentException> {
             InstallLibraryCommand { TestRepositoryCloner() }
-                .test(listOf("-s", settingsFile.absolutePath))
-        }
-        assertThat(ex.message!!).contains("No libraries found in:")
+                .context { terminal = testTerminal }
+                .parse(listOf("-s", settingsFile.absolutePath))
+
+        assertThat(logger.output()).contains("No libraries found in: ${settingsFile.absolutePath}")
     }
 
     @Test

@@ -86,8 +86,10 @@ class InstallLibraryCommand(
 
     private suspend fun installFromLibraryModel() {
         val filteredModel = settings.model!!.filterLibraries(libsToInclude.takeIf { it.isNotEmpty() })
-        require(filteredModel.libs.isNotEmpty()) {"No libraries found in: ${settings.modelFilePath}"}
-
+        if (filteredModel.libs.isEmpty()) {
+            echo("No libraries found in: ${settings.modelFilePath}")
+            return
+        }
         val modelsWithExplicitTarget = filteredModel.copy(
                 libs = filteredModel.libs.map {
                     val libmodel = it.value
