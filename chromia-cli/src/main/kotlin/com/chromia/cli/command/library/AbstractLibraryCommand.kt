@@ -2,7 +2,7 @@ package com.chromia.cli.command.library
 
 import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
-import com.chromia.build.tools.config.predefinedNetworks
+import com.chromia.build.tools.config.getProviderUrlsForNetwork
 import com.chromia.build.tools.lib.DirectoryHashCalculator
 import com.chromia.build.tools.lib.LibraryChainNetworkUtils.CHROMIA_MAINNET
 import com.chromia.build.tools.lib.LibraryChainNetworkUtils.libraryPredefinedNetworks
@@ -80,10 +80,8 @@ abstract class AbstractLibraryCommand(
         else -> CHROMIA_MAINNET
     }
 
-    private fun resolveInputUrls(url: String) = when {
-        predefinedNetworks[url] != null -> predefinedNetworks[url]!!
-        else -> listOf(url)
-    }
+    private fun resolveInputUrls(url: String) =
+        getProviderUrlsForNetwork(url) ?: listOf(url)
 
     private fun resolveLibraryChainBrid(brid: BlockchainRid?, networkKey: String) = brid
         ?: remoteTarget.brid

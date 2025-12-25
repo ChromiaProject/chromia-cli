@@ -7,7 +7,7 @@ import com.chromia.build.tools.config.DEVNET1
 import com.chromia.build.tools.config.DEVNET2
 import com.chromia.build.tools.config.MAINNET
 import com.chromia.build.tools.config.TESTNET
-import com.chromia.build.tools.config.predefinedNetworks
+import com.chromia.build.tools.config.getProviderUrlsForNetwork
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.blockchainRidOption
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
@@ -40,7 +40,7 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     protected fun getUrls(settings: ChromiaModel, network: String): List<String> {
         val urls = settings.deployments[network]?.urls
                 ?.takeIf { it.isNotEmpty() }
-                ?: predefinedNetworks[network]
+                ?: getProviderUrlsForNetwork(network)
                 ?: emptyList()
         require(urls.isNotEmpty()) { "No urls found for network $network" }
         return urls
@@ -202,10 +202,9 @@ class ExplicitDeploymentOption(
 
     override val urls get(): List<String> {
         if (apiUrl != DEFAULT_API_URL) return listOf(apiUrl)
-
-        return predefinedNetworks[chromiaNetwork]
-                ?: predefinedNetworks[chromiaDevNetwork]
-                ?: config().apiUrls
+        return chromiaNetwork?.let(::getProviderUrlsForNetwork)
+            ?: chromiaDevNetwork?.let(::getProviderUrlsForNetwork)
+            ?: config().apiUrls
     }
 
 
