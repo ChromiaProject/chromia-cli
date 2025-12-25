@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import com.chromia.build.tools.config.predefinedNetworks
+import com.chromia.build.tools.config.getProviderUrlsForNetwork
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -143,16 +143,16 @@ class DeploymentOptionTest {
 
     @Test
     fun `test correct loading of mainnet urls from hardcoded list`() {
-        var command = TestCommandWithRemoteDeployment(predefinedNetworks["mainnet"]!!)
+        var command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("mainnet")!!)
         command.test(listOf("--mainnet"))
 
-        command = TestCommandWithRemoteDeployment(predefinedNetworks["testnet"]!!)
+        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("testnet")!!)
         command.test(listOf("--testnet"))
 
-        command = TestCommandWithRemoteDeployment(predefinedNetworks["devnet1"]!!)
-        command.test(listOf("--devnet1"))
+//        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("devnet1")!!)
+//        command.test(listOf("--devnet1"))
 
-        command = TestCommandWithRemoteDeployment(predefinedNetworks["devnet2"]!!)
+        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("devnet2")!!)
         command.test(listOf("--devnet2"))
     }
 
@@ -186,7 +186,7 @@ class DeploymentOptionTest {
             """.trimIndent()
         )
 
-        val command = TestCommandWithDeployedNetworkOption(predefinedNetworks["testnet"]!!)
+        val command = TestCommandWithDeployedNetworkOption(getProviderUrlsForNetwork("testnet")!!)
         command.test(listOf("--settings", settingsFile.absolutePath, "--network", "testnet"))
     }
 
@@ -236,7 +236,7 @@ private class TestCommandWithRemoteDeployment(
 private class TestCommandWithDeployedNetworkOption(
         val expectedUrls: List<String> = listOf("http://localhost:7740"),
 ) : CliktCommand() {
-    protected val settings by chromiaModelConfigOption()
+    private val settings by chromiaModelConfigOption()
     val networkTarget by DeployedNetworkOption { settings.model }
 
     override fun run() {

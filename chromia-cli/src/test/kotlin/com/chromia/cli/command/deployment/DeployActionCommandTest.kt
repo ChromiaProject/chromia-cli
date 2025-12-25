@@ -2,6 +2,10 @@ package com.chromia.cli.command.deployment
 
 import assertk.assertThat
 import assertk.assertions.contains
+import com.chromia.build.tools.config.CHROMIA_PREDEFINED_TESTING_NETWORK
+import com.chromia.build.tools.restapi.RestApiInstance.withModel
+import com.chromia.build.tools.testData
+import com.chromia.cli.it.SuccessfulDeploymentModel
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.core.terminal
@@ -9,6 +13,7 @@ import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.rendering.AnsiLevel
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
+import net.postchain.common.BlockchainRid
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -27,7 +32,6 @@ class DeployActionCommandTest {
         DeploymentTestDataCreator.unitTestApp(testDir)
         settingsFile = testDir.resolve("chromia.yml").toFile()
         secret = testDir.resolve(".secret").toFile()
-
     }
 
     @Test
@@ -88,6 +92,48 @@ class DeployActionCommandTest {
                     inputInteractive = true
                 )
         assertThat(res.stdout).contains("Operation aborted")
+    }
+
+    @Test
+    fun removeChainUsingPredefinedNetworkUrl() {
+        withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
+            testData(testDir) {
+                config {
+                    deployments("""
+                    deployments:
+                      $CHROMIA_PREDEFINED_TESTING_NETWORK:
+                        container: test_container
+                """.trimIndent())
+                }
+            }
+            // First deploy the chain
+            DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--network", CHROMIA_PREDEFINED_TESTING_NETWORK, "-y", "--secret", secret.absolutePath))
+        }
+        
+        testData(testDir) {
+            config {
+                deployments("""
+                deployments:
+                  $CHROMIA_PREDEFINED_TESTING_NETWORK:
+                    container: test_container
+                    chains:
+                      hello: x"4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC"
+                """.trimIndent())
+            }
+        }
+        
+        withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
+            val removalRes = DeployRemoveCommand()
+                .test(listOf(
+                    "-s", settingsFile.absolutePath,
+                   "--network", CHROMIA_PREDEFINED_TESTING_NETWORK,
+                    "--blockchain", "hello", "-y",
+                    "--secret", secret.absolutePath)
+                )
+            
+            assertThat(removalRes.stdout).contains("remove of blockchain [hello] was successful")
+            assertThat(removalRes.stdout).contains("INFO: Clean up deployment [hello] from your config file under chains for network")
+        }
     }
 
 }
