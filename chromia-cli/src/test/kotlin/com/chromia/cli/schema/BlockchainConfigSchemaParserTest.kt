@@ -57,6 +57,134 @@ class BlockchainConfigSchemaParserTest {
     }
 
     @Test
+    fun `parse should extract enums from valid blockchain config`() {
+        val config = gtv(mapOf(
+                "gtx" to gtv(mapOf(
+                        "rell" to gtv(mapOf(
+                                "version" to gtv(DefaultChromiaModelRellVersion),
+                                "modules" to gtv(listOf(gtv("main"))),
+                                "sources" to gtv(mapOf(
+                                        "main.rell" to gtv(""" 
+                            module;     
+                            import another.*;           
+                            enum status {
+                                active,
+                                inactive,
+                                banned
+                            }
+                            
+                            namespace ns1 {
+                                enum priority {
+                                    low,
+                                    medium,
+                                    high
+                                }
+                            }
+                        """.trimIndent()),
+
+                                        "another.rell" to gtv(""" 
+                            module;                
+                            enum color {
+                                red,
+                                green,
+                                blue
+                            }
+                            
+                            namespace ns1 {
+                                enum complexity {
+                                    low,
+                                    medium,
+                                    high
+                                }
+                            }
+                        """.trimIndent())
+                                ))
+                        ))
+                ))
+        ))
+
+        val schema = parser.parse(config)
+
+        assertThat(schema.enums).hasSize(4)
+
+        val statusEnum = schema.enums.find { it.name == "main:status" }
+        assertThat(statusEnum).isNotNull()
+        assertThat(statusEnum!!).all {
+            prop(Enum::name).isEqualTo("main:status")
+            prop(Enum::values).hasSize(3)
+        }
+        assertThat(statusEnum.values[0]).all {
+            prop(EnumField::name).isEqualTo("active")
+            prop(EnumField::ordinal).isEqualTo(0)
+        }
+        assertThat(statusEnum.values[1]).all {
+            prop(EnumField::name).isEqualTo("inactive")
+            prop(EnumField::ordinal).isEqualTo(1)
+        }
+        assertThat(statusEnum.values[2]).all {
+            prop(EnumField::name).isEqualTo("banned")
+            prop(EnumField::ordinal).isEqualTo(2)
+        }
+
+        val priorityEnum = schema.enums.find { it.name == "main:ns1.priority" }
+        assertThat(priorityEnum).isNotNull()
+        assertThat(priorityEnum!!).all {
+            prop(Enum::name).isEqualTo("main:ns1.priority")
+            prop(Enum::values).hasSize(3)
+        }
+        assertThat(priorityEnum.values[0]).all {
+            prop(EnumField::name).isEqualTo("low")
+            prop(EnumField::ordinal).isEqualTo(0)
+        }
+        assertThat(priorityEnum.values[1]).all {
+            prop(EnumField::name).isEqualTo("medium")
+            prop(EnumField::ordinal).isEqualTo(1)
+        }
+        assertThat(priorityEnum.values[2]).all {
+            prop(EnumField::name).isEqualTo("high")
+            prop(EnumField::ordinal).isEqualTo(2)
+        }
+
+        val colorEnum = schema.enums.find { it.name == "another:color" }
+        assertThat(colorEnum).isNotNull()
+        assertThat(colorEnum!!).all {
+            prop(Enum::name).isEqualTo("another:color")
+            prop(Enum::values).hasSize(3)
+        }
+        assertThat(colorEnum.values[0]).all {
+            prop(EnumField::name).isEqualTo("red")
+            prop(EnumField::ordinal).isEqualTo(0)
+        }
+        assertThat(colorEnum.values[1]).all {
+            prop(EnumField::name).isEqualTo("green")
+            prop(EnumField::ordinal).isEqualTo(1)
+        }
+        assertThat(colorEnum.values[2]).all {
+            prop(EnumField::name).isEqualTo("blue")
+            prop(EnumField::ordinal).isEqualTo(2)
+        }
+
+        val complexityEnum = schema.enums.find { it.name == "another:ns1.complexity" }
+        assertThat(complexityEnum).isNotNull()
+        assertThat(complexityEnum!!).all {
+            prop(Enum::name).isEqualTo("another:ns1.complexity")
+            prop(Enum::values).hasSize(3)
+        }
+        assertThat(complexityEnum.values[0]).all {
+            prop(EnumField::name).isEqualTo("low")
+            prop(EnumField::ordinal).isEqualTo(0)
+        }
+        assertThat(complexityEnum.values[1]).all {
+            prop(EnumField::name).isEqualTo("medium")
+            prop(EnumField::ordinal).isEqualTo(1)
+        }
+        assertThat(complexityEnum.values[2]).all {
+            prop(EnumField::name).isEqualTo("high")
+            prop(EnumField::ordinal).isEqualTo(2)
+        }
+    }
+
+    @Test
     fun `parse extracts correct mount names`() {
         val config = gtv(mapOf(
                 "gtx" to gtv(mapOf(

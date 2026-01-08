@@ -98,14 +98,14 @@ class DeployUpdateCommand(
         val deployedSchema = configSchemaParser.parse(deployedConfig)
 
         val schemaComparator = SchemaComparator()
-        val diff = schemaComparator.compareSchemas(deployedSchema, newSchema)
-        if (diff.isEmpty()) {
+        val comparison = schemaComparator.compareSchemas(deployedSchema, newSchema)
+        if (comparison.entityDifferences.isEmpty() && comparison.enumDifferences.isEmpty()) {
             echo("No schema changes detected for ${chain.name} on network ${networkTarget.network}")
             return
         }
 
         val reportGenerator = ReportGenerator()
-        val schemaChangesReport = reportGenerator.getSchemaChangesReport(diff, chain.name)
+        val schemaChangesReport = reportGenerator.getSchemaChangesReport(comparison, chain.name)
         echo(schemaChangesReport.report)
 
         if (schemaChangesReport.containsUnsafeChanges && !verifyOnly) {
