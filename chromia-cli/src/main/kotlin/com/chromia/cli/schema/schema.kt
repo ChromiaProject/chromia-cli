@@ -34,7 +34,38 @@ data class FieldDifference(
         val changeType: ChangeType
 )
 
-data class Schema(val entities: List<Entity>)
+data class EnumDifference(
+        val name: String,
+        val valueDifferences: List<EnumFieldDifference>,
+        val changeType: ChangeType,
+        val isDangerous: Boolean = false
+)
+
+data class EnumFieldDifference(
+        val name: String,
+        val oldField: EnumField?,
+        val newField: EnumField?,
+        val changeType: ChangeType
+)
+
+data class Enum(
+        val name: String,
+        val values: List<EnumField>
+)
+
+data class EnumField (
+    val name: String,
+    val ordinal: Int
+)
+
+data class Schema(val entities: List<Entity>, val enums: List<Enum> = emptyList())
+
+data class SchemaComparison(
+        val entityDifferences: List<EntityDifference>,
+        val enumDifferences: List<EnumDifference>
+) {
+    fun hasDangerousEnumChanges(): Boolean = enumDifferences.any { it.isDangerous }
+}
 
 enum class ChangeType {
     ADDED, REMOVED, MODIFIED

@@ -35,6 +35,7 @@ class BlockchainConfigSchemaParser {
 
         return appModules?.asArray()?.map { it.asString() }
     }
+
     private fun parseSources(sources: Map<String, String>, rellVersion: String, appModules: List<String>?): Schema {
         val sourceDir = createFilesInTempFolder(sources)
         val conf = RellApiCompile.Config.Builder()
@@ -90,7 +91,16 @@ class BlockchainConfigSchemaParser {
             }
         }
 
-        return Schema(entities + objects)
+        val enums = app.modules.flatMap { module ->
+            module.enums.values.map {
+                val fields =  it.attrs.map {
+                    EnumField(it.name, it.value)
+                }
+                Enum(it.appLevelName, fields)
+            }
+        }
+
+        return Schema(entities + objects, enums)
     }
 
     private fun getIndexKind(kind: R_KeyIndexKind?): IndexKind? {
