@@ -1,7 +1,9 @@
 Properties:
   Property:
     - name: logpattern
-      value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS}%replace{%notEmpty{ [%notEmpty{bc-rid=%.-2X{blockchainRID}:%.4X{blockchainRID}}%notEmpty{, chain-id=%X{chainIID}}%notEmpty{, block-rid=%.-2X{blockRID}:%.4X{blockRID}}]}}{\\[, }{[} - [%t] %c{1} %msg%n"
+      value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS}%replace{%notEmpty{ [%notEmpty{bc-rid=%.-2X{blockchainRID}:%.4X{blockchainRID}}%notEmpty{, chain-id=%X{chainIID}}%notEmpty{, block-rid=%.-2X{blockRID}:%.4X{blockRID}}]}}{\\[, }{[} - [%t] %c{1} %msg%n%throwable{none}"
+    - name: logpatternWithException
+      value: "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS}%replace{%notEmpty{ [%notEmpty{bc-rid=%.-2X{blockchainRID}:%.4X{blockchainRID}}%notEmpty{, chain-id=%X{chainIID}}%notEmpty{, block-rid=%.-2X{blockRID}:%.4X{blockRID}}]}}{\\[, }{[} - [%t] %c{1} %msg%n%throwable"
 
 Appenders:
   Console:
@@ -16,7 +18,7 @@ Appenders:
     filePattern: "${sys:CHR_LOG_FOLDER:-logs}/chromia-cli-%d{MM-dd-yyyy}-%i.log.gz"
     createOnDemand: true
     PatternLayout:
-      pattern: ${logpattern}
+      pattern: ${logpatternWithException}
     Policies:
       SizeBasedTriggeringPolicy:
         size: 10MB
