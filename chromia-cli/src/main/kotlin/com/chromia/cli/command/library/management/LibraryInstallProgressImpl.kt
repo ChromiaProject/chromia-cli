@@ -43,7 +43,7 @@ class LibraryInstallProgressImpl(
         private const val ICON_INSTALLING = "📦"
         private const val ICON_SUCCESS = "✅"
         private const val ICON_ERROR = "❌"
-        private const val ICON_BRANCH = "\uE0A0"
+        private const val ICON_BRANCH = "[git]"
 
     }
 
