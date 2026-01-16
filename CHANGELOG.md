@@ -10,6 +10,16 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.8] - 2026-01-16
+### Fixed
+- fixed a bug in `chr install` where offset was not being used correctly
+### Added
+- Schema validation for Enum types
+- Dynamically load provider urls instead of hardcoding them
+- Remove `url` and `brid` requirement in chromia.yml for deploymentActionCommands
+- **Version Bumps**
+  - chromia-cli-tools 0.8.14
+
 ## [0.29.7] - 2025-12-19
 - `chr install` now exits gracefully when no libraries are found in chromia.yml instead of throwing an error
 
