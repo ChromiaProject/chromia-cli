@@ -10,6 +10,13 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.29.9] - 2026-01-19
+### Fixed
+- **Version Bumps**
+- - postchain.version 3.47.6
+- - postchain-chromia.version3.38.1
+
+
 ## [0.29.8] - 2026-01-16
 ### Fixed
 - fixed a bug in `chr install` where offset was not being used correctly
