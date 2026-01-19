@@ -474,12 +474,12 @@
             <dependency>
                 <groupId>com.github.ajalt.clikt</groupId>
                 <artifactId>clikt-jvm</artifactId>
-                <version>5.0.1</version>
+                <version>5.0.3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ajalt.clikt</groupId>
                 <artifactId>clikt-markdown-jvm</artifactId>
-                <version>5.0.1</version>
+                <version>5.0.3</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains</groupId>
@@ -489,7 +489,7 @@
             <dependency>
                 <groupId>com.github.ajalt.mordant</groupId>
                 <artifactId>mordant-jvm-jna-jvm</artifactId>
-                <version>3.0.0</version>
+                <version>3.0.2</version>
             </dependency>
             <dependency>
                 <groupId>com.github.ajalt.mordant</groupId>
