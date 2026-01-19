@@ -21,14 +21,17 @@ Keep this in mind when writing and styling any note.
   - chromia-cli-tools 0.8.14
 
 ## [0.29.7] - 2025-12-19
+### Fixed
 - `chr install` now exits gracefully when no libraries are found in chromia.yml instead of throwing an error
 
 ## [0.29.6] - 2025-12-18
+### Added
 - Library install: Introduced real-time visual feedback for library downloads and installations. 
 - **Version Bumps**
     - chromia-cli-tools 0.8.12
 
 ## [0.29.5] - 2025-12-10
+### Added
 - Library install: Options --url and --brid can now be used to override default mainnet option when installing for
 libraries defined in `chromia.yml`
 - **Version Bumps**
