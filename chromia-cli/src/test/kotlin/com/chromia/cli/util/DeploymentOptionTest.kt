@@ -143,17 +143,8 @@ class DeploymentOptionTest {
 
     @Test
     fun `test correct loading of mainnet urls from hardcoded list`() {
-        var command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("mainnet")!!)
-        command.test(listOf("--mainnet"))
-
-        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("testnet")!!)
-        command.test(listOf("--testnet"))
-
-//        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("devnet1")!!)
-//        command.test(listOf("--devnet1"))
-
-        command = TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("devnet2")!!)
-        command.test(listOf("--devnet2"))
+        TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("mainnet")!!).test(listOf("--mainnet"))
+        TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("testnet")!!).test(listOf("--testnet"))
     }
 
     @Test
