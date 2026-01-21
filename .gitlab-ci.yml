@@ -139,7 +139,7 @@ update-docs:
     cd docs-repo
     bash generate-chromia-cli-docs.sh
     bash generate-rell-docs.sh
-    bash chromia-cli-release-notes.sh ../CHANGELOG.md docs/cli/cli-release-notes.mdx
+    bash chromia-cli-release-notes.sh ../CHANGELOG.md docs/build/cli/cli-release-notes.mdx
     
     # Check if there are changes
     if [ `git status --porcelain | wc -l` -gt 0 ]; then
