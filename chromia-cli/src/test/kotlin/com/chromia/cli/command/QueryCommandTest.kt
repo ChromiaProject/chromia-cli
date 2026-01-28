@@ -13,19 +13,12 @@ import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.TerminalRecorder
-import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.model.ApiStatus
-import net.postchain.api.rest.model.TxRid
 import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
-import net.postchain.common.tx.TransactionStatus
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvFactory.gtv
@@ -34,24 +27,30 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.parse.GtvParser
-import net.postchain.gtx.GtxQuery
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
 import java.math.BigInteger
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class QueryCommandTest : IntegrationTestSetup() {
+
+    @TempDir
+    private lateinit var isolatedChromiaHome: Path
+
+    private lateinit var environmentVariables: EnvironmentVariables
+
     @TempDir
     private lateinit var testDir: Path
     private lateinit var settingsFile: File
 
     private val dummyApiUrl = "http://not_existing_host:7740"
     private val dummyBrid = "CF66169BF4D8D4F618D39A09F7C06B55EF5F4E1296BD934649295A69F7925D2C"
-    private val chromiaConfigFile = ".chromia/config"
 
     private fun createTestNode(config: String) {
         val gtvConfig = GtvMLParser.parseGtvML(File(config).readText())
@@ -64,6 +63,15 @@ class QueryCommandTest : IntegrationTestSetup() {
     fun setup() {
         testData(testDir)
         settingsFile = testDir.resolve("chromia.yml").toFile()
+
+        // Change CHROMIA_HOME to isolate test from local key.id configuration in `.chromia/config`
+        environmentVariables = EnvironmentVariables("CHROMIA_HOME", isolatedChromiaHome.toAbsolutePath().toString())
+        environmentVariables.setup()
+    }
+
+    @AfterEach
+    fun tearDownIsolatedEnvironment() {
+        environmentVariables.teardown()
     }
 
     @Test
@@ -190,7 +198,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun testLoadingFromChromiaConfigFile() {
-        val configFile = File(testDir.toFile(), chromiaConfigFile).apply {
+        val configFile = File(testDir.toFile(), ".chromia/config").apply {
             parentFile.mkdirs()
             writeText("""
                 brid=$dummyBrid
@@ -204,7 +212,7 @@ class QueryCommandTest : IntegrationTestSetup() {
 
     @Test
     fun testCommandLineArgOverridesChromiaConfigFile() {
-        val configFile = File(testDir.toFile(), chromiaConfigFile).apply {
+        val configFile = File(testDir.toFile(), ".chromia/config").apply {
             parentFile.mkdirs()
             writeText("""
                 brid=$dummyBrid
