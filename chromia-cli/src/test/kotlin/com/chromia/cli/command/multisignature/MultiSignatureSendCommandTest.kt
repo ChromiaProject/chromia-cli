@@ -3,6 +3,7 @@ package com.chromia.cli.command.multisignature
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import com.chromia.build.tools.KeyStoreBuilder
+import com.chromia.build.tools.restapi.DirectoryChainModel
 import com.chromia.build.tools.restapi.RestApiInstance
 import com.chromia.build.tools.restapi.TestModel
 import com.github.ajalt.clikt.core.CliktError
@@ -42,7 +43,7 @@ class MultiSignatureSendCommandTest {
             """.trimIndent()
         )
 
-        RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+        RestApiInstance.withModel(TestModel(MultiSignatureCreateCommandTest.testBrid)) {
             MultiSignatureSendCommand().parse(listOf(
                     "--blockchain-rid", MultiSignatureCreateCommandTest.testBrid.toString(),
                     "--api-url", RestApiInstance.apiUrl,
@@ -58,7 +59,7 @@ class MultiSignatureSendCommandTest {
         KeyStoreBuilder().createFiles(tempDir, MultiSignatureCreateCommandTest.secondSignerKeyPair)
 
         EnvironmentVariables("CHROMIA_HOME", tempDir.absolutePathString()).execute {
-            RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+            RestApiInstance.withModel(TestModel(MultiSignatureCreateCommandTest.testBrid)) {
                 MultiSignatureSendCommand().parse(listOf(
                         "--blockchain-rid", MultiSignatureCreateCommandTest.testBrid.toString(),
                         "--api-url", RestApiInstance.apiUrl,
@@ -79,7 +80,7 @@ class MultiSignatureSendCommandTest {
                 """.trimIndent()
         )
 
-        RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+        RestApiInstance.withModel(TestModel(MultiSignatureCreateCommandTest.testBrid)) {
             MultiSignatureSendCommand().parse(listOf(
                     "--blockchain-rid", MultiSignatureCreateCommandTest.testBrid.toString(),
                     "--api-url", RestApiInstance.apiUrl,
@@ -101,7 +102,7 @@ class MultiSignatureSendCommandTest {
         )
 
         val res = assertThrows<PrintMessage> {
-            RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+            RestApiInstance.withModel(TestModel(MultiSignatureCreateCommandTest.testBrid)) {
                 MultiSignatureSendCommand().parse(listOf(
                         "--blockchain-rid", MultiSignatureCreateCommandTest.testBrid.toString(),
                         "--api-url", RestApiInstance.apiUrl,
@@ -125,7 +126,7 @@ class MultiSignatureSendCommandTest {
 
         val wrongTargetBrid = BlockchainRid.buildRepeat(6).toHex()
         val res = assertThrows<PrintMessage> {
-            RestApiInstance.withModel(MultiSignModel(MultiSignatureCreateCommandTest.testBrid)) {
+            RestApiInstance.withModel(TestModel(MultiSignatureCreateCommandTest.testBrid)) {
                 MultiSignatureSendCommand().parse(listOf(
                         "--blockchain-rid", wrongTargetBrid,
                         "--api-url", RestApiInstance.apiUrl,
@@ -201,13 +202,5 @@ class MultiSignatureSendCommandTest {
                          - Example: --blockchain blockchain1
                      """.trimIndent()
         )
-    }
-}
-
-class MultiSignModel(val model: Model) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
-
-    override fun getStatus(txRID: TxRid): ApiStatus {
-        return ApiStatus(TransactionStatus.CONFIRMED)
     }
 }

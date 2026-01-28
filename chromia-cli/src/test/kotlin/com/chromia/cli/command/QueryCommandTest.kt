@@ -164,7 +164,11 @@ class QueryCommandTest : IntegrationTestSetup() {
             """.trimIndent()
         )
 
-        withModel(TestQueryModel()) {
+        withModel(
+                TestModel(blockchainRid)
+                        .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight("test_query",gtv("SUCCESS"))
+        ) {
             val res = QueryCommand().test(
                 listOf(
                     "--settings",
@@ -481,7 +485,11 @@ class QueryCommandTest : IntegrationTestSetup() {
             """.trimIndent())
         }
 
-        withModel(TestQueryModel(chainBrid)) {
+        withModel(
+                TestModel(chainBrid)
+                        .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight("test_query",gtv("SUCCESS"))
+        ) {
             val res = QueryCommand().test(listOf(
                     "--settings", settingsFile.absolutePath,
                     "--blockchain", "my_library",
@@ -492,24 +500,6 @@ class QueryCommandTest : IntegrationTestSetup() {
             assertThat(res.statusCode).isEqualTo(0)
             assertThat(res.stdout).contains("SUCCESS")
             assertThat(res.stderr).isEmpty()
-        }
-    }
-}
-
-
-internal class TestQueryModel(val model: Model = TestModel()) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
-
-    override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
-    override fun postTransaction(tx: ByteArray) {}
-
-    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
-
-    override fun query(query: GtxQuery): Gtv {
-        return when (query.name) {
-            CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(apiUrl)))
-            "test_query" -> gtv("SUCCESS")
-            else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }
 }
