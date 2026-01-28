@@ -308,7 +308,10 @@ class TxCommandTest : IntegrationTestSetup() {
             """.trimIndent()
         )
 
-        withModel(TestTxModel(blockchainRid)) {
+        withModel(
+                TestModel(BlockchainRid.buildRepeat(1))
+                        .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+        ) {
             val res = TxCommand().test(
                 listOf(
                     "--settings",
@@ -318,23 +321,8 @@ class TxCommandTest : IntegrationTestSetup() {
                     "test_op"
                 )
             )
+            assertThat(res.statusCode).isZero()
             assertThat(res.stdout).contains("was posted and confirmed")
-        }
-    }
-}
-
-internal class TestTxModel(val model: Model = TestModel()) : Model by model {
-    constructor(blockchainRid: BlockchainRid) : this(TestModel(blockchainRid))
-
-    override fun getStatus(txRID: TxRid) = ApiStatus(TransactionStatus.CONFIRMED)
-
-    override fun queryWithHeight(query: GtxQuery): Pair<Gtv, Long> = query(query) to 0
-
-    override fun query(query: GtxQuery): Gtv {
-        return when (query.name) {
-            CM_GET_BLOCKCHAIN_API_URLS -> gtv(listOf(gtv(apiUrl)))
-            "test_op" -> gtv("SUCCESS")
-            else -> throw IllegalArgumentException("Unknown result for query ${query.name}")
         }
     }
 }
