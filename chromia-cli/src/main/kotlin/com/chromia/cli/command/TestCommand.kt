@@ -285,7 +285,13 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     }
 }
 
-internal fun moduleOfFile(sourceDir: Path, file: Path) =
-        (if (sourceDir.isAbsolute) file.toAbsolutePath() else file).relativeTo(sourceDir).joinToString(separator = ".") { it.name }.let {
-            if (it.endsWith(".rell")) it.dropLast(5) else it
-        }
+internal fun moduleOfFile(sourceDir: Path, file: Path): String {
+    val (resolvedFile, resolvedSourceDir) = if (sourceDir.isAbsolute) {
+        file.toAbsolutePath().toRealPath() to sourceDir.toRealPath()
+    } else {
+        file to sourceDir
+    }
+    return resolvedFile.relativeTo(resolvedSourceDir).joinToString(separator = ".") { it.name }.let {
+        if (it.endsWith(".rell")) it.dropLast(5) else it
+    }
+}
