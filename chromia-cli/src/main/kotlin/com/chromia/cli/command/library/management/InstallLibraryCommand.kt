@@ -141,6 +141,9 @@ class InstallLibraryCommand(
                     progress,
                     isExplicitInstall
             )
+            // Explicit stop progress animation so it does not keep redrawing after install has finished
+            // On some terminals (ex: Gnome terminal) that caused duplicated progress bars.
+            progress?.finish()
         } catch (_: LibraryInstallException) {
             // Wait for animation to complete before throwing
             progress?.finish()
