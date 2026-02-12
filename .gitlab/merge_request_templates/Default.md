@@ -1,4 +1,4 @@
-/assign_reviewer @misha-chromaway @tim.steinholtz @issame.zguiri
+/assign_reviewer @tim.steinholtz @eugene.tykulov @robert_wideberg
 
 Description...
 
