@@ -18,38 +18,38 @@ class RellBlockchainAnalyzer(private val client: PostchainQuery) : BlockchainAna
             client.query("rell.get_app_structure", gtv(mapOf())).toObject<DappModules>().modules
 }
 
-data class DappModules(@Name("modules") val modules: Map<String, RellModule>)
+data class DappModules(@param:Name("modules") val modules: Map<String, RellModule>)
 
 data class RellModule(
-        @Name("name") val name: String,
-        @Name("queries") @Nullable val queries: Map<String, RellQuery>?,
-        @Name("operations") @Nullable val operations: Map<String, RellOperation>?,
-        @Name("entities") @Nullable val entities: Map<String, RellEntity>?,
-        @Name("objects") @Nullable val objects: Map<String, RellObject>?,
-        @Name("structs") @Nullable val structures: Map<String, RellStructure>?,
+        @param:Name("name") val name: String,
+        @param:Name("queries") @param:Nullable val queries: Map<String, RellQuery>?,
+        @param:Name("operations") @param:Nullable val operations: Map<String, RellOperation>?,
+        @param:Name("entities") @param:Nullable val entities: Map<String, RellEntity>?,
+        @param:Name("objects") @param:Nullable val objects: Map<String, RellObject>?,
+        @param:Name("structs") @param:Nullable val structures: Map<String, RellStructure>?,
 ) {
     fun isEmpty() = queries.isNullOrEmpty() && operations.isNullOrEmpty() && entities.isNullOrEmpty() && objects.isNullOrEmpty()
 }
 
 data class RellQuery(
-        @Name("mount") val mount: String,
-        @Name("parameters") val parameters: List<RellParameter>,
-        @Name("type") val returnType: Gtv,
+        @param:Name("mount") val mount: String,
+        @param:Name("parameters") val parameters: List<RellParameter>,
+        @param:Name("type") val returnType: Gtv,
 )
 
 data class RellOperation(
-        @Name("mount") val mount: String,
-        @Name("parameters") val parameters: List<RellParameter>,
+        @param:Name("mount") val mount: String,
+        @param:Name("parameters") val parameters: List<RellParameter>,
 )
 
 data class RellParameter(
-        @Name("name") val name: String,
-        @Name("type") val type: Gtv,
+        @param:Name("name") val name: String,
+        @param:Name("type") val type: Gtv,
 )
 
 data class RellEntity(
-        @Name("mount") val mount: String,
-        @Name("attributes") private val rellAttributes: Gtv,
+        @param:Name("mount") val mount: String,
+        @param:Name("attributes") private val rellAttributes: Gtv,
 ) {
     val attributes
         get(): List<RellAttribute> = if (rellAttributes is GtvDictionary)
@@ -59,8 +59,8 @@ data class RellEntity(
 }
 
 data class RellObject(
-        @Name("mount") val mount: String,
-        @Name("attributes") private val rellAttributes: Gtv,
+        @param:Name("mount") val mount: String,
+        @param:Name("attributes") private val rellAttributes: Gtv,
 ) {
     val attributes
         get(): List<RellAttribute> = if (rellAttributes is GtvDictionary)
@@ -70,7 +70,7 @@ data class RellObject(
 }
 
 data class RellStructure(
-        @Name("attributes") private val rellAttributes: Gtv
+        @param:Name("attributes") private val rellAttributes: Gtv
 ) {
     val attributes
         get(): List<RellAttribute> = if (rellAttributes is GtvDictionary)
