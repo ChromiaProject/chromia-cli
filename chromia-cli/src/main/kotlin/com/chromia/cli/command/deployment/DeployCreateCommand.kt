@@ -3,6 +3,9 @@ package com.chromia.cli.command.deployment
 import com.chromia.api.ChromiaDeploymentApi
 import com.chromia.api.result.BlockchainConfiguration
 import com.chromia.api.result.BlockchainDeploymentResult
+import com.chromia.build.tools.model.writer.ChromiaYmlWriter
+import com.chromia.build.tools.model.writer.DeploymentUpdate
+import com.chromia.cli.util.printChromiaYmlDiff
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.PrintMessage
 import com.github.ajalt.clikt.core.terminal
@@ -38,14 +41,26 @@ class DeployCreateCommand(
 
     override fun afterDeployment(deployTxs: List<BlockchainDeploymentResult>) {
         val successfulDeployments = deployTxs.filter { it.success && it.blockchainRid != null }
-        if (successfulDeployments.isNotEmpty()) {
-            echo("""
-                Add the following to your project settings file:
+        try {
+            successfulDeployments
+                .map { DeploymentUpdate(networkTarget.network, it.blockchain.name, it.blockchainRid!!) }
+                .let { deploymentsUpdate ->
+                    ChromiaYmlWriter.updateDeploymentNodes(settings.modelFile, deploymentsUpdate) {diff ->
+                        terminal.printChromiaYmlDiff(settings.modelFile, diff)
+                    }
+                }
+        } catch (e: Exception) {
+            if (successfulDeployments.isNotEmpty()) {
+                echo("""
+                Failed to update chromia.yml file, because: ${e.message}.
+                
+                Add the following to your project settings file manually:
                 deployments:
                   ${networkTarget.network}:
                     chains:
                       ${successfulDeployments.joinToString("\n                      ") { "${it.blockchain.name}: x\"${it.blockchainRid!!.toHex()}\"" }}
                 """.trimIndent())
+            }
         }
     }
 
