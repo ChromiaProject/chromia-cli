@@ -10,6 +10,24 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.30.0] - 2026-02-27
+### Added
+- `chr deployment create` now writes the deployment result back to `chromia.yml` and prints the changes made.
+- `chr build`: Added `--skip-lib-check` flag to skip library verification during build.
+- **Enum Change Detection on Deployment Update**
+  - Schema comparison during `chr deployment update` now detects enum changes in addition to entity changes.
+  - Warns on enum value additions, removals, and reorderings.
+  - Blocks deployment on dangerous enum changes (e.g., reordered or removed values) until approved.
+- **Version Bumps**
+  - rell 0.15.2
+  - postchain 3.49.2
+  - postchain-chromia 3.39.3
+  - eif 0.32.0
+  - chromia-cli-tools 0.10.0
+### Fixed
+- `chr install`: `--brid` and `--url` options now correctly override the target defined in `chromia.yml`.
+- Fixed duplicate progress rendering when installing libraries.
+
 ## [0.29.10] - 2026-01-20
 ### Added
 - **Version Bumps**
