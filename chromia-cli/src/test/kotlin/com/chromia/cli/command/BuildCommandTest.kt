@@ -136,6 +136,34 @@ internal class BuildCommandTest {
     }
 
     @Test
+    fun `skip-lib-check should bypass tampered library verification`() {
+        testData(dir.toPath()) {
+            config {
+                addLib("bar", TestRepositoryCloner.bar.model.copy(rid = "11".hexStringToWrappedByteArray()))
+            }
+        }
+
+        TestRepositoryCloner().clone("http://bar.com", dir.resolve("src/lib/bar").toPath(), "")
+        // Should NOT throw ValidationException when --skip-lib-check is used
+        BuildCommand().context {
+            terminal = testTerminal
+        }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml"), "--skip-lib-check"))
+    }
+
+    @Test
+    fun `skip-lib-check should bypass missing library verification`() {
+        testData(dir.toPath()) {
+            config {
+                addLib("missing", RellLibraryModel("http://missing.com", path = "lib", rid = "11".hexStringToWrappedByteArray()))
+            }
+        }
+        // Should NOT throw ValidationException about missing library when --skip-lib-check is used
+        BuildCommand().context {
+            terminal = testTerminal
+        }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml"), "--skip-lib-check"))
+    }
+
+    @Test
     fun standardGtxModules() {
         command.parse()
         val outputFile = File(dir, "build/hello.xml")
