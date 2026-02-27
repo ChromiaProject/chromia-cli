@@ -77,8 +77,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
         val cliEnv = BuildCliEnv(this, hideLibWarnings)
         val chainsToDeploy = blockchain ?: explicitChainsToDeploy()
         val chromiaModel = settings.model.filterBlockchains(chainsToDeploy)
-        val modelWithLibRids = LibraryRidResolver.resolveLibraryRids(chromiaModel)
-        val res = ChromiaCompileApi.build(cliEnv,modelWithLibRids)
+        val res = ChromiaCompileApi.build(cliEnv,chromiaModel)
                 .onEach { it.keepOnlyStandardGtxModules().validate() }
                 .apply { validateRellVersion(client) }
                 .apply { preDeploymentVerification(this) }

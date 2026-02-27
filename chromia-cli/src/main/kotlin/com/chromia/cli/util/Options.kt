@@ -83,3 +83,8 @@ fun ParameterHolder.hideLibWarningsOption() =
         option("--hide-lib-warnings")
                 .flag(default = false)
                 .help("Hide library warnings in build output")
+
+fun ParameterHolder.skipLibCheckOption() =
+        option("--skip-lib-check")
+                .flag(default = false)
+                .help("Skipping library verification step")
