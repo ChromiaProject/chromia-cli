@@ -5,6 +5,7 @@ import com.chromia.build.tools.model.writer.ChromiaYmlWriter
 import com.chromia.build.tools.util.ifNotEmpty
 import com.chromia.build.tools.util.isChromiaLib
 import com.chromia.cli.model.ChromiaModel
+import com.chromia.cli.util.printChromiaYmlDiff
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.mordant.animation.coroutines.CoroutineProgressAnimator
 import com.github.ajalt.mordant.animation.coroutines.animateInCoroutine
@@ -109,33 +110,8 @@ class LibraryInstallProgressImpl(
     override fun onPostInstall(libraryId: String, libraryVersion: String) {
         val chromiaYmlFile = model.compile.root.resolve("chromia.yml").toFile()
         ChromiaYmlWriter.updateLibraryNode(chromiaYmlFile, libraryId, libraryVersion) { diff ->
-            val coloredText = TextColors.brightYellow("Updated '${chromiaYmlFile.name}' file")
-            val boldText = TextStyles.underline(coloredText)
-            terminal.println("\n$boldText")
-
-            // this is the output of diff, colorize it
-            // so that the user can see what changed in 'chromia.yml' file
-            diff.split("\n").forEach { line ->
-                val coloredLine = when {
-                    line.startsWith("---") || line.startsWith("+++") -> {
-                        TextColors.brightMagenta(line)
-                    }
-                    line.startsWith("-") -> {
-                        TextColors.red(line)
-                    }
-                    line.startsWith("+") -> {
-                        TextColors.green(line)
-                    }
-                    line.startsWith("@@") -> {
-                        TextColors.cyan(line)
-                    }
-                    else -> line
-                }
-                terminal.println(coloredLine)
-            }
-
+            terminal.printChromiaYmlDiff(chromiaYmlFile, diff)
         }
-
     }
 
     private fun formatProgress(libraryId: String, message: String): String {

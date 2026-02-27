@@ -190,10 +190,10 @@ class DeployCreateCommandTest {
                 """.trimIndent())
                     deployments("""
                     deployments:
-                        test:
-                          url: "http://localhost:7745"
-                          brid: x"0000000000000000000000000000000000000000000000000000000000000000"
-                          container: test_container
+                      test:
+                        url: "http://localhost:7745"
+                        brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                        container: test_container
                 """.trimIndent())
                 }
             }
@@ -202,20 +202,26 @@ class DeployCreateCommandTest {
             assertThat(res.stdout).contains("Deployment of blockchain foo was successful")
             assertThat(res.stdout).contains("Deployment of blockchain fobar was successful")
             assertThat(res.stdout).contains("""
-                Add the following to your project settings file:
-                deployments:
-                  test:
-                    chains:
-                      foo: x"0808080808080808080808080808080808080808080808080808080808080808"
-                      bar: x"0808080808080808080808080808080808080808080808080808080808080808"
-                      fobar: x"0808080808080808080808080808080808080808080808080808080808080808"
+                Updated 'chromia.yml' file
+                --- chromia.yml
+                +++ chromia.yml
+                @@ -10,5 +10,10 @@
+                     url: "http://localhost:7745"
+                     brid: x"0000000000000000000000000000000000000000000000000000000000000000"
+                     container: test_container
+                +    chains:
+                +      foo: x"0808080808080808080808080808080808080808080808080808080808080808"
+                +      bar: x"0808080808080808080808080808080808080808080808080808080808080808"
+                +      fobar: x"0808080808080808080808080808080808080808080808080808080808080808"
+                 database:
+                   schema: integration_test_schema
+                +
             """.trimIndent())
         }
     }
 
     @Test
     fun deployChainUsingPredefinedNetworkUrl() {
-
         withModel(SuccessfulDeploymentModel(BlockchainRid.ZERO_RID)) {
             testData(testDir) {
                 config {
@@ -228,11 +234,18 @@ class DeployCreateCommandTest {
             }
             val res = DeployCreateCommand().test(listOf("-s", settingsFile.absolutePath, "--network", CHROMIA_PREDEFINED_TESTING_NETWORK, "-y", "--config", config.absolutePath, "--secret", secret.absolutePath))
             assertThat(res.stdout).contains("""
-                Add the following to your project settings file:
-                deployments:
-                  chromia_predefined_testing_network_chromia_cli:
-                    chains:
-                      hello: x"4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC"
+                Updated 'chromia.yml' file
+                --- chromia.yml
+                +++ chromia.yml
+                @@ -7,5 +7,8 @@
+                 deployments:
+                   chromia_predefined_testing_network_chromia_cli:
+                     container: test_container
+                +    chains:
+                +      hello: x"4D6232FF8DDA05FFFA66FF58C5E0DC652D165D071D8241A2FF6F85B3199EE6BC"
+                 database:
+                   schema: integration_test_schema
+                +
             """.trimIndent())
         }
     }
