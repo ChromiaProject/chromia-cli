@@ -9,23 +9,18 @@ import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQueryWithHeight
 import com.chromia.build.tools.testData
+import com.chromia.directory1.cm_api.CM_API_VERSION
+import com.chromia.directory1.cm_api.CM_GET_ACTIVE_BLOCKCHAIN_API_URLS
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import com.github.ajalt.mordant.terminal.Terminal
-import com.github.ajalt.mordant.terminal.TerminalRecorder
-import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.model.ApiStatus
-import net.postchain.api.rest.model.TxRid
 import net.postchain.client.exception.ClientError
 import net.postchain.common.BlockchainRid
 import net.postchain.common.hexStringToByteArray
-import net.postchain.common.tx.TransactionStatus
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvBigInteger
 import net.postchain.gtv.GtvByteArray
 import net.postchain.gtv.GtvFactory.gtv
@@ -34,7 +29,6 @@ import net.postchain.gtv.GtvNull
 import net.postchain.gtv.GtvString
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.gtv.parse.GtvParser
-import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -165,9 +159,11 @@ class QueryCommandTest : IntegrationTestSetup() {
         )
 
         withModel(
-                TestModel(blockchainRid)
+            TestModel(blockchainRid)
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
                         .withQueryWithHeight("test_query",gtv("SUCCESS"))
+                        .withQueryWithHeight(CM_API_VERSION,gtv(3))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = QueryCommand().test(
                 listOf(
@@ -489,6 +485,8 @@ class QueryCommandTest : IntegrationTestSetup() {
                 TestModel(chainBrid)
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
                         .withQueryWithHeight("test_query",gtv("SUCCESS"))
+                        .withQueryWithHeight(CM_API_VERSION,gtv(3))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = QueryCommand().test(listOf(
                     "--settings", settingsFile.absolutePath,

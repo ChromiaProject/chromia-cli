@@ -51,7 +51,8 @@ class VotersetListModel(val model: Model) : Model by model {
                     proposedByName = "name",
                     system = false,
                     state = null,
-                    subnodeImage = null
+                    subnodeImage = null,
+                    jarExtensions = null
             ))
 
             GET_VOTER_SET_INFO -> GtvObjectMapper.toGtvDictionary(GetVoterSetInfoResult(
