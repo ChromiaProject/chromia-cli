@@ -22,16 +22,16 @@
     <name>Chromia Cli Parent</name>
     <properties>
         <revision>dev</revision>
-        <codegen.version>0.16.13</codegen.version>
-        <postchain.version>3.47.6</postchain.version>
-        <postchain-chromia.version>3.38.1</postchain-chromia.version>
-        <postchain.client.version>3.38.0</postchain.client.version>
-        <rell.version>0.15.0</rell.version>
-        <rell.dokka.version>0.2.22</rell.dokka.version>
-        <rell.toolbox.version>0.8.12</rell.toolbox.version>
-        <eif.version>0.27.3</eif.version>
-        <directory.chain.version>1.101.15</directory.chain.version>
-        <chromia.cli.tools.version>0.9.0</chromia.cli.tools.version>
+        <codegen.version>0.16.15</codegen.version>
+        <postchain.version>3.49.2</postchain.version>
+        <postchain-chromia.version>3.39.3</postchain-chromia.version>
+        <postchain.client.version>3.39.0</postchain.client.version>
+        <rell.version>0.15.2</rell.version>
+        <rell.dokka.version>0.2.23</rell.dokka.version>
+        <rell.toolbox.version>0.9.0</rell.toolbox.version>
+        <eif.version>0.32.0</eif.version>
+        <directory.chain.version>1.109.10</directory.chain.version>
+        <chromia.cli.tools.version>0.10.0</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
@@ -266,13 +266,6 @@
                 <groupId>net.postchain</groupId>
                 <artifactId>postchain-chromia</artifactId>
                 <version>${postchain-chromia.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>net.postchain.rell</groupId>
-                <artifactId>rell</artifactId>
-                <version>${rell.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

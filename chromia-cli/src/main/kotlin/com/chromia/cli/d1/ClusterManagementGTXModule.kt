@@ -47,7 +47,9 @@ class ClusterManagementGTXModule : SimpleGTXModule<ClusterManagementGTXModule.Co
                 "cm_get_system_anchoring_chain" to { _, ctx, _ -> gtv(db.getBlockchainRid(ctx)!!) },
                 "cm_get_system_chains" to { _, ctx, _ ->
                     db.getBlockchainRid(ctx)?.let { gtv(gtv(it)) } ?: gtv(listOf())
-                }
+                },
+                "cm_api_version" to {_, _,_ -> gtv(3)},
+                "cm_get_active_blockchain_api_urls" to {_,_,_ -> gtv(listOf(gtv("http://localhost:7740")))}
         )
 ) {
 

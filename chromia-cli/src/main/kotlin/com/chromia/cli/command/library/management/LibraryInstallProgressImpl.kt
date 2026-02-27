@@ -1,7 +1,7 @@
 package com.chromia.cli.command.library.management
 
 import com.chromia.build.tools.lib.LibraryInstallProgress
-import com.chromia.build.tools.lib.updateChromiaYamlForLibrary
+import com.chromia.build.tools.model.writer.ChromiaYmlWriter
 import com.chromia.build.tools.util.ifNotEmpty
 import com.chromia.build.tools.util.isChromiaLib
 import com.chromia.cli.model.ChromiaModel
@@ -108,7 +108,7 @@ class LibraryInstallProgressImpl(
 
     override fun onPostInstall(libraryId: String, libraryVersion: String) {
         val chromiaYmlFile = model.compile.root.resolve("chromia.yml").toFile()
-        updateChromiaYamlForLibrary(chromiaYmlFile, libraryId, libraryVersion) { diff ->
+        ChromiaYmlWriter.updateLibraryNode(chromiaYmlFile, libraryId, libraryVersion) { diff ->
             val coloredText = TextColors.brightYellow("Updated '${chromiaYmlFile.name}' file")
             val boldText = TextStyles.underline(coloredText)
             terminal.println("\n$boldText")

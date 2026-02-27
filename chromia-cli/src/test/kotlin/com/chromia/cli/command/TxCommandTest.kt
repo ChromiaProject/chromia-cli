@@ -8,22 +8,18 @@ import com.chromia.build.tools.restapi.RestApiInstance.apiUrl
 import com.chromia.build.tools.restapi.RestApiInstance.withModel
 import com.chromia.build.tools.restapi.TestModel
 import com.chromia.build.tools.restapi.withQueryWithHeight
+import com.chromia.directory1.cm_api.CM_API_VERSION
+import com.chromia.directory1.cm_api.CM_GET_ACTIVE_BLOCKCHAIN_API_URLS
 import com.chromia.directory1.cm_api.CM_GET_BLOCKCHAIN_API_URLS
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.parse
 import com.github.ajalt.clikt.testing.test
-import net.postchain.api.rest.controller.Model
-import net.postchain.api.rest.model.ApiStatus
-import net.postchain.api.rest.model.TxRid
 import net.postchain.common.BlockchainRid
-import net.postchain.common.tx.TransactionStatus
 import net.postchain.devtools.IntegrationTestSetup
 import net.postchain.devtools.utils.configuration.BlockchainSetup
 import net.postchain.devtools.utils.configuration.system.SystemSetupFactory
-import net.postchain.gtv.Gtv
 import net.postchain.gtv.GtvFactory.gtv
 import net.postchain.gtv.gtvml.GtvMLParser
-import net.postchain.gtx.GtxQuery
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -89,7 +85,11 @@ class TxCommandTest : IntegrationTestSetup() {
             // Mock ICCF
             operation iccf_proof(blockchain_rid: byte_array, tx_hash: byte_array, tx_proof: byte_array) {}
             query cm_get_blockchain_api_urls(blockchain_rid: byte_array) = [ "http://localhost:7740" ];
-            query cm_get_blockchain_cluster(brid: byte_array) = "my_cluster";            
+            query cm_get_blockchain_cluster(brid: byte_array) = "my_cluster";
+            
+            // Mocking Cluster Management
+            query cm_api_version() = 3;
+            query cm_get_active_blockchain_api_urls(blockchain_rid: byte_array) = [ "http://localhost:7740" ];
             """.trimIndent())
         }
 
@@ -311,6 +311,8 @@ class TxCommandTest : IntegrationTestSetup() {
         withModel(
                 TestModel(BlockchainRid.buildRepeat(1))
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight(CM_API_VERSION,gtv(3))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = TxCommand().test(
                 listOf(
