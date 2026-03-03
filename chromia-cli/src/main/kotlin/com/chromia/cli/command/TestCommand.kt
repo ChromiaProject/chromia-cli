@@ -1,9 +1,9 @@
 package com.chromia.cli.command
 
+import com.chromia.build.tools.test.sql.SqlStatisticsCollector
+import com.chromia.build.tools.test.sql.htmlSqlLogReport
 import com.chromia.build.tools.test.xmlTestReport
 import com.chromia.cli.model.BlockchainModel
-import com.chromia.cli.sql.SqlStatisticsCollector
-import com.chromia.cli.sql.SqlStatisticsRenderer
 import com.chromia.cli.tools.config.chromiaModelOption
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
@@ -21,14 +21,12 @@ import com.github.ajalt.clikt.parameters.groups.mutuallyExclusiveOptions
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.groups.single
 import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.optionalValueLazy
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.boolean
-import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextStyle
@@ -51,13 +49,6 @@ import kotlin.io.path.relativeTo
 
 val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")
 
-enum class SqlLoggingType {
-    USER,
-    SYSTEM,
-    BOTH,
-    NONE;
-}
-
 class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val blockchains by blockchainOption(help = "Run tests for specified blockchain(s).", metavar = "BLOCKCHAIN")
@@ -78,14 +69,6 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
 
     private val settings by chromiaModelOption()
 
-    private val sqlLogType by option("--sql-log", help = "Enable SQL query logging. Optional value: 'user' (only user queries) or 'system' (only system queries). Without value, logs both types.")
-            .choice(
-                    "user" to SqlLoggingType.USER,
-                    "system" to SqlLoggingType.SYSTEM,
-            )
-            .optionalValueLazy { SqlLoggingType.BOTH }
-            .default(SqlLoggingType.NONE)
-
     private val tests by option(help = "test method pattern", metavar = "").split(",")
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
@@ -104,7 +87,6 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     private val hideLibWarnings by hideLibWarningsOption()
 
     private val sqlStatisticsCollector by lazy { SqlStatisticsCollector() }
-    private val sqlStatisticsRenderer by lazy { SqlStatisticsRenderer(this, sqlLogType) }
 
     override fun run() {
         val modules = when (val mf = modulesOrFile) {
@@ -161,9 +143,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         val res = RellApiRunTests.runTests(testConf, sourceDir, appModules, testModules)
         if (testReport) {
             Files.writeString(testReportPath.resolve("${blockchain}-tests.xml"), res.xmlTestReport(blockchain))
-        }
-        if (sqlLogType != SqlLoggingType.NONE) {
-            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
+            Files.writeString(testReportPath.resolve("${blockchain}-tests-sql.html"), sqlStatisticsCollector.getStatistics().htmlSqlLogReport(blockchain))
         }
         printResults(res)
     }
@@ -176,9 +156,7 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
         val res = RellApiRunTests.runTests(testConf, sourceDir, listOf(), testModules)
         if (testReport) {
             Files.writeString(testReportPath.resolve("rell-unit-tests.xml"), res.xmlTestReport("rell"))
-        }
-        if (sqlLogType != SqlLoggingType.NONE) {
-            sqlStatisticsRenderer.display(sqlStatisticsCollector.getStatistics())
+            Files.writeString(testReportPath.resolve("rell-unit-tests-sql.html"), sqlStatisticsCollector.getStatistics().htmlSqlLogReport("Rell Unit Tests"))
         }
         printResults(res)
     }
@@ -207,15 +185,15 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
                 .printTestCases(false)
                 .onTestCaseStart { case ->
                     case.print()
-                    sqlStatisticsCollector.onTestCaseStart(case)
+                    if (testReport) sqlStatisticsCollector.onTestCaseStart(case)
                 }
                 .onTestCaseFinished { res ->
                     res.print()
-                    sqlStatisticsCollector.onTestCaseFinished(res)
+                    if (testReport) sqlStatisticsCollector.onTestCaseFinished(res)
                 }
                 .sqlLog(false)
                 .apply {
-                    if (sqlLogType != SqlLoggingType.NONE) {
+                    if (testReport) {
                         onSqlExecutionFinished(sqlStatisticsCollector::onSqlExecutionFinished)
                     }
                 }

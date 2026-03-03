@@ -4,6 +4,8 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
+import assertk.assertions.isTrue
 import com.chromia.build.tools.testData
 import com.chromia.cli.tools.formatter.danger
 import com.chromia.cli.tools.formatter.info
@@ -312,63 +314,6 @@ internal class TestCommandTest {
     }
 
     @Test
-    fun testSqlLogging() {
-        with(File(projectDir.toFile(), "src/main.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                module;
-
-                struct module_args { name; }
-                entity foo { name; }
-
-                operation add_foo(name) { create foo(name); }
-                query get_foo(name) = foo @? { name };
-            """.trimIndent())
-        }
-        with(File(projectDir.toFile(), "src/test.rell")) {
-            parentFile.mkdirs()
-            writeText("""
-                @test module;
-                import ^.main.*;
-
-                function test_get_foo() {
-                  rell.test.tx().op(add_foo("bar")).run();
-                  assert_not_null(get_foo("bar"));
-                }
-            """.trimIndent())
-        }
-
-        File(projectDir.toFile(), "chromia.yml").apply {
-            writeText("""
-                blockchains: 
-                  main:
-                    module: main
-                test:
-                  modules:
-                    - test
-                  moduleArgs:
-                    main:
-                      name: foo
-            """.trimIndent())
-        }
-
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log"))
-
-        val output = logger.output()
-        assertThat(output).contains("""INSERT INTO "c0.foo"("rowid", "name") VALUES ("c0.make_rowid"(), ?) RETURNING "rowid"""")
-        assertThat(output).contains("""SELECT A00."rowid" FROM "c0.foo" A00 WHERE A00."name" = ?""")
-        assertThat(output).contains("SUMMARY: 0 FAILED / 1 PASSED / 1 TOTAL")
-
-        logger.clearOutput()
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log", "user"))
-        assertThat(logger.output()).doesNotContain("c0.sys.classes")
-
-        logger.clearOutput()
-        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--use-db", "--sql-log", "system"))
-        assertThat(logger.output()).contains("c0.sys.classes")
-    }
-
-    @Test
     fun failingTest() {
         with(File(projectDir.toFile(), "src/test.rell")) {
             parentFile.mkdirs()
@@ -659,6 +604,7 @@ internal class TestCommandTest {
         assertThat(case.nodeName).isEqualTo("testcase")
         assertThat(case.attributes["name"]).isEqualTo("test_a")
         assertThat(case.attributes["classname"]).isEqualTo("test")
+        assertThat(projectDir.resolve("rell-unit-tests-sql.html").exists()).isTrue()
     }
 
     @Test
@@ -688,12 +634,21 @@ internal class TestCommandTest {
         assertThat(failure.attributes["message"]).isEqualTo("System function 'rell.test.assert_equals': expected <2> but was <1>")
         assertThat(failure.children.filterIsInstance<CDATAElement>().first().text.trim()).isEqualTo("System function 'rell.test.assert_equals': expected <2> but was <1>\n" +
                 "\tat test:test_b(test.rell:3)")
+        assertThat(projectDir.resolve("rell-unit-tests-sql.html").exists()).isTrue()
     }
 
     @Test
     fun testBlockchainTestReport() {
         TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "-bc", "hello", "--no-db", "--test-report", "--test-report-dir", projectDir.toString()))
-        assertThat(projectDir.resolve("hello-tests.xml").exists())
+        assertThat(projectDir.resolve("hello-tests.xml").exists()).isTrue()
+        assertThat(projectDir.resolve("hello-tests-sql.html").exists()).isTrue()
+    }
+
+    @Test
+    fun testSqlHtmlReportNotCreatedWithoutTestReportFlag() {
+        TestCommand().context { terminal = testTerminal }.parse(listOf("-s", settingsFile.absolutePath, "--no-db"))
+        assertThat(projectDir.resolve("rell-unit-tests-sql.html").exists()).isFalse()
+        assertThat(projectDir.resolve("hello-tests-sql.html").exists()).isFalse()
     }
 
     @Test
