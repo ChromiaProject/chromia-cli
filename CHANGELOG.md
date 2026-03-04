@@ -10,6 +10,15 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.31.0] - 2026-03-04
+### Added
+- `chr deployment proposal retract-vote`: New command to retract a previously cast vote on a deployment proposal.
+- `chr test` now generates SQL query statistics as an **HTML report file** alongside other report files, instead of printing to the terminal. The `--sql-log` flag has been removed.
+### Fixed
+- Improved warning message when an attribute is removed during `chr deployment update`: clearly states that the database column **will be DROPPED** on next initialization and all data will be permanently deleted.
+### Version Bumps
+- chromia-parent 0.2.4
+
 ## [0.30.0] - 2026-02-27
 ### Added
 - `chr deployment create` now writes the deployment result back to `chromia.yml` and prints the changes made.
