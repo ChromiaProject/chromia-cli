@@ -10,6 +10,7 @@ class ProposalCommand private constructor() : NoOpChromiaCommand(help = "Act on 
     companion object {
         fun commands() = ProposalCommand().subcommands(
                 ProposalVoteCommand(),
+                ProposalRetractVoteCommand(),
                 ProposalListCommand(),
                 ProposalInfoCommand(),
                 ProposalRevokeCommand(),
