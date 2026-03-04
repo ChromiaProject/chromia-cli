@@ -27,7 +27,7 @@ class ReportGenerator {
                             }
 
                             ChangeType.REMOVED -> {
-                                report.appendLine("\tWARNING: Attribute '${fieldDiff.name}' removed from '${diff.name}'. Please note that the corresponding column isn't physically dropped.")
+                                report.appendLine("\tWARNING: Attribute '${fieldDiff.name}' removed from '${diff.name}'. The database column will be DROPPED on next initialization. All data will be permanently deleted.")
                                 containsUnsafeChanges = true
                             }
                             ChangeType.MODIFIED -> {
