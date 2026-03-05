@@ -73,9 +73,9 @@ class TestCommand : ChromiaCommand(help = "Run tests in working directory") {
     private val sourceDir by lazy { settings.sourceDir }
     private val useDB by option(help = "If a session towards the configured database should be established")
             .flag("--no-db", default = true)
-    private val testReport by option(help = "Generate JUnit XML test reports")
+    private val testReport by option(help = "Generate JUnit XML and SQL Queries test reports")
             .flag()
-    private val testReportDir by option(help = "JUnit XML test reports directory (defaults to \"build/reports\")")
+    private val testReportDir by option(help = "JUnit XML test and SQL Queries reports directory (defaults to \"build/reports\")")
             .file(canBeDir = true, canBeFile = false)
 
     private val failOnError by option(help = "Sets test execution to stop on error and override any \"failOnError\" settings for tests that are in the scope being executed")
