@@ -61,7 +61,7 @@
                             <mainModule>
                                 common.queries,proposal_voter_set,proposal_blockchain,proposal_container
                             </mainModule>
-                            <configPath>${directory.config}</configPath>
+                            <configFile>${directory.config}</configFile>
 <!--                            <target>${project.build.directory}/generated-sources/rell-client-directory</target>-->
                         </configuration>
                     </execution>
@@ -76,7 +76,7 @@
                             <source>${library-chain.source}</source>
                             <packageName>com.chromia.library.chain</packageName>
                             <mainModule>main</mainModule>
-                            <configPath>${library-chain.config}</configPath>
+                            <configFile>${library-chain.config}</configFile>
                             <target>${project.build.directory}/generated-sources/rell-client-library</target>
                         </configuration>
                     </execution>
