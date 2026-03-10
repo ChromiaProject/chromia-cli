@@ -485,10 +485,11 @@ class SuccessfulDeploymentModelForLib(val model: Model): Model by model {
             val projectPath = Paths.get(resourceUrl.toURI())
 
             val fileMap = mutableMapOf<String, String>()
-            projectPath.toFile().walk()
+            val srcDir = projectPath.resolve("src")
+            srcDir.toFile().walk()
                     .filter { it.isFile && it.name.endsWith(".rell") }
                     .forEach {
-                        val relativePath = projectPath.relativize(it.toPath()).toString()
+                        val relativePath = srcDir.relativize(it.toPath()).toString()
                         fileMap[relativePath] = it.readText()
                     }
 
