@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import org.postgresql.util.PSQLException
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables
 import java.io.File
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 @Timeout(10, unit = TimeUnit.SECONDS)
@@ -314,13 +315,14 @@ class ReplCommandTest {
 
     @Test
     fun testModuleArgsWhenPassedFromTest() {
+        val moduleArgsValue = "Alice"
         with(File(dir, "src/args_module.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
                 struct module_args { name: text = 'Person'; }
                 entity user { name; }
-                operation add_user() { create user(chain_context.args.name); }
+                operation add_user(foo: text) { create user(chain_context.args.name); }
             """.trimIndent())
         }
 
@@ -332,33 +334,37 @@ class ReplCommandTest {
                 test:
                   moduleArgs:
                     args_module:
-                      name: Misha
+                      name: $moduleArgsValue
             """.trimIndent())
         }
 
+        // Rell .nop operation doesn't seem to work, sending in timestamp argument to avoid error of
+        // `tx already in database`
+        val uniqueText = LocalDateTime.now().toString()
         with(File(dir, "script.rell")) {
             writeText("""
                 import args_module;
-                rell.test.tx([args_module.add_user()]).nop(1).run();
-                args_module.user @ {.name == "Misha"}(.name)
+                rell.test.tx([args_module.add_user("$uniqueText")]).run();
+                args_module.user @* {.name == "$moduleArgsValue"}(.name)
             """.trimIndent())
         }
 
         val res = ReplCommand().test("--use-db -s ${dir.absolutePath}/chromia.yml ${dir.absolutePath}/script.rell -m args_module")
         assertThat(res.statusCode).isEqualTo(0)
-        assertThat(res.output).contains("Misha")
+        assertThat(res.output).contains(moduleArgsValue)
     }
 
 
     @Test
     fun testModuleArgsWhenPassedFromMainModule() {
+        val moduleArgsValue = "Bob"
         with(File(dir, "src/args_module.rell")) {
             parentFile.mkdirs()
             writeText("""
                 module;
                 struct module_args { name: text = 'Person'; }
                 entity user { name; }
-                operation add_user() { create user(chain_context.args.name); }
+                operation add_user(foo: text) { create user(chain_context.args.name); }
             """.trimIndent())
         }
 
@@ -369,20 +375,23 @@ class ReplCommandTest {
                       module: args_module
                       moduleArgs:
                         args_module:
-                          name: Tim
+                          name: $moduleArgsValue
             """.trimIndent())
         }
 
+        // Rell .nop operation doesn't seem to work, sending in timestamp argument to avoid error of
+        // `tx already in database`
+        val uniqueText = LocalDateTime.now().toString()
         with(File(dir, "script.rell")) {
             writeText("""
                 import args_module;
-                rell.test.tx([args_module.add_user()]).nop(2).run();
-                args_module.user @* {.name == "Tim"}(.name)
+                rell.test.tx([args_module.add_user("$uniqueText")]).run();
+                args_module.user @* {.name == "$moduleArgsValue"}(.name)
             """.trimIndent())
         }
 
         val res = ReplCommand().test("--use-db -s ${dir.absolutePath}/chromia.yml ${dir.absolutePath}/script.rell --blockchain main")
         assertThat(res.statusCode).isEqualTo(0)
-        assertThat(res.output).contains("Tim")
+        assertThat(res.output).contains(moduleArgsValue)
     }
 }
