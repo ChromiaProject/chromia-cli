@@ -271,11 +271,6 @@ Shell auto-completion scripts must be regenerated after each CLI version update.
 - Some commands require interactive terminals for prompts (deployment confirmations, FT4 account selection)
 - Non-interactive mode requires explicit flags (`-y` for deployments)
 
-### ICMF in Local Development
-- ICMF support in `chr node start` is designed for testing only
-- Unprocessed messages are lost on node restart
-- Large message volumes may cause `OutOfMemoryException`
-
 ### Library Chain Operations
 - Library publishing requires organization membership on Library Chain
 - Some library operations are limited to mainnet/testnet Library Chain instances
