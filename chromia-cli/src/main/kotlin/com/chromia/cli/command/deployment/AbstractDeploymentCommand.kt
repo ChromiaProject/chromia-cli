@@ -115,7 +115,7 @@ abstract class AbstractDeploymentCommand(name: String, help: String, protected v
                 rellVersionController.getTargetVersion(Endpoint(it), deployModel.blockchainRid!!)
             } catch (e: CanNotFindBlockchainException) {
                 throw e
-            } catch (e: RuntimeException) {
+            } catch (e: Exception) {
                 echo(e.message)
                 null
             }
