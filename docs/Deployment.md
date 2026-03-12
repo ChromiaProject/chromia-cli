@@ -10,13 +10,13 @@ Chromia CLI is a developer tool distributed through multiple package management 
 
 Chromia CLI is released through the following channels:
 
-| Channel | Target Audience | Registry Location |
-|---------|-----------------|-------------------|
-| GitLab Maven Registry | Java/Kotlin developers, CI pipelines | `gitlab.com/api/v4/projects/39844192/packages/maven` |
-| Docker Registry | Container-based workflows | `registry.gitlab.com/chromaway/core-tools/chromia-cli/chr` |
-| Homebrew | macOS users | `chromaway/core-tools/homebrew-chromia` |
-| Scoop | Windows users | `chromaway/core-tools/scoop-chromia` |
-| APT Repository | Debian/Ubuntu users | Managed via Jenkins (`jenkins.infra.chromia.dev`) |
+| Channel | Target Audience | Registry Location                                                                                        |
+|---------|-----------------|----------------------------------------------------------------------------------------------------------|
+| GitLab Maven Registry | Java/Kotlin developers, CI pipelines | [chromia-cli package registry](https://gitlab.com/chromaway/core-tools/chromia-cli/-/packages)           |
+| Docker Registry | Container-based workflows | [chromia-cli container registry](https://gitlab.com/chromaway/core-tools/chromia-cli/container_registry) |
+| Homebrew | macOS users | [homebrew-chromia](https://gitlab.com/chromaway/core-tools/homebrew-chromia)                             |
+| Scoop | Windows users | [scoop-chromia](https://gitlab.com/chromaway/core-tools/scoop-chromia)                                   |
+| APT Repository | Debian/Ubuntu users | [apt-repository-chromia](https://gitlab.com/chromaway/core-tools/apt-repository-chromia)                 |
 
 ## Deployment Trigger
 
@@ -31,6 +31,7 @@ Any tag matching this pattern triggers the full release pipeline. Non-matching t
 
 ### Pipeline Job
 However, the suggested approach is to use the pipelines job `release-patch`, and `release-minor` which are available on dev branch in Gitlab. 
+To release a new major version, create a new tag manually.
 
 ## CI/CD Pipeline
 
@@ -78,6 +79,9 @@ When a release is triggered, the `update-docs` job:
 5. Creates a pull request to `chromia-docs` with the updates
 
 > **Note:** The official chromia docs repository is private, ask system admin for access if needed
+ 
+> **Note:** When a new command is created, manual steps are required. When changing an existing command, documentation
+> is updated automatically.
 
 ## Pipeline Infrastructure
 
@@ -100,8 +104,6 @@ When a release is triggered, the `update-docs` job:
 **Risk:** Homebrew, Scoop, or APT release pipelines may fail independently.
 
 **Impact:** Users on specific platforms won't receive updates.
-
-**Mitigation:** Monitor downstream pipelines (`strategy: depend` ensures visibility).
 
 ### 2. Jenkins APT Repository Job
 

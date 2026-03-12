@@ -4,13 +4,13 @@ This guide enables a new engineer to run the Chromia CLI project locally from a 
 
 ## Required Tools and Versions
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| Java (JDK) | 21+ | Required for compilation and runtime |
-| Maven | 3.6+ | Build tool (3.3.0+ recommended for CI-friendly versioning) |
-| Docker | 20+ | Required for containerization and some integration tests |
-| PostgreSQL | 14+ | Required for integration tests (14.9 used in CI) |
-| Git | 2.x | For source control and dependency checkout |
+| Tool | Version | Notes                                                            |
+|------|---------|------------------------------------------------------------------|
+| Java (JDK) | 21+ | Required for compilation and runtime                             |
+| Maven | 3.6+ | Build tool (3.3.0+ recommended for CI-friendly versioning)       |
+| Docker | 20+ | Required for containerization and some integration tests         |
+| PostgreSQL | 14+ | Required for integration tests (Recommend to run through docker) |
+| Git | 2.x | For source control and dependency checkout                       |
 
 ### Optional Tools
 
@@ -45,61 +45,15 @@ If you are on a windows machine, extra setup might be required for development.
 ## Step-by-Step Setup Instructions
 
 ### 1. Install Java 21
-
-**macOS (Homebrew):**
-```bash
-brew install openjdk@21
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt-get update
-sudo apt-get install openjdk-21-jdk
-```
-
-**Verify installation:**
-```bash
-java -version
-# Should show: openjdk version "21.x.x"
-```
+We leave it up for the developer to install java21
 
 ### 2. Install Maven
-
-**macOS (Homebrew):**
-```bash
-brew install maven
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt-get install maven
-```
-
-**Verify installation:**
-```bash
-mvn -version
-# Should show Maven 3.x with Java 21
-```
+We leave it up for the developer to install maven
 
 ### 3. Install Docker
-
-**macOS:**
-```bash
-brew install --cask docker
-# Then open Docker Desktop from Applications
-```
-
-**Linux:**
-Follow the official Docker installation guide for your distribution: https://docs.docker.com/engine/install/
-
-**Verify installation:**
-```bash
-docker --version
-docker run hello-world
-```
+We leave it up for the developer to install docker
 
 ### 4. Setup PostgreSQL
-
 Follow the setup guide at: https://docs.chromia.com/get-started/installation#set-up-postgresql-database.
 Recommended to use Docker.
 
@@ -210,26 +164,12 @@ org.postgresql.util.PSQLException: Connection refused
 - Check the connection URL in `CHR_DB_URL`
 - Ensure the database port (5432) is accessible
 
-### 3. Maven Dependency Download Failures
-
-**Error:**
-```
-Could not resolve dependencies for project...
-```
-
-**Fix:**
-- The project uses private GitLab Maven registries
-- For CI builds, `CI_JOB_TOKEN` is used automatically
-- For local builds, dependencies should resolve from cached or public repositories
-- If issues persist, check your network/proxy settings
-
-
 ## Development Workflow
 
 1. Make code changes in `chromia-cli/src/main/kotlin/`
 2. Add tests that cover your code changes
 3. Run `mvn compile` for quick compilation check
-4. Run `mvn test` for unit tests
+4. Run `mvn test` for tests
 5. Run `mvn install` to rebuild the distribution
 6. Test manually using `chr` command
 
