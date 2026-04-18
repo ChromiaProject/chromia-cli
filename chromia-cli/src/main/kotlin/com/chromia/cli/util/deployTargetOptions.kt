@@ -3,11 +3,11 @@ package com.chromia.cli.util
 import com.chromia.build.tools.blockchain.BridFetcher
 import com.chromia.build.tools.config.ChromiaClientConfig
 import com.chromia.build.tools.config.ChromiaClientConfig.Companion.DEFAULT_API_URL
+import com.chromia.build.tools.config.ChromiaPredefinedNetworks
 import com.chromia.build.tools.config.DEVNET1
 import com.chromia.build.tools.config.DEVNET2
 import com.chromia.build.tools.config.MAINNET
 import com.chromia.build.tools.config.TESTNET
-import com.chromia.build.tools.config.getProviderUrlsForNetwork
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.blockchainRidOption
 import com.chromia.directory1.cm_api.cmGetBlockchainApiUrls
@@ -38,12 +38,9 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
     abstract fun createDirectoryClient(config: ChromiaClientConfig): PostchainClient
 
     protected fun getUrls(settings: ChromiaModel, network: String): List<String> {
-        val urls = settings.deployments[network]?.urls
-                ?.takeIf { it.isNotEmpty() }
-                ?: getProviderUrlsForNetwork(network)
-                ?: emptyList()
-        require(urls.isNotEmpty()) { "No urls found for network $network" }
-        return urls
+        return settings.deployments[network]?.urls?.takeIf { it.isNotEmpty() }
+                ?: ChromiaPredefinedNetworks.takeIf { it.isPredefined(network) }?.connect(network)?.directoryChainApiUrls
+                ?: error("No urls found for network $network")
     }
 
     protected fun createClientFromDirectoryChain(config: ChromiaClientConfig): PostchainClient {
@@ -51,34 +48,34 @@ sealed class DeploymentOption(name: String, help: String? = null) : OptionGroup(
         val apiUrls = directoryChain.cmGetBlockchainApiUrls(brid)
         require(apiUrls.isNotEmpty()) {
             "No API URLs found for brid '$brid'. " +
-                "Check if the directory chain is correctly configured and that '$brid' correct."
+                    "Check if the directory chain is correctly configured and that '$brid' correct."
         }
         val updatedConfig = directoryChain.config.copy(
-            blockchainRid = brid,
-            endpointPool = EndpointPool.default(apiUrls),
-            signers = config.signers)
+                blockchainRid = brid,
+                endpointPool = EndpointPool.default(apiUrls),
+                signers = config.signers)
         return PostchainClientImpl(updatedConfig)
     }
 
     protected fun createDirectoryClientFromBrid(
-        config: ChromiaClientConfig,
-        d1BridFromModel: BlockchainRid?
+            config: ChromiaClientConfig,
+            d1BridFromModel: BlockchainRid?
     ): PostchainClient {
         if (d1BridFromModel != null) {
             return config.setBrid(d1BridFromModel).client(PostchainClientProviderImpl())
         }
         val updatedConfig =
                 PostchainClientConfig.defaultConfig.copy(
-                signers = config.signers,
-                endpointPool = EndpointPool.default(urls)
-            )
+                        signers = config.signers,
+                        endpointPool = EndpointPool.default(urls)
+                )
         return StandardChromiaClient(updatedConfig)
                 .getDirectoryChainClient()
     }
 
     protected fun fetchBridFromChainID(
-        cid: Int = 0,
-        httpHandler: HttpHandler = defaultHttpHandler(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls)))
+            cid: Int = 0,
+            httpHandler: HttpHandler = defaultHttpHandler(PostchainClientConfig(BlockchainRid.ZERO_RID, EndpointPool.default(urls)))
     ): BlockchainRid {
         // TODO: make BridFetcher takes multiple URLS
         try {
@@ -98,17 +95,17 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
 
     override val blockchain: String
         get() = blockchainOptionValue
-            ?: inferBlockchainFromModel()
-            ?: createBlockchainSelectionError()
+                ?: inferBlockchainFromModel()
+                ?: createBlockchainSelectionError()
 
     private fun createBlockchainSelectionError(): Nothing =
-        deploymentConfig.chains.keys.let { availableChains ->
-            val message = when {
-                availableChains.isEmpty() -> createNoBlockchainsMessage()
-                else -> createMultipleBlockchainsMessage(availableChains)
+            deploymentConfig.chains.keys.let { availableChains ->
+                val message = when {
+                    availableChains.isEmpty() -> createNoBlockchainsMessage()
+                    else -> createMultipleBlockchainsMessage(availableChains)
+                }
+                throw PrintMessage(message, 1)
             }
-            throw PrintMessage(message, 1)
-        }
 
     private fun createNoBlockchainsMessage(): String = """
     |No blockchains configured for deployment '$network'
@@ -126,14 +123,15 @@ class RemoteDeploymentOption(private val settings: () -> ChromiaModel) : Deploym
     """.trimMargin()
 
     private fun inferBlockchainFromModel(): String? =
-        settings().deployments[network]?.chains?.keys?.singleOrNull()
+            settings().deployments[network]?.chains?.keys?.singleOrNull()
 
     private val deploymentConfig by lazy {
         settings().deployments[network]
-            ?: error("Deployment named $network not found in configuration")
+                ?: error("Deployment named $network not found in configuration")
     }
 
-    override val brid: BlockchainRid get() {
+    override val brid: BlockchainRid
+        get() {
             val deploymentModel = settings().deployments[network]
             require(deploymentModel != null) { "Deployment named $network not found in configuration" }
             val blockchainRid = deploymentModel.chains[blockchain]
@@ -180,8 +178,8 @@ class DeployedNetworkOption(private val settings: () -> ChromiaModel) : Deployme
 
 
 class ExplicitDeploymentOption(
-    private val config: () -> ChromiaClientConfig,
-    private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }
+        private val config: () -> ChromiaClientConfig,
+        private val httpHandlerFactory: (PostchainClientConfig) -> HttpHandler = { defaultHttpHandler(it) }
 ) : DeploymentOption("dApp target options") {
 
     private val blockchainRid by blockchainRidOption(help = "Target Blockchain RID")
@@ -191,8 +189,8 @@ class ExplicitDeploymentOption(
     private val apiUrl by option(help = "Target api url").default(DEFAULT_API_URL)
 
     val chromiaNetwork by option(help = "Select network, use instead of --api-url").switch(
-        "--$MAINNET" to MAINNET,
-        "--$TESTNET" to TESTNET,
+            "--$MAINNET" to MAINNET,
+            "--$TESTNET" to TESTNET,
     )
 
     val chromiaDevNetwork by option(hidden = true).switch(
@@ -200,12 +198,15 @@ class ExplicitDeploymentOption(
             "--$DEVNET2" to DEVNET2,
     )
 
-    override val urls get(): List<String> {
-        if (apiUrl != DEFAULT_API_URL) return listOf(apiUrl)
-        return chromiaNetwork?.let(::getProviderUrlsForNetwork)
-            ?: chromiaDevNetwork?.let(::getProviderUrlsForNetwork)
-            ?: config().apiUrls
-    }
+    override val urls
+        get(): List<String> {
+            if (apiUrl != DEFAULT_API_URL) return listOf(apiUrl)
+            return chromiaNetwork?.let {
+                ChromiaPredefinedNetworks.connect(it).directoryChainApiUrls
+            } ?: chromiaDevNetwork?.let {
+                ChromiaPredefinedNetworks.connect(it).directoryChainApiUrls
+            } ?: config().apiUrls
+        }
 
 
     override val blockchain: String
@@ -232,10 +233,10 @@ class ExplicitDeploymentOption(
             config.client(PostchainClientProviderImpl())
         } else {
             val updatedConfig =
-                PostchainClientConfig.defaultConfig.copy(
-                    signers = config.signers,
-                    endpointPool = config.endpointPool
-                )
+                    PostchainClientConfig.defaultConfig.copy(
+                            signers = config.signers,
+                            endpointPool = config.endpointPool
+                    )
             StandardChromiaClient(updatedConfig).getClient(brid)
         }
     }

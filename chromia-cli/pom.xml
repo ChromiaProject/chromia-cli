@@ -46,6 +46,10 @@
                 <configuration>
                     <packageName/>
                     <testModule/>
+                    <postchainClientConfig>
+                        <failover.attempts>2</failover.attempts>
+                        <connect.timeout>10000</connect.timeout>
+                    </postchainClientConfig>
                 </configuration>
                 <executions>
                     <execution>
@@ -261,27 +265,27 @@
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen-kotlin</artifactId>
+            <artifactId>rell-codegen-kotlin</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen-typescript</artifactId>
+            <artifactId>rell-codegen-typescript</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen-mermaid</artifactId>
+            <artifactId>rell-codegen-mermaid</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen-javascript</artifactId>
+            <artifactId>rell-codegen-javascript</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen-python</artifactId>
+            <artifactId>rell-codegen-python</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain.rell</groupId>
-            <artifactId>codegen</artifactId>
+            <artifactId>rell-codegen</artifactId>
         </dependency>
         <dependency>
             <groupId>net.postchain</groupId>
@@ -289,21 +293,21 @@
             <version>${eif.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.chromia.rell.dokka</groupId>
+            <groupId>net.postchain.rell</groupId>
             <artifactId>rell-dokka-plugin</artifactId>
-            <version>${rell.dokka.version}</version>
+            <version>${rell.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.postchain.rell.toolbox</groupId>
-            <artifactId>code-quality</artifactId>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-toolbox-code-quality</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.postchain.rell.toolbox</groupId>
-            <artifactId>seeder</artifactId>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-toolbox-seeder</artifactId>
         </dependency>
         <dependency>
-            <groupId>net.postchain.rell.toolbox</groupId>
-            <artifactId>indexer</artifactId>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-toolbox-indexer</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.chromia.cli</groupId>
@@ -312,8 +316,8 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>net.postchain.rell.toolbox</groupId>
-            <artifactId>common</artifactId>
+            <groupId>net.postchain.rell</groupId>
+            <artifactId>rell-toolbox-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>com.chromia.cli</groupId>

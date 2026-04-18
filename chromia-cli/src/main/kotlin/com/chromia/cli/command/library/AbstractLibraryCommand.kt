@@ -2,10 +2,8 @@ package com.chromia.cli.command.library
 
 import com.chromia.api.ChromiaCompileApi
 import com.chromia.api.filterBlockchains
-import com.chromia.build.tools.config.getProviderUrlsForNetwork
 import com.chromia.build.tools.lib.DirectoryHashCalculator
-import com.chromia.build.tools.lib.LibraryChainNetworkUtils.CHROMIA_MAINNET
-import com.chromia.build.tools.lib.LibraryChainNetworkUtils.libraryPredefinedNetworks
+import com.chromia.build.tools.lib.LibraryChainNetworkUtils
 import com.chromia.cli.command.ChromiaCommand
 import com.chromia.cli.model.BlockchainModel
 import com.chromia.cli.tools.config.configureSigners
@@ -20,11 +18,9 @@ import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
-import net.postchain.client.config.PostchainClientConfig
 import net.postchain.client.core.PostchainClient
-import net.postchain.client.request.EndpointPool
+import net.postchain.client.impl.TryNextOnErrorRequestStrategyFactory
 import net.postchain.common.BlockchainRid
-import net.postchain.d1.client.StandardChromiaClient
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.extension
@@ -34,9 +30,9 @@ import kotlin.io.path.relativeTo
 import kotlin.streams.asSequence
 
 abstract class AbstractLibraryCommand(
-    name: String? = null,
-    help: String,
-    hideKeyPairSourceHelpMessage: Boolean = false
+        name: String? = null,
+        help: String,
+        hideKeyPairSourceHelpMessage: Boolean = false
 ) : ChromiaCommand(name, help) {
 
     protected val settings by optionalChromiaModelConfigOption()
@@ -46,62 +42,39 @@ abstract class AbstractLibraryCommand(
     protected val remoteTarget by LibraryChainTargetOptions()
 
     protected val client by lazy {
-        createConfiguredClient(remoteTarget.url, remoteTarget.brid)
+        createConfiguredClient(remoteTarget.url?.takeUnless { it.isBlank() }, remoteTarget.brid)
     }
 
     protected val pubkey by lazy {
-        client.config.signers
-            .firstOrNull()
-            ?.pubKey?.data
-            ?: throw PrintMessage("Signer is needed to proceed with this transaction", statusCode = 1)
+        client.config.signers.firstOrNull()?.pubKey?.data
+                ?: throw PrintMessage("Signer is needed to proceed with this transaction", statusCode = 1)
     }
 
     protected val txBuilder by lazy {
         client.transactionBuilder()
     }
 
-    fun createConfiguredClient(explicitUrl: String? = null, explicitBrid: BlockchainRid? = null): PostchainClient {
-        val networkKey = resolveNetworkKey(explicitUrl)
-        val inputUrls = resolveInputUrls(networkKey)
-        val libraryChainBrid = resolveLibraryChainBrid(explicitBrid, networkKey)
-
+    fun createConfiguredClient(explicitUrlOrNetwork: String? = null, explicitBrid: BlockchainRid? = null): PostchainClient {
         settings.config.configureSigners(keyPairSource)
-
-        val postchainConfig = PostchainClientConfig.defaultConfig
-            .copy(
-                signers = settings.config.signers,
-                endpointPool = EndpointPool.default(inputUrls),
-            )
-        return StandardChromiaClient(postchainConfig).getClient(libraryChainBrid)
+        return LibraryChainNetworkUtils.createLibraryChainClient(
+                registry = explicitUrlOrNetwork,
+                brid = explicitBrid,
+                config = settings.config.getConfig().copy(requestStrategy = TryNextOnErrorRequestStrategyFactory())
+        )
     }
-
-    private fun resolveNetworkKey(url: String?): String = when {
-        !url.isNullOrBlank() -> url
-        else -> CHROMIA_MAINNET
-    }
-
-    private fun resolveInputUrls(url: String) =
-        getProviderUrlsForNetwork(url) ?: listOf(url)
-
-    private fun resolveLibraryChainBrid(brid: BlockchainRid?, networkKey: String) = brid
-        ?: remoteTarget.brid
-        ?: getPredefinedLibraryChainBrid(networkKey)
-        ?: throw PrintMessage("Brid of library_chain is required")
-
-    private fun getPredefinedLibraryChainBrid(networkKey: String) = libraryPredefinedNetworks[networkKey]?.invoke()
 
     protected fun authorizeFtAuthOperation(
-        operationName: String,
-        optionalAccountId: String? = null
+            operationName: String,
+            optionalAccountId: String? = null
     ): Pair<ByteArray, ByteArray> {
         initFtAuth(client)
 
         val (accountId, authDescriptorId) = findFtAccountIdAndAuthDescriptorId(
-            client,
-            optionalAccountId,
-            pubkey,
-            operationName,
-            null
+                client,
+                optionalAccountId,
+                pubkey,
+                operationName,
+                null
         )
 
         addFtAuthOperation(txBuilder, accountId, authDescriptorId)
@@ -114,13 +87,13 @@ abstract class AbstractLibraryCommand(
             help = "Specify a custom library chain (overrides the default mainnet target)"
     ) {
         val url by option(
-            "--url",
-            help = "Url where library-chain is deployed. Ex: testnet, localhost, https://custom-network.chromia.dev:7740"
+                "--url",
+                help = "Url where library-chain is deployed. Ex: mainnet, testnet, localhost, https://custom-network.chromia.dev:7740"
         )
         val brid by option(
-            "--brid",
-            "-b",
-            help = "Brid (hex string) of library-chain"
+                "--brid",
+                "-b",
+                help = "Brid (hex string) of library-chain"
         ).convert {
             BlockchainRid.buildFromHex(it)
         }
@@ -130,15 +103,15 @@ abstract class AbstractLibraryCommand(
         echo("Uploading files from: $libDirectory")
 
         val (rellFiles, nonRellFiles) = Files.walk(libDirectory)
-            .asSequence()
-            .filter { it.isRegularFile() }
-            .partition { it.extension == "rell" }
+                .asSequence()
+                .filter { it.isRegularFile() }
+                .partition { it.extension == "rell" }
 
         val rellFilesMap = rellFiles
-            .associateWith { it.readBytes() }
-            .mapKeys { (file, _) ->
-                file.relativeTo(libDirectory).toString()
-            }
+                .associateWith { it.readBytes() }
+                .mapKeys { (file, _) ->
+                    file.relativeTo(libDirectory).toString()
+                }
 
         nonRellFiles.forEach { file ->
             val relativePath = file.relativeTo(libDirectory).toString()
@@ -156,39 +129,37 @@ abstract class AbstractLibraryCommand(
 
     protected fun validateLibraryCode(libraryName: String) {
         val model = settings.model
-            ?: throw PrintMessage("No chromia.yml configuration found", statusCode = 1)
+                ?: throw PrintMessage("No chromia.yml configuration found", statusCode = 1)
 
         model.blockchains[libraryName]
-            ?.takeIf { it.type == BlockchainModel.Type.LIBRARY }
-            ?: throw PrintMessage("Library '$libraryName' not found or not configured as library type", statusCode = 1)
+                ?.takeIf { it.type == BlockchainModel.Type.LIBRARY }
+                ?: throw PrintMessage("Library '$libraryName' not found or not configured as library type", statusCode = 1)
 
         runCatching {
             val cliEnv = BuildCliEnv(this, hideLibWarnings = true)
             val compiledChains = ChromiaCompileApi.build(
-                cliEnv,
-                model.filterBlockchains(listOf(libraryName))
+                    cliEnv,
+                    model.filterBlockchains(listOf(libraryName))
             )
 
             if (compiledChains.isEmpty()) {
                 throw PrintMessage(
-                    "No blockchain configurations were compiled for library: $libraryName",
-                    statusCode = 1
+                        "No blockchain configurations were compiled for library: $libraryName",
+                        statusCode = 1
                 )
             }
 
-            compiledChains.find { it.name == libraryName }
-                ?: throw PrintMessage(
+            compiledChains.find { it.name == libraryName } ?: throw PrintMessage(
                     "Library '$libraryName' was not found in compiled configurations",
                     statusCode = 1
-                )
+            )
         }.onFailure { error ->
             when (error) {
-                is PrintMessage -> {
-                    throw error
-                }
+                is PrintMessage -> throw error
+
                 else -> throw PrintMessage(
-                    "Compilation failed for library '$libraryName': ${error.message}",
-                    statusCode = 1
+                        "Compilation failed for library '$libraryName': ${error.message}",
+                        statusCode = 1
                 )
             }
         }

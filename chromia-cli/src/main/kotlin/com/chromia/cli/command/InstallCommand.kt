@@ -13,6 +13,7 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.validate
 
+// TODO: Remove this command
 class InstallCommand(
         private val repositoryClonerFactory: (quiet: Boolean) -> RepositoryCloner = { GitRepositoryCloner(quiet = it) },
 ) : ChromiaCommand(help = "Install library dependencies, if no library specified all will be installed") {

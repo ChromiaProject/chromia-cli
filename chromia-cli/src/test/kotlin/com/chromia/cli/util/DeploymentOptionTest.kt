@@ -4,7 +4,7 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.doesNotContain
 import assertk.assertions.isEqualTo
-import com.chromia.build.tools.config.getProviderUrlsForNetwork
+import com.chromia.build.tools.config.ChromiaPredefinedNetworks
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.tools.config.chromiaModelConfigOption
 import com.chromia.cli.tools.config.optionalChromiaModelConfigOption
@@ -28,7 +28,7 @@ class DeploymentOptionTest {
     fun `test no blockchains configured error`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
-            """
+                """
             deployments:
               test-network:
                 url: "http://localhost:7740"
@@ -49,7 +49,7 @@ class DeploymentOptionTest {
     fun `test multiple blockchains available error`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
-            """
+                """
             deployments:
               test-network:
                 url:
@@ -76,7 +76,7 @@ class DeploymentOptionTest {
     fun `test blockchain not found in deployment error`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
-            """
+                """
             deployments:
               test-network:
                 url:
@@ -105,7 +105,7 @@ class DeploymentOptionTest {
     fun `test successful single blockchain deployment without explicit blockchain`() {
         val settingsFile = testDir.resolve("chromia.yml").toFile()
         settingsFile.writeText(
-            """
+                """
             deployments:
               test-network:
                 url:
@@ -143,8 +143,8 @@ class DeploymentOptionTest {
 
     @Test
     fun `test correct loading of mainnet urls from hardcoded list`() {
-        TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("mainnet")!!).test(listOf("--mainnet"))
-        TestCommandWithRemoteDeployment(getProviderUrlsForNetwork("testnet")!!).test(listOf("--testnet"))
+        TestCommandWithRemoteDeployment(ChromiaPredefinedNetworks.connect("mainnet").directoryChainApiUrls).test(listOf("--mainnet"))
+        TestCommandWithRemoteDeployment(ChromiaPredefinedNetworks.connect("testnet").directoryChainApiUrls).test(listOf("--testnet"))
     }
 
     @Test
@@ -177,7 +177,9 @@ class DeploymentOptionTest {
             """.trimIndent()
         )
 
-        val command = TestCommandWithDeployedNetworkOption(getProviderUrlsForNetwork("testnet")!!)
+        val command = TestCommandWithDeployedNetworkOption(
+                ChromiaPredefinedNetworks.connect("testnet").directoryChainApiUrls
+        )
         command.test(listOf("--settings", settingsFile.absolutePath, "--network", "testnet"))
     }
 
@@ -194,7 +196,7 @@ class DeploymentOptionTest {
         )
 
         val command = TestCommandWithDeployedNetworkOption()
-        val res = assertThrows<IllegalArgumentException> {
+        val res = assertThrows<IllegalStateException> {
             command.test(listOf("--settings", settingsFile.absolutePath, "--network", "non_default_network"))
         }
         assertThat(res.message!!).isEqualTo("No urls found for network non_default_network")

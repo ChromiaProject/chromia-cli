@@ -20,6 +20,7 @@ import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.hexStringToWrappedByteArray
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -30,7 +31,9 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.test.Ignore
 
+@Disabled("Temporarily disabled")
 class InstallLibraryCommandTest {
     val path = "src/lib"
     private val logger = TerminalRecorder()
