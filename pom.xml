@@ -22,7 +22,7 @@
     <name>Chromia Cli Parent</name>
     <properties>
         <revision>dev</revision>
-        <postchain.version>3.49.7</postchain.version>
+        <postchain.version>3.49.9</postchain.version>
         <postchain-chromia.version>3.39.6</postchain-chromia.version>
         <postchain.client.version>3.39.3</postchain.client.version>
         <rell.version>0.15.3</rell.version>
