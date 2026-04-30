@@ -33,7 +33,7 @@ import net.postchain.rell.api.base.RellApiCompile
 import net.postchain.rell.api.shell.RellApiRunShell
 import net.postchain.rell.base.compiler.base.utils.C_Message
 import net.postchain.rell.base.compiler.base.utils.C_Parser
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 import net.postchain.rell.base.repl.ReplInputChannel
 import net.postchain.rell.base.repl.ReplInputChannelFactory
 import net.postchain.rell.base.repl.ReplOutputChannel
@@ -265,7 +265,7 @@ class ReplCommand : ChromiaCommand(help = """
         }
 
     sealed class ModuleSource {
-        data class FromModule(val module: R_ModuleName) : ModuleSource()
+        data class FromModule(val module: ModuleName) : ModuleSource()
         data class FromBlockchain(val blockchain: String) : ModuleSource()
     }
 }

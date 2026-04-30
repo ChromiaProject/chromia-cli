@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import net.postchain.common.hexStringToByteArray
-import net.postchain.rell.base.model.R_ModuleName
+import net.postchain.rell.base.model.ModuleName
 
 @Suppress("EnumEntryName")
 enum class OutputFormat {
@@ -63,7 +63,7 @@ fun CliktCommand.modulesOption(help: String) =
                 .convert { it.split(",", ignoreCase = false, limit = 0) } // using .split() prevents it from being used in mutuallyExclusiveOptions()
 
 fun CliktCommand.module() = option("-m", "--module", help = "Name of module", metavar = "MODULE")
-        .convert { R_ModuleName.of(it) }
+        .convert { ModuleName.of(it) }
 
 fun CliktCommand.libraryOption() = option("-lib", "--library", help = "Name of library(ies) to install from chromia.yml file")
 fun ParameterHolder.logSqlOption() = option("--sql-log", help = "Log sql expressions").flag()

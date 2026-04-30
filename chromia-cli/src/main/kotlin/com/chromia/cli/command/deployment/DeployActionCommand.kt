@@ -22,7 +22,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.options.validate
 import com.github.ajalt.mordant.terminal.YesNoPrompt
-import net.postchain.rell.base.runtime.utils.toGtv
+import net.postchain.gtv.GtvFactory
 
 sealed class DeployActionCommand(
         private val action: BlockchainAction,
@@ -93,7 +93,7 @@ private fun DeploymentModel.populatePredefinedNetworkConfig(network: String): De
         url
     } else {
         require(ChromiaPredefinedNetworks.isPredefined(network)) { "Network $network is not a predefined network" }
-        ChromiaPredefinedNetworks.connect(network).directoryChainApiUrls.toGtv()
+        GtvFactory.gtv(ChromiaPredefinedNetworks.connect(network).directoryChainApiUrls.map(GtvFactory::gtv))
     }
 
     return copy(blockchainRid = resolvedBrid, url = resolvedUrl)

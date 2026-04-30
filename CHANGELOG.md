@@ -10,6 +10,10 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.32.0] - 2026-05-28
+### Version Bumps
+- rell 0.16.0
+
 ## [0.31.0] - 2026-03-04
 ### Added
 - `chr deployment proposal retract-vote`: New command to retract a previously cast vote on a deployment proposal.

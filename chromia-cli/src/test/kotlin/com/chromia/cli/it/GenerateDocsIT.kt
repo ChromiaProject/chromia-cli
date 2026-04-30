@@ -105,7 +105,7 @@ class GenerateDocsIT {
             addSourceFile("customInclude.md", """
                 # Dapp my_dapp
                 My main text
-                # Module main
+                # Package main
                 My custom comment for module main
             """.trimIndent()
             )
