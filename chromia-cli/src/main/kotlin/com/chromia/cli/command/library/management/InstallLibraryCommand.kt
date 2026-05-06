@@ -57,9 +57,6 @@ class InstallLibraryCommand(
             "Project settings file not found at ${settings.modelFilePath}"
         }
 
-        // Initialize client to make sure we have a valid session (see LibraryChainNetworkUtils).
-        client
-
         if (explicitLibraryId != null) {
             installByLibraryId(explicitLibraryId!!)
         } else {
@@ -74,6 +71,9 @@ class InstallLibraryCommand(
     }
 
     private suspend fun installByLibraryId(libraryIdentifier: String) {
+        // Initialize client to make sure we have a valid session (see com.chromia.build.tools.lib.LibraryChainNetworkUtils).
+        client
+
         val (libraryId, version) = extractLibraryIdAndVersion(libraryIdentifier)
         val chromiaModuleWithExplicitLib = settings.model!!.copy(
                 libs = mapOf(libraryId to RellLibraryModel(
@@ -92,6 +92,10 @@ class InstallLibraryCommand(
             echo("No libraries found in: ${settings.modelFilePath}")
             return
         }
+
+        // Initialize client to make sure we have a valid session (see com.chromia.build.tools.lib.LibraryChainNetworkUtils).
+        client
+
         val modelsWithExplicitTarget = filteredModel.copy(
                 libs = filteredModel.libs.map {
                     val libmodel = it.value
