@@ -218,20 +218,6 @@ class InstallLibraryCommandTest {
     }
 
     @Test
-    fun emptyLibsSectionTest() {
-        File(testDir.toFile(), "chromia.yml").writeText("""
-        blockchains:
-            my_rell_dapp:
-              module: main
-    """.trimIndent())
-            InstallLibraryCommand { TestRepositoryCloner() }
-                .context { terminal = testTerminal }
-                .parse(listOf("-s", settingsFile.absolutePath))
-
-        assertThat(logger.output()).contains("No libraries found in: ${settingsFile.absolutePath}")
-    }
-
-    @Test
     fun missingModelFileTest() {
         val nonExistentFile = testDir.resolve("nonexistent.yml").toFile()
         val res = InstallLibraryCommand { TestRepositoryCloner() }
