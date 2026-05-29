@@ -10,9 +10,22 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
-## [0.32.0] - 2026-05-28
+## [0.33.0] - 2026-05-29
 ### Version Bumps
 - rell 0.16.0
+
+## [0.32.1] - 2026-05-06
+### Fixed
+- Fix client initialization in chr install when no libraries to install.
+
+## [0.32.0] - 2026-04-19
+### Fixed
+- Deployment commands now handle all exception types during Rell version validation, resolving a crash that occurred when a node returned invalid GTV data.
+### Version Bumps
+- rell 0.15.3
+- chromia-cli-tools 0.11.3
+- rell-maven-plugin 1.2.1
+- postchain-client 3.39.1
 
 ## [0.31.0] - 2026-03-04
 ### Added
