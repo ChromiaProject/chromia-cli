@@ -311,8 +311,8 @@ class TxCommandTest : IntegrationTestSetup() {
         withModel(
                 TestModel(BlockchainRid.buildRepeat(1))
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
                         .withQueryWithHeight(CM_API_VERSION,gtv(3))
-                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = TxCommand().test(
                 listOf(

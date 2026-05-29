@@ -161,9 +161,9 @@ class QueryCommandTest : IntegrationTestSetup() {
         withModel(
             TestModel(blockchainRid)
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
                         .withQueryWithHeight("test_query",gtv("SUCCESS"))
                         .withQueryWithHeight(CM_API_VERSION,gtv(3))
-                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = QueryCommand().test(
                 listOf(
@@ -484,9 +484,9 @@ class QueryCommandTest : IntegrationTestSetup() {
         withModel(
                 TestModel(chainBrid)
                         .withQueryWithHeight(CM_GET_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
+                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS, gtv(listOf(gtv(apiUrl))))
                         .withQueryWithHeight("test_query",gtv("SUCCESS"))
                         .withQueryWithHeight(CM_API_VERSION,gtv(3))
-                        .withQueryWithHeight(CM_GET_ACTIVE_BLOCKCHAIN_API_URLS,gtv(listOf(gtv(apiUrl))))
         ) {
             val res = QueryCommand().test(listOf(
                     "--settings", settingsFile.absolutePath,

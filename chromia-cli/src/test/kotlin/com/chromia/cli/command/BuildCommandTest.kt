@@ -24,9 +24,9 @@ import com.github.ajalt.clikt.testing.test
 import com.github.ajalt.mordant.terminal.Terminal
 import com.github.ajalt.mordant.terminal.TerminalRecorder
 import net.postchain.common.hexStringToWrappedByteArray
-import net.postchain.gtv.GtvDecoder
 import net.postchain.gtv.gtvml.GtvMLParser
 import net.postchain.rell.api.base.RellCliBasicException
+import net.postchain.rell.api.base.RellCliException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -251,28 +251,23 @@ internal class BuildCommandTest {
     fun invalidXmlChars() {
         File(dir, "src/main.rell").writeText(rellSourceWithInvalidXmlChar)
 
-        val res = command.parse()
-        assertThat(res.output).all {
-            contains("Blockchain hello contains Illegal XML content")
-            contains("Character 25 is not allowed in XML")
+        assertFailsWith<RellCliException> {
+            BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml")))
         }
+        assertThat(logger.stderr()).contains("Syntax error")
 
-        val outputFile = File(dir, "build/hello.xml")
-        assertFalse(outputFile.exists())
+        assertFalse(File(dir, "build/hello.xml").exists())
     }
 
     @Test
-    fun binaryGtvFormatCanHandleInvalidXmlChars() {
+    fun binaryGtvFormatRejectsInvalidXmlChars() {
         File(dir, "src/main.rell").writeText(rellSourceWithInvalidXmlChar)
-        BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml"), "--format=GTV"))
-        val outputFile = File(dir, "build/hello.gtv")
-        assertTrue(outputFile.exists())
-        val outputGtv = GtvDecoder.decodeGtv(outputFile.readBytes())
-        assertThat(outputGtv["gtx"]?.get("modules")?.asArray()?.map { it.asString() }!!).containsExactlyInAnyOrder(
-                "net.postchain.rell.module.RellPostchainModuleFactory",
-                "net.postchain.gtx.StandardOpsGTXModule"
-        )
-        assertThat(outputGtv["gtx"]?.get("rell")?.get("sources")?.get("main.rell")?.asString()).isEqualTo(rellSourceWithInvalidXmlChar)
+
+        assertFailsWith<RellCliException> {
+            BuildCommand().context { terminal = testTerminal }.parse(listOf("--settings", dir.absolutePath.plus("/chromia.yml"), "--format=GTV"))
+        }
+
+        assertFalse(File(dir, "build/hello.gtv").exists())
     }
 
     @Test
