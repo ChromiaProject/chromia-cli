@@ -10,6 +10,14 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.33.1] - 2026-06-24
+### Version Bumps
+- postchain 3.49.16
+- postchain-chromia 3.39.11
+- postchain-client 3.39.5
+- eif 0.32.6
+- chromia-cli-tools 0.12.1
+
 ## [0.33.0] - 2026-05-29
 ### Version Bumps
 - rell 0.16.0
