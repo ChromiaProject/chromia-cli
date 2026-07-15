@@ -25,10 +25,10 @@
         <postchain.version>3.49.16</postchain.version>
         <postchain-chromia.version>3.39.11</postchain-chromia.version>
         <postchain.client.version>3.39.5</postchain.client.version>
-        <rell.version>0.16.0</rell.version>
+        <rell.version>0.16.1</rell.version>
         <eif.version>0.32.6</eif.version>
         <directory.chain.version>1.110.2</directory.chain.version>
-        <chromia.cli.tools.version>0.12.1</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.12.2</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
@@ -227,14 +227,6 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-bom</artifactId>
                 <version>${kotlin.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <!-- Temporariliy downgrade jackson version due to incompatibility in dokka -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.15.3</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
