@@ -124,6 +124,7 @@ class BlockchainConfigSchemaParser {
             RR_PrimitiveKind.GTV -> "gtv"
             RR_PrimitiveKind.RANGE -> "range"
             RR_PrimitiveKind.UNIT -> "unit"
+            RR_PrimitiveKind.NOTHING -> "nothing"
         }
         RR_Type.Null -> "null"
         is RR_Type.Entity -> app.allEntities[type.defIndex].base.appLevelName
