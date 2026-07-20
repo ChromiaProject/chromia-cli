@@ -30,5 +30,3 @@ Postgres is needed with `en_US.UTF-8` collation to be able to run the test suite
 We recommend installing [direnv](https://direnv.net) for manual testing, as then you can access the build artifact by calling `chr` in this repo.
 
 ### Tests
-
-Use `mvn verify -DexcludedGroups=ssh` to exclude integration tests relying on SSH (which does not work in some environments).
