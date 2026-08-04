@@ -37,6 +37,8 @@ build:
   except:
     refs:
       - tags
+  tags:
+    - saas-linux-medium-amd64
   services:
     - postgres:14.9-alpine3.18
   script:

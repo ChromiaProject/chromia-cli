@@ -213,6 +213,11 @@ internal class LintCommandTest {
         }
         assertThat(logger.output()).contains("""
         main/module.rell
+            linter_issue:rule_constant_detection - Variable 'x' is never modified, so it can be declared using 'val'
+            linter_issue:rule_constant_detection - Variable 'Sum' is never modified, so it can be declared using 'val'
+            linter_issue:rule_naming_convention - 'Hello' should be in snake case
+            linter_issue:rule_unused_variable - Variable 'Sum' is never used
+            linter_issue:rule_naming_convention - 'Sum' should be in snake case
             linter_issue:rule_quote_format - Use single quotes for "Hi!"
         """.trimIndent())
         assertThat(logger.output()).doesNotContain("test/test.rell")
@@ -257,9 +262,9 @@ internal class LintCommandTest {
             module;
             
             query Hello() {
-                var x = 5;
+                val x = 5;
                 val y = "wrong quotes";
-                var z = "more " + y;
+                val z = "more " + y;
                 return "Hi!";
             }
             
@@ -313,9 +318,9 @@ internal class LintCommandTest {
             module;
             
             query Hello() {
-                var x = 5;
+                val x = 5;
                 val y = "wrong quotes";
-                var z = "more " + y;
+                val z = "more " + y;
                 return "Hi!";
             }
             
