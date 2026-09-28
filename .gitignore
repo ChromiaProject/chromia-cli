@@ -6,3 +6,6 @@ target
 *.iml
 *.versionsBackup
 .claude/settings.local.json
+
+# CI Maven cache
+.m2/
