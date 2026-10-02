@@ -13,6 +13,7 @@ import com.chromia.cli.it.SuccessfulDeploymentModel
 import com.chromia.cli.model.ChromiaModel
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
 import com.chromia.cli.model.parseModel
+import com.chromia.cli.test_utils.synchronizedDirectoryChainModel
 import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.versionfinder.NoNodeRunningContainerException
@@ -55,7 +56,7 @@ class DeployCreateCommandTest {
     private lateinit var secret: File
     private lateinit var config: File
 
-    val model = DirectoryChainModel().withClusterManagement(ClusterManagementStub())
+    val model = synchronizedDirectoryChainModel().withClusterManagement(ClusterManagementStub())
 
     @BeforeEach
     fun setup() {
