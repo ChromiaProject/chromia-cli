@@ -60,6 +60,34 @@ dependency-check:
 container-scanning:
   variables:
     REGISTRY: registry.gitlab.com/chromaway/core-tools/chromia-cli
+    # Replaces the shared suppressions of the container-dependency-scanning template, so the
+    # first three entries are copied from it and must be kept in sync with it.
+    GRYPE_SUPPRESSIONS: |
+      ignore:
+        - vulnerability: CVE-2026-85091
+          package:
+            name: zlib
+        - vulnerability: GHSA-hf6x-8p5f-cgmf
+          package:
+            name: httpcore5
+            version: 5.3.6
+        - vulnerability: GHSA-v3jc-474w-2wm6
+          package:
+            name: httpcore5-h2
+            version: 5.3.6
+        # jackson 2.22.1 relocated into kotlin-faker (faker.com.fasterxml.jackson), pulled in by
+        # rell-toolbox-seeder for `chr seeder generate`. Not fixable by a version bump: the latest
+        # 1.x release (1.16.2) bundles it and the classes are relocated, so our jackson pin does
+        # not apply. Faker only uses it to parse the locale dictionaries bundled in its own jar.
+        # Drop these entries once kotlin-faker bundles jackson >= 2.22.3.
+        - package:
+            name: jackson-core
+            version: 2.22.1
+            location: "**/kotlin-faker-*.jar"
+        - package:
+            name: jackson-databind
+            version: 2.22.1
+            location: "**/kotlin-faker-*.jar"
   parallel:
     matrix:
       - IMAGE: [ chr ]
