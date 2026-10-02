@@ -113,7 +113,7 @@ deploy:
   # dind is needed here: `install` phase runs jib:dockerBuild against the daemon
   services:
     - postgres:14.9-alpine3.18
-    - name: docker:20-dind
+    - name: docker:28.2.2-dind@sha256:7613944c7bc318c7b97541bd0e65b8a18d033e37e204305f1ee2639fc9a03827
       alias: docker
       # explicitly disable tls to avoid docker startup interruption
       command: [ "--tls=false" , "--experimental" ]
@@ -234,6 +234,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -Dmaven.artifact.threads=8 -DinstallAtEnd=true -DdeployAtEnd=true -s .gitlab-settings.xml"
   # Configure postgres service (https://hub.docker.com/_/postgres/)
   DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
   POSTGRES_DB: postchain
   POSTGRES_USER: postchain
   POSTGRES_PASSWORD: postchain
