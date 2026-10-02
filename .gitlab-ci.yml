@@ -1,13 +1,18 @@
 include:
   - project: chromaway/core-infra/gitlab-automation
-    ref: 1.3.3
+    ref: 1.3.13
     file:
       - templates/release.yml
       - templates/report-code-coverage.yml
       - templates/maven-dependency-scanning.yml
       - templates/container-dependency-scanning.yml
 
-image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java21:1.0.11@sha256:a985644b469b4d01dcbd726176d69e238d8c7012c077a429beb65f86905d0bd1
+image: registry.gitlab.com/chromaway/core-tools/chromia-images/maven-docker-java21:1.0.17@sha256:24c4cb6af8856f20632c4ab63aa5bb08e5557f94331cd30476ca6e2fae057857
+
+default:
+  tags:
+    - linux-large-amd64
+    - chromaway
 
 .setup:
   artifacts:
@@ -37,8 +42,6 @@ build:
   except:
     refs:
       - tags
-  tags:
-    - saas-linux-medium-amd64
   services:
     - postgres:14.9-alpine3.18
   script:
