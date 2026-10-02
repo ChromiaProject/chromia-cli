@@ -126,11 +126,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
 
-            <plugin>
-                <groupId>pl.project13.maven</groupId>
-                <artifactId>git-commit-id-plugin</artifactId>
-            </plugin>
-
         </plugins>
 
         <pluginManagement>
@@ -142,7 +137,7 @@
                         <allowInsecureRegistries>false</allowInsecureRegistries>
                         <from>
                             <image>
-                                registry.gitlab.com/chromaway/core-tools/chromia-images/java21:1.0.17@sha256:6b4f6b890ece55335f98b675318ffdcddc23878eaf80999a2e0844b8f0f305e6
+                                registry.gitlab.com/chromaway/core-tools/chromia-images/java21:1.0.20@sha256:bd42385de6c415d8b7264786ec081cfd2279884b9959727b8de786eeb9762258
                             </image>
                         </from>
                         <to>
