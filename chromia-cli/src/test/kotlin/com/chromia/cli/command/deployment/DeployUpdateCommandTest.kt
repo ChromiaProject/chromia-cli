@@ -17,7 +17,6 @@ import com.chromia.build.tools.restapi.withRellVersionWithHeight
 import com.chromia.build.tools.restapi.withValidConfiguration
 import com.chromia.build.tools.testData
 import com.chromia.cli.model.DefaultChromiaModelRellVersion
-import com.chromia.cli.test_utils.synchronizedDirectoryChainModel
 import com.chromia.cli.util.ClusterManagementStub
 import com.chromia.cli.util.DeploymentTestDataCreator
 import com.chromia.cli.util.DeploymentTestDataCreator.deployedChainBrid
@@ -68,7 +67,7 @@ class DeployUpdateCommandTest {
     private lateinit var settingsFile: File
     private lateinit var secret: File
 
-    val model = synchronizedDirectoryChainModel().withClusterManagement(ClusterManagementStub())
+    val model = DirectoryChainModel().withClusterManagement(ClusterManagementStub())
 
     @BeforeEach
     fun setup() {
