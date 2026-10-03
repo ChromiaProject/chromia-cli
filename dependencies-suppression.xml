@@ -14,4 +14,16 @@
         ]]></notes>
         <cve>CVE-2025-4949</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        jackson 2.22.1 relocated into kotlin-faker (faker.com.fasterxml.jackson), pulled in by
+        rell-toolbox-seeder for `chr seeder generate`. Not fixable by a version bump: the latest
+        1.x release (1.16.2) bundles it and the classes are relocated, so our jackson pin does not
+        apply. Faker only uses it to parse the locale dictionaries bundled in its own jar.
+        The same finding is suppressed for container scanning in .gitlab-ci.yml.
+        Drop this entry once kotlin-faker bundles jackson >= 2.22.3.
+        ]]></notes>
+        <filePath regex="true">.*/kotlin-faker-1\.16\.2\.jar/META-INF/maven/com\.fasterxml\.jackson\.core/jackson-(core|databind)/pom\.xml</filePath>
+        <vulnerabilityName regex="true">.*</vulnerabilityName>
+    </suppress>
 </suppressions>
