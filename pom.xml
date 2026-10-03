@@ -28,11 +28,13 @@
         <rell.version>0.16.6</rell.version>
         <eif.version>0.32.7</eif.version>
         <directory.chain.version>1.110.11</directory.chain.version>
-        <chromia.cli.tools.version>0.13.1</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.13.2</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
         <jgit.version>7.2.1.202505142326-r</jgit.version>
+        <!-- Overrides the Apache MINA SSHD version used by jgit.ssh.apache for security fixes -->
+        <sshd.version>2.20.0</sshd.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>2.3.0</kotlin.version>
@@ -202,6 +204,16 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-osgi</artifactId>
+                <version>${sshd.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.sshd</groupId>
+                <artifactId>sshd-sftp</artifactId>
+                <version>${sshd.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-bom</artifactId>
