@@ -25,7 +25,7 @@
         <postchain.version>3.49.21</postchain.version>
         <postchain-chromia.version>3.40.0</postchain-chromia.version>
         <postchain.client.version>3.39.7</postchain.client.version>
-        <rell.version>0.16.6</rell.version>
+        <rell.version>0.16.7</rell.version>
         <eif.version>0.32.7</eif.version>
         <directory.chain.version>1.110.11</directory.chain.version>
         <chromia.cli.tools.version>0.13.2</chromia.cli.tools.version>
