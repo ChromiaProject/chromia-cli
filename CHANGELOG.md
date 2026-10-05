@@ -10,7 +10,7 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
-## [0.34.2] - YYYY-MM-DD
+## [0.34.2] - 2026-10-05
 ### Added
 - The chr Docker image now carries OCI labels with the commit, commit time, version and source repository it was built from.
 ### Version Bumps
