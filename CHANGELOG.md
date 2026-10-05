@@ -10,6 +10,37 @@ Changelogs will be automatically be generated from this file up to https://docs.
 Which will also take bold or italic text styling.
 Keep this in mind when writing and styling any note.
 
+## [0.34.2] - YYYY-MM-DD
+### Added
+- The chr Docker image now carries OCI labels with the commit, commit time, version and source repository it was built from.
+### Version Bumps
+- rell 0.16.7
+
+## [0.34.1] - 2026-10-05
+### Fixed
+- `apt install chr` works again. The CLI is now packaged as `chromia-cli`, and `chr` stays both the command and a package that installs it, but 0.34.0 shipped without the `chromia-cli` package.
+### Version Bumps
+- chromia-cli-tools 0.13.2
+- Apache MINA SSHD 2.20.0
+
+## [0.34.0] - 2026-10-02
+### Fixed
+- Updated third-party libraries to pick up security fixes.
+### Version Bumps
+- rell 0.16.6
+- postchain 3.49.21
+- postchain-chromia 3.40.0
+- postchain-client 3.39.7
+- eif 0.32.7
+- directory-chain 1.110.11
+- chromia-cli-tools 0.13.1
+- chromia-parent 0.3.0
+
+## [0.33.2] - 2026-07-20
+### Version Bumps
+- rell 0.16.1
+- chromia-cli-tools 0.12.2
+
 ## [0.33.1] - 2026-06-24
 ### Version Bumps
 - postchain 3.49.16
