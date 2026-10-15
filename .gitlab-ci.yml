@@ -61,12 +61,9 @@ container-scanning:
   variables:
     REGISTRY: registry.gitlab.com/chromaway/core-tools/chromia-cli
     # Replaces the shared suppressions of the container-dependency-scanning template, so the
-    # first three entries are copied from it and must be kept in sync with it.
+    # first two entries are copied from it and must be kept in sync with it.
     GRYPE_SUPPRESSIONS: |
       ignore:
-        - vulnerability: CVE-2026-85091
-          package:
-            name: zlib
         - vulnerability: GHSA-hf6x-8p5f-cgmf
           package:
             name: httpcore5
