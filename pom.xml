@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.chromia</groupId>
         <artifactId>chromia-parent</artifactId>
-        <version>0.3.0</version>
+        <version>0.3.1</version>
     </parent>
 
     <artifactId>chromia-cli-parent</artifactId>
@@ -22,13 +22,13 @@
     <name>Chromia Cli Parent</name>
     <properties>
         <revision>dev</revision>
-        <postchain.version>3.49.22</postchain.version>
-        <postchain-chromia.version>3.40.0</postchain-chromia.version>
+        <postchain.version>3.49.23</postchain.version>
+        <postchain-chromia.version>3.40.3</postchain-chromia.version>
         <postchain.client.version>3.39.7</postchain.client.version>
         <rell.version>0.16.7</rell.version>
-        <eif.version>0.32.7</eif.version>
+        <eif.version>0.33.0</eif.version>
         <directory.chain.version>1.110.11</directory.chain.version>
-        <chromia.cli.tools.version>0.13.2</chromia.cli.tools.version>
+        <chromia.cli.tools.version>0.13.3</chromia.cli.tools.version>
         <directory.source>${project.build.directory}/directory-chain/src</directory.source>
         <directory.config>${project.build.directory}/directory-chain/chromia.yml</directory.config>
 
@@ -224,7 +224,7 @@
             <dependency>
                 <groupId>org.ow2.asm</groupId>
                 <artifactId>asm-bom</artifactId>
-                <version>9.11</version>
+                <version>9.11.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -459,12 +459,12 @@
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>3.1.7</version>
+                <version>3.1.8</version>
             </dependency>
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>3.1.7</version>
+                <version>3.1.8</version>
             </dependency>
             <dependency>
                 <groupId>org.jline</groupId>
